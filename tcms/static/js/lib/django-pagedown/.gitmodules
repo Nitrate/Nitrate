@@ -1,0 +1,3 @@
+[submodule "pagedown/static/pagedown"]
+	path = pagedown/static/pagedown
+	url = git://github.com/timmyomahony/pagedown.git
