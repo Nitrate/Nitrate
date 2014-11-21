@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from django import forms
 
-from tinymce.widgets import TinyMCE
 from tcms.core.forms import UserField, DurationField, StripURLField
 from tcms.core.utils.validations import validate_bug_id
 from tcms.core.exceptions import NitrateException
@@ -11,6 +10,8 @@ from tcms.management.models import Priority, Product, Component, TestTag
 from models import TestCase, TestCaseCategory, TestCaseStatus
 from models import TestCaseBug, AUTOMATED_CHOICES as FULL_AUTOMATED_CHOICES
 from fields import MultipleEmailField
+from markdown import markdown
+from pagedown.widgets import PagedownWidget
 
 AUTOMATED_CHOICES = (
     (0, 'Manual'),
@@ -188,13 +189,13 @@ class BaseCaseForm(forms.Form):
     )
     estimated_time = DurationField(label='Estimated Time', initial='0m',
                                    required=False)
-    setup = forms.CharField(label="Setup", widget=TinyMCE,
+    setup = forms.CharField(label="Setup", widget=PagedownWidget(),
                             required=False)
-    action = forms.CharField(label="Actions", widget=TinyMCE,
+    action = forms.CharField(label="Actions", widget=PagedownWidget(),
                              required=False)
-    effect = forms.CharField(label="Expect results", widget=TinyMCE,
+    effect = forms.CharField(label="Expect results", widget=PagedownWidget(),
                              required=False)
-    breakdown = forms.CharField(label="Breakdown", widget=TinyMCE,
+    breakdown = forms.CharField(label="Breakdown", widget=PagedownWidget(),
                                 required=False)
 
     tag = forms.CharField(

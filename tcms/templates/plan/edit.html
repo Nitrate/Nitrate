@@ -4,6 +4,8 @@
 
 {% block custom_stylesheet %}
 <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style/print.css" media="print" />
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}js/lib/django-pagedown/pagedown/static/pagedown/demo/browser/demo.css" media="screen" />
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}admin/css/pagedown.css" media="screen" />
 <style>
 #tab_testcases{ padding-left:5px;}
 #tab_testruns {padding-left:5px;}
@@ -14,7 +16,10 @@
 {% endblock %}
 
 {% block custom_javascript %}
-<script type="text/javascript" src='{{ STATIC_URL }}js/lib/tinymce/jscripts/tiny_mce/tiny_mce.js'></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/lib/django-pagedown/pagedown/static/pagedown/Markdown.Converter.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/lib/django-pagedown/pagedown/static/pagedown/Markdown.Sanitizer.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/lib/django-pagedown/pagedown/static/pagedown/Markdown.Editor.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/lib/django-pagedown/pagedown/static/pagedown_init.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/testplan_actions.js"></script>
 <script type="text/javascript" src='{{ STATIC_URL }}js/testcase_actions.js'></script>
 <script type="text/javascript">

@@ -1,5 +1,5 @@
 Django==1.5.5
-MySQL-python==1.2.5
+MySQL-python==1.2.4
 kerberos==1.1.1
 qpid-python==0.20
 django-uuslug==1.0.0
@@ -9,3 +9,4 @@ https://git.fedorahosted.org/cgit/kobo.git/snapshot/kobo-0.2.1.tar.gz#egg=kobo
 odfpy==0.9.6
 django-pagination==1.0.7
 django-tinymce==1.5.1
+django-pagedown==0.1.0
