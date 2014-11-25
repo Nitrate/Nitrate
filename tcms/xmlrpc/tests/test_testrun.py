@@ -478,58 +478,476 @@ class TestCompletionReport(FastFixtureTestCase):
 class TestEnvValues(FastFixtureTestCase):
     fixtures = ['unittest.json']
 
-    pass
+    def test_get_env_values(self):
+        try:
+            values = testrun.get_env_values(None, 1)
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertEqual(len(values), 3)
+            self.assertEqual(values[0]['property'], 'disk')
+            self.assertEqual(values[0]['value'], '120G')
+            self.assertEqual(values[1]['property'], 'video')
+            self.assertEqual(values[1]['value'], 'ATI')
+            self.assertEqual(values[2]['property'], 'cpu')
+            self.assertEqual(values[2]['value'], 'i3')
+
+    def test_get_env_values_with_non_exist(self):
+        try:
+            values = testrun.get_env_values(None, 9999)
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertEqual(len(values), 0)
 
 
 class TestLinkEnvValues(FastFixtureTestCase):
     fixtures = ['unittest.json']
 
-    pass
+    def setUp(self):
+        super(TestLinkEnvValues, self).setUp()
+
+        self.admin = User(username='tcr_admin',
+                          email='tcr_admin@example.com')
+        self.staff = User(username='tcr_staff',
+                          email='tcr_staff@example.com')
+        self.admin.save()
+        self.staff.save()
+        self.admin_request = make_http_request(
+            user=self.admin,
+            user_perm='testruns.add_tcmsenvrunvaluemap'
+        )
+        self.admin_request = make_http_request(
+            user=self.admin,
+            user_perm='testruns.change_tcmsenvrunvaluemap'
+        )
+        self.staff_request = make_http_request(
+            user=self.staff
+        )
+
+    def tearDown(self):
+        super(TestLinkEnvValues, self).tearDown()
+
+        self.admin.delete()
+        self.staff.delete()
+
+    def test_link_env_values(self):
+        try:
+            testrun.link_env_value(self.admin_request, 1, 4)
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            values = TCMSEnvRunValueMap.objects.filter(run_id=1, value_id=4)
+            self.assertTrue(values.exists())
+            self.assertEqual(values.count(), 1)
+
+    def test_link_env_values_with_no_perms(self):
+        try:
+            testrun.link_env_value(self.staff_request, 1, 4)
+        except Fault as f:
+            self.assertEqual(f.faultCode, 403, AssertMessage.SHOULD_BE_403)
+        else:
+            self.fail(AssertMessage.NOT_VALIDATE_PERMS)
+
+    def test_link_env_values_with_array(self):
+        try:
+            testrun.link_env_value(self.admin_request, 1, [4, 5, 6])
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            values = TCMSEnvRunValueMap.objects.filter(run_id=1,
+                                                       value_id__in=[4, 5, 6])
+            self.assertTrue(values.exists())
+            self.assertEqual(values.count(), 3)
 
 
 class TestUnlinkEnvValues(FastFixtureTestCase):
     fixtures = ['unittest.json']
 
-    pass
+    def setUp(self):
+        super(TestUnlinkEnvValues, self).setUp()
+
+        self.admin = User(username='tcr_admin',
+                          email='tcr_admin@example.com')
+        self.staff = User(username='tcr_staff',
+                          email='tcr_staff@example.com')
+        self.admin.save()
+        self.staff.save()
+        make_http_request(
+            user=self.admin,
+            user_perm='testruns.delete_tcmsenvrunvaluemap'
+        )
+        self.admin_request = make_http_request(
+            user=self.admin,
+            user_perm='testruns.change_tcmsenvrunvaluemap'
+        )
+        self.staff_request = make_http_request(
+            user=self.staff
+        )
+
+    def tearDown(self):
+        super(TestUnlinkEnvValues, self).tearDown()
+
+        self.admin.delete()
+        self.staff.delete()
+
+    def test_link_env_values(self):
+        try:
+            testrun.unlink_env_value(self.admin_request, 1, 15)
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            values = TCMSEnvRunValueMap.objects.filter(run_id=1, value_id=15)
+            self.assertFalse(values.exists())
+            self.assertEqual(values.count(), 0)
+
+    def test_link_env_values_with_no_perms(self):
+        try:
+            testrun.unlink_env_value(self.staff_request, 1, 4)
+        except Fault as f:
+            self.assertEqual(f.faultCode, 403, AssertMessage.SHOULD_BE_403)
+        else:
+            self.fail(AssertMessage.NOT_VALIDATE_PERMS)
+
+    def test_link_env_values_with_array(self):
+        try:
+            testrun.unlink_env_value(self.admin_request, 1, [1, 19])
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            values = TCMSEnvRunValueMap.objects.filter(run_id=1,
+                                                       value_id__in=[1, 19])
+            self.assertFalse(values.exists())
+            self.assertEqual(values.count(), 0)
 
 
 class TestRemoveCases(FastFixtureTestCase):
     fixtures = ['unittest.json']
 
-    pass
+    def setUp(self):
+        super(TestRemoveCases, self).setUp()
+
+        self.admin = User(username='tcr_admin',
+                          email='tcr_admin@example.com')
+        self.staff = User(username='tcr_staff',
+                          email='tcr_staff@example.com')
+        self.admin.save()
+        self.staff.save()
+        self.admin_request = make_http_request(
+            user=self.admin,
+            user_perm='testruns.delete_testcaserun'
+        )
+        self.staff_request = make_http_request(
+            user=self.staff
+        )
+
+    def tearDown(self):
+        super(TestRemoveCases, self).tearDown()
+
+        self.admin.delete()
+        self.staff.delete()
+
+    def test_remove_case(self):
+        try:
+            testrun.remove_cases(self.admin_request, 1, 9)
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            case = TestCaseRun.objects.filter(run_id=1, case_id=9)
+            self.assertFalse(case.exists())
+
+    def test_remove_case_with_no_perms(self):
+        try:
+            testrun.remove_cases(self.staff_request, 1, 9)
+        except Fault as f:
+            self.assertEqual(f.faultCode, 403, AssertMessage.SHOULD_BE_403)
+        else:
+            self.fail(AssertMessage.NOT_VALIDATE_PERMS)
+
+    def test_remove_case_with_array(self):
+        try:
+            testrun.remove_cases(self.admin_request, [1, 2], [4, 5])
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            case = TestCaseRun.objects.filter(run_id__in=[1, 2],
+                                              case_id__in=[4, 5])
+            self.assertFalse(case.exists())
 
 
 class TestGetTags(FastFixtureTestCase):
     fixtures = ['unittest.json']
 
-    pass
+    def test_get_tags(self):
+        try:
+            tags = testrun.get_tags(None, 1)
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertEqual(len(tags), 4)
+            self.assertEqual(tags[0]['name'], 'R1')
+            self.assertEqual(tags[0]['id'], 11)
+
+            self.assertEqual(tags[1]['name'], 'R2')
+            self.assertEqual(tags[1]['id'], 12)
+
+            self.assertEqual(tags[2]['name'], 'R3')
+            self.assertEqual(tags[2]['id'], 13)
+
+            self.assertEqual(tags[3]['name'], 'R4')
+            self.assertEqual(tags[3]['id'], 14)
+
+    def test_get_tags_with_non_exist(self):
+        try:
+            testrun.get_tags(None, 9999)
+        except Fault as f:
+            self.assertEqual(f.faultCode, 404, AssertMessage.SHOULD_BE_404)
+        else:
+            self.fail(AssertMessage.NOT_VALIDATE_ARGS)
 
 
 class TestGetTestCaseRuns(FastFixtureTestCase):
     fixtures = ['unittest.json']
 
-    pass
+    def test_get_test_case_runs(self):
+        try:
+            caseruns = testrun.get_test_case_runs(None, 1)
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertEqual(len(caseruns), 16)
+
+    def test_get_test_case_runs_with_non_exist(self):
+        try:
+            caseruns = testrun.get_test_case_runs(None, 999)
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertEqual(len(caseruns), 0)
 
 
 class TestGetCases(FastFixtureTestCase):
     fixtures = ['unittest.json']
 
-    pass
+    def test_get_test_cases(self):
+        try:
+            caseruns = testrun.get_test_cases(None, 1)
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertEqual(len(caseruns), 16)
+
+    def test_get_test_cases_with_non_exist(self):
+        try:
+            caseruns = testrun.get_test_cases(None, 999)
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertEqual(len(caseruns), 0)
 
 
 class TestGetPlan(FastFixtureTestCase):
     fixtures = ['unittest.json']
 
-    pass
+    def test_get_plan(self):
+        try:
+            plan = testrun.get_test_plan(None, 1)
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertEqual(plan['name'], 'StarCraft: Init')
+
+    def test_get_plan_with_non_exist(self):
+        try:
+            testrun.get_test_plan(None, 9999)
+        except Fault as f:
+            self.assertEqual(f.faultCode, 404, AssertMessage.SHOULD_BE_404)
+        else:
+            self.fail(AssertMessage.NOT_VALIDATE_ARGS)
 
 
 class TestRemoveTag(FastFixtureTestCase):
     fixtures = ['unittest.json']
 
-    pass
+    def setUp(self):
+        super(TestRemoveTag, self).setUp()
+
+        self.admin = User(username='tcr_admin',
+                          email='tcr_admin@example.com')
+        self.staff = User(username='tcr_staff',
+                          email='tcr_staff@example.com')
+        self.admin.save()
+        self.staff.save()
+        self.admin_request = make_http_request(
+            user=self.admin,
+            user_perm='testruns.delete_testruntag'
+        )
+        self.staff_request = make_http_request(
+            user=self.staff
+        )
+
+    def tearDown(self):
+        super(TestRemoveTag, self).tearDown()
+
+        self.admin.delete()
+        self.staff.delete()
+
+    def test_remove_tags(self):
+        try:
+            testrun.remove_tag(self.admin_request, 1, 'R1')
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            tags = TestRunTag.objects.filter(tag_id=11, run_id=1)
+            self.assertFalse(tags.exists())
+
+    def test_remove_tags_with_no_perms(self):
+        try:
+            testrun.remove_tag(self.staff_request, 1, 'R1')
+        except Fault as f:
+            self.assertEqual(f.faultCode, 403, AssertMessage.SHOULD_BE_403)
+        else:
+            self.fail(AssertMessage.NOT_VALIDATE_PERMS)
+
+    def test_remove_tags_with_non_exist(self):
+        try:
+            testrun.remove_tag(self.admin_request, 1, 'R11')
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            tags = TestRunTag.objects.filter(run_id=1)
+            self.assertTrue(tags.exists())
+            self.assertEqual(tags.count(), 4)
+
+    def test_remove_tags_with_array(self):
+        try:
+            testrun.remove_tag(self.admin_request, 1, ['R1', 'R2', 'R3', 'R4'])
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            tags = TestRunTag.objects.filter(run_id=1)
+            self.assertFalse(tags.exists())
 
 
 class TestUpdate(FastFixtureTestCase):
     fixtures = ['unittest.json']
 
-    pass
+    def setUp(self):
+        super(TestUpdate, self).setUp()
+
+        self.admin = User(username='tcr_admin',
+                          email='tcr_admin@example.com')
+        self.staff = User(username='tcr_staff',
+                          email='tcr_staff@example.com')
+        self.admin.save()
+        self.staff.save()
+        self.admin_request = make_http_request(
+            user=self.admin,
+            user_perm='testruns.change_testrun'
+        )
+        self.staff_request = make_http_request(
+            user=self.staff
+        )
+
+    def tearDown(self):
+        super(TestUpdate, self).tearDown()
+
+        self.admin.delete()
+        self.staff.delete()
+
+    def test_update(self):
+        try:
+            tr = testrun.update(self.admin_request, 1, {
+                'plan': 2,
+                'build': 2,
+                'errata_id': 1,
+                'manager': self.admin.pk,
+                'default_tester': self.staff.pk,
+                'summary': 'test update',
+                'estimated_time': '2h30m30s',
+                'product_version': 11,
+                'product': 2,
+                'plan_text_version': 13,
+                'status': 1,
+                'notes': 'only test.'
+            })
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertEqual(tr[0]['plan_id'], 2)
+            self.assertEqual(tr[0]['build_id'], 2)
+            self.assertEqual(tr[0]['errata_id'], 1)
+            self.assertEqual(tr[0]['manager'], 'tcr_admin')
+            self.assertEqual(tr[0]['default_tester'], 'tcr_staff')
+            self.assertEqual(tr[0]['summary'], 'test update')
+            self.assertEqual(tr[0]['estimated_time'], '02:30:30')
+            self.assertEqual(tr[0]['product_version_id'], 11)
+            self.assertEqual(tr[0]['plan_text_version'], 13)
+
+    def test_update_with_no_perms(self):
+        try:
+            testrun.update(self.staff_request, 1, {
+                'plan': 2,
+                'build': 1,
+                'errata_id': 1,
+                'manager': self.admin.pk,
+                'default_tester': self.staff.pk,
+                'summary': 'test update',
+                'estimated_time': '2h30m30s',
+                'product_version': 11,
+                'product': 2,
+                'plan_text_version': 13,
+                'status': 1,
+            })
+        except Fault as f:
+            self.assertEqual(f.faultCode, 403, AssertMessage.SHOULD_BE_403)
+        else:
+            self.fail(AssertMessage.NOT_VALIDATE_PERMS)
+
+    def test_update_with_non_exist(self):
+        try:
+            testrun.update(self.admin_request, 1, {
+                'build': 999
+            })
+        except Fault as f:
+            self.assertEqual(f.faultCode, 400, AssertMessage.SHOULD_BE_400)
+        else:
+            self.fail(AssertMessage.NOT_VALIDATE_ARGS)
+
+    def test_update_with_no_product_version(self):
+        try:
+            testrun.update(self.admin_request, 1, {
+                'product_version': 11
+            })
+        except Fault as f:
+            self.assertEqual(f.faultCode, 400, AssertMessage.SHOULD_BE_400)
+        else:
+            self.fail(AssertMessage.NOT_VALIDATE_ARGS)
+
+    def test_update_with_delete_some_fields(self):
+        try:
+            tr = testrun.update(self.admin_request, 1, {
+                'notes': ''
+            })
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertEqual(tr[0]['notes'], '')
+
+        try:
+            testrun.update(self.admin_request, 1, {
+                'default_tester': ''
+            })
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertEqual(tr[0]['default_tester'], None)
+
+        try:
+            testrun.update(self.admin_request, 1, {
+                'status': 0
+            })
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertEqual(tr[0]['stop_date'], None)
