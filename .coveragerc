@@ -1,0 +1,22 @@
+[report]
+exclude_lines = 
+    # debug 
+    if settings.DEBUG
+    # something to be print
+    def __repr__
+    # interfaces
+    raise NotImplementedError
+    # import statements
+    from
+    # others
+    pragma: no cover   
+    # module leveled attribute
+    __all__
+    __filters__
+    __xmlrpc_namespace__
+    # docstring
+    """
+    '''
+    # logging
+    logger
+precision = 2
