@@ -55,7 +55,7 @@ class GetCaseRun(object):
         return TestCaseRun.objects.get(**query)
 
 
-gcr = GetCaseRun()
+gcr = GetCaseRun()  # pragma: no cover
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -250,10 +250,7 @@ def detach_bug(request, case_run_ids, bug_ids):
     for tcr in tcrs.iterator():
         case_run_id = tcr.case_run_id
         for opk in bug_ids:
-            try:
-                tcr.remove_bug(bug_id=opk, run_id=case_run_id)
-            except ObjectDoesNotExist:
-                pass
+            tcr.remove_bug(bug_id=opk, run_id=case_run_id)
 
     return
 

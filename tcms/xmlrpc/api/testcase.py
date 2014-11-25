@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import itertools
+import itertools  # pragma: no cover
 
 from itertools import imap
 

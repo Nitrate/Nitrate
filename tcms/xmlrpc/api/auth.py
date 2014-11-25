@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import django.contrib.auth
+import django.contrib.auth  # pragma: no cover
 
 from django.conf import settings
 from django.core.exceptions import PermissionDenied

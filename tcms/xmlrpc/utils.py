@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
-import re
+import re  # pragma: no cover
 from django.db.models import Count, FieldDoesNotExist
 
 from tcms.management.models import Product
 
 
-COUNT_DISTINCT = 0
-QUERY_DISTINCT = 1
+COUNT_DISTINCT = 0  # pragma: no cover
+QUERY_DISTINCT = 1  # pragma: no cover
 
-ACCEPTABLE_BOOL_VALUES = ('0', '1', 0, 1, True, False)
+ACCEPTABLE_BOOL_VALUES = ('0', '1', 0, 1, True, False)  # pragma: no cover
 
 
 def parse_bool_value(value):
@@ -218,7 +218,7 @@ class Comment(object):
         return
 
 
-estimated_time_re = re.compile(r'^(\d+[d])?(\d+[h])?(\d+[m])?(\d+[s])?$')
+estimated_time_re = re.compile(r'^(\d+[d])?(\d+[h])?(\d+[m])?(\d+[s])?$')  # pragma: no cover
 
 
 def pre_process_estimated_time(value):
