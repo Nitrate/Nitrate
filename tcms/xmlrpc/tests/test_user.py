@@ -4,7 +4,7 @@ from xmlrpclib import Fault
 
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
-from django.test import TestCase
+from django_nose import FastFixtureTestCase
 
 import tcms.xmlrpc.api.user as XUser
 
@@ -12,8 +12,9 @@ from tcms.xmlrpc.tests.utils import make_http_request
 from tcms.xmlrpc.tests.utils import user_should_have_perm
 
 
-class TestUserSerializer(TestCase):
+class TestUserSerializer(FastFixtureTestCase):
     '''Test User.get_user_dict'''
+    fixtures = ['unittest.json']
 
     def setUp(self):
         self.http_req = make_http_request()
@@ -26,8 +27,9 @@ class TestUserSerializer(TestCase):
         self.assert_('password' not in data)
 
 
-class TestUserFilter(TestCase):
+class TestUserFilter(FastFixtureTestCase):
     '''Test User.filter'''
+    fixtures = ['unittest.json']
 
     def setUp(self):
         self.user1 = User.objects.create(username='user 1',
@@ -78,8 +80,9 @@ class TestUserFilter(TestCase):
         self.assertEqual(len(users), 2)
 
 
-class TestUserGet(TestCase):
+class TestUserGet(FastFixtureTestCase):
     '''Test User.get'''
+    fixtures = ['unittest.json']
 
     def setUp(self):
         self.http_req = make_http_request()
@@ -101,8 +104,9 @@ class TestUserGet(TestCase):
             self.assertEqual(e.faultCode, 404)
 
 
-class TestUserGetMe(TestCase):
+class TestUserGetMe(FastFixtureTestCase):
     '''Test User.get_me'''
+    fixtures = ['unittest.json']
 
     def setUp(self):
         self.http_req = make_http_request()
@@ -114,8 +118,9 @@ class TestUserGetMe(TestCase):
         self.assertEqual(data['username'], test_user.username)
 
 
-class TestUserJoin(TestCase):
+class TestUserJoin(FastFixtureTestCase):
     '''Test User.join'''
+    fixtures = ['unittest.json']
 
     def setUp(self):
         self.http_req = make_http_request(user_perm='auth.change_user')
@@ -151,8 +156,9 @@ class TestUserJoin(TestCase):
             self.assertEqual(e.faultCode, 404)
 
 
-class TestUserUpdate(TestCase):
+class TestUserUpdate(FastFixtureTestCase):
     '''Test User.update'''
+    fixtures = ['unittest.json']
 
     def setUp(self):
         self.user = User.objects.create(username='bob',

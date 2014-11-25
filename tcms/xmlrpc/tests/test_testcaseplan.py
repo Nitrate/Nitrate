@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from xmlrpclib import Fault
 
-from django.test import TestCase
+from django_nose import FastFixtureTestCase
 
 from tcms.xmlrpc.api import testcaseplan
 
@@ -31,7 +31,9 @@ class AssertMessage(object):
     NOT_VALIDATE_PERMS = "Missing validations for user perms."
 
 
-class TestCasePlanGet(TestCase):
+class TestCasePlanGet(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def test_get(self):
         try:
             tcp = testcaseplan.get(None, 1, 1)
@@ -114,7 +116,9 @@ class TestCasePlanGet(TestCase):
             self.fail(AssertMessage.NOT_VALIDATE_ARGS)
 
 
-class TestCasePlanUpdate(TestCase):
+class TestCasePlanUpdate(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def test_update(self):
         try:
             tcp = testcaseplan.update(None, 1, 1, 110)
