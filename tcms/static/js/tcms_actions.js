@@ -1161,24 +1161,24 @@ function getForm(container, app_form, parameters, callback, format) {
   });
 }
 
-function updateCaseStatus(plan_id, content_type, object_pk, field, value, value_type, callback) {
+function updateCaseStatus(from_plan, content_type, from_case, target_field, new_value, value_type, callback) {
   if (!value_type) {
     var value_type = 'str';
   }
 
-  var url = '/ajax/update/case-status';
+  var url = '/ajax/update/cases-case-status/';
 
   if (typeof object_pk === 'object'){
     object_pk = object_pk.join(',');
   }
 
   var parameters = {
-    'plan_id': plan_id,
+    'from_plan': from_plan,
     'content_type': content_type,
-    'object_pk': object_pk,
-    'field': field,
-    'value': value,
-    'value_type': value_type
+    'case': from_case,
+    'target_field': target_field,
+    'new_value': new_value,
+    'value_type': value_type,
   };
 
   jQ.ajax({

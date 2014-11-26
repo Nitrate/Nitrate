@@ -600,7 +600,6 @@ def update_case_status(request):
     object_pk_str = data.get("object_pk")
     field = data.get('field')
     value = data.get('value')
-
     object_pk = [int(a) for a in object_pk_str.split(',')]
 
     if not field or not value or not object_pk or not ctype:
@@ -762,13 +761,28 @@ class TestCaseUpdateActions(object):
         exists = TestCaseStatus.objects.filter(pk=self.new_value).exists()
         if not exists:
             raise ObjectDoesNotExist('The status you choose does not exist.')
-        self.get_update_targets().update(
-            **{str(self.target_field): self.new_value})
+        update_object = self.get_update_targets()
 
         # ###
         # Case is moved between Cases and Reviewing Cases tabs accoding to the
         # change of status. Meanwhile, the number of cases with each status
         # should be updated also.
+        if not update_object:
+            return say_no('No record found')
+
+        for testcase in update_object:
+            if hasattr(testcase, 'log_action'):
+                try:
+                    update_status_name = str(TestCaseStatus.objects.get(id=self.new_value).name)
+                    testcase.log_action(
+                        who=self.request.user,
+                        action='Field %s changed from %s to %s.' % (
+                            self.target_field, testcase.case_status, update_status_name
+                        )
+                    )
+                except (AttributeError, User.DoesNotExist):
+                    pass
+        update_object.update(**{str(self.target_field): self.new_value})
 
         try:
             plan = plan_from_request_or_none(self.request)
