@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 from django import forms
 
+from markdown import markdown
+from pagedown.widgets import PagedownWidget
+
 from tcms.core.forms import UserField, DurationField, StripURLField
 from tcms.core.utils.validations import validate_bug_id
 from tcms.core.exceptions import NitrateException
@@ -10,8 +13,6 @@ from tcms.management.models import Priority, Product, Component, TestTag
 from models import TestCase, TestCaseCategory, TestCaseStatus
 from models import TestCaseBug, AUTOMATED_CHOICES as FULL_AUTOMATED_CHOICES
 from fields import MultipleEmailField
-from markdown import markdown
-from pagedown.widgets import PagedownWidget
 
 AUTOMATED_CHOICES = (
     (0, 'Manual'),

@@ -4,6 +4,8 @@ from django.conf import settings
 from django.contrib.auth.models import User
 
 from odf.odf2xhtml import ODF2XHTML, load
+from markdown import markdown
+from pagedown.widgets import PagedownWidget
 
 from tcms.core.contrib.xml2dict.xml2dict import XML2Dict
 from tcms.core.forms.fields import UserField, StripURLField
@@ -11,8 +13,6 @@ from tcms.management.models import Component, Product, Version, TCMSEnvGroup, \
     Priority, TestTag
 from tcms.testcases.models import TestCaseStatus
 from models import TestPlan, TestPlanType
-from markdown import markdown
-from pagedown.widgets import PagedownWidget
 
 
 
