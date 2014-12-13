@@ -25,10 +25,6 @@ class CaseActions(object):
     '''Actions for operating cases in TestPlan'''
 
     def __init__(self, request, tp):
-        self.__all__ = ['link_cases',
-                        'delete_cases',
-                        'order_cases',
-                        'import_cases']
         self.request = request
         self.REQ = self.request.REQUEST
         self.tp = tp
@@ -230,3 +226,11 @@ class CaseActions(object):
                 ))
         else:
             return HttpResponseRedirect(redirect_to)
+
+    def do(self, action_name):
+        '''Do action according to given action name'''
+        action_method = getattr(self, action_name, None)
+        if action_method is None:
+            raise KeyError
+        else:
+            return action_method()

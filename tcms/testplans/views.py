@@ -973,9 +973,11 @@ def cases(request, plan_id):
 
     # tp = get_object_or_404(TestPlan, plan_id=plan_id)
     cas = CaseActions(request, tp)
-    actions = request.REQUEST.get('a')
+    action_name = request.REQUEST.get('a')
 
-    if actions not in cas.__all__:
+    try:
+        return cas.do(action_name)
+    except KeyError:
         if request.REQUEST.get('format') == 'json':
             ajax_response['rc'] = 1
             ajax_response['response'] = 'Unrecognizable actions'
@@ -987,9 +989,6 @@ def cases(request, plan_id):
             info='Unrecognizable actions',
             next=reverse('tcms.testplans.views.get', args=[plan_id]),
         ))
-
-    func = getattr(cas, actions)
-    return func()
 
 
 def component(request, template_name='plan/get_component.html'):
