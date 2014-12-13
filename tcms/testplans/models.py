@@ -172,6 +172,8 @@ class TestPlan(TCMSActionModel):
             checksum=text_checksum or checksum(plan_text)
         )
 
+    # TODO: to allow add multiple cases at a time
+
     def add_case(self, case, sortkey=0):
 
         tcp, is_created = TestCasePlan.objects.get_or_create(
@@ -228,7 +230,11 @@ class TestPlan(TCMSActionModel):
         # Remove old env groups because we only maintanence on group per plan.
         return TCMSEnvPlanMap.objects.filter(plan=self).delete()
 
+    # TODO: to allow delete multiple cases at a time.
+    # def delete_cases(self, cases): pass
+
     def delete_case(self, case):
+        # FIXME: rewrite using ORM instead
         cursor = connection.writer_cursor
         cursor.execute("DELETE from test_case_plans \
             WHERE plan_id = %s \
