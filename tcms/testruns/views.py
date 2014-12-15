@@ -26,13 +26,14 @@ from django.views.generic.base import TemplateView
 from django.views.generic.base import View
 
 from tcms.core.db import SQLExecution
-from tcms.core.utils import clean_request
+from tcms.core.exceptions import NitrateException
+from tcms.core.responses import HttpJSONResponse
 from tcms.core.utils.bugtrackers import Bugzilla
+from tcms.core.utils import clean_request
 from tcms.core.utils.raw_sql import RawSQL
 from tcms.core.utils.tcms_router import connection
 from tcms.core.utils.timedeltaformat import format_timedelta
 from tcms.core.utils.validations import validate_bug_id
-from tcms.core.exceptions import NitrateException
 from tcms.core.views import Prompt
 from tcms.search import remove_from_request_path
 from tcms.search.forms import RunForm
@@ -1000,14 +1001,14 @@ def new_run_with_caseruns(request, run_id, template_name='run/clone.html'):
                             [tcr.case.estimated_time for tcr in tcrs])
 
     if not request.REQUEST.get('submit'):
+        default_tester = tr.default_tester_id and tr.default_tester.email or ''
         form = RunCloneForm(initial={
             'summary': tr.summary,
             'notes': tr.notes, 'manager': tr.manager.email,
             'product': tr.plan.product_id,
             'product_version': tr.product_version_id,
             'build': tr.build_id,
-            'default_tester':
-                tr.default_tester_id and tr.default_tester.email or '',
+            'default_tester': default_tester,
             'estimated_time': format_timedelta(estimated_time),
             'use_newest_case_text': True,
         })
@@ -1049,6 +1050,7 @@ def clone(request, template_name='run/clone.html'):
     if trs.count() == 1 and not request.REQUEST.get('submit'):
         tr = trs[0]
         tcrs = tr.case_run.all()
+        default_tester = tr.default_tester_id and tr.default_tester.email or ''
         form = RunCloneForm(initial={
             'summary': tr.summary,
             'notes': tr.notes,
@@ -1056,8 +1058,7 @@ def clone(request, template_name='run/clone.html'):
             'product': tr.plan.product_id,
             'product_version': tr.product_version_id,
             'build': tr.build_id,
-            'default_tester':
-                tr.default_tester_id and tr.default_tester.email or '',
+            'default_tester': default_tester,
             'use_newest_case_text': True,
             'errata_id': tr.errata_id,
         })
