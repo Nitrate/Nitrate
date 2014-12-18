@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+devel
+-----
+
+- fix bug 1174111 uploading an HTML file would break some internal features
+
 3.8.11-1 (Oct 15 2014)
 ----------------------
 
