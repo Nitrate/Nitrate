@@ -28,7 +28,8 @@ Requires:       mod_auth_kerb
 Requires:       mod_ssl
 Requires:       mod_wsgi >= 3.2
 Requires:       MySQL-python == 1.2.5
-Requires:       odfpy = 0.9.6
+Requires:       odfpy >= 0.9.6
+Requires:       python-beautifulsoup4 >= 4.1.1
 Requires:       python-kerberos
 Requires:       python-qpid
 Requires:       w3m

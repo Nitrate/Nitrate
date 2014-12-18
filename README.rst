@@ -12,13 +12,15 @@ access control for each plan, run and case, fully ajax call and more.
 Dependencies
 ------------
 
-- Python >= 2.6
+- beautifulsoup4 >= 4.1.1
 - Django = 1.5.5
-- MySQL-python == 1.2.5
+- django-uuslug
 - Kobo
+- MySQL-python == 1.2.5
+- odfpy >= 0.9.6
+- Python >= 2.6
 - python-kerberos
 - python-qpid
-- django-uuslug
 - w3m
 
 See also requirements/base.txt and requirements/devel.txt
