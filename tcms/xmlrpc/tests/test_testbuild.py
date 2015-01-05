@@ -2,7 +2,7 @@
 from xmlrpclib import Fault
 
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django_nose import FastFixtureTestCase
 
 from tcms.xmlrpc.api import build
 from tcms.xmlrpc.tests.utils import make_http_request
@@ -33,7 +33,9 @@ class AssertMessage(object):
     NOT_VALIDATE_PERMS = "Missing validations for user perms."
 
 
-class TestBuildCreate(TestCase):
+class TestBuildCreate(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def setUp(self):
         super(TestBuildCreate, self).setUp()
         self.admin = User(username='create_admin',
@@ -171,7 +173,9 @@ class TestBuildCreate(TestCase):
             self.assertEqual(b['is_active'], False)
 
 
-class TestBuildUpdate(TestCase):
+class TestBuildUpdate(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def setUp(self):
         super(TestBuildUpdate, self).setUp()
         self.admin = User(username='create_admin',
@@ -270,7 +274,8 @@ class TestBuildUpdate(TestCase):
             b = build.update(self.admin_request, 3, {
                 "product": 1,
                 "name": "Update",
-                "description": "Update from unittest."
+                "description": "Update from unittest.",
+                "is_active": True
             })
         except Fault as f:
             print f.faultString
@@ -280,9 +285,12 @@ class TestBuildUpdate(TestCase):
             self.assertEqual(b['product_id'], 1)
             self.assertEqual(b['name'], 'Update')
             self.assertEqual(b['description'], 'Update from unittest.')
+            self.assertEqual(b['is_active'], True)
 
 
-class TestBuildGet(TestCase):
+class TestBuildGet(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def test_build_get_with_no_args(self):
         bad_args = (None, [], (), {})
         for arg in bad_args:
@@ -326,7 +334,9 @@ class TestBuildGet(TestCase):
             self.assertEqual(b['is_active'], True)
 
 
-class TestBuildGetCaseRuns(TestCase):
+class TestBuildGetCaseRuns(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def test_build_get_with_no_args(self):
         bad_args = (None, [], (), {})
         for arg in bad_args:
@@ -367,7 +377,9 @@ class TestBuildGetCaseRuns(TestCase):
             self.assertEqual(b[0]['case'], "PVZ")
 
 
-class TestBuildGetRuns(TestCase):
+class TestBuildGetRuns(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def test_build_get_with_no_args(self):
         bad_args = (None, [], (), {})
         for arg in bad_args:
@@ -409,21 +421,51 @@ class TestBuildGetRuns(TestCase):
                                               "on Unknown environment")
 
 
-class TestBuildLookupID(TestCase):
+class TestBuildLookupID(FastFixtureTestCase):
     """
     DEPRECATED API
     """
-    pass
+    fixtures = ['unittest.json']
+
+    def test_lookup_id_by_name(self):
+        try:
+            b = build.lookup_id_by_name(None, "B5", 4)
+        except Fault as f:
+            print f.faultString
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertIsNotNone(b)
+            self.assertEqual(b['build_id'], 14)
+            self.assertEqual(b['name'], "B5")
+            self.assertEqual(b['product_id'], 4)
+            self.assertEqual(b['description'], "B5")
+            self.assertEqual(b['is_active'], True)
 
 
-class TestBuildLookupName(TestCase):
+class TestBuildLookupName(FastFixtureTestCase):
     """
     DEPRECATED API
     """
-    pass
+    fixtures = ['unittest.json']
+
+    def test_lookup_name_by_id(self):
+        try:
+            b = build.lookup_name_by_id(None, 10)
+        except Fault as f:
+            print f.faultString
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertIsNotNone(b)
+            self.assertEqual(b['build_id'], 10)
+            self.assertEqual(b['name'], "B1")
+            self.assertEqual(b['product_id'], 4)
+            self.assertEqual(b['description'], "B1")
+            self.assertEqual(b['is_active'], True)
 
 
-class TestBuildCheck(TestCase):
+class TestBuildCheck(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def test_build_get_with_no_args(self):
         bad_args = (None, [], (), {})
         for arg in bad_args:

@@ -350,7 +350,7 @@ def get(request, run_id):
     try:
         tr = TestRun.objects.get(run_id=run_id)
     except TestRun.DoesNotExist, error:
-        return error
+        raise error
     response = tr.serialize()
     #get the xmlrpc tags
     tag_ids = tr.tag.values_list('id', flat=True)

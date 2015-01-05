@@ -2,6 +2,7 @@
 
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Permission
+from django.contrib.sessions.middleware import SessionMiddleware
 
 
 def user_should_have_perm(user, perm):
@@ -51,7 +52,7 @@ class FakeHTTPRequest(object):
 
     def __init__(self, user, data=None):
         self.user = user
-        self.META = {}
+        self.META, self.COOKIES = {}, {}
 
 
 def create_http_user():
@@ -72,3 +73,14 @@ def make_http_request(user=None, user_perm=None, data=None):
         user_should_have_perm(_user, user_perm)
 
     return FakeHTTPRequest(_user, data)
+
+
+def make_session_request(request):
+    SessionMiddleware().process_request(request)
+    return request
+
+
+def make_remote_request(request):
+    request.META['REMOTE_USER'] = request.user.username
+    request.session['_auth_user_backend'] = 'tcms.core.contrib.auth.backends.DBModelBackend'
+    return request

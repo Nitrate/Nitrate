@@ -3,7 +3,7 @@ from datetime import datetime
 from xmlrpclib import Fault
 
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django_nose import FastFixtureTestCase
 
 from tcms.xmlrpc.api import testcaserun
 from tcms.xmlrpc.tests.utils import make_http_request
@@ -35,7 +35,8 @@ class AssertMessage(object):
     NOT_VALIDATE_PERMS = "Missing validations for user perms."
 
 
-class TestCaseRunCreate(TestCase):
+class TestCaseRunCreate(FastFixtureTestCase):
+    fixtures = ['unittest.json']
 
     def setUp(self):
         super(TestCaseRunCreate, self).setUp()
@@ -269,7 +270,8 @@ class TestCaseRunCreate(TestCase):
             self.fail(AssertMessage.NOT_VALIDATE_PERMS)
 
 
-class TestCaseRunAddComment(TestCase):
+class TestCaseRunAddComment(FastFixtureTestCase):
+    fixtures = ['unittest.json']
 
     def setUp(self):
         super(TestCaseRunAddComment, self).setUp()
@@ -362,7 +364,8 @@ class TestCaseRunAddComment(TestCase):
             self.assertIsNone(comment)
 
 
-class TestCaseRunAttachBug(TestCase):
+class TestCaseRunAttachBug(FastFixtureTestCase):
+    fixtures = ['unittest.json']
 
     def setUp(self):
         super(TestCaseRunAttachBug, self).setUp()
@@ -608,7 +611,8 @@ class TestCaseRunAttachBug(TestCase):
             self.fail(AssertMessage.NOT_VALIDATE_LENGTH)
 
 
-class TestCaseRunAttachLog(TestCase):
+class TestCaseRunAttachLog(FastFixtureTestCase):
+    fixtures = ['unittest.json']
 
     def test_attach_log_with_no_args(self):
         bad_args = (None, [], (), {})
@@ -710,7 +714,8 @@ class TestCaseRunAttachLog(TestCase):
             self.assertIsNone(log)
 
 
-class TestCaseRunCheckStatus(TestCase):
+class TestCaseRunCheckStatus(FastFixtureTestCase):
+    fixtures = ['unittest.json']
 
     def test_check_status_with_no_args(self):
         bad_args = (None, [], {}, ())
@@ -761,7 +766,8 @@ class TestCaseRunCheckStatus(TestCase):
             self.fail(AssertMessage.NOT_VALIDATE_ARGS)
 
 
-class TestCaseRunDetachBug(TestCase):
+class TestCaseRunDetachBug(FastFixtureTestCase):
+    fixtures = ['unittest.json']
 
     def setUp(self):
         super(TestCaseRunDetachBug, self).setUp()
@@ -887,7 +893,8 @@ class TestCaseRunDetachBug(TestCase):
             self.fail(AssertMessage.NOT_VALIDATE_PERMS)
 
 
-class TestCaseRunDetachLog(TestCase):
+class TestCaseRunDetachLog(FastFixtureTestCase):
+    fixtures = ['unittest.json']
 
     def test_detach_log_with_no_args(self):
         bad_args = (None, [], {}, ())
@@ -971,15 +978,93 @@ class TestCaseRunDetachLog(TestCase):
             self.assertIsNone(log)
 
 
-class TestCaseRunFilter(TestCase):
-    pass
+class TestCaseRunFilter(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
+    def test_filter(self):
+        try:
+            tcrs = testcaserun.filter(None, {
+                'case_run_id': 1
+            })
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertEqual(len(tcrs), 1)
+            self.assertEqual(tcrs[0]['case'], 'PVZ')
+
+    def test_filter_with_empty(self):
+        try:
+            tcrs = testcaserun.filter(None, {})
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertEqual(len(tcrs), 21)
+
+    def test_filter_with_join(self):
+        try:
+            tcrs = testcaserun.filter(None, {
+                'case__summary': 'PVZ'
+            })
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertEqual(len(tcrs), 19)
+
+    def test_filter_with_in(self):
+        try:
+            tcrs = testcaserun.filter(None, {
+                'case_run_id__in': [1, 2]
+            })
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertEqual(len(tcrs), 2)
 
 
-class TestCaseRunFilterCount(TestCase):
-    pass
+class TestCaseRunFilterCount(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
+    def test_filter(self):
+        try:
+            count = testcaserun.filter_count(None, {
+                'case_run_id': 1
+            })
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertEqual(count, 1)
+
+    def test_filter_with_empty(self):
+        try:
+            count = testcaserun.filter_count(None, {})
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertEqual(count, 21)
+
+    def test_filter_with_join(self):
+        try:
+            count = testcaserun.filter_count(None, {
+                'case__summary': 'PVZ'
+            })
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertEqual(count, 19)
+
+    def test_filter_with_in(self):
+        try:
+            count = testcaserun.filter_count(None, {
+                'case_run_id__in': [1, 2]
+            })
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertEqual(count, 2)
 
 
-class TestCaseRunGet(TestCase):
+class TestCaseRunGet(FastFixtureTestCase):
+    fixtures = ['unittest.json']
 
     def test_get_with_no_args(self):
         bad_args = (None, [], {}, ())
@@ -1026,7 +1111,8 @@ class TestCaseRunGet(TestCase):
             self.assertEquals(tcr['case_run_status'], 'IDLE')
 
 
-class TestCaseRunGetSet(TestCase):
+class TestCaseRunGetSet(FastFixtureTestCase):
+    fixtures = ['unittest.json']
 
     def test_get_with_no_args(self):
         bad_args = (None, [], (), {})
@@ -1110,7 +1196,8 @@ class TestCaseRunGetSet(TestCase):
             self.assertEqual(tcr['environment_id'], 0)
 
 
-class TestCaseRunGetBugs(TestCase):
+class TestCaseRunGetBugs(FastFixtureTestCase):
+    fixtures = ['unittest.json']
 
     def setUp(self):
         super(TestCaseRunGetBugs, self).setUp()
@@ -1177,7 +1264,8 @@ class TestCaseRunGetBugs(TestCase):
             self.assertEqual(bugs[0]['bug_id'], '67890')
 
 
-class TestCaseRunGetBugsSet(TestCase):
+class TestCaseRunGetBugsSet(FastFixtureTestCase):
+    fixtures = ['unittest.json']
 
     def setUp(self):
         super(TestCaseRunGetBugsSet, self).setUp()
@@ -1290,7 +1378,8 @@ class TestCaseRunGetBugsSet(TestCase):
             self.assertEqual(tcr[0]['summary'], 'Testing TCMS')
 
 
-class TestCaseRunGetStatus(TestCase):
+class TestCaseRunGetStatus(FastFixtureTestCase):
+    fixtures = ['unittest.json']
 
     def test_get_all_status(self):
         try:
@@ -1366,15 +1455,50 @@ class TestCaseRunGetStatus(TestCase):
             self.fail(AssertMessage.NOT_VALIDATE_ARGS)
 
 
-class TestCaseRunGetCompletionTime(TestCase):
-    pass
+class TestCaseRunGetCompletionTime(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
+    def test_get_completion_time(self):
+        try:
+            time = testcaserun.get_completion_time(None, 1)
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertIsNone(time)
+
+    def test_get_completion_time_non_exist(self):
+        try:
+            testcaserun.get_completion_time(None, 9999)
+        except Fault as f:
+            print f
+            self.assertEqual(f.faultCode, 404, AssertMessage.SHOULD_BE_404)
+        else:
+            self.fail(AssertMessage.NOT_VALIDATE_ARGS)
 
 
-class TestCaseRunGetCompletionTimeSet(TestCase):
-    pass
+class TestCaseRunGetCompletionTimeSet(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
+    def test_get_completion_time_s(self):
+        try:
+            time = testcaserun.get_completion_time_s(None, 1, 1, 6)
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertIsNone(time)
+
+    def test_get_completion_time_s_non_exist(self):
+        try:
+            testcaserun.get_completion_time_s(None, 9999, 1, 1)
+        except Fault as f:
+            self.assertEqual(f.faultCode, 404, AssertMessage.SHOULD_BE_404)
+        else:
+            self.fail(AssertMessage.NOT_VALIDATE_ARGS)
 
 
-class TestCaseRunGetHistory(TestCase):
+class TestCaseRunGetHistory(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def test_get_history(self):
         try:
             testcaserun.get_history(None, None)
@@ -1384,7 +1508,9 @@ class TestCaseRunGetHistory(TestCase):
             self.fail(AssertMessage.NOT_IMPLEMENT_FUNC)
 
 
-class TestCaseRunGetHistorySet(TestCase):
+class TestCaseRunGetHistorySet(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def test_get_history(self):
         try:
             testcaserun.get_history_s(None, None, None, None)
@@ -1394,7 +1520,8 @@ class TestCaseRunGetHistorySet(TestCase):
             self.fail(AssertMessage.NOT_IMPLEMENT_FUNC)
 
 
-class TestCaseRunGetLogs(TestCase):
+class TestCaseRunGetLogs(FastFixtureTestCase):
+    fixtures = ['unittest.json']
 
     def setUp(self):
         super(TestCaseRunGetLogs, self).setUp()
@@ -1456,7 +1583,8 @@ class TestCaseRunGetLogs(TestCase):
             self.assertEqual(logs[0]['url'], "http://www.google.com")
 
 
-class TestCaseRunUpdate(TestCase):
+class TestCaseRunUpdate(FastFixtureTestCase):
+    fixtures = ['unittest.json']
 
     def setUp(self):
         super(TestCaseRunUpdate, self).setUp()
@@ -1546,6 +1674,28 @@ class TestCaseRunUpdate(TestCase):
             self.assertEqual(tcr[0]['notes'], "AAAAAAAA")
             self.assertEqual(tcr[0]['sortkey'], 90)
 
+    def test_update_with_delete_notes(self):
+        try:
+            tcr = testcaserun.update(self.admin_request, self.caserun.pk, {
+                "build": 1,
+                "assignee": self.staff.pk,
+                "case_run_status": 2,
+                "notes": "",
+                "sortkey": 90
+            })
+        except Fault as f:
+            print str(f.faultString)
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertIsNotNone(tcr)
+            self.assertIsInstance(tcr, list)
+            self.assertEqual(len(tcr), 1)
+            self.assertEqual(tcr[0]['build'], 'unspecified')
+            self.assertEqual(tcr[0]['assignee'], self.staff.username)
+            self.assertEqual(tcr[0]['case_run_status'], 'PASSED')
+            self.assertEqual(tcr[0]['notes'], "")
+            self.assertEqual(tcr[0]['sortkey'], 90)
+
     def test_update_with_multi_caserun(self):
         try:
             tcr = testcaserun.update(self.admin_request,
@@ -1630,5 +1780,46 @@ class TestCaseRunUpdate(TestCase):
             })
         except Fault as f:
             self.assertEqual(f.faultCode, 403, AssertMessage.SHOULD_BE_403)
+        else:
+            self.fail(AssertMessage.NOT_VALIDATE_ARGS)
+
+
+class TestDeprecatedAPI(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
+    def test_lookup_status_name_by_id(self):
+        try:
+            rows = testcaserun.lookup_status_name_by_id(None, 1)
+        except Fault as f:
+            print str(f.faultString)
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertTrue(rows[0]['name'], "IDLE")
+
+    def test_lookup_by_id_with_non_exist(self):
+        try:
+            testcaserun.lookup_status_name_by_id(None, 9999)
+        except Fault as f:
+            self.assertEqual(f.faultCode, 404, AssertMessage.SHOULD_BE_404)
+        else:
+            self.fail(AssertMessage.NOT_VALIDATE_ARGS)
+
+    def test_lookup_status_id_by_name(self):
+        try:
+            status = testcaserun.lookup_status_id_by_name(None, "IDLE")
+        except Fault as f:
+            print str(f.faultString)
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertIsNotNone(status)
+            self.assertEqual(status['id'], 1)
+            self.assertEqual(status['name'], "IDLE")
+            self.assertIsNone(status['description'])
+
+    def test_lookup_status_id_by_name_with_non_exist(self):
+        try:
+            testcaserun.lookup_status_id_by_name(None, "ABCDEFG")
+        except Fault as f:
+            self.assertEqual(f.faultCode, 404, AssertMessage.SHOULD_BE_404)
         else:
             self.fail(AssertMessage.NOT_VALIDATE_ARGS)
