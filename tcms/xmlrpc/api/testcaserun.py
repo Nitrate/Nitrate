@@ -55,7 +55,7 @@ class GetCaseRun(object):
         return TestCaseRun.objects.get(**query)
 
 
-gcr = GetCaseRun()  # pragma: no cover
+gcr = GetCaseRun()
 
 
 @log_call(namespace=__xmlrpc_namespace__)

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import itertools  # pragma: no cover
+import itertools
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import inspect  # pragma: no cover
-import logging  # pragma: no cover
+import inspect
+import logging
 from functools import wraps
 
 from django.conf import settings

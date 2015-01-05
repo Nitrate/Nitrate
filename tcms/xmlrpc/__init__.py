@@ -13,7 +13,7 @@ __all__ = (
     'testrun', 'user', 'version', 'tag',
 )
 
-XMLRPC_VERSION = (1, 1, 0, 'final', 1)  # pragma: no cover
+XMLRPC_VERSION = (1, 1, 0, 'final', 1)
 
 
 def get_version():
