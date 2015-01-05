@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
+import os.path
 from xmlrpclib import Fault
 
 from django.test import TestCase
 
-from tcms.xmlrpc.filters import wrap_exceptions
+from tcms.xmlrpc import filters
 
 
 class AssertMessage(object):
@@ -26,7 +27,7 @@ class TestFaultCode(TestCase):
 
             raise PermissionDenied()
 
-        wrapper = wrap_exceptions(raise_exception)
+        wrapper = filters.wrap_exceptions(raise_exception)
 
         try:
             wrapper()
@@ -41,7 +42,7 @@ class TestFaultCode(TestCase):
 
             raise ObjectDoesNotExist()
 
-        wrapper = wrap_exceptions(raise_exception)
+        wrapper = filters.wrap_exceptions(raise_exception)
 
         try:
             wrapper()
@@ -62,7 +63,7 @@ class TestFaultCode(TestCase):
         def raise_exception(cls):
             raise cls()
 
-        wrapper = wrap_exceptions(raise_exception)
+        wrapper = filters.wrap_exceptions(raise_exception)
         for clazz in exceptions:
             try:
                 wrapper(clazz)
@@ -77,7 +78,7 @@ class TestFaultCode(TestCase):
 
             raise IntegrityError()
 
-        wrapper = wrap_exceptions(raise_exception)
+        wrapper = filters.wrap_exceptions(raise_exception)
 
         try:
             wrapper()
@@ -90,7 +91,7 @@ class TestFaultCode(TestCase):
         def raise_exception(*args, **kwargs):
             raise Exception()
 
-        wrapper = wrap_exceptions(raise_exception)
+        wrapper = filters.wrap_exceptions(raise_exception)
 
         try:
             wrapper()
@@ -103,7 +104,7 @@ class TestFaultCode(TestCase):
         def raise_exception(*args, **kwargs):
             raise NotImplementedError()
 
-        wrapper = wrap_exceptions(raise_exception)
+        wrapper = filters.wrap_exceptions(raise_exception)
 
         try:
             wrapper()
@@ -117,9 +118,17 @@ class TestAutoWrap(TestCase):
     def test_auto_wrap(self):
         from tcms.xmlrpc.api import auth
 
+        path = os.path.dirname(__file__)
+        package = 'tcms.xmlrpc'
+        filters.autowrap_xmlrpc_apis([path], package)
+
         func_names = getattr(auth, "__all__")
 
         for func_name in func_names:
             func = getattr(auth, func_name)
             code = func.func_code
             self.assertEqual(code.co_name, "_decorator")
+
+    def test_filters(self):
+        funcs = [getattr(filters, name, None) for name in filters.__filters__]
+        self.assertEqual(funcs, filters.XMLRPC_API_FILTERS)

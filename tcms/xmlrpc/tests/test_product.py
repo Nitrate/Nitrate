@@ -2,7 +2,7 @@
 from xmlrpclib import Fault
 
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django_nose import FastFixtureTestCase
 
 from tcms.xmlrpc.api import product
 from tcms.xmlrpc.tests.utils import make_http_request
@@ -33,7 +33,9 @@ class AssertMessage(object):
     NOT_VALIDATE_PERMS = "Missing validations for user perms."
 
 
-class TestCheckCategory(TestCase):
+class TestCheckCategory(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def test_check_category(self):
         try:
             cat = product.check_category(None, "--default--", 1)
@@ -76,7 +78,9 @@ class TestCheckCategory(TestCase):
                 self.fail(AssertMessage.NOT_VALIDATE_ARGS)
 
 
-class TestCheckComponent(TestCase):
+class TestCheckComponent(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def test_check_component(self):
         try:
             cat = product.check_component(None, "P", 1)
@@ -119,7 +123,9 @@ class TestCheckComponent(TestCase):
                 self.fail(AssertMessage.NOT_VALIDATE_ARGS)
 
 
-class TestCheckProduct(TestCase):
+class TestCheckProduct(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def test_check_product(self):
         try:
             cat = product.check_product(None, "StarCraft")
@@ -147,7 +153,9 @@ class TestCheckProduct(TestCase):
                 self.fail(AssertMessage.NOT_VALIDATE_ARGS)
 
 
-class TestFilter(TestCase):
+class TestFilter(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def test_filter_by_id(self):
         try:
             prod = product.filter(None, {
@@ -181,7 +189,9 @@ class TestFilter(TestCase):
             self.fail(AssertMessage.NOT_VALIDATE_ARGS)
 
 
-class TestFilterCategories(TestCase):
+class TestFilterCategories(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def test_filter_by_id(self):
         try:
             cat = product.filter_categories(None, {
@@ -205,7 +215,9 @@ class TestFilterCategories(TestCase):
             self.assertEqual(cat[0]['name'], "--default--")
 
 
-class TestFilterComponents(TestCase):
+class TestFilterComponents(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def test_filter_by_id(self):
         try:
             com = product.filter_components(None, {
@@ -229,7 +241,9 @@ class TestFilterComponents(TestCase):
             self.assertEqual(com[0]['name'], "T")
 
 
-class TestFilterVersions(TestCase):
+class TestFilterVersions(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def test_filter_by_id(self):
         try:
             ver = product.filter_versions(None, {
@@ -253,7 +267,9 @@ class TestFilterVersions(TestCase):
             self.assertEqual(ver[0]['value'], "0.7")
 
 
-class TestGet(TestCase):
+class TestGet(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def test_get_product(self):
         try:
             cat = product.get(None, 1)
@@ -281,7 +297,9 @@ class TestGet(TestCase):
                 self.fail(AssertMessage.NOT_VALIDATE_ARGS)
 
 
-class TestGetBuilds(TestCase):
+class TestGetBuilds(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def test_get_build_with_id(self):
         try:
             builds = product.get_builds(None, 1)
@@ -290,6 +308,14 @@ class TestGetBuilds(TestCase):
         else:
             self.assertIsNotNone(builds)
             self.assertEqual(len(builds), 4)
+
+        try:
+            builds = product.get_builds(None, 1, False)
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertIsNotNone(builds)
+            self.assertEqual(len(builds), 0)
 
     def test_get_build_with_name(self):
         try:
@@ -326,7 +352,9 @@ class TestGetBuilds(TestCase):
                 self.fail(AssertMessage.NOT_VALIDATE_ARGS)
 
 
-class TestGetCases(TestCase):
+class TestGetCases(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def test_get_case_with_id(self):
         try:
             cases = product.get_cases(None, 1)
@@ -371,7 +399,9 @@ class TestGetCases(TestCase):
                 self.fail(AssertMessage.NOT_VALIDATE_ARGS)
 
 
-class TestGetCategories(TestCase):
+class TestGetCategories(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def test_get_categories_with_id(self):
         try:
             cats = product.get_categories(None, 1)
@@ -418,7 +448,9 @@ class TestGetCategories(TestCase):
                 self.fail(AssertMessage.NOT_VALIDATE_ARGS)
 
 
-class TestGetCategory(TestCase):
+class TestGetCategory(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def test_get_category(self):
         try:
             cat = product.get_category(None, 1)
@@ -446,7 +478,9 @@ class TestGetCategory(TestCase):
                 self.fail(AssertMessage.NOT_VALIDATE_ARGS)
 
 
-class TestAddComponent(TestCase):
+class TestAddComponent(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def setUp(self):
         super(TestAddComponent, self).setUp()
 
@@ -464,11 +498,17 @@ class TestAddComponent(TestCase):
             user=self.staff
         )
 
+        self.keyboard_man = User(username='keyboard',
+                                 email='keyboard@example.com')
+        self.keyboard_man.save()
+
     def tearDown(self):
         super(TestAddComponent, self).tearDown()
 
         self.admin.delete()
         self.staff.delete()
+
+        self.keyboard_man.delete()
 
     def test_add_component(self):
         try:
@@ -479,6 +519,19 @@ class TestAddComponent(TestCase):
             self.assertIsNotNone(com)
             self.assertEqual(com['name'], 'MyComponent')
             self.assertEqual(com['initial_owner'], 'tcr_admin')
+
+    def test_add_component_with_specific_user(self):
+        try:
+            com = product.add_component(self.admin_request, 1, "MyComponent",
+                                        initial_owner_id=self.keyboard_man.pk,
+                                        initial_qa_contact_id=self.keyboard_man.pk)
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertIsNotNone(com)
+            self.assertEqual(com['name'], 'MyComponent')
+            self.assertEqual(com['initial_owner'], 'keyboard')
+            self.assertEqual(com['initial_qa_contact'], 'keyboard')
 
     def test_add_component_with_no_perms(self):
         try:
@@ -497,7 +550,9 @@ class TestAddComponent(TestCase):
             self.fail(AssertMessage.NOT_VALIDATE_PERMS)
 
 
-class TestGetComponent(TestCase):
+class TestGetComponent(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def test_get_component(self):
         try:
             com = product.get_component(None, 1)
@@ -525,7 +580,9 @@ class TestGetComponent(TestCase):
                 self.fail(AssertMessage.NOT_VALIDATE_ARGS)
 
 
-class TestUpdateComponent(TestCase):
+class TestUpdateComponent(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def setUp(self):
         super(TestUpdateComponent, self).setUp()
 
@@ -543,6 +600,10 @@ class TestUpdateComponent(TestCase):
             user=self.staff
         )
 
+        self.keyboard_man = User(username='keyboard',
+                                 email='keyboard@example.com')
+        self.keyboard_man.save()
+
         from tcms.management.models import Component
 
         self.new_component = Component(name="New Component",
@@ -557,6 +618,8 @@ class TestUpdateComponent(TestCase):
         self.staff.delete()
         self.new_component.delete()
 
+        self.keyboard_man.delete()
+
     def test_update_component(self):
         try:
             pk = self.new_component.pk
@@ -567,6 +630,21 @@ class TestUpdateComponent(TestCase):
             self.fail(AssertMessage.UNEXCEPT_ERROR)
         else:
             self.assertEqual(com['name'], 'Updated.')
+
+    def test_update_component_with_specific_user(self):
+        try:
+            pk = self.new_component.pk
+            com = product.update_component(self.admin_request, pk, {
+                "name": "Updated.",
+                "initial_owner_id": self.keyboard_man.pk,
+                "initial_qa_contact_id": self.keyboard_man.pk
+            })
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertEqual(com['name'], 'Updated.')
+            self.assertEqual(com['initial_owner'], 'keyboard')
+            self.assertEqual(com['initial_qa_contact'], 'keyboard')
 
     def test_update_component_with_non_exist(self):
         try:
@@ -604,7 +682,9 @@ class TestUpdateComponent(TestCase):
                 self.fail(AssertMessage.NOT_VALIDATE_ARGS)
 
 
-class TestGetComponents(TestCase):
+class TestGetComponents(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def test_get_components_with_id(self):
         try:
             coms = product.get_components(None, 1)
@@ -653,7 +733,9 @@ class TestGetComponents(TestCase):
                 self.fail(AssertMessage.NOT_VALIDATE_ARGS)
 
 
-class TestGetEnvironments(TestCase):
+class TestGetEnvironments(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def test_get_environments(self):
         try:
             product.get_environments(None, None)
@@ -663,7 +745,9 @@ class TestGetEnvironments(TestCase):
             self.fail(AssertMessage.UNEXCEPT_ERROR)
 
 
-class TestGetMilestones(TestCase):
+class TestGetMilestones(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def test_get_milestones(self):
         try:
             product.get_milestones(None, None)
@@ -673,7 +757,9 @@ class TestGetMilestones(TestCase):
             self.fail(AssertMessage.UNEXCEPT_ERROR)
 
 
-class TestGetPlans(TestCase):
+class TestGetPlans(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def test_get_plans_with_id(self):
         try:
             plans = product.get_plans(None, 1)
@@ -720,7 +806,9 @@ class TestGetPlans(TestCase):
                 self.fail(AssertMessage.NOT_VALIDATE_ARGS)
 
 
-class TestGetRuns(TestCase):
+class TestGetRuns(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def test_get_runs_with_id(self):
         try:
             runs = product.get_runs(None, 1)
@@ -769,7 +857,9 @@ class TestGetRuns(TestCase):
                 self.fail(AssertMessage.NOT_VALIDATE_ARGS)
 
 
-class TestGetTag(TestCase):
+class TestGetTag(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def test_get_tag(self):
         try:
             tag = product.get_tag(None, 1)
@@ -797,7 +887,9 @@ class TestGetTag(TestCase):
                 self.fail(AssertMessage.NOT_VALIDATE_ARGS)
 
 
-class TestAddVersion(TestCase):
+class TestAddVersion(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def setUp(self):
         super(TestAddVersion, self).setUp()
 
@@ -906,7 +998,9 @@ class TestAddVersion(TestCase):
             self.fail(AssertMessage.NOT_VALIDATE_PERMS)
 
 
-class TestGetVersions(TestCase):
+class TestGetVersions(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
     def test_get_versions_with_id(self):
         try:
             prod = product.get_versions(None, 1)
@@ -971,3 +1065,23 @@ class TestGetVersions(TestCase):
                 self.assertEqual(f.faultCode, 400, AssertMessage.SHOULD_BE_400)
             else:
                 self.fail(AssertMessage.NOT_VALIDATE_ARGS)
+
+
+class TestDeprecatedFunctions(FastFixtureTestCase):
+    fixtures = ['unittest.json']
+
+    def test_lookup_name_by_id(self):
+        try:
+            cat = product.lookup_name_by_id(None, 1)
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertEqual(cat['name'], "StarCraft")
+
+    def test_lookup_id_by_name(self):
+        try:
+            cat = product.lookup_id_by_name(None, "StarCraft")
+        except Fault:
+            self.fail(AssertMessage.UNEXCEPT_ERROR)
+        else:
+            self.assertEqual(cat['id'], 1)
