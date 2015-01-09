@@ -7,6 +7,7 @@ from django.db import models
 from django.db.models.signals import post_save, post_delete
 from django.contrib.contenttypes import generic
 from django.conf import settings
+from django.db.models.loading import get_model
 
 from tcms.testcases.models import TestCaseBug, TestCaseText, NoneText
 from tcms.testruns import signals as run_watchers

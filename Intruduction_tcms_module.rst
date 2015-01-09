@@ -14,7 +14,7 @@ report : test report module.
 
 search : search bug status module.
 
-settings : public profile.
+settings : public profile and configuration.
 
 static : some images,js,css,jquery about the TCMS page.
 

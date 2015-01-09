@@ -12,7 +12,7 @@ from tcms.core.logs.views import TCMSLog
 User._meta.ordering = ['username']
 
 
-class TCMSActionModel(models.Model, UrlMixin):
+class TCMSActionModel(UrlMixin, models.Model):
     """
     TCMS action models.
     Use for global log system.
@@ -45,3 +45,18 @@ class TCMSActionModel(models.Model, UrlMixin):
         log.make(who=who, action=action)
 
         return log
+
+    def clean(self):
+        strip_types = (models.CharField,
+                       models.TextField,
+                       models.URLField,
+                       models.EmailField,
+                       models.IPAddressField,
+                       models.GenericIPAddressField,
+                       models.SlugField)
+
+        for field in self._meta.fields:
+            if isinstance(field, strip_types):
+                value = getattr(self, field.name)
+                setattr(self, field.name, value.replace('\t', ' ').replace('\n', ' ').replace('\r', ' '))
+

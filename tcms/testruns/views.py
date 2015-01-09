@@ -26,6 +26,7 @@ from django.views.generic.base import TemplateView
 from django.views.generic.base import View
 
 from tcms.core.db import SQLExecution
+from tcms.core.responses import HttpJSONResponse
 from tcms.core.utils import clean_request
 from tcms.core.utils.bugtrackers import Bugzilla
 from tcms.core.utils.raw_sql import RawSQL
@@ -757,6 +758,8 @@ def edit(request, run_id, template_name='run/edit.html'):
             tr.errata_id = form.cleaned_data['errata_id']
             tr.auto_update_run_status = form.cleaned_data[
                 'auto_update_run_status']
+
+            # tr.full_clean()
             tr.save()
             if auto_update_changed:
                 tr.update_completion_status(is_auto_updated=True)
