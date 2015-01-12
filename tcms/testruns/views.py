@@ -3,7 +3,6 @@ import itertools
 import time
 import datetime
 import urllib
-
 import re
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
@@ -24,7 +23,6 @@ from django.utils import simplejson
 from django.utils.decorators import method_decorator
 from django.views.generic.base import TemplateView
 from django.views.generic.base import View
-
 from tcms.core.db import SQLExecution
 from tcms.core.responses import HttpJSONResponse
 from tcms.core.utils import clean_request
@@ -42,7 +40,7 @@ from tcms.search.query import SmartDjangoQuery
 from tcms.testcases.models import TestCasePlan, TestCaseStatus
 from tcms.testplans.models import TestPlan
 from tcms.testruns.models import TestRun, TestCaseRun, TestCaseRunStatus, \
-    TCMSEnvRunValueMap
+TCMSEnvRunValueMap
 from tcms.management.models import Priority, TCMSEnvValue, TestTag
 from tcms.testcases.views import get_selected_testcases
 from tcms.testruns.data import get_run_bug_ids
@@ -50,7 +48,7 @@ from tcms.testruns.data import stats_caseruns_status
 from tcms.testruns.data import TestCaseRunDataMixin
 from tcms.testcases.forms import CaseBugForm
 from tcms.testruns.forms import NewRunForm, SearchRunForm, EditRunForm, \
-    RunCloneForm, MulitpleRunsCloneForm, PlanFilterRunForm
+RunCloneForm, MulitpleRunsCloneForm, PlanFilterRunForm
 from tcms.testruns.helpers.serializer import TCR2File
 from tcms.testruns.sqls import GET_CONFIRMED_CASES
 
@@ -759,7 +757,7 @@ def edit(request, run_id, template_name='run/edit.html'):
             tr.auto_update_run_status = form.cleaned_data[
                 'auto_update_run_status']
 
-            # tr.full_clean()
+            tr.full_clean()
             tr.save()
             if auto_update_changed:
                 tr.update_completion_status(is_auto_updated=True)
