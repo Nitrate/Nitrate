@@ -2,6 +2,7 @@
 # FIXME: Use signal to handle log
 import threading
 import datetime
+import __init__
 
 from tcms.integration.djqpid import Producer
 
@@ -67,6 +68,11 @@ def post_update_handler(sender, **kwargs):
     instance = instances[0]
     tr = instance.run
     tr.update_completion_status(is_auto_updated=True)
+
+
+def pre_save_clean(sender,**kwargs):
+    instance = kwargs['instance']
+    instance.clean()
 
 
 # new testrun created info for qpid

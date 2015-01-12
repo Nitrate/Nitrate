@@ -4,9 +4,10 @@ import datetime
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_save, post_delete,pre_save
 from django.contrib.contenttypes import generic
 from django.conf import settings
+
 
 from tcms.testcases.models import TestCaseBug, TestCaseText, NoneText
 from tcms.testruns import signals as run_watchers
@@ -715,7 +716,7 @@ def _run_listen():
                       dispatch_uid='tcms.testruns.models.TestCaseRun')
     post_delete.connect(run_watchers.post_case_run_deleted, sender=TestCaseRun,
                         dispatch_uid='tcms.testruns.models.TestCaseRun')
-
+    pre_save.connect(run_watchers.pre_save_clean, sender=TestRun)
 
 if settings.LISTENING_MODEL_SIGNAL:
     _run_listen()

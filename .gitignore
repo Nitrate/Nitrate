@@ -18,5 +18,6 @@ tcms/dev_settings.py
 tcms/mysettings.py
 tcms/run.sh
 tcms/settings/dev_settings.py
-tcms/settings/local.py
+tcms/settings/devel.py
 tcms/toys.py
+tcms/Intruduction_tcms_module.rst

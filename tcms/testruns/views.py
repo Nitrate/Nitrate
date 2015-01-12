@@ -3,7 +3,6 @@ import itertools
 import time
 import datetime
 import urllib
-
 import re
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
@@ -24,8 +23,8 @@ from django.utils import simplejson
 from django.utils.decorators import method_decorator
 from django.views.generic.base import TemplateView
 from django.views.generic.base import View
-
 from tcms.core.db import SQLExecution
+from tcms.core.responses import HttpJSONResponse
 from tcms.core.utils import clean_request
 from tcms.core.utils.bugtrackers import Bugzilla
 from tcms.core.utils.raw_sql import RawSQL
@@ -41,7 +40,7 @@ from tcms.search.query import SmartDjangoQuery
 from tcms.testcases.models import TestCasePlan, TestCaseStatus
 from tcms.testplans.models import TestPlan
 from tcms.testruns.models import TestRun, TestCaseRun, TestCaseRunStatus, \
-    TCMSEnvRunValueMap
+TCMSEnvRunValueMap
 from tcms.management.models import Priority, TCMSEnvValue, TestTag
 from tcms.testcases.views import get_selected_testcases
 from tcms.testruns.data import get_run_bug_ids
@@ -49,7 +48,7 @@ from tcms.testruns.data import stats_caseruns_status
 from tcms.testruns.data import TestCaseRunDataMixin
 from tcms.testcases.forms import CaseBugForm
 from tcms.testruns.forms import NewRunForm, SearchRunForm, EditRunForm, \
-    RunCloneForm, MulitpleRunsCloneForm, PlanFilterRunForm
+RunCloneForm, MulitpleRunsCloneForm, PlanFilterRunForm
 from tcms.testruns.helpers.serializer import TCR2File
 from tcms.testruns.sqls import GET_CONFIRMED_CASES
 
@@ -552,7 +551,7 @@ def ajax_response(request, querySet, columnIndexNameMap,
         jsonString = render_to_string(jsonTemplatePath, locals(),
                                       context_instance=RequestContext(
                                           request))
-        response = HttpResponse(jsonString, mimetype="application/javascript")
+        response = HttpJSONResponse(jsonString)
     else:
         aaData = []
         a = querySet.values()
@@ -571,8 +570,7 @@ def ajax_response(request, querySet, columnIndexNameMap,
                 {'sEcho': sEcho, 'iTotalRecords': iTotalRecords,
                  'iTotalDisplayRecords': iTotalDisplayRecords,
                  'sColumns': sColumns})
-            response = HttpResponse(simplejson.dumps(response_dict),
-                                    mimetype='application/javascript')
+            response = HttpJSONResponse(simplejson.dumps(response_dict))
             #    prevent from caching datatables result
             #    add_never_cache_headers(response)
     return response
@@ -758,6 +756,8 @@ def edit(request, run_id, template_name='run/edit.html'):
             tr.errata_id = form.cleaned_data['errata_id']
             tr.auto_update_run_status = form.cleaned_data[
                 'auto_update_run_status']
+
+            tr.full_clean()
             tr.save()
             if auto_update_changed:
                 tr.update_completion_status(is_auto_updated=True)
@@ -923,9 +923,7 @@ def bug(request, case_run_id, template_name='run/execute_case_run.html'):
         def ajax_response(self, response=None):
             if not response:
                 response = self.default_ajax_response
-
-            return HttpResponse(simplejson.dumps(response),
-                                mimetype='application/json')
+            return HttpJSONResponse(simplejson.dumps(response))
 
         def file(self):
             rh_bz = Bugzilla(settings.BUGZILLA_URL)
