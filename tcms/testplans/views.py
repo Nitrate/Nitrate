@@ -17,6 +17,7 @@ from uuslug import slugify
 from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.utils.simplejson import dumps as json_dumps
+from django.views.generic.base import TemplateView
 
 from tcms.core.views import Prompt
 from tcms.core.responses import HttpJSONResponse
@@ -522,13 +523,18 @@ def get(request, plan_id, slug=None, template_name='plan/get.html'):
                               context_instance=RequestContext(request))
 
 
-@user_passes_test(lambda u: u.has_perm('testruns.change_testrun'))
-def choose_run(request, plan_id, template_name='plan/choose_testrun.html'):
+class choose_run_view(TemplateView):
     '''Choose one run to add cases'''
+    template_name = 'plan/choose_testrun.html'
+    permission = 'testruns.change_testrun'
 
-    # Define the default sub module
-    SUB_MODULE_NAME = 'runs'
-    if request.method == 'GET':
+    @user_passes_test(lambda u: u.has_perm(choose_run_view.permission))
+    def dispatch(self, *args, **kwargs):
+        return super(choose_run_view, self).dispatch(*args, **kwargs)
+
+
+    def get(self,request,plan_id):
+        SUB_MODULE_NAME = 'runs'
         try:
             plan_id = int(plan_id)
             tp = TestPlan.objects.filter(
@@ -555,11 +561,10 @@ def choose_run(request, plan_id, template_name='plan/choose_testrun.html'):
             'test_runs': testruns.iterator(),
             'test_cases': tcs.iterator(),
         }
-        return render_to_response(template_name, context_data,
+        return render_to_response(self.template_name, context_data,
                                   context_instance=RequestContext(request))
 
-    # Add cases to runs
-    if request.method == 'POST':
+    def post(self,request,plan_id):
         choosed_testrun_ids = request.REQUEST.getlist('testrun_ids')
         to_be_added_cases = TestCase.objects.filter(
             pk__in=request.REQUEST.getlist('case_ids'))

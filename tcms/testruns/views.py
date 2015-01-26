@@ -800,7 +800,7 @@ def execute(request, run_id, template_name='run/execute.html'):
     return get(request, run_id, template_name)
 
 
-class TestRunReportView(TemplateView, TestCaseRunDataMixin):
+class TestRunReportView(TestCaseRunDataMixin,TemplateView):
     '''Test Run report'''
 
     template_name = 'run/report.html'
