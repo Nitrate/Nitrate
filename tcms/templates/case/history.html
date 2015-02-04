@@ -19,7 +19,7 @@
 <div id="content">
 	<div class="sprites crumble">
 		<a href="{% url "tcms.core.views.index" %}">Home</a>
-		&gt;&gt; <a href="{% url "tcms.testplans.views.all" %}">...</a>
+		&gt;&gt; <a href="{% url "show_all_plan_view" %}">...</a>
 		{% if testplan %}
 		&gt;&gt; <a href="{{ test_plan.get_absolute_url }}">{{ testplan.plan_id }}: {{ testplan.name }}</a>
 		{% endif %}
