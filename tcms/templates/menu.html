@@ -5,19 +5,19 @@
 		</li>
 		<li class="sprites menuline"></li>
 		<li class="nav_li{% ifequal module 'testplans' %} current{% endifequal %}">
-			<a	href="{% url "tcms.testplans.views.all" %}">PLANNING</a>
+			<a	href="{% url "show_all_plan_view" %}">PLANNING</a>
 			<ul class="nav_sub sub_plan" style="display: none;">
 				<li {% ifequal sub_module 'plans' %} class="subcurrent"{% endifequal %} >
-					<a href="{% url "tcms.testplans.views.all" %}">Search Plans</a>
+					<a href="{% url "show_all_plan_view" %}">Search Plans</a>
 				</li>
 				{% if user.is_authenticated %}
 				<li {% ifequal sub_module 'my_plans' %} class="subcurrent"{% endifequal %} >
-					<a href="{% url "tcms.testplans.views.all" %}?author__email__startswith={{ user.email }}">My Plans</a>
+					<a href="{% url "show_all_plan_view" %}?author__email__startswith={{ user.email }}">My Plans</a>
 				</li>
 				{% endif %}
 				{% if perms.testplans.add_testplan %}
 				<li {% ifequal sub_module 'new_plan' %} class="subcurrent"{% endifequal %} >
-					<a href="{% url "tcms.testplans.views.new" %}">New Plan</a>
+					<a href="{% url "testplan_new_test_plan" %}">New Plan</a>
 				</li>
 				{% endif %}
 			</ul>
