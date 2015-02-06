@@ -20,7 +20,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.ChooseRuns.on_load);
 <div id="content">
 	<div class="sprites crumble">
 		<a href="{% url "tcms.core.views.index" %}">Home</a>
-		&gt;&gt; <a href="{% url "tcms.testplans.views.all" %}">...</a>
+		&gt;&gt; <a href="{% url "show_all_plan_view" %}">...</a>
 		&gt;&gt; <a href="{{ plan.get_absolute_url }}">[{{plan.plan_id}}]{{ plan.name }}</a>
 		&gt;&gt; Add test case to runs
 	</div>

@@ -34,14 +34,14 @@ Nitrate.Utils.after_page_load(Nitrate.TestPlans.Edit.on_load);
 <div id="content">
 	<div class="sprites crumble">
 		<a href="{% url "tcms.core.views.index" %}">Home</a>
-		>> <a href="{% url "tcms.testplans.views.all" %}">Planning</a>
+		>> <a href="{% url "show_all_plan_view" %}">Planning</a>
 		>> <a href="{{ test_plan.get_absolute_url }}">{{ test_plan.plan_id }}: {{ test_plan }}</a>
 		>> Edit
 	</div>
 	<input id="id_plan_id" type="hidden" name="plan_id" value="{{ test_plan.plan_id }}">
 	<div class="control">
 		<span class="right-bar">
-			<a href="{% url "tcms.testplans.views.text_history" test_plan.plan_id %}" class="historylink">
+			<a href="{% url "testplan_text_history" test_plan.plan_id %}" class="historylink">
 				Edit History
 			</a>
 		</span>

@@ -6,8 +6,8 @@
 		{#<span class="tit">{{ test_plans.count }} Plans</span>#}
 		<span>
 			{% if perms.testplans.add_testplan %}
-			<input type="button" title="Create new test plan" value="New Test Plan" class="js-new-plan" data-param="{% url 'tcms.testplans.views.new' %}" />
-			<input type="button" value="Clone" title="clone selected test plans." class="js-clone-plan" data-param="{% url 'tcms.testplans.views.clone' %}" />
+			<input type="button" title="Create new test plan" value="New Test Plan" class="js-new-plan" data-param="{% url 'testplan_new_test_plan' %}" />
+			<input type="button" value="Clone" title="clone selected test plans." class="js-clone-plan" data-param="{% url 'testplans_clone_testplan' %}" />
 			{% endif %}
 			<input type="button" value="Printable copy"
                    id="plan_advance_printable"

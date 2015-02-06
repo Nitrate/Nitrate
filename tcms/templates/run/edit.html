@@ -31,7 +31,7 @@
 	<div class="sprites crumble">
 		<a href="{% url "tcms.core.views.index" %}">Home</a>
 		{% if request.REQUEST.from_plan %}
-		>> <a href="{% url "tcms.testplans.views.all" %}">Planning</a>
+		>> <a href="{% url "show_all_plan_view" %}">Planning</a>
 		>> <a href="{{ test_run.plan.get_absolute_url }}">Test Plan :{{ test_run.plan.plan_id }}: {{ test_run.plan }}</a>
 		{% else %}
 		>> <a href="{% url "tcms.testruns.views.all" %}">Test Runs</a>
