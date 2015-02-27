@@ -1,7 +1,7 @@
 {% load pagination_tags %}
 {% if test_cases %}
 	{% autopaginate test_cases %}
-	<form id="cases_form" action="{% url "tcms.testcases.views.clone" %}" method="post">
+	<form id="cases_form" action="{% url "testcases_add_clone_testcase" %}" method="post">
 	<div id="contentTab" class="mixbar">
 		{#}<span class="tit">{{ test_cases.count }} Cases</span>{#}
 		<span>

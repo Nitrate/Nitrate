@@ -34,7 +34,7 @@
 		</tr>
 		{% for plan_text in test_plan_texts %}
 		<tr class="{% cycle 'even' 'odd' %}">
-			<td><a href="{% url "tcms.testplans.views.text_history" testplan.plan_id %}?plan_text_version={{ plan_text.plan_text_version }}">{{ plan_text.plan_text_version }}</a></td>
+			<td><a href="{% url "testcase_text_history" testplan.plan_id %}?plan_text_version={{ plan_text.plan_text_version }}">{{ plan_text.plan_text_version }}</a></td>
 			<td>{{ plan_text.create_date }}</td>
 			<td>{{ plan_text.author.email }}</td>
 			<td>

@@ -1,7 +1,7 @@
 <script type="text/javascript" src='{{ STATIC_URL }}js/testcase_actions.js'></script>
 <script type="text/javascript" language="javascript" charset="utf-8">
 	Nitrate.TestCases.List.Param = {
-		'case_printable': '{% url "tcms.testcases.views.printable" %}',
+		'case_printable': '{% url "testcase_printable_view" %}',
 		'case_export':'{% url "tcms.testcases.views.export" %}'
 	};
 	Nitrate.Utils.after_page_load(Nitrate.TestCases.AdvanceList.on_load);

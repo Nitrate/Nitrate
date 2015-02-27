@@ -41,7 +41,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestPlans.Edit.on_load);
 	<input id="id_plan_id" type="hidden" name="plan_id" value="{{ test_plan.plan_id }}">
 	<div class="control">
 		<span class="right-bar">
-			<a href="{% url "tcms.testplans.views.text_history" test_plan.plan_id %}" class="historylink">
+			<a href="{% url "testcase_text_history" test_plan.plan_id %}" class="historylink">
 				Edit History
 			</a>
 		</span>

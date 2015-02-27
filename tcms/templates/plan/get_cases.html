@@ -13,13 +13,13 @@
 			<ul>
 				<li>
 					{% if perms.testcases.add_testcase %}
-					<span id="js-case-menu" class='sprites toolbar_case icon_plan' data-params='["{% url "tcms.testcases.views.new" %}", {{ test_plan.plan_id }}]'>Case</span>
+					<span id="js-case-menu" class='sprites toolbar_case icon_plan' data-params='["{% url "testcases_add_new_testcase" %}", {{ test_plan.plan_id }}]'>Case</span>
 					{% else %}
 					<span class='sprites toolbar_case icon_plan'>Case</span>
 					{% endif %}
 					<ul>
 						{% if perms.testcases.add_testcase %}
-						<li><input id="js-new-case" class="add_new icon_plan" type="button" value="Write new case" data-params='["{% url "tcms.testcases.views.new" %}", {{ test_plan.plan_id }}]'/></li>
+						<li><input id="js-new-case" class="add_new icon_plan" type="button" value="Write new case" data-params='["{% url "testcases_add_new_testcase" %}", {{ test_plan.plan_id }}]'/></li>
 						<li><input id="js-import-case" type="button" class="import icon_plan" value="Import cases from XML" /></li>
 						<li><input id="js-add-case-to-plan" type="button" class="search icon_plan" value="Add cases from other plans" data-param="{% url "tcms.testplans.views.cases" test_plan.plan_id %}" /></li>
 						{% else %}
