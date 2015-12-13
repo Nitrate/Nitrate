@@ -38,11 +38,10 @@ Nitrate.Utils.after_page_load(Nitrate.TestPlans.Create.on_load);
 					<td>
 						<span class="name" >{{ form.product }}</span>
 						<span >{{ form.product.errors }}</span>
-                        <a id="add_id_product" href="{{ ADMIN_PREFIX }}/management/product/add/" class="addlink" >
+              <a id="add_id_product" href="{{ ADMIN_PREFIX }}/management/product/add/" class="addlink" >
 							Add Product
 						</a>
 						<span class="grey">After Add and Refresh page</span>
-                        
 					</td>
 				</tr>
 				<tr>
@@ -77,7 +76,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestPlans.Create.on_load);
 						<div >{{ form.text.errors }}</div>
 						<span>Or upload a plan document</span>
 						{{ form.upload_plan_text }}
-						<span class="grey">Html, Plain text or ODT is acceptable.</span> 
+						<span class="grey">Html, Plain text or ODT is acceptable.</span>
 						<div >{{ form.upload_plan_text.errors }}</div>
 					</td>
 				</tr>
@@ -86,15 +85,15 @@ Nitrate.Utils.after_page_load(Nitrate.TestPlans.Create.on_load);
 					<td colspan="3">
 						<span class="name">{{ form.env_group }}{{ form.env_group.errors }}</span>
 						<span>
-							<a class="system_help" href="#" title="" id="env_group_help_link">What is environment group?</a>
+							<a class="system_help" href="javascript:void(0)" title="" id="env_group_help_link">What is environment group?</a>
 							<div id="env_group_help" class="system_info" style="display:none">
 								<p>
 									Environment Group represent group of environment properties and all values of these properties. <br/>
-									TCMS uses environment variables to define the test hardware setup. The Environment Group is the top level container object, it contains one or more Properties, each having a range of values. Properties can belong to more than one group.
+									Nitrate uses environment variables to define the test hardware setup. The Environment Group is the top level container object, it contains one or more Properties, each having a range of values. Properties can belong to more than one group.
 									<br/>
 									Then when creating test run , you can set one value of each property under this environment group as environment of run testing.
 									<br/>
-									<a href="#" class="right-action" title="close the tip" id="env_group_help_close">Close</a>
+									<a href="javascript:void(0)" class="right-action" title="close the tip" id="env_group_help_close">Close</a>
 								</p>
 
 							</div>
@@ -113,7 +112,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestPlans.Create.on_load);
 				<input type="submit" value="Create test plan" />
 				<input type="button" value="Cancel" class="js-cancel-button" />
 			</div>
-		</div> 
+		</div>
 	</form>
 </div>
 {% endblock %}
