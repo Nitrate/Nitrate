@@ -835,13 +835,9 @@ class TestRunReportView(TemplateView, TestCaseRunDataMixin):
         bug_ids = get_run_bug_ids(self.run_id)
 
         caserun_bugs = self.get_caseruns_bugs(run.pk)
-        comments = self.get_caseruns_comments(run.pk)
 
         for case_run in case_runs:
-            bugs = caserun_bugs.get(case_run.pk, ())
-            case_run.bugs = bugs
-            user_comments = comments.get(case_run.pk, [])
-            case_run.user_comments = user_comments
+            case_run.bugs = caserun_bugs.get(case_run.pk, ())
 
         jira_bug_ids = [bug_id for bug_id, bug_url in bug_ids if '-' in bug_id]
         bugzilla_bug_ids = [bug_id for bug_id, bug_url in bug_ids if

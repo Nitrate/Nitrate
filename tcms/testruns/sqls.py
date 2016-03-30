@@ -43,21 +43,6 @@ WHERE test_case_runs.run_id = %s
 ORDER BY test_case_runs.case_run_id
 '''
 
-GET_CASERUNS_COMMENTS = '''
-select test_case_runs.case_run_id, auth_user.username,
-    django_comments.submit_date, django_comments.comment
-from test_case_runs
-inner join django_comments
-    on (test_case_runs.case_run_id = django_comments.object_pk)
-inner join auth_user on (django_comments.user_id = auth_user.id)
-where django_comments.site_id = %s and
-    django_comments.content_type_id = %s and
-    django_comments.is_public = 1 and
-    django_comments.is_removed = 0 and
-    test_case_runs.run_id = %s
-ORDER BY test_case_runs.case_run_id
-'''
-
 GET_BUG_COUNT = '''
 select count(distinct test_case_bugs.bug_id) from test_case_bugs
 inner join test_case_runs on (test_case_bugs.case_run_id = test_case_runs.case_run_id)

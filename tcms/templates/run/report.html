@@ -107,12 +107,14 @@
 					{% endfor %}
 					{% endif %}
 
-					{% if test_case_run.user_comments %}
+                                        {% get_comment_count for test_case_run as comment_count %}
+					{% if comment_count %}
 					<h4 style='padding:0px;margin:0px'>Comments</h4>
 					<span class="notes" >
 						<ul style="margin-left:10px;" class='comment'>
-							{% for comment in test_case_run.user_comments %}
-							<li><b>{{ comment.user }}</b><span class='grey' style='margin-left:5px'>[{{ comment.submit_date }}]</span>	<br />{{ comment.comment|urlize|linebreaksbr }}</li>
+                                                        {% get_comment_list for test_case_run as comment_list %}
+							{% for comment in comment_list %}
+							<li><b>{{ comment.user_name }}</b><span class='grey' style='margin-left:5px'>[{{ comment.submit_date }}]</span>	<br />{{ comment.comment|urlize|linebreaksbr }}</li>
 							{% endfor %}
 						</ul>
 					</span> 

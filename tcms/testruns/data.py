@@ -11,7 +11,6 @@ from tcms.testruns.models import TestCaseRunStatus
 from tcms.core.db import SQLExecution
 from tcms.core.utils.tcms_router import connection
 from tcms.testruns.sqls import STATS_CASERUNS_STATUS
-from tcms.testruns.sqls import GET_CASERUNS_COMMENTS
 from tcms.testruns.sqls import GET_CASERUNS_BUGS
 from tcms.testruns.sqls import GET_RUN_BUG_IDS
 
@@ -130,28 +129,6 @@ class TestCaseRunDataMixin(object):
             row = dict(izip(field_names, row))
             row['bug_url'] = row['url_reg_exp'] % row['bug_id']
             rows.append(row)
-        return dict([(key, list(groups)) for key, groups in
-                     groupby(rows, lambda row: row['case_run_id'])])
-
-    def get_caseruns_comments(self, run_pk):
-        '''Get case runs' comments
-
-        @param run_pk: run's pk whose comments will be retrieved.
-        @type run_pk: int
-        @return: the mapping between case run id and comments
-        @rtype: dict
-        '''
-        ct = ContentType.objects.get_for_model(TestCaseRun)
-        cursor = connection.reader_cursor
-        cursor.execute(GET_CASERUNS_COMMENTS,
-                       [settings.SITE_ID, ct.pk, run_pk, ])
-        field_names = [field[0] for field in cursor.description]
-        rows = []
-        while 1:
-            row = cursor.fetchone()
-            if row is None:
-                break
-            rows.append(dict(izip(field_names, row)))
         return dict([(key, list(groups)) for key, groups in
                      groupby(rows, lambda row: row['case_run_id'])])
 
