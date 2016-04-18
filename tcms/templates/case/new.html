@@ -27,12 +27,12 @@ Nitrate.Utils.after_page_load(Nitrate.TestCases.Create.on_load);
 		>> <a href="{% url "tcms.testplans.views.all" %}">Planning</a>
 		>> <a href="{{ test_plan.get_absolute_url }}">{{ test_plan.name }}</a>
 		{% else %}
-		>> <a href="{% url "tcms.testcases.views.search" %}">Testing</a>
+		>> <a href="{% url "search_case_view" %}">Testing</a>
 		{% endif %}
 		>> Create new case
 	</div>
 	
-	<form action="{% url "tcms.testcases.views.new" %}{% if test_plan %}?from_plan={{ test_plan.plan_id }}{% endif %}" method="POST">
+	<form action="{% url "testcases_add_new_testcase" %}{% if test_plan %}?from_plan={{ test_plan.plan_id }}{% endif %}" method="POST">
 		{% if test_plan %}
 		<input type="hidden" name="from_plan" value="{{ test_plan.plan_id }}" />
 		{% endif %}

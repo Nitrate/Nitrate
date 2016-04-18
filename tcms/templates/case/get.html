@@ -46,7 +46,7 @@ Nitrate.TestCases.Instance = {
 	{% else %}
 	<div class="sprites crumble">
 		<a href="{% url "tcms.core.views.index" %}">Home</a>
-		&gt;&gt; <a href="{% url "tcms.testcases.views.search" %}">Search Case</a>
+		&gt;&gt; <a href="{% url "search_case_view" %}">Search Case</a>
 		&gt;&gt; Case: {{ test_case.case_id }}: {{ test_case.summary }}
 	</div>
 	<div id="tcms_values" class="hidden">
@@ -55,10 +55,10 @@ Nitrate.TestCases.Instance = {
 	{% endif %}
 	<div class="control">
 		{% if perms.testcases.change_testcase %}
-		<span id="id_buttons" ><input id="btn_edit" type="button" value="Edit" data-link="{% url "tcms.testcases.views.edit" test_case.case_id %}?from_plan={{ test_plan.plan_id }}"/></span>
+		<span id="id_buttons" ><input id="btn_edit" type="button" value="Edit" data-link="{% url "testcases_change_testcase" test_case.case_id %}?from_plan={{ test_plan.plan_id }}"/></span>
 		{% endif %}
 		{% if perms.testcases.add_testcaseplan %}
-		<span id=""><input type="button" id="btn_clone" value="Clone case" data-link="{% url "tcms.testcases.views.clone" %}?from_plan={{ test_plan.plan_id }}&case={{ test_case.case_id }}"/></span>
+		<span id=""><input type="button" id="btn_clone" value="Clone case" data-link="{% url "testcases_add_clone_testcase" %}?from_plan={{ test_plan.plan_id }}&case={{ test_case.case_id }}"/></span>
 		{% endif %}
 		{% if test_plan %}
 		<span class="right-action">

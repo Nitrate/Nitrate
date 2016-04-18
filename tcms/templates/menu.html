@@ -30,7 +30,7 @@
 					<a href="{% url "tcms.testruns.views.all" %}">Search Runs</a>
 				</li>
 				<li {% ifequal sub_module 'cases' %} class="subcurrent"{% endifequal %} >
-					<a href="{% url "tcms.testcases.views.search" %}">Search Cases</a>
+					<a href="{% url "search_case_view" %}">Search Cases</a>
 				</li>
 				{% if user.is_authenticated %}
 				<li {% ifequal sub_module 'my_runs' %} class="subcurrent"{% endifequal %} >
@@ -39,7 +39,7 @@
 				{% endif %}
 				{% if perms.testcases.add_testcase %}
 				<li>
-					<a href="{% url "tcms.testcases.views.new" %}">New Case</a>
+					<a href="{% url "testcases_add_new_testcase" %}">New Case</a>
 				</li>
 				{% endif %}
 			</ul>

@@ -10,7 +10,7 @@
 <script type="text/javascript">
 	jQ('.js-one-record').live('click',function() {
 		var param = jQ(this).data('param');
-		window.location.href='{% url "tcms.testcases.views.text_history" testcase.case_id %}?from_plan={{ testplan.plan_id }}&case_text_version=' + param;
+		window.location.href='{% url "testcase_text_history" testcase.case_id %}?from_plan={{ testplan.plan_id }}&case_text_version=' + param;
   });
 </script>
 {% endblock %}
@@ -36,7 +36,7 @@
 		</tr>
 		{% for text in test_case_texts %}
 		<tr class="{% cycle 'odd' 'even' %} js-one-record" data-param="{{ text.case_text_version }}">
-			<td><a href="{% url "tcms.testcases.views.text_history" testcase.case_id %}?from_plan={{ testplan.plan_id }}&case_text_version={{ text.case_text_version }}">{{ text.case_text_version }}</a></td>
+			<td><a href="{% url "testcase_text_history" testcase.case_id %}?from_plan={{ testplan.plan_id }}&case_text_version={{ text.case_text_version }}">{{ text.case_text_version }}</a></td>
 			<td>{{ text.create_date }}</td>
 			<td>{{ text.author__email }}</td>
 		</tr>

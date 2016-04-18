@@ -170,7 +170,7 @@
 								Attachment
 								<span>[
 								{% if perms.management.add_testattachment %}
-								<a href="{% url "tcms.testcases.views.attachment" test_case_run.case_id %}?from_plan={{ testrun.plan_id }}" target="_blank">Add</a>
+								<a href="{% url "testcase_attachment_view" test_case_run.case_id %}?from_plan={{ testrun.plan_id }}" target="_blank">Add</a>
 								{% endif %}
 								]</span>
 							</h4>

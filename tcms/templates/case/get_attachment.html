@@ -25,7 +25,7 @@
 					<td colspan="5" style="padding:0;">
 						<div class="addtag">
 							<span class="tit">Add attachment</span>
-							<a href="{% url "tcms.testcases.views.attachment" test_case.case_id %}?from_plan={{ test_plan.plan_id }}" class="addlink">add</a> 
+							<a href="{% url "testcase_attachment_view" test_case.case_id %}?from_plan={{ test_plan.plan_id }}" class="addlink">add</a>
 						</div>
 					</td>
 				</tr>
