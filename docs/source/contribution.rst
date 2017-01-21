@@ -81,6 +81,12 @@ Start Nitrate locally
 See :doc:`set_dev_env` or :doc:`set_dev_env_with_vagrant` for more information!
 
 
+Start Nitrate locally
+~~~~~~~~~~~~~~~~~~~~~
+
+See :doc:`set_dev_env` or :doc:`set_dev_env_with_vagrant` for more information!
+
+
 Confirm the problem
 ~~~~~~~~~~~~~~~~~~~
 
