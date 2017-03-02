@@ -3,7 +3,7 @@ from datetime import datetime
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.db import models, transaction
+from django.db import models
 from django.db.models import ObjectDoesNotExist
 from django.db.models.signals import post_save, post_delete, pre_save
 from django.contrib.contenttypes.fields import GenericRelation
@@ -12,11 +12,9 @@ from tcms.core.models import TCMSActionModel
 from tcms.core.models import TCMSContentTypeBaseModel
 from tcms.core.models.fields import DurationField
 from tcms.core.utils.checksum import checksum
-from tcms.core.utils.tcms_router import connection
 from tcms.core.utils.timedeltaformat import format_timedelta
 from tcms.integration.bugzilla.task import bugzilla_external_track
 from tcms.testcases import signals as case_watchers
-from tcms.testcases import sqls as SQL
 
 
 try:
@@ -529,29 +527,21 @@ class TestCase(TCMSActionModel):
         mailto(template, subject, to, context, request)
 
     def remove_bug(self, bug_id, run_id=None):
-        sql = SQL.REMOVE_BUG
-        args = [bug_id, self.pk]
-        if run_id:
-            sql = SQL.REMOVE_BUG_WITH_RUN_ID
-            args.append(run_id)
-        with transaction.atomic():
-            cursor = connection.writer_cursor
-            cursor.execute(sql, args)
+        filter_args = {'case': self, 'bug_id': bug_id}
+        if run_id is None:
+            filter_args['case_run'] = None
+        else:
+            filter_args['case_run_id'] = run_id
+        TestCaseBug.objects.filter(**filter_args).delete()
 
     def remove_component(self, component):
-        with transaction.atomic():
-            cursor = connection.writer_cursor
-            cursor.execute(SQL.REMOVE_COMPONENT, (self.case_id, component.id))
+        TestCaseComponent.objects.filter(case=self, component=component).delete()
 
     def remove_plan(self, plan):
-        with transaction.atomic():
-            cursor = connection.writer_cursor
-            cursor.execute(SQL.REMOVE_PLAN, (plan.plan_id, self.case_id))
+        TestCasePlan.objects.filter(case=self, plan=plan).delete()
 
     def remove_tag(self, tag):
-        with transaction.atomic():
-            cursor = connection.writer_cursor
-            cursor.execute(SQL.REMOVE_TAG, (self.pk, tag.pk))
+        TestCaseTag.objects.filter(case=self, tag=tag).delete()
 
     def get_url_path(self, request=None):
         return reverse('tcms.testcases.views.get', args=[self.pk, ])
