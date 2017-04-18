@@ -747,12 +747,15 @@ def get(request, run_id, template_name='run/get.html'):
         case_run_status = TestCaseRunStatus.get_names()
 
         for case_run in tcrs:
+            case_run_pk = case_run.pk
+            if type(case_run_pk) != str:
+                case_run_pk=str(case_run_pk)
             yield (case_run,
                    testers.get(case_run.tested_by_id, None),
                    assignees.get(case_run.assignee_id, None),
                    priorities.get(case_run.case.priority_id),
                    case_run_status[case_run.case_run_status_id],
-                   comments_subtotal.get(case_run.pk, 0))
+                   comments_subtotal.get(case_run_pk, 0))
 
     context_data = {
         'module': MODULE_NAME,
