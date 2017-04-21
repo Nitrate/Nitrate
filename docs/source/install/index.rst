@@ -10,3 +10,4 @@ Installation Guides
    gunicorn
    in_rhel
    in_virtualenv
+   docker
