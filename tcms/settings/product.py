@@ -1,5 +1,7 @@
 # Django settings for product env.
 
+import os
+
 from tcms.settings.common import *  # noqa
 
 # Debug settings
@@ -10,19 +12,19 @@ TEMPLATE_DEBUG = DEBUG
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'nitrate',
-        'USER': 'nitrate',
-        'PASSWORD': 'nitrate',
-        'HOST': '',
-        'PORT': '',
+        'NAME': os.environ.get('NITRATE_DB_NAME', 'nitrate'),
+        'USER': os.environ.get('NITRATE_DB_USER', 'nitrate'),
+        'PASSWORD': os.environ.get('NITRATE_DB_PASSWORD', 'nitrate'),
+        'HOST': os.environ.get('NITRATE_DB_HOST', ''),
+        'PORT': os.environ.get('NITRATE_DB_PORT', ''),
     },
     'slave_1': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'nitrate',
-        'USER': 'nitrate',
-        'PASSWORD': 'nitrate',
-        'HOST': '',
-        'PORT': '',
+        'NAME': os.environ.get('NITRATE_DB_NAME', 'nitrate'),
+        'USER': os.environ.get('NITRATE_DB_USER', 'nitrate'),
+        'PASSWORD': os.environ.get('NITRATE_DB_PASSWORD', 'nitrate'),
+        'HOST': os.environ.get('NITRATE_DB_HOST', ''),
+        'PORT': os.environ.get('NITRATE_DB_PORT', ''),
     },
 }
 
