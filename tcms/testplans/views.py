@@ -46,6 +46,7 @@ from tcms.testplans.forms import PlanComponentForm
 from tcms.testplans.forms import SearchPlanForm
 from tcms.testplans import sqls
 from tcms.testplans.models import TestPlan, TestPlanComponent
+from tcms.testplans.models import TestPlanEmailSettings
 from tcms.testruns.models import TestRun, TestCaseRun
 from tcms.utils.dict_utils import create_group_by_dict as create_dict
 
@@ -59,18 +60,18 @@ MODULE_NAME = "testplans"
 
 def update_plan_email_settings(tp, form):
     """Update testplan's email settings"""
-    tp.emailing.notify_on_plan_update = form.cleaned_data[
+    tp.email_settings.notify_on_plan_update = form.cleaned_data[
         'notify_on_plan_update']
-    tp.emailing.notify_on_plan_delete = form.cleaned_data[
+    tp.email_settings.notify_on_plan_delete = form.cleaned_data[
         'notify_on_plan_delete']
-    tp.emailing.notify_on_case_update = form.cleaned_data[
+    tp.email_settings.notify_on_case_update = form.cleaned_data[
         'notify_on_case_update']
-    tp.emailing.auto_to_plan_owner = form.cleaned_data['auto_to_plan_owner']
-    tp.emailing.auto_to_plan_author = form.cleaned_data['auto_to_plan_author']
-    tp.emailing.auto_to_case_owner = form.cleaned_data['auto_to_case_owner']
-    tp.emailing.auto_to_case_default_tester = form.cleaned_data[
+    tp.email_settings.auto_to_plan_owner = form.cleaned_data['auto_to_plan_owner']
+    tp.email_settings.auto_to_plan_author = form.cleaned_data['auto_to_plan_author']
+    tp.email_settings.auto_to_case_owner = form.cleaned_data['auto_to_case_owner']
+    tp.email_settings.auto_to_case_default_tester = form.cleaned_data[
         'auto_to_case_default_tester']
-    tp.emailing.save()
+    tp.email_settings.save()
 
 
 # _____________________________________________________________________________
@@ -118,6 +119,8 @@ def new(request, template_name='plan/new.html'):
                 extra_link=form.cleaned_data['extra_link'],
                 parent=form.cleaned_data['parent'],
             )
+
+            TestPlanEmailSettings.objects.create(plan=tp)
 
             # Add test plan text
             if request.user.has_perm('testplans.add_testplantext'):
@@ -608,13 +611,13 @@ def edit(request, plan_id, template_name='plan/edit.html'):
             'is_active': tp.is_active,
             'extra_link': tp.extra_link,
             'owner': tp.owner,
-            'auto_to_plan_owner': tp.emailing.auto_to_plan_owner,
-            'auto_to_plan_author': tp.emailing.auto_to_plan_author,
-            'auto_to_case_owner': tp.emailing.auto_to_case_owner,
-            'auto_to_case_default_tester': tp.emailing.auto_to_case_default_tester,
-            'notify_on_plan_update': tp.emailing.notify_on_plan_update,
-            'notify_on_case_update': tp.emailing.notify_on_case_update,
-            'notify_on_plan_delete': tp.emailing.notify_on_plan_delete,
+            'auto_to_plan_owner': tp.email_settings.auto_to_plan_owner,
+            'auto_to_plan_author': tp.email_settings.auto_to_plan_author,
+            'auto_to_case_owner': tp.email_settings.auto_to_case_owner,
+            'auto_to_case_default_tester': tp.email_settings.auto_to_case_default_tester,
+            'notify_on_plan_update': tp.email_settings.notify_on_plan_update,
+            'notify_on_case_update': tp.email_settings.notify_on_case_update,
+            'notify_on_plan_delete': tp.email_settings.notify_on_plan_delete,
         })
         form.populate(product_id=tp.product_id)
 

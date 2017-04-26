@@ -27,6 +27,7 @@ from tcms.testplans.models import TestPlanAttachment
 from tcms.tests.factories import ClassificationFactory
 from tcms.tests.factories import ProductFactory
 from tcms.tests.factories import TestCaseFactory
+from tcms.tests.factories import TestPlanEmailSettingsFactory
 from tcms.tests.factories import TestPlanFactory
 from tcms.tests.factories import TestPlanTypeFactory
 from tcms.tests.factories import UserFactory
@@ -60,6 +61,7 @@ class PlanTests(test.TestCase):
                                         author=cls.user,
                                         product=cls.product,
                                         type=cls.plan_type)
+        cls.email_settings = TestPlanEmailSettingsFactory(plan=cls.test_plan)
         cls.plan_id = cls.test_plan.pk
 
     def test_open_plans_search(self):

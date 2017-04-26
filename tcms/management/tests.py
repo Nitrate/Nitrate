@@ -743,6 +743,8 @@ class TestDeleteProduct(test.TestCase):
         self.assertContains(response, test_plan_name)
         self.assertEqual(previous_plans_count + 1, TestPlan.objects.count())
 
+        the_new_plan = list(TestPlan.objects.order_by('pk'))[-1]
+
         # now delete the product
         admin_delete_url = "admin:%s_%s_delete" % (product._meta.app_label,
                                                    product._meta.model_name)
@@ -766,3 +768,6 @@ class TestDeleteProduct(test.TestCase):
         self.assertFalse(Product.objects.filter(pk=product.pk).exists())
         self.assertFalse(Version.objects.filter(pk=product_version.pk).exists())
         self.assertEqual(previous_plans_count, TestPlan.objects.count())
+        from tcms.testplans.models import TestPlanEmailSettings
+        self.assertFalse(
+            TestPlanEmailSettings.objects.filter(plan=the_new_plan).exists())
