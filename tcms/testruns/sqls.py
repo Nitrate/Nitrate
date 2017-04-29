@@ -1,5 +1,5 @@
 CLONE_ENV_VALUES = '''
-INSERT INTO `tcms_env_run_value_map` (run_id, value_id) VALUES %s
+INSERT INTO tcms_env_run_value_map (run_id, value_id) VALUES %s
 '''
 
 GET_CONFIRMED_CASES = '''
