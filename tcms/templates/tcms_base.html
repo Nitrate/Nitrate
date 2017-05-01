@@ -112,6 +112,7 @@
 			{% if AUTH_BACKEND.can_login %}
 			<a href="{% url "django.contrib.auth.views.login" %}?next={{ request.path }}" class="banner_login">Login</a>
 			{% endif %}
+			{% if AUTH_BACKEND.can_login and AUTH_BACKEND.can_register %} or {% endif %}
 			{% if AUTH_BACKEND.can_register %}
 			<a href="{% url "tcms.core.contrib.auth.views.register" %}?next={{ request.path }}" class="banner_login">Register</a>
 			{% endif %}
