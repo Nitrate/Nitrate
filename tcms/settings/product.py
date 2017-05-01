@@ -58,19 +58,9 @@ EMAIL_FROM = 'noreply@example.com'
 
 # Site-specific messages
 
-# This one, if set, is shown on the front page.
-# It is only shown to authenticated users
-MOTD_AUTH = """
-<p>This is the development server for the production instance of the TCMS,
-connected to a copy of the testopia database.</p>
-"""
-
 # First run - to detemine need port user or not.
 FIRST_RUN = False
 
-MOTD_LOGIN = """<p>This is the development server of the TCMS (for testing).</p>
-<p>Please use your kerberos user name and password.</p>
-"""
 # You can add a help link on the footer of home page as following format:
 # ('http://foo.com', 'foo')
 FOOTER_LINKS = (
