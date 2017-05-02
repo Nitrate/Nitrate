@@ -32,7 +32,6 @@ from tcms.core.db import SQLExecution
 from tcms.core.exceptions import NitrateException
 from tcms.core.responses import HttpJSONResponse
 from tcms.core.utils.bugtrackers import Bugzilla
-from tcms.core.utils import clean_request
 from tcms.core.utils.raw_sql import RawSQL
 from tcms.core.utils.tcms_router import connection
 from tcms.core.utils.timedeltaformat import format_timedelta
@@ -665,15 +664,7 @@ def open_run_get_case_runs(request, run):
     tcrs = tcrs.extra(select={
         'num_bug': RawSQL.num_case_run_bugs,
     })
-    tcrs = tcrs.distinct()
-    # Continue to search the case runs with conditions
-    # 4. case runs preparing for render case runs table
-    tcrs = tcrs.filter(**clean_request(request))
-    order_by = request.REQUEST.get('order_by')
-    if order_by:
-        tcrs = tcrs.order_by(order_by)
-    else:
-        tcrs = tcrs.order_by('sortkey', 'pk')
+    tcrs = tcrs.distinct().order_by('sortkey', 'pk')
     return tcrs
 
 

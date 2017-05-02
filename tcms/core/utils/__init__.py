@@ -56,28 +56,6 @@ def request_host_link(request, domain_name=None):
     return protocol + domain_name
 
 
-def clean_request(request, keys=None):
-    """
-    Clean the request strings
-    """
-    request_contents = request.REQUEST.copy()
-    if not keys:
-        keys = request_contents.keys()
-    rt = {}
-    for k in keys:
-        k = str(k)
-        if request_contents.get(k):
-            if k == 'order_by' or k == 'from_plan':
-                continue
-
-            v = request.REQUEST[k]
-            # Convert the value to be list if it's __in filter.
-            if k.endswith('__in') and isinstance(v, unicode):
-                v = string_to_list(v)
-            rt[k] = v
-    return rt
-
-
 class QuerySetIterationProxy(object):
     '''Iterate a series of object and its associated objects at once
 
