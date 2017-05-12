@@ -47,12 +47,15 @@ def check_permission(request, ctype):
     return False
 
 
-def strip_parameters(request, skip_parameters):
+def strip_parameters(request_dict, skip_parameters):
+    """
+    Helper method which will remove the dict items listed in skip_parameters
+    @return - dict
+    """
     parameters = {}
-    for dict_ in request.REQUEST.dicts:
-        for k, v in dict_.items():
-            if k not in skip_parameters and v:
-                parameters[str(k)] = v
+    for k, v in request_dict.items():
+        if k not in skip_parameters and v:
+            parameters[str(k)] = v
 
     return parameters
 
@@ -120,7 +123,7 @@ def info(request):
             )
 
         def tags(self):
-            query = strip_parameters(request, self.internal_parameters)
+            query = strip_parameters(request.GET, self.internal_parameters)
             tags = TestCaseTag.objects
             # Generate the string combination, because we are using
             # case sensitive table
@@ -137,7 +140,7 @@ def info(request):
         def users(self):
             from django.contrib.auth.models import User
 
-            query = strip_parameters(self.request, self.internal_parameters)
+            query = strip_parameters(self.request.GET, self.internal_parameters)
             return User.objects.filter(**query)
 
         def versions(self):
@@ -172,7 +175,7 @@ def form(request):
 
     # The parameters in internal_parameters will delete from parameters
     internal_parameters = ['app_form', 'format']
-    parameters = strip_parameters(request, internal_parameters)
+    parameters = strip_parameters(request.REQUEST, internal_parameters)
     q_app_form = request.REQUEST.get('app_form')
     q_format = request.REQUEST.get('format')
     if not q_format:
