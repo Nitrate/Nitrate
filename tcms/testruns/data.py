@@ -1,19 +1,15 @@
 # -*- coding: utf-8 -*-
 from collections import namedtuple
-from itertools import izip
 from itertools import groupby
 
 from django.conf import settings
+from django.db.models import Count, F
 from django.contrib.contenttypes.models import ContentType
+from django_comments.models import Comment
 
+from tcms.testcases.models import TestCaseBug
 from tcms.testruns.models import TestCaseRun
 from tcms.testruns.models import TestCaseRunStatus
-from tcms.core.db import SQLExecution
-from tcms.core.utils.tcms_router import connection
-from tcms.testruns.sqls import STATS_CASERUNS_STATUS
-from tcms.testruns.sqls import GET_CASERUNS_COMMENTS
-from tcms.testruns.sqls import GET_CASERUNS_BUGS
-from tcms.testruns.sqls import GET_RUN_BUG_IDS
 
 
 TestCaseRunStatusSubtotal = namedtuple('TestCaseRunStatusSubtotal',
@@ -29,19 +25,23 @@ def stats_caseruns_status(run_id, case_run_statuss):
     @param run_id: id of test run from where to get statistics
     @type run_id: int
     @param case_run_statuss: iterable object containing TestCaseRunStatus
-        objects
+        objects representing PASS, FAIL, WAIVED, etc.
     @type case_run_statuss: iterable object
     @return: the statistics including the number of each status mapping,
         total number of case runs, complete percent, and failure percent.
     @rtype: namedtuple
     '''
-    rows = SQLExecution(STATS_CASERUNS_STATUS, (run_id,)).rows
+    rows = TestCaseRun.objects.filter(
+        run=run_id
+    ).values(
+        'case_run_status'
+    ).annotate(status_count=Count('case_run_status'))
 
     caserun_statuss_subtotal = dict((status.pk, [0, status])
                                     for status in case_run_statuss)
 
     for row in rows:
-        status_pk = row['case_run_status_id']
+        status_pk = row['case_run_status']
         caserun_statuss_subtotal[status_pk][0] = row['status_count']
 
     complete_count = 0
@@ -75,9 +75,13 @@ def stats_caseruns_status(run_id, case_run_statuss):
 
 
 def get_run_bug_ids(run_id):
-    rows = SQLExecution(GET_RUN_BUG_IDS, (run_id,)).rows
-    return set((row['bug_id'], row['url_reg_exp'] % row['bug_id'])
-               for row in rows)
+    rows = TestCaseBug.objects.values(
+        'bug_id',
+        'bug_system__url_reg_exp'
+    ).distinct().filter(case_run__run=run_id)
+
+    return [(row['bug_id'], row['bug_system__url_reg_exp'] % row['bug_id'])
+            for row in rows]
 
 
 class TestCaseRunDataMixin(object):
@@ -119,19 +123,15 @@ class TestCaseRunDataMixin(object):
         @return: the mapping between case run id and bugs
         @rtype: dict
         '''
-        cursor = connection.reader_cursor
-        cursor.execute(GET_CASERUNS_BUGS, [run_pk, ])
-        field_names = [field[0] for field in cursor.description]
         rows = []
-        while 1:
-            row = cursor.fetchone()
-            if row is None:
-                break
-            row = dict(izip(field_names, row))
-            row['bug_url'] = row['url_reg_exp'] % row['bug_id']
+        for row in TestCaseBug.objects.filter(
+                case_run__run=run_pk).values(
+                'case_run', 'bug_id',
+                'bug_system__url_reg_exp').order_by('case_run'):
+            row['bug_url'] = row['bug_system__url_reg_exp'] % row['bug_id']
             rows.append(row)
         return dict([(key, list(groups)) for key, groups in
-                     groupby(rows, lambda row: row['case_run_id'])])
+                     groupby(rows, lambda row: row['case_run'])])
 
     def get_caseruns_comments(self, run_pk):
         '''Get case runs' comments
@@ -142,16 +142,21 @@ class TestCaseRunDataMixin(object):
         @rtype: dict
         '''
         ct = ContentType.objects.get_for_model(TestCaseRun)
-        cursor = connection.reader_cursor
-        cursor.execute(GET_CASERUNS_COMMENTS,
-                       [settings.SITE_ID, ct.pk, run_pk, ])
-        field_names = [field[0] for field in cursor.description]
+
         rows = []
-        while 1:
-            row = cursor.fetchone()
-            if row is None:
-                break
-            rows.append(dict(izip(field_names, row)))
+        for row in Comment.objects.filter(
+                site=settings.SITE_ID,
+                content_type=ct.pk,
+                is_public=True,
+                is_removed=False,
+                object_pk__in=TestCaseRun.objects.filter(
+                    run=run_pk)).annotate(
+                case_run_id=F('object_pk')).values(
+                'case_run_id',
+                'submit_date',
+                'comment').order_by('case_run_id'):
+            rows.append(row)
+
         return dict([(key, list(groups)) for key, groups in
                      groupby(rows, lambda row: row['case_run_id'])])
 
