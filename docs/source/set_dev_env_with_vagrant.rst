@@ -12,11 +12,17 @@ Note if you're under proxy, then you need to modify Vagrantfile first by adding 
 
 ::
 
-    config.proxy.http = "http://;proxy>:<port>"
+    config.proxy.http = "http://<proxy>:<port>"
     config.proxy.https = "http://<proxy>:<port>"
 
 After ``vagrant`` succeeds to run the virtual machine, you will get a complete
 environment to develop Nitrate,
+
+* to go into the Vagrant machine
+
+::
+
+    vagrant ssh
 
 * a Python virtual environment creatd at ``$HOME/nitrate-env/`` with all
   necessary dependecies installed.
