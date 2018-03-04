@@ -4,66 +4,65 @@ Setting up a development environment on Fedora
 Get source code
 ---------------
 
-The Nitrate source code is available at: https://github.com/Nitrate/Nitrate
+Nitrate source code is available at: https://github.com/Nitrate/Nitrate
 
 You can get the latest changes with git easily::
 
     git clone https://github.com/Nitrate/Nitrate.git
 
-Setup virtualenv
-----------------
+Create virtualenv
+-----------------
 
-Install devel packages which are needed to compile some of the Python dependencies::
+Install database and devel packages which are required to compile some of the
+Python dependencies::
 
-    sudo yum install gcc python-devel mysql-devel krb5-devel libxml2-devel libxslt-devel
+    sudo dnf install gcc python-devel mariadb mariadb-devel krb5-devel \
+        libxml2-devel libxslt-devel
 
-Create a virtual environment for Nitrate::
+Create a virtual environment::
 
     virtualenv ~/virtualenvs/nitrate
 
-Install dependencies from ``requirements/devel.txt``::
+Install dependencies::
 
     . ~/virtualenvs/nitrate/bin/activate
     pip install -r requirements/devel.txt
 
+.. note:: 
+
+    ``devel.txt`` has the link to ``base.txt`` which includes required Python
+    packages for running Nitrate.
+
 Initialize database
 -------------------
 
-Currently, MySQL is only be supported, either mysql or mariadb is okay for
-running Nitrate.
-
-Create database and user::
+Create database::
 
     mysql -uroot
     create database nitrate character set utf8;
-    GRANT all privileges on nitrate.* to nitrate@'%' identified by 'nitrate';
 
 For convenience for development, user, password and database name are already
-set in `tcms/settings/devel.py` with default value. Each of them is `nirrate`.
+set in ``tcms/settings/devel.py`` with default value.
 
 .. note::
 
     You may want to adjust the database and/or other configuration settings.
-    Override them in ``./tcms/settings/devel.py`` if necessary. While the
-    Nitrate team prefers MySQL, sqlite appears to work for development
-    and some people have used PostgreSQL with varying success in production!
-    At the moment Nitrate is not 100% portable between database backends
-    due to some hard-coded SQL statements. If you use something other than MySQL
-    some parts of the application may not work correctly!
-
-.. warning::
-
-    Do not commit local development overrides to GitHub!
+    Override them in ``./tcms/settings/devel.py`` if necessary. While MariaDB
+    is supported currently, sqlite appears to work for development and some
+    people have used PostgreSQL with varying success in production! At the
+    moment Nitrate is not 100% portable between database backends due to some
+    hard-coded SQL statements. If you use something other than MariaDB some
+    parts of the application may not work correctly!
 
 Load database schema and initial data::
 
     ./manage.py migrate
 
-Let's run Nitrate
------------------
+Final Step
+----------
 
-You're now ready to start the server::
+Nitrate is ready to run::
 
     ./manage.py runserver
 
-Now, open http://127.0.0.1:8000/ and should be presented with your brand new Nitrate homepage!
+Open http://127.0.0.1:8000/ and there should be brand new Nitrate homepage!

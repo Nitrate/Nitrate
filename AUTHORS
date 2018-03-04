@@ -1,19 +1,42 @@
-Developers
-==========
+Authors
+=======
 
-- Chaobin Tang <ctang@redhat.com>
-- Chenxiong Qi <cqi@redhat.com>
-- David Malcolm <dmalcolm@redhat.com>
-- Jian Chen <jianchen@redhat.com>
-- June Zhang <junzhang@redhat.com>
-- Lei Xu <lexu@redhat.com>
-- Nan Li <nli@redhat.com>
-- Xiangyang Chu <xchu@redhat.com>
-- Xiaoxue Zhang <xiaoxue@redhat.com>
+Thanks Xuqing Kuang and other original Nitrate team members for creating this
+great software.
 
-Retired developers
-==================
+Maintainers
+-----------
 
-- Xuqing Kuang <xkuang@redhat.com>
+- Chenxiong Qi <qcxhome@gmail.com>
 
-And any others I might have missed here.
+Contributors
+------------
+
+- Andrew Ross
+- Anny Zhang
+- Chaobin Tang
+- Chenxiong Qi
+- David Malcolm
+- Deshi Xiao
+- gj
+- Haibo Lin
+- Jian Chen
+- June Zhang
+- Lei Xu
+- Matthias Cavigelli
+- Mihail Mihaylov
+- Mr. Senko
+- sdeng
+- wangjing
+- weizhou
+- Xiangyang Chu
+- Xiao Deshi
+- Xiaoxue Zhang
+- Xuebin Dong
+- Xuqing Kuang
+- Yuguang Wang
+- Zheng Liu
+- 李楠
+
+Also thanks for anyone else who contributes ideas, suggestions and reports
+bugs.

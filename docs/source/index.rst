@@ -15,25 +15,24 @@ Contents
    :maxdepth: 2
    :numbered:
 
-   about.rst
-   set_dev_env.rst
-   set_dev_env_with_vagrant.rst
-   installing_in_rhel.rst
-   installing_in_virtualenv.rst
-   installing_gunicorn.rst
-   installing_gce.rst
-   configuration.rst
-   upgrading.rst
-   tutorial.rst
-   contribution.rst
-   faq.rst
-   bug_reporting.rst
-   xmlrpc-api.rst
-   changelog.rst
-   releasenotes.rst
-   support.rst
-   authors.rst
-   license.rst
+   about
+   set_dev_env
+   set_dev_env_with_vagrant
+   installing_in_rhel
+   installing_in_virtualenv
+   installing_gunicorn
+   installing_gce
+   configuration
+   tutorial
+   contribution
+   faq
+   bug_reporting
+   xmlrpc-api
+   changelog
+   releasenotes
+   contact
+   authors
+   license
 
 Indices and tables
 ------------------

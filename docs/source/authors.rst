@@ -1,6 +1,3 @@
 .. _authors:
 
-Authors
-=======
-
-.. TODO
+.. include:: ../../AUTHORS
