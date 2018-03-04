@@ -1,0 +1,92 @@
+.. _4.1:
+
+4.1
+===
+
+*March 3, 2018*
+
+Highlighted
+-----------
+
+Default group ``System Admin`` is added. This is used for managing users'
+information, like changing email, password or group.
+
+Default permissions are added to default groups ``Tester``, ``Administrator``
+and ``System Admin``. Since Django adds model permissions in a ``post_migrate``
+handler after whole migrations finish, Nitrate has to add default permissions
+in a ``post_migrate`` handler as well after that step.
+
+Init script for running celery in background is removed. systemd service file
+should be provided while deploying Nitrate.
+
+``w3m`` is dropped and replaced with ``html2text``. The output from
+``html2text`` is still plain text, but the format is different from ``w3m``,
+which looks like markdown.
+
+A major improvement to development environment is ``Vagrantfile`` and provision
+are totally rewritten for anyone who wants to have a try quickly. Just run
+``vagrant up``, all the things required to run Nitrate in a development mode
+will be done automatically without interaction.
+
+Migration
+---------
+
+There is database schema change, and adding permissions to default groups is
+also need to run migration.
+
+Run ``django-admin --settings=tcms.settings.produce migrate``.
+
+Change Log
+----------
+
+- Update document relative to the permissions of default groups (Mr. Senko)
+- Add permissions to default groups (Chenxiong Qi)
+- Add default group System Admin (Chenxiong Qi)
+- Remove obsolete fixture now covered by default group permissions (Mr. Senko)
+- Simplify .travis.yml to run tox (Chenxiong Qi)
+- Add python2-celery back to SPEC (Chenxiong Qi)
+- Add missing python3-devel to testenv.yml (Chenxiong Qi)
+- Remove script celeryd (Chenxiong Qi)
+- Add copr-cli and mock to testenv and configure mock properly for use
+  (Chenxiong Qi)
+- Clean up SPEC (Chenxiong Qi)
+- Fix target dependency for tarball, srpm, rpm in Makefile (Chenxiong Qi)
+- Remove Vagrantfile from final Python sdist package (Chenxiong Qi)
+- Add python2-sphinx to Vagrant testenv for building RPM (Chenxiong Qi)
+- Fix testenv playbook (Chenxiong Qi)
+- Rewrite Vagrant machine provision and update relative doc (Chenxiong Qi)
+- Show product versions properly when open /plan/new/ - `#132`_ (Chenxiong Qi)
+- Replace XML2Dict with xmltodict - `#133`_ (Chenxiong Qi)
+- Fix link case url in reviewing cases tab (Chenxiong Qi)
+- Do not install Nitrate for flake8 testenv (Chenxiong Qi)
+- Add missing migrations (Chenxiong Qi)
+- Remove testenv for old py34 and py35 (Chenxiong Qi)
+- Let git ignore uploads directory (Chenxiong Qi)
+- Remove model TestPlanPermission and TestPlanActivity (Chenxiong Qi)
+- Refactor get_plain_text (Chenxiong Qi)
+- Remove unused class EditCaseNotifyThread (Chenxiong Qi)
+- Drop w3m and use html2text - `#25`_ (Chenxiong Qi)
+- Refactor plan and case components action views - #193 (Chenxiong Qi)
+- Refactor inner action class CaseActions - `#196`_ (Chenxiong Qi)
+- Remove py36 from running tests with django 1.10 (Chenxiong Qi)
+- Ignore more directories when make tags file (Chenxiong Qi)
+- Add test for django 1.11 - `#247`_ (Chenxiong Qi)
+- Show status name rather than id in case run change log - `#43`_ (Chenxiong Qi)
+- Refactor upload_file (Chenxiong Qi)
+- Fix hardcode to show priorities in advanced search - `rhbz#1139932`_ (Chenxiong
+  Qi)
+- Fix Makefile to run tests (Chenxiong Qi)
+- Recover tests to run with pytest (Chenxiong Qi)
+- Run flake8 from tox (Chenxiong Qi)
+- Use permission_required - `#192`_ (Chenxiong Qi)
+- Use triple-double quotes in docstring - `#165`_ (Chenxiong Qi)
+
+.. _#25: https://github.com/Nitrate/Nitrate/issues/25/
+.. _#43: https://github.com/Nitrate/Nitrate/issues/43/
+.. _#132: https://github.com/Nitrate/Nitrate/issues/132/
+.. _#133: https://github.com/Nitrate/Nitrate/issues/133/
+.. _#165: https://github.com/Nitrate/Nitrate/issues/165/
+.. _#192: https://github.com/Nitrate/Nitrate/issues/192/
+.. _#196: https://github.com/Nitrate/Nitrate/issues/196/
+.. _#247: https://github.com/Nitrate/Nitrate/issues/247/
+.. _rhbz#1139932: https://bugzilla.redhat.com/show_bug.cgi?id=1139932

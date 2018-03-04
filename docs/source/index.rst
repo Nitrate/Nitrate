@@ -29,7 +29,7 @@ Contents
    bug_reporting
    xmlrpc-api
    changelog
-   releasenotes
+   releases/index
    contact
    authors
    license
