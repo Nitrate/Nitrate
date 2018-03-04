@@ -56,7 +56,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'nitrate'
+project = u'Nitrate'
 copyright = u'2013, Red Hat, Inc.'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -210,7 +210,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'nitrate.tex', u'nitrate Documentation',
+  ('index', 'nitrate.tex', u'Nitrate Documentation',
    u'hlin,weizhou,cqi,qduanmu', 'manual'),
 ]
 
@@ -240,7 +240,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'nitrate', u'nitrate Documentation',
+    ('index', 'nitrate', u'Nitrate Documentation',
      [u'hlin,weizhou,cqi,qduanmu'], 1)
 ]
 
@@ -254,7 +254,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'nitrate', u'nitrate Documentation',
+  ('index', 'nitrate', u'Nitrate Documentation',
    u'hlin,weizhou,cqi,qduanmu', 'nitrate', 'One line description of project.',
    'Miscellaneous'),
 ]
@@ -275,7 +275,7 @@ texinfo_documents = [
 # -- Options for Epub output ----------------------------------------------
 
 # Bibliographic Dublin Core info.
-epub_title = u'nitrate'
+epub_title = u'Nitrate'
 epub_author = u'hlin,weizhou,cqi,qduanmu'
 epub_publisher = u'hlin,weizhou,cqi,qduanmu'
 epub_copyright = u'2013, Red Hat, Inc.'
