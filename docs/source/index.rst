@@ -27,7 +27,6 @@ Contents
    faq
    bug_reporting
    xmlrpc-api
-   changelog
    releases/index
    contact
    authors
