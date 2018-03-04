@@ -3,7 +3,9 @@ import datetime
 import six
 
 from pymysql.constants import FIELD_TYPE
+from django.core.exceptions import ValidationError
 from django.db.models.fields import IntegerField
+from django.db.models.fields import BooleanField
 from django.db.backends.mysql.base import django_conversions
 
 from tcms.core.forms.fields import DurationField as DurationFormField
@@ -50,3 +52,15 @@ class DurationField(IntegerField):
         defaults = {'help_text': 'Enter duration in the format: DDHHMM'}
         defaults.update(kwargs)
         return form_class(**defaults)
+
+
+class NitrateBooleanField(BooleanField):
+    """Custom boolean field to allow accepting arbitrary bool values"""
+
+    def to_python(self, value):
+        if value in (1, '1', 'true', 'True', True):
+            return True
+        if value in (0, '0', 'false', 'False', False):
+            return False
+        raise ValidationError(
+            '{} is not recognized as a bool value.'.format(value))

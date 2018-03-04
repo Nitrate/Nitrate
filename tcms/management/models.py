@@ -5,6 +5,7 @@ from django.db import models
 
 from tcms.core.models import TCMSActionModel
 from tcms.core.utils import calc_percent
+from tcms.core.models.fields import NitrateBooleanField
 
 # FIXME: plugins_support is no longer available. dead code here.
 try:
@@ -223,7 +224,7 @@ class TestBuild(TCMSActionModel):
     product = models.ForeignKey(Product, related_name='build')
     milestone = models.CharField(max_length=20, default='---')
     description = models.TextField(blank=True)
-    is_active = models.BooleanField(db_column='isactive', default=True)
+    is_active = NitrateBooleanField(db_column='isactive', default=True)
     objects = TestBuildManager()
 
     class Meta:
