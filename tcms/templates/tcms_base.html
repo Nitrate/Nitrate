@@ -112,6 +112,7 @@
 			{% if AUTH_BACKEND.can_login %}
 			<a href="{% url "nitrate-login" %}?next={{ request.path }}" class="banner_login">Login</a>
 			{% endif %}
+			{% if AUTH_BACKEND.can_login and AUTH_BACKEND.can_register %} or {% endif %}
 			{% if AUTH_BACKEND.can_register %}
 			<a href="{% url "nitrate-register" %}?next={{ request.path }}" class="banner_login">Register</a>
 			{% endif %}
