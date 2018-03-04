@@ -13,7 +13,6 @@ Contents
 
 .. toctree::
    :maxdepth: 2
-   :numbered:
 
    about
    set_dev_env
