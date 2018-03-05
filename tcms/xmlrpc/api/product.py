@@ -2,9 +2,9 @@
 
 import six
 
-from kobo.django.xmlrpc.decorators import user_passes_test
-
+from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.models import User
+
 from tcms.management.models import Product
 from tcms.xmlrpc.decorators import log_call
 from tcms.xmlrpc.utils import pre_check_product, parse_bool_value
@@ -332,7 +332,7 @@ def get_category(request, id):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(lambda u: u.has_perm('management.add_component'))
+@permission_required('management.add_component', raise_exception=True)
 def add_component(request, product, name, initial_owner_id=None, initial_qa_contact_id=None):
     """
     Description: Add component to selected product.
@@ -393,7 +393,7 @@ def get_component(request, id):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(lambda u: u.has_perm('management.change_component'))
+@permission_required('management.change_component', raise_exception=True)
 def update_component(request, component_id, values):
     """
     Description: Update component to selected product.
@@ -537,7 +537,7 @@ def get_tag(request, id):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(lambda u: u.has_perm('management.add_version'))
+@permission_required('management.add_version', raise_exception=True)
 def add_version(request, values):
     """
     Description: Add version to specified product.

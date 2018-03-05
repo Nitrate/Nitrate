@@ -3,10 +3,9 @@
 import six
 
 from django.conf import settings
+from django.contrib.auth.decorators import permission_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms import EmailField, ValidationError
-
-from kobo.django.xmlrpc.decorators import user_passes_test
 
 from tcms.core.utils.timedelta2int import timedelta2int
 from tcms.management.models import TestTag
@@ -98,7 +97,7 @@ def add_comment(request, case_ids, comment):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(lambda u: u.has_perm('testcases.add_testcasecomponent'))
+@permission_required('testcases.add_testcasecomponent', raise_exception=True)
 def add_component(request, case_ids, component_ids):
     """
     Description: Adds one or more components to the selected test cases.
@@ -133,7 +132,7 @@ def add_component(request, case_ids, component_ids):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(lambda u: u.has_perm('testcases.add_testcasetag'))
+@permission_required('testcases.add_testcasetag', raise_exception=True)
 def add_tag(request, case_ids, tags):
     """
     Description: Add one or more tags to the selected test cases.
@@ -169,7 +168,7 @@ def add_tag(request, case_ids, tags):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(lambda u: u.has_perm('testruns.add_testcaserun'))
+@permission_required('testruns.add_testcaserun', raise_exception=True)
 def add_to_run(request, case_ids, run_ids):
     """
     Description: Add one or more cases to the selected test runs.
@@ -212,7 +211,7 @@ def add_to_run(request, case_ids, run_ids):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(lambda u: u.has_perm('testcases.add_testcasebug'))
+@permission_required('testcases.add_testcasebug', raise_exception=True)
 def attach_bug(request, values):
     """
     Description: Add one or more bugs to the selected test cases.
@@ -368,7 +367,7 @@ def calculate_total_estimated_time(request, case_ids):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(lambda u: u.has_perm('testcases.add_testcase'))
+@permission_required('testcases.add_testcase', raise_exception=True)
 def create(request, values):
     """
     Description: Creates a new Test Case object and stores it in the database.
@@ -465,7 +464,7 @@ def create(request, values):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(lambda u: u.has_perm('testcases.delete_testcasebug'))
+@permission_required('testcases.delete_testcasebug', raise_exception=True)
 def detach_bug(request, case_ids, bug_ids):
     """
     Description: Remove one or more bugs to the selected test cases.
@@ -807,7 +806,7 @@ def get_priority(request, id):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(lambda u: u.has_perm('testcases.add_testcaseplan'))
+@permission_required('testcases.add_testcaseplan', raise_exception=True)
 def link_plan(request, case_ids, plan_ids):
     """"
     Description: Link test cases to the given plan.
@@ -925,7 +924,7 @@ def lookup_status_id_by_name(request, name):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(lambda u: u.has_perm('testcases.delete_testcasecomponent'))
+@permission_required('testcases.delete_testcasecomponent', raise_exception=True)
 def remove_component(request, case_ids, component_ids):
     """
     Description: Removes selected component from the selected test case.
@@ -965,7 +964,7 @@ def remove_component(request, case_ids, component_ids):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(lambda u: u.has_perm('testcases.delete_testcasetag'))
+@permission_required('testcases.delete_testcasetag', raise_exception=True)
 def remove_tag(request, case_ids, tags):
     """
     Description: Remove a tag from a case.
@@ -1005,7 +1004,7 @@ def remove_tag(request, case_ids, tags):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(lambda u: u.has_perm('testcases.add_testcasetext'))
+@permission_required('testcases.add_testcasetext', raise_exception=True)
 def store_text(request, case_id, action, effect='', setup='', breakdown='',
                author_id=None):
     """
@@ -1043,7 +1042,7 @@ def store_text(request, case_id, action, effect='', setup='', breakdown='',
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(lambda u: u.has_perm('testcases.delete_testcaseplan'))
+@permission_required('testcases.delete_testcaseplan', raise_exception=True)
 def unlink_plan(requst, case_id, plan_id):
     """
     Description: Unlink a test case from the given plan. If only one plan is linked, this will delete
@@ -1064,7 +1063,7 @@ def unlink_plan(requst, case_id, plan_id):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(lambda u: u.has_perm('testcases.change_testcase'))
+@permission_required('testcases.change_testcase', raise_exception=True)
 def update(request, case_ids, values):
     """
     Description: Updates the fields of the selected case or cases.
@@ -1160,7 +1159,7 @@ def validate_cc_list(cc_list):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(lambda u: u.has_perm('testcases.change_testcase'))
+@permission_required('testcases.change_testcase', raise_exception=True)
 def notification_add_cc(request, case_ids, cc_list):
     """
     Description: Add email addresses to the notification CC list of specific TestCases
@@ -1196,7 +1195,7 @@ def notification_add_cc(request, case_ids, cc_list):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(lambda u: u.has_perm('testcases.change_testcase'))
+@permission_required('testcases.change_testcase', raise_exception=True)
 def notification_remove_cc(request, case_ids, cc_list):
     """
     Description: Remove email addresses from the notification CC list of specific TestCases
@@ -1228,7 +1227,7 @@ def notification_remove_cc(request, case_ids, cc_list):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(lambda u: u.has_perm('testcases.change_testcase'))
+@permission_required('testcases.change_testcase', raise_exception=True)
 def notification_get_cc_list(request, case_ids):
     """
     Description: Return whole CC list of each TestCase

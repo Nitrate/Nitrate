@@ -2,8 +2,8 @@
 
 import six
 
+from django.contrib.auth.decorators import permission_required
 from django.core.exceptions import ObjectDoesNotExist
-from kobo.django.xmlrpc.decorators import user_passes_test
 
 from tcms.management.models import Component
 from tcms.management.models import TestTag
@@ -43,7 +43,7 @@ __xmlrpc_namespace__ = 'TestPlan'
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(lambda u: u.has_perm('testplans.add_testplantag'))
+@permission_required('testplans.add_testplantag', raise_exception=True)
 def add_tag(request, plan_ids, tags):
     """
     Description: Add one or more tags to the selected test plans.
@@ -79,7 +79,7 @@ def add_tag(request, plan_ids, tags):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(lambda u: u.has_perm('testplans.add_testplancomponent'))
+@permission_required('testplans.add_testplancomponent', raise_exception=True)
 def add_component(request, plan_ids, component_ids):
     """
     Description: Adds one or more components to the selected test plan.
@@ -129,7 +129,7 @@ def check_plan_type(request, name):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(lambda u: u.has_perm('testplans.add_testplan'))
+@permission_required('testplans.add_testplan', raise_exception=True)
 def create(request, values):
     """
     Description: Creates a new Test Plan object and stores it in the database.
@@ -490,7 +490,7 @@ def lookup_type_name_by_id(request, id):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(lambda u: u.has_perm('testplans.delete_testplantag'))
+@permission_required('testplans.delete_testplantag', raise_exception=True)
 def remove_tag(request, plan_ids, tags):
     """
     Description: Remove a tag from a plan.
@@ -532,7 +532,8 @@ def remove_tag(request, plan_ids, tags):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(lambda u: u.has_perm('testplans.delete_testplancomponent'))
+@permission_required('testplans.delete_testplancomponent',
+                     raise_exception=True)
 def remove_component(request, plan_ids, component_ids):
     """
     Description: Removes selected component from the selected test plan.
@@ -572,7 +573,7 @@ def remove_component(request, plan_ids, component_ids):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(lambda u: u.has_perm('testplans.add_testplantext'))
+@permission_required('testplans.add_testplantext', raise_exception=True)
 def store_text(request, plan_id, text, author=None):
     """
     Description: Update the document field of a plan.
@@ -603,7 +604,7 @@ def store_text(request, plan_id, text, author=None):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(lambda u: u.has_perm('testplans.change_testplan'))
+@permission_required('testplans.change_testplan', raise_exception=True)
 def update(request, plan_ids, values):
     """
     Description: Updates the fields of the selected test plan.
