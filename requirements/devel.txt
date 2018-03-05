@@ -10,3 +10,4 @@ pytest-django
 pytest-cov
 mock
 tox
+sphinx_rtd_theme
