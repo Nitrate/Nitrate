@@ -21,6 +21,10 @@ import os
 #sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(1, os.path.abspath('../../'))
 
+import django
+os.environ['DJANGO_SETTINGS_MODULE'] = 'tcms.settings.devel'
+django.setup()
+
 with open('../../VERSION.txt', 'r') as f:
     pkg_version = f.read().strip()
 
