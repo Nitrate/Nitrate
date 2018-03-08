@@ -19,28 +19,25 @@ __xmlrpc_namespace__ = 'TestEnv'
 
 @log_call(namespace=__xmlrpc_namespace__)
 def filter_groups(request, query):
-    """
-    Description: Performs a search and returns the resulting list of env groups.
+    """Performs a search and returns the resulting list of env groups.
 
-    Params:      $query - Hash: keys must match valid search fields.
+    :param dict query: mapping containing following criteria to find out
+        envrionment groups.
 
-    +------------------------------------------------------------------+
-    |               Product Search Parameters                          |
-    +------------------------------------------------------------------+
-    |        Key          |          Valid Values                      |
-    | id                  | Integer: ID of env group                   |
-    | name                | String                                     |
-    | manager             | ForeignKey: Auth.user                      |
-    | modified_by         | ForeignKey: Auth.user                      |
-    | is_active           | Boolean                                    |
-    | property            | ForeignKey: TCMSEnvProperty                |
-    +------------------------------------------------------------------+
+        * id: (int) environment group ID.
+        * name: (str) environment group name.
+        * manager: ForeignKey: Auth.user
+        * modified_by: ForeignKey: Auth.user
+        * is_active: (bool)
+        * property: ForeignKey: :class:`TCMSEnvProperty`
 
-    Returns:     Array: Matching env groups are retuned in a list of hashes.
+    :return: list of mappings of found environment groups.
+    :rtype: list
 
-    Example:
-    # Get all of env group name contains 'Desktop'
-    >>> Env.filter_groups({'name__icontains': 'Desktop'})
+    Example::
+
+        # Get all of env group name contains 'Desktop'
+        >>> Env.filter_groups({'name__icontains': 'Desktop'})
     """
     if 'is_active' in query:
         query['is_active'] = parse_bool_value(query['is_active'])
@@ -49,27 +46,23 @@ def filter_groups(request, query):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def filter_properties(request, query):
-    """
-    Description: Performs a search and returns the resulting list of env properties.
+    """Performs a search and returns the resulting list of env properties.
 
-    Params:      $query - Hash: keys must match valid search fields.
+    :param dict query: mapping containing following criteria to find out
+        environment properties.
 
-    +------------------------------------------------------------------+
-    |               Product Search Parameters                          |
-    +------------------------------------------------------------------+
-    |        Key          |          Valid Values                      |
-    | id                  | Integer: ID of env properties              |
-    | name                | String                                     |
-    | is_active           | Boolean                                    |
-    | group               | ForeignKey: TCMSEnvGroup                   |
-    | value               | ForeignKey: TCMSEnvValues                   |
-    +------------------------------------------------------------------+
+        * id: (int) environment property ID.
+        * name: (str) property name.
+        * is_active: (bool) whether to find active properties.
+        * group: ForeignKey: :class:`TCMSEnvGroup`
+        * value: ForeignKey: :class:`TCMSEnvValues`
 
-    Returns:     Array: Matching env properties are retuned in a list of hashes.
+    :return: Array: Matching env properties are retuned in a list of hashes.
 
-    Example:
-    # Get all of env properties name contains 'Desktop'
-    >>> Env.filter_properties({'name__icontains': 'Desktop'})
+    Example::
+
+        # Get all of env properties name contains 'Desktop'
+        >>> Env.filter_properties({'name__icontains': 'Desktop'})
     """
     if 'is_active' in query:
         query['is_active'] = parse_bool_value(query['is_active'])
@@ -78,26 +71,22 @@ def filter_properties(request, query):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def filter_values(request, query):
-    """
-    Description: Performs a search and returns the resulting list of env properties.
+    """Performs a search and returns the resulting list of env properties.
 
-    Params:      $query - Hash: keys must match valid search fields.
+    :param dict query: mapping containing these criteria.
 
-    +------------------------------------------------------------------+
-    |               Product Search Parameters                          |
-    +------------------------------------------------------------------+
-    |        Key          |          Valid Values                      |
-    | id                  | Integer: ID of env value                   |
-    | value               | String                                     |
-    | is_active           | Boolean                                    |
-    | property            | ForeignKey: TCMSEnvProperty                |
-    +------------------------------------------------------------------+
+        * id: (int) ID of env value
+        * value: (str)
+        * is_active: (bool)
+        * property: ForeignKey: :class:`TCMSEnvProperty`
 
-    Returns:     Array: Matching env values are retuned in a list of hashes.
+    :return: list of mappings containing found environment property values.
+    :rtype: list
 
-    Example:
-    # Get all of env values name contains 'Desktop'
-    >>> Env.filter_values({'name__icontains': 'Desktop'})
+    Example::
+
+        # Get all of env values name contains 'Desktop'
+        >>> Env.filter_values({'name__icontains': 'Desktop'})
     """
     if 'is_active' in query:
         query['is_active'] = parse_bool_value(query['is_active'])
@@ -106,20 +95,20 @@ def filter_values(request, query):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_properties(request, env_group_id=None, is_active=True):
-    """
-    Description: Get the list of properties associated with this env group.
+    """Get the list of properties associated with this env group.
 
-    Params:      $env_group_id - Integer: env_group_id of the env group in the Database
-                                 Return all of properties when the argument is not specific.
-                 $is_active    - Boolean: True to only include builds where is_active is true.
-                                 Default: True
-    Returns:     Array: Returns an array of env properties objects.
+    :param int env_group_id: env_group_id of the env group in the Database
+        Return all of properties when the argument is not specified.
+    :param bool is_active: If ``True``, only include builds. Default: ``True``.
+    :return: list of found environment properties.
+    :rtype: list
 
-    Example:
-    # Get all of properties
-    >>> Env.get_properties()
-    # Get the properties in group 10
-    >>> Env.get_properties(10)
+    Example::
+
+        # Get all of properties
+        >>> Env.get_properties()
+        # Get the properties in group 10
+        >>> Env.get_properties(10)
     """
     query = {'is_active': parse_bool_value(is_active)}
     if env_group_id:
@@ -130,20 +119,21 @@ def get_properties(request, env_group_id=None, is_active=True):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_values(request, env_property_id=None, is_active=True):
-    """
-    Description: Get the list of values associated with this env property.
+    """Get the list of values associated with this env property.
 
-    Params:      $env_property_id - Integer: env_property_id of the env property in the Database
-                                    Return all of values when the argument is not specific.
-                 $is_active       - Boolean: True to only include builds where is_active is true.
-                                    Default: True
-    Returns:     Array: Returns an array of env values objects.
+    :param int env_property_id: environment property ID. If omitted, all
+        environment property values will be returned.
+    :param bool is_active: indicate whether to get values from active
+        properties. Default is ``True``.
+    :return: list of mappings containing found environment property values.
+    :rtype: list
 
-    Example:
-    # Get all of properties
-    >>> Env.get_properties()
-    # Get the properties in group 10
-    >>> Env.get_properties(10)
+    Example::
+
+        # Get all values from active environment properties
+        >>> Env.get_values()
+        # Get the properties in group 10
+        >>> Env.get_values(10)
     """
     query = {'is_active': parse_bool_value(is_active)}
     if env_property_id:

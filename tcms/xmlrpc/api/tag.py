@@ -10,24 +10,19 @@ __xmlrpc_namespace__ = 'Tag'
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_tags(request, values):
-    """
-    Description:  Get the list of tags.
+    """Get tags by ID or name.
 
-    Params:      $values - Hash: keys must match valid search fields.
-        +------------------------------------------------------------+
-        |                   tag Search Parameters                    |
-        +------------------------------------------------------------+
-        | Key                     | Valid Values                     |
-        | ids                     | List of Integer                  |
-        | names                   | List of String                   |
-        +------------------------------------------------------------+
+    :param dict values: a mapping containing these criteria.
 
-    Returns:     Array: An array of tag object hashes.
+        * ids: (list[int]) list of tag IDs.
+        * names: (list[str]) list of names.
 
-    Example:
+    :return: a list of mappings of :class:`TestTag`.
+    :rtype: list
 
-    >>> values= {'ids': [121, 123]}
-    >>> Tag.get_tags(values)
+    Example::
+
+        >>> Tag.get_tags({'ids': [121, 123]})
     """
     if not isinstance(values, dict):
         raise TypeError('Argument values must be an dictionary.')

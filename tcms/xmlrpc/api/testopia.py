@@ -7,9 +7,7 @@ __xmlrpc_namespace__ = 'Testopia'
 
 @log_call(namespace=__xmlrpc_namespace__)
 def api_version(request):
-    """
-    Description: Return the API version of Nitrate.
-    """
+    """Return the API version of Nitrate."""
     from tcms import XMLRPC_VERSION
 
     return XMLRPC_VERSION
@@ -17,9 +15,7 @@ def api_version(request):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def testopia_version(request):
-    """
-    Description: Returns the version of Nitrate on this server.
-    """
+    """Returns the version of Nitrate on this server."""
     from tcms import VERSION
 
     return VERSION
@@ -27,9 +23,7 @@ def testopia_version(request):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def nitrate_version(request):
-    """
-    Description: Returns the version of Nitrate on this server.
-    """
+    """Returns the version of Nitrate on this server."""
     from tcms import VERSION
 
     return VERSION
@@ -37,9 +31,7 @@ def nitrate_version(request):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def tcms_version(request):
-    """
-    Description: Returns the version of Nitrate on this server.
-    """
+    """Returns the version of Nitrate on this server."""
     from tcms import VERSION
 
     return VERSION

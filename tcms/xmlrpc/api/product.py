@@ -42,21 +42,20 @@ __xmlrpc_namespace__ = 'Product'
 
 @log_call(namespace=__xmlrpc_namespace__)
 def check_category(request, name, product):
-    """
-    Description: Looks up and returns a category by name.
+    """Looks up and returns a category by name.
 
-    Params:      $name - String: name of the category.
-                 $product - Integer/String
-                            Integer: product_id of the product in the Database
-                            String: Product name
+    :param str name: name of the category.
+    :param product: product ID or name.
+    :type product: int or str
+    :return: a mapping representing the category.
+    :rtype: dict
 
-    Returns:     Hash: Matching Category object hash or error if not found.
+    Example::
 
-    Example:
-    # Get with product ID
-    >>> Product.check_category('Feature', 61)
-    # Get with product name
-    >>> Product.check_category('Feature', 'Red Hat Enterprise Linux 5')
+        # Get with product ID
+        >>> Product.check_category('Feature', 1)
+        # Get with product name
+        >>> Product.check_category('Feature', 'product name')
     """
     from tcms.testcases.models import TestCaseCategory
 
@@ -66,21 +65,19 @@ def check_category(request, name, product):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def check_component(request, name, product):
-    """
-    Description: Looks up and returns a component by name.
+    """Looks up and returns a component by name.
 
-    Params:      $name - String: name of the category.
-                 $product - Integer/String
-                            Integer: product_id of the product in the Database
-                            String: Product name
+    :param str name: name of the category.
+    :param product: product ID or name.
+    :return: a mapping representing a :class:`Component`
+    :rtype: dict
 
-    Returns:     Hash: Matching component object hash or error if not found.
+    Example::
 
-    Example:
-    # Get with product ID
-    >>> Product.check_component('acpi', 61)
-    # Get with product name
-    >>> Product.check_component('acpi', 'Red Hat Enterprise Linux 5')
+        # Get with product ID
+        >>> Product.check_component('acpi', 1)
+        # Get with product name
+        >>> Product.check_component('acpi', 'Product A')
     """
     from tcms.management.models import Component
 
@@ -90,20 +87,19 @@ def check_component(request, name, product):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def check_product(request, name):
-    """
-    Description: Looks up and returns a validated product.
+    """Looks up and returns a validated product.
 
-    Params:      $name - Integer/String
-                         Integer: product_id of the product in the Database
-                         String: Product name
+    :param name: product ID or name.
+    :type name: int or str
+    :return: a mapping representing the :class:`Product`.
+    :rtype: dict
 
-    Returns:     Hash: Matching Product object hash or error if not found.
+    Example::
 
-    Example:
-    # Get with product ID
-    >>> Product.check_product(61)
-    # Get with product name
-    >>> Product.check_product('Red Hat Enterprise Linux 5')
+        # Get with product ID
+        >>> Product.check_product(1)
+        # Get with product name
+        >>> Product.check_product('Product A')
     """
     p = pre_check_product(values=name)
     return p.serialize()
@@ -111,54 +107,46 @@ def check_product(request, name):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def filter(request, query):
-    """
-    Description: Performs a search and returns the resulting list of products.
+    """Performs a search and returns the resulting list of products.
 
-    Params:      $query - Hash: keys must match valid search fields.
+    :param dict query: a mapping containing following criteria.
 
-    +------------------------------------------------------------------+
-    |               Product Search Parameters                          |
-    +------------------------------------------------------------------+
-    |        Key          |          Valid Values                      |
-    | id                  | Integer: ID of product                     |
-    | name                | String                                     |
-    | classification      | ForeignKey: Classfication                  |
-    | description         | String                                     |
-    +------------------------------------------------------------------+
+        * id: (int) product id.
+        * name: (str) product name.
+        * classification: ForeignKey: :class:`Classification`.
+        * description: (str) description.
 
-    Returns:     Array: Matching products are retuned in a list of hashes.
+    :return: a mapping representing a :class:`Product`.
+    :rtype: dict
 
-    Example:
-    # Get all of product named 'Red Hat Enterprise Linux 5'
-    >>> Product.filter({'name': 'Red Hat Enterprise Linux 5'})
+    Example::
+
+        # Get all of product named 'product name'
+        >>> Product.filter({'name': 'product name'})
     """
     return Product.to_xmlrpc(query)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
 def filter_categories(request, query):
-    """
-    Description: Performs a search and returns the resulting list of categories.
+    """Performs a search and returns the resulting list of categories.
 
-    Params:      $query - Hash: keys must match valid search fields.
+    :param dict query: a mapping containing following criteria.
 
-    +------------------------------------------------------------------+
-    |              Component Search Parameters                         |
-    +------------------------------------------------------------------+
-    |        Key          |          Valid Values                      |
-    | id                  | Integer: ID of product                     |
-    | name                | String                                     |
-    | product             | ForeignKey: Product                        |
-    | description         | String                                     |
-    +------------------------------------------------------------------+
+        * id: (int) category ID.
+        * name: (str) category name.
+        * product: ForeignKey: :class:`Product`.
+        * description: (str) category description.
 
-    Returns:     Array: Matching categories are retuned in a list of hashes.
+    :return: a mapping representing found category.
+    :rtype: dict
 
-    Example:
-    # Get all of categories named like 'libvirt'
-    >>> Product.filter_categories({'name__icontains': 'regression'})
-    # Get all of categories named in product 'Red Hat Enterprise Linux 5'
-    >>> Product.filter_categories({'product__name': 'Red Hat Enterprise Linux 5'})
+    Example::
+
+        # Get all of categories named like 'libvirt'
+        >>> Product.filter_categories({'name__icontains': 'regression'})
+        # Get all of categories named in product 'product name'
+        >>> Product.filter_categories({'product__name': 'product name'})
     """
     from tcms.testcases.models import TestCaseCategory
 
@@ -167,30 +155,26 @@ def filter_categories(request, query):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def filter_components(request, query):
-    """
-    Description: Performs a search and returns the resulting list of components.
+    """Performs a search and returns the resulting list of components.
 
-    Params:      $query - Hash: keys must match valid search fields.
+    :param dict query: a mapping containing following criteria.
 
-    +------------------------------------------------------------------+
-    |              Component Search Parameters                         |
-    +------------------------------------------------------------------+
-    |        Key          |          Valid Values                      |
-    | id                  | Integer: ID of product                     |
-    | name                | String                                     |
-    | product             | ForeignKey: Product                        |
-    | initial_owner       | ForeignKey: Auth.User                      |
-    | initial_qa_contact  | ForeignKey: Auth.User                      |
-    | description         | String                                     |
-    +------------------------------------------------------------------+
+        * id: (int) product ID.
+        * name: (str) component name.
+        * product: ForeignKey: :class:`Product`.
+        * initial_owner: ForeignKey: ``Auth.User``.
+        * initial_qa_contact: ForeignKey: ``Auth.User``.
+        * description str: component description.
 
-    Returns:     Array: Matching components are retuned in a list of hashes.
+    :return: a mapping of found :class:`Component`.
+    :rtype: dict
 
-    Example:
-    # Get all of components named like 'libvirt'
-    >>> Product.filter_components({'name__icontains': 'libvirt'})
-    # Get all of components named in product 'Red Hat Enterprise Linux 5'
-    >>> Product.filter_components({'product__name': 'Red Hat Enterprise Linux 5'})
+    Example::
+
+        # Get all of components named like 'libvirt'
+        >>> Product.filter_components({'name__icontains': 'libvirt'})
+        # Get all of components named in product 'product name'
+        >>> Product.filter_components({'product__name': 'product name'})
     """
     from tcms.management.models import Component
 
@@ -199,27 +183,23 @@ def filter_components(request, query):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def filter_versions(request, query):
-    """
-    Description: Performs a search and returns the resulting list of versions.
+    """Performs a search and returns the resulting list of versions.
 
-    Params:      $query - Hash: keys must match valid search fields.
+    :param dict query: a mapping containing following criteria.
 
-    +------------------------------------------------------------------+
-    |              Component Search Parameters                         |
-    +------------------------------------------------------------------+
-    |        Key          |          Valid Values                      |
-    | id                  | Integer: ID of product                     |
-    | value               | String                                     |
-    | product             | ForeignKey: Product                        |
-    +------------------------------------------------------------------+
+        * id: (int) ID of product
+        * value: (str) version value.
+        * product: ForeignKey: :class:`Product`.
 
-    Returns:     Array: Matching versions are retuned in a list of hashes.
+    :return: a list of mappings of :class:`Version`.
+    :rtype: list
 
-    Example:
-    # Get all of versions named like '2.4.0-SNAPSHOT'
-    >>> Product.filter_versions({'value__icontains': '2.4.0-SNAPSHOT'})
-    # Get all of filter_versions named in product 'Red Hat Enterprise Linux 5'
-    >>> Product.filter_versions({'product__name': 'Red Hat Enterprise Linux 5'})
+    Example::
+
+        # Get all of versions named like '2.4.0-SNAPSHOT'
+        >>> Product.filter_versions({'value__icontains': '2.4.0-SNAPSHOT'})
+        # Get all of filter_versions named in product 'product name'
+        >>> Product.filter_versions({'product__name': 'product name'})
     """
     from tcms.management.models import Version
 
@@ -228,36 +208,36 @@ def filter_versions(request, query):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get(request, id):
-    """
-    Description: Used to load an existing product from the database.
+    """Used to load an existing product from the database.
 
-    Params:      $id - An integer representing the ID in the database
+    :param int id: product ID.
+    :return: a mapping representing found product.
+    :rtype: :class:`Product`.
 
-    Returns:     A blessed TCMS Product object hash
+    Example::
 
-    Example:
-    >>> Product.get(61)
+        >>> Product.get(61)
     """
     return Product.objects.get(id=int(id)).serialize()
 
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_builds(request, product, is_active=True):
-    """
-    Description: Get the list of builds associated with this product.
+    """Get the list of builds associated with this product.
 
-    Params:      $product  -  Integer/String
-                              Integer: product_id of the product in the Database
-                              String: Product name
-                 $is_active - Boolean: True to only include builds where is_active is true.
-                              Default: True
-    Returns:     Array: Returns an array of Build objects.
+    :param product: product ID or name.
+    :type product: int or str
+    :param bool is_active: if ``True``, only return active builds. Otherwise,
+        inactive builds will be returned.
+    :return: a list of mappings of :class:`TestBuild`.
+    :rtype: list
 
-    Example:
-    # Get with product id including all builds
-    >>> Product.get_builds(61)
-    # Get with product name excluding all inactive builds
-    >>> Product.get_builds('Red Hat Enterprise Linux 5', 0)
+    Example::
+
+        # Get with product id including all builds
+        >>> Product.get_builds(1)
+        # Get with product name excluding all inactive builds
+        >>> Product.get_builds('product name', 0)
     """
     from tcms.management.models import TestBuild
 
@@ -268,20 +248,18 @@ def get_builds(request, product, is_active=True):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_cases(request, product):
-    """
-    Description: Get the list of cases associated with this product.
+    """Get the list of cases associated with this product.
 
-    Params:      $product - Integer/String
-                            Integer: product_id of the product in the Database
-                            String: Product name
+    :param product: product ID or name.
+    :type product: int or str
+    :return: a list of mappings of :class:`TestCase`.
 
-    Returns:     Array: Returns an array of TestCase objects.
+    Example::
 
-    Example:
-    # Get with product id
-    >>> Product.get_cases(61)
-    # Get with product name
-    >>> Product.get_cases('Red Hat Enterprise Linux 5')
+        # Get with product id
+        >>> Product.get_cases(61)
+        # Get with product name
+        >>> Product.get_cases('product name')
     """
     from tcms.testcases.models import TestCase
 
@@ -292,20 +270,19 @@ def get_cases(request, product):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_categories(request, product):
-    """
-    Description: Get the list of categories associated with this product.
+    """Get the list of categories associated with this product.
 
-    Params:      $product - Integer/String
-                            Integer: product_id of the product in the Database
-                            String: Product name
-
-    Returns:     Array: Returns an array of Case Category objects.
+    :param product: product ID or name.
+    :type product: int or str
+    :return: a list of mappings of :class:`TestCaseCategory`.
+    :rtype: list
 
     Example:
-    # Get with product id
-    >>> Product.get_categories(61)
-    # Get with product name
-    >>> Product.get_categories('Red Hat Enterprise Linux 5')
+
+        # Get with product id
+        >>> Product.get_categories(61)
+        # Get with product name
+        >>> Product.get_categories('product name')
     """
     from tcms.testcases.models import TestCaseCategory
 
@@ -316,15 +293,15 @@ def get_categories(request, product):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_category(request, id):
-    """
-    Description: Get the category matching the given id.
+    """Get the category matching the given id.
 
-    Params:      $id - Integer: ID of the category in the database.
+    :param int id: category ID.
+    :return: a mapping representing found :class:`TestCaseCategory`.
+    :rtype: dict
 
-    Returns:     Hash: Category object hash.
+    Example::
 
-    Example:
-    >>> Product.get_category(11)
+        >>> Product.get_category(11)
     """
     from tcms.testcases.models import TestCaseCategory
 
@@ -334,24 +311,21 @@ def get_category(request, id):
 @log_call(namespace=__xmlrpc_namespace__)
 @permission_required('management.add_component', raise_exception=True)
 def add_component(request, product, name, initial_owner_id=None, initial_qa_contact_id=None):
-    """
-    Description: Add component to selected product.
+    """Add component to selected product.
 
+    :param product: product ID or name.
+    :type product: int or str
+    :param str name: Component name
+    :param int initial_owner_id: optional initial owner ID. Defaults to current
+        logged in user.
+    :param int initial_qa_contact_id: optional initial QA contact ID. Defaults
+        to current logged in user.
+    :return: a mapping of new :class:`Component`.
+    :rtype: dict
 
-    Params:      $product - Integer/String
-                            Integer: product_id of the product in the Database
-                            String: Product name
-                 $name    - String: Component name
-                 [$initial_owner_id] - Integer: (OPTIONAL) The numeric ID or the login of the author.
-                                    Defaults to logged in user.
-                 [$initial_qa_contact_id] - Integer: (OPTIONAL) The numeric ID or the login of the author.
-                                         Defaults to logged in user.
+    Example::
 
-
-    Returns:     Hash: Component object hash.
-
-    Example:
-    >>> Product.add_component(71, 'JPBMM')
+        >>> Product.add_component(71, 'JPBMM')
     """
     from tcms.management.models import Component
 
@@ -377,15 +351,15 @@ def add_component(request, product, name, initial_owner_id=None, initial_qa_cont
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_component(request, id):
-    """
-    Description: Get the component matching the given id.
+    """Get the component matching the given id.
 
-    Params:      $id - Integer: ID of the component in the database.
+    :param int id: component ID.
+    :return: a mapping representing found :class:`Component`.
+    :rtype: dict
 
-    Returns:     Hash: Component object hash.
+    Example::
 
-    Example:
-    >>> Product.get_component(11)
+        >>> Product.get_component(11)
     """
     from tcms.management.models import Component
 
@@ -395,26 +369,21 @@ def get_component(request, id):
 @log_call(namespace=__xmlrpc_namespace__)
 @permission_required('management.change_component', raise_exception=True)
 def update_component(request, component_id, values):
-    """
-    Description: Update component to selected product.
+    """Update component to selected product.
 
-    Params:      $component_id - Integer: ID of the component in the database.
+    :param int component_id: component ID.
+    :param dict values: a mapping containing these new data.
 
-                 $values   - Hash of keys matching TestCase fields and the new values
-                             to set each field to.
+        * name: (str) optional.
+        * initial_owner_id: (int) optional.
+        * initial_qa_contact_id: (int) optional.
 
-        +-----------------------+----------------+-----------------------------------------+
-        | Field                 | Type           | Null                                    |
-        +-----------------------+----------------+-----------------------------------------+
-        | name                  | String         | Optional                                |
-        | initial_owner_id      | Integer        | Optional(int - user_id)                 |
-        | initial_qa_contact_id | Integer        | Optional(int - user_id)                 |
-        +-----------------------+----------------+-----------------------------------------+
+    :return: a mapping representing updated :class:`Component`.
+    :rtype: dict
 
-    Returns:     Hash: Component object hash.
+    Example::
 
-    Example:
-    >>> Product.update_component(71, {'name': 'NewName'})
+        >>> Product.update_component(1, {'name': 'NewName'})
     """
     from tcms.management.models import Component
 
@@ -437,20 +406,19 @@ def update_component(request, component_id, values):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_components(request, product):
-    """
-    Description: Get the list of components associated with this product.
+    """Get the list of components associated with this product.
 
-    Params:      $product - Integer/String
-                            Integer: product_id of the product in the Database
-                            String: Product name
+    :param product: product ID or name.
+    :type product: int or str
+    :return: a list of mappings of :class:`Component`.
+    :rtype: list
 
-    Returns:     Array: Returns an array of Component objects.
+    Example::
 
-    Example:
-    # Get with product id
-    >>> Product.get_components(61)
-    # Get with product name
-    >>> Product.get_components('Red Hat Enterprise Linux 5')
+        # Get with product id
+        >>> Product.get_components(61)
+        # Get with product name
+        >>> Product.get_components('product name')
     """
     from tcms.management.models import Component
 
@@ -473,20 +441,19 @@ def get_milestones(request, product):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_plans(request, product):
-    """
-    Description: Get the list of plans associated with this product.
+    """Get the list of plans associated with this product.
 
-    Params:      $product - Integer/String
-                            Integer: product_id of the product in the Database
-                            String: Product name
+    :param product: product ID or name.
+    :type product: int or str
+    :return: a list of mappings of :class:`TestPlan`.
+    :rtype: list
 
-    Returns:     Array: Returns an array of Test Plan objects.
+    Example::
 
-    Example:
-    # Get with product id
-    >>> Product.get_plans(61)
-    # Get with product name
-    >>> Product.get_plans('Red Hat Enterprise Linux 5')
+        # Get with product id
+        >>> Product.get_plans(61)
+        # Get with product name
+        >>> Product.get_plans('product name')
     """
     from tcms.testplans.models import TestPlan
 
@@ -497,20 +464,19 @@ def get_plans(request, product):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_runs(request, product):
-    """
-    Description: Get the list of runs associated with this product.
+    """Get the list of runs associated with this product.
 
-    Params:      $product - Integer/String
-                            Integer: product_id of the product in the Database
-                            String: Product name
+    :params product: product ID or name.
+    :type product: int or str
+    :return: a list of mappings of test runs.
+    :rtype: list
 
-    Returns:     Array: Returns an array of Test Run objects.
+    Example::
 
-    Example:
-    # Get with product id
-    >>> Product.get_runs(61)
-    # Get with product name
-    >>> Product.get_runs('Red Hat Enterprise Linux 5')
+        # Get with product id
+        >>> Product.get_runs(1)
+        # Get with product name
+        >>> Product.get_runs('product name')
     """
     from tcms.testruns.models import TestRun
 
@@ -521,15 +487,15 @@ def get_runs(request, product):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_tag(request, id):
-    """
-    Description: Get the list of tags.
+    """Get the list of tags.
 
-    Params:      $id   - Integer: ID of the tag in the database.
+    :param int id: tag ID.
+    :return: a mapping representing found :class:`TestTag`.
+    :rtype: dict
 
-    Returns:     Array: Returns an array of Tags objects.
+    Example::
 
-    Example:
-    >>> Product.get_tag(10)
+        >>> Product.get_tag(1)
     """
     from tcms.management.models import TestTag
 
@@ -539,24 +505,24 @@ def get_tag(request, id):
 @log_call(namespace=__xmlrpc_namespace__)
 @permission_required('management.add_version', raise_exception=True)
 def add_version(request, values):
-    """
-    Description: Add version to specified product.
+    """Add version to specified product.
 
-    Params:      $product - Integer/String
-                            Integer: product_id of the product in the Database
-                            String: Product name
-                 $value   - String
-                            The name of the version string.
+    :param dict values: a mapping containing these data
 
-    Returns:     Array: Returns the newly added version object, error info if failed.
+        * product: (int or str) product ID or name.
+        * value: (str) the version value.
 
-    Example:
-    # Add version for specified product:
-    >>> Product.add_version({'value': 'devel', 'product': 272})
-    {'product': 'QE Test Product', 'id': '1106', 'value': 'devel', 'product_id': 272}
-    # Run it again:
-    >>> Product.add_version({'value': 'devel', 'product': 272})
-    [['__all__', 'Version with this Product and Value already exists.']]
+    :return: a mapping representing newly added :class:`Version`.
+    :raise ValueError: if fail to add version.
+
+    Example::
+
+        # Add version for specified product:
+        >>> Product.add_version({'value': 'devel', 'product': 1})
+        {'product': 'Test Product', 'id': '1', 'value': 'devel', 'product_id': 1}
+        # Run it again:
+        >>> Product.add_version({'value': 'devel', 'product': 1})
+        [['__all__', 'Version with this Product and Value already exists.']]
     """
     from tcms.management.forms import VersionForm
     from tcms.core import forms
@@ -575,20 +541,19 @@ def add_version(request, values):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_versions(request, product):
-    """
-    Description: Get the list of versions associated with this product.
+    """Get the list of versions associated with this product.
 
-    Params:      $product - Integer/String
-                            Integer: product_id of the product in the Database
-                            String: Product name
+    :param product: product ID or name.
+    :type product: int or str
+    :return: a list of mappings of versions.
+    :rtype: list
 
-    Returns:     Array: Returns an array of Version objects.
+    Example::
 
-    Example:
-    # Get with product id
-    >>> Product.get_runs(61)
-    # Get with product name
-    >>> Product.get_runs('Red Hat Enterprise Linux 5')
+        # Get with product id
+        >>> Product.get_versions(1)
+        # Get with product name
+        >>> Product.get_versions('product name')
     """
     from tcms.management.models import Version
 

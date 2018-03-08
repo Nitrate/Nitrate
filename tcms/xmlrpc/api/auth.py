@@ -24,21 +24,17 @@ def check_user_name(parameters):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-def login(request, parameters):
-    """
-    Description: Login into Nitrate
-    Params:      $parameters - Hash: keys must match valid search fields.
-    +-------------------------------------------------------------------+
-    |                    Login Parameters                               |
-    +-------------------------------------------------------------------+
-    |        Key          |          Valid Values                       |
-    | username            | A nitrate login (email address)             |
-    | password            | String                                      |
-    +-------------------------------------------------------------------+
+def login(request, credential):
+    """Login into Nitrate
 
-    Returns:     String: Session ID.
+    :param dict credential: a mapping containing ``username`` and ``password``.
+    :return: Session ID
+    :rtype: str
+    :raise PermissionDenied: if either ``username`` or ``password`` is
+        incorrect.
 
     Example:
+
     >>> Auth.login({'username': 'foo', 'password': 'bar'})
     """
     from tcms.core.contrib.auth import get_backend
@@ -47,7 +43,7 @@ def login(request, parameters):
 
     for backend_str in settings.AUTHENTICATION_BACKENDS:
         backend = get_backend(backend_str)
-        user = backend.authenticate(*check_user_name(parameters))
+        user = backend.authenticate(*check_user_name(credential))
 
         if user:
             user.backend = "%s.%s" % (backend.__module__,
@@ -61,17 +57,18 @@ def login(request, parameters):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def login_krbv(request):
-    """
-    Description: Login into the Nitrate deployed with mod_auth_kerb
+    """Login into the Nitrate deployed with mod_auth_kerb
 
-    Returns:     String: Session ID.
+    :return: Session ID.
+    :rtype: str
 
-    Example:
-    $ kinit
-    Password for username@example.com:
+    Example::
 
-    $ python
-    >>> Auth.login_krbv()
+        $ kinit
+        Password for username@example.com:
+
+        $ python
+        >>> Auth.login_krbv()
     """
     from django.contrib.auth.middleware import RemoteUserMiddleware
 
@@ -83,6 +80,5 @@ def login_krbv(request):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def logout(request):
-    """Description: Delete session information."""
+    """Delete session information"""
     django.contrib.auth.logout(request)
-    return

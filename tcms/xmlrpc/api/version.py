@@ -12,15 +12,14 @@ __xmlrpc_namespace__ = 'Version'
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get(request):
-    """
-    Description: Retrieve XMLRPC's version
+    """Retrieve XMLRPC's version
 
-    Params:      No parameters.
-
-    Returns:     A list that represents the version.
+    :return: A list that represents the version.
+    :rtype: list
 
     Example:
-    Version.get()
+
+    >>> Version.get()
     """
 
     return get_version()

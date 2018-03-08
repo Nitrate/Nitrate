@@ -45,25 +45,25 @@ __xmlrpc_namespace__ = 'TestPlan'
 @log_call(namespace=__xmlrpc_namespace__)
 @permission_required('testplans.add_testplantag', raise_exception=True)
 def add_tag(request, plan_ids, tags):
-    """
-    Description: Add one or more tags to the selected test plans.
+    """Add one or more tags to the selected test plans.
 
-    Params:      $plan_ids - Integer/Array/String: An integer representing the ID of the plan in the database,
-                      an arry of plan_ids, or a string of comma separated plan_ids.
+    :param plan_ids: give one or more plan IDs. It could be an integer, a
+        string containing comma separated IDs, or a list of int each of them is
+        a plan ID.
+    :type plan_ids: int, str or list
+    :param tags: a tag name or list of tag names to be added.
+    :type tags: str or list[str]
+    :return: a list which is empty on success or a list of mappings with
+        failure codes if a failure occured.
 
-                  $tags - String/Array - A single tag, an array of tags,
-                      or a comma separated list of tags.
+    Example::
 
-    Returns:     Array: empty on success or an array of hashes with failure
-                  codes if a failure occured.
-
-    Example:
-    # Add tag 'foobar' to plan 1234
-    >>> TestPlan.add_tag(1234, 'foobar')
-    # Add tag list ['foo', 'bar'] to plan list [12345, 67890]
-    >>> TestPlan.add_tag([12345, 67890], ['foo', 'bar'])
-    # Add tag list ['foo', 'bar'] to plan list [12345, 67890] with String
-    >>> TestPlan.add_tag('12345, 67890', 'foo, bar')
+        # Add tag 'foobar' to plan 1
+        >>> TestPlan.add_tag(1, 'foobar')
+        # Add tag list ['foo', 'bar'] to plan list [1, 2]
+        >>> TestPlan.add_tag([1, 2], ['foo', 'bar'])
+        # Add tag list ['foo', 'bar'] to plan list [1, 2] with String
+        >>> TestPlan.add_tag('1, 2', 'foo, bar')
     """
     # FIXME: this could be optimized to reduce possible huge number of SQLs
 
@@ -81,23 +81,27 @@ def add_tag(request, plan_ids, tags):
 @log_call(namespace=__xmlrpc_namespace__)
 @permission_required('testplans.add_testplancomponent', raise_exception=True)
 def add_component(request, plan_ids, component_ids):
-    """
-    Description: Adds one or more components to the selected test plan.
+    """Adds one or more components to the selected test plan.
 
-    Params:      $plan_ids - Integer/Array/String: An integer representing the ID of the plan in the database.
-                 $component_ids - Integer/Array/String - The component ID, an array of Component IDs
-                                  or a comma separated list of component IDs.
+    :param plan_ids: give one or more plan IDs. It could be an integer, a
+        string containing comma separated IDs, or a list of int each of them is
+        a plan ID.
+    :type plan_ids: int, str or list
+    :param component_ids: give one or more component IDs. It could be an integer, a
+        string containing comma separated IDs, or a list of int each of them is
+        a component ID.
+    :type component_ids: int, str or list
+    :return: a list which is empty on success or a list of mappings with
+        failure codes if a failure occured.
 
-    Returns:     Array: empty on success or an array of hashes with failure
-                        codes if a failure occured.
+    Example::
 
-    Example:
-    # Add component id 54321 to plan 1234
-    >>> TestPlan.add_component(1234, 54321)
-    # Add component ids list [1234, 5678] to plan list [56789, 12345]
-    >>> TestPlan.add_component([56789, 12345], [1234, 5678])
-    # Add component ids list '1234, 5678' to plan list '56789, 12345' with String
-    >>> TestPlan.add_component('56789, 12345', '1234, 5678')
+        # Add component id 54321 to plan 1234
+        >>> TestPlan.add_component(1234, 54321)
+        # Add component ids list [1234, 5678] to plan list [56789, 12345]
+        >>> TestPlan.add_component([56789, 12345], [1234, 5678])
+        # Add component ids list '1234, 5678' to plan list '56789, 12345' with String
+        >>> TestPlan.add_component('56789, 12345', '1234, 5678')
     """
     # FIXME: optimize this method to reduce possible huge number of SQLs
 
@@ -117,13 +121,15 @@ def add_component(request, plan_ids, component_ids):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def check_plan_type(request, name):
-    """
-    Params:      $name - String: the plan type.
+    """Get a plan type by name
 
-    Returns:     Hash: Matching plan type object hash or error if not found.
+    :param str name: the plan type.
+    :return: a mapping of found :class:`TestPlanType`.
+    :rtype: dict
 
-    Example:
-    >>> TestPlan.check_plan_type('regression')
+    Example::
+
+        >>> TestPlan.check_plan_type('regression')
     """
     return TestPlanType.objects.get(name=name).serialize()
 
@@ -131,38 +137,37 @@ def check_plan_type(request, name):
 @log_call(namespace=__xmlrpc_namespace__)
 @permission_required('testplans.add_testplan', raise_exception=True)
 def create(request, values):
-    """
-    Description: Creates a new Test Plan object and stores it in the database.
+    """Creates a new Test Plan object and stores it in the database.
 
-    Params:      $values - Hash: A reference to a hash with keys and values
-                  matching the fields of the test plan to be created.
-      +-------------------------------------------+----------------+-----------+-------------------------------------------+
-      | Field                                     | Type           | Null      | Description                               |
-      +-------------------------------------------+----------------+-----------+-------------------------------------------+
-      | product                                   | Integer        | Required  | ID of product                             |
-      | name                                      | String         | Required  |                                           |
-      | type                                      | Integer        | Required  | ID of plan type                           |
-      | product_version(default_product_version)  | Integer        | Required  | ID of version, product_version(recommend),|
-      |                                           |                |           | default_product_version will be deprecated|
-      |                                           |                |           | in future release.                        |
-      | text                                      | String         | Required  | Plan documents, HTML acceptable.          |
-      | parent                                    | Integer        | Optional  | Parent plan ID                            |
-      | is_active                                 | Boolean        | Optional  | 0: Archived 1: Active (Default 0)         |
-      +-------------------------------------------+----------------+-----------+-------------------------------------------+
+    :param dict values: a mapping containing these plan data:
 
-    Returns:     The newly created object hash.
+        * product: (int) **Required** ID of product
+        * name: (str) **Required**
+        * type: (int) **Required** ID of plan type
+        * product_version: (int) **Required** version ID.
+        * default_product_version: (int) optional version ID.
+        * text: (str) **Required** Plan documents, HTML acceptable.
+        * parent: (int) optional Parent plan ID
+        * is_active: bool optional 0: Archived 1: Active (Default 0)
 
-    Example:
-    # Minimal test case parameters
-    >>> values = {
-        'product': 61,
-        'name': 'Testplan foobar',
-        'type': 1,
-        'parent_id': 150,
-        'default_product_version': 93,
-        'text':'Testing TCMS',
-    }
-    >>> TestPlan.create(values)
+    :return: a mapping of newly created :class:`TestPlan`.
+    :rtype: dict
+
+    Example::
+
+        # Minimal test case parameters
+        >>> values = {
+            'product': 1,
+            'name': 'Testplan foobar',
+            'type': 1,
+            'parent_id': 2,
+            'default_product_version': 1,
+            'text':'Testing TCMS',
+        }
+        >>> TestPlan.create(values)
+
+    .. deprecated: x.y
+       ``default_product_version`` is deprecated and will be removed.
     """
     from tcms.core import forms
     from tcms.xmlrpc.forms import NewPlanForm
@@ -199,70 +204,65 @@ def create(request, values):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def filter(request, values={}):
-    """
-    Description: Performs a search and returns the resulting list of test plans.
+    """Performs a search and returns the resulting list of test plans.
 
-    Params:      $values - Hash: keys must match valid search fields.
+    :param dict values: a mapping containing these criteira.
 
-        +------------------------------------------------------------+
-        |                   Plan Search Parameters                   |
-        +----------------------------------------------------------+
-        |        Key              |          Valid Values            |
-        | author                  | ForeignKey: Auth.User            |
-        | attachment              | ForeignKey: Attachment           |
-        | case                    | ForeignKey: Test Case            |
-        | create_date             | DateTime                         |
-        | env_group               | ForeignKey: Environment Group    |
-        | name                    | String                           |
-        | plan_id                 | Integer                          |
-        | product                 | ForeignKey: Product              |
-        | product_version         | ForeignKey: Version              |
-        | tag                     | ForeignKey: Tag                  |
-        | text                    | ForeignKey: Test Plan Text       |
-        | type                    | ForeignKey: Test Plan Type       |
-        +------------------------------------------------------------+
+        * author: ForeignKey: Auth.User
+        * attachment: ForeignKey: Attachment
+        * case: ForeignKey: TestCase
+        * create_date: DateTime
+        * env_group: ForeignKey: Environment Group
+        * name: (str)
+        * plan_id: (int)
+        * product: ForeignKey: Product
+        * product_version: ForeignKey: Version
+        * tag: ForeignKey: TestTag
+        * text: ForeignKey: Test Plan Text
+        * type: ForeignKey: Test Plan Type
 
-    Returns:     Array: Matching test plans are retuned in a list of plan object hashes.
+    :return: list of mappings of found :class:`TestPlan`.
+    :rtype: list[dict]
 
-    Example:
-    # Get all of plans contain 'TCMS' in name
-    >>> TestPlan.filter({'name__icontain': 'TCMS'})
-    # Get all of plans create by xkuang
-    >>> TestPlan.filter({'author__username': 'xkuang'})
-    # Get all of plans the author name starts with x
-    >>> TestPlan.filter({'author__username__startswith': 'x'})
-    # Get plans contain the case ID 12345, 23456, 34567
-    >>> TestPlan.filter({'case__case_id__in': [12345, 23456, 34567]})
+    Example::
+
+        # Get all of plans contain 'TCMS' in name
+        >>> TestPlan.filter({'name__icontain': 'TCMS'})
+        # Get all of plans create by xkuang
+        >>> TestPlan.filter({'author__username': 'xkuang'})
+        # Get all of plans the author name starts with x
+        >>> TestPlan.filter({'author__username__startswith': 'x'})
+        # Get plans contain the case ID 1, 2, 3
+        >>> TestPlan.filter({'case__case_id__in': [1, 2, 3]})
     """
     return TestPlan.to_xmlrpc(values)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
 def filter_count(request, values={}):
-    """
-    Description: Performs a search and returns the resulting count of plans.
+    """Performs a search and returns the resulting count of plans.
 
-    Params:      $values - Hash: keys must match valid search fields (see filter).
+    :param dict values: a mapping containing criteria. See also
+        :meth:`TestPlan.filter <tcms.xmlrpc.api.testplan.filter>`.
+    :return: total matching plans.
+    :rtype: int
 
-    Returns:     Integer - total matching plans.
-
-    Example:
-    # See distinct_count()
+    .. seealso:: See example of :meth:`TestPlan.filter <tcms.xmlrpc.api.testplan.filter>`.
     """
     return distinct_count(TestPlan, values)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get(request, plan_id):
-    """
-    Description: Used to load an existing test plan from the database.
+    """Used to load an existing test plan from the database.
 
-    Params:      $id - Integer/String: An integer representing the ID of this plan in the database
+    :param int plan_id: plan ID.
+    :return: a mapping of found :class:`TestPlan`.
+    :rtype: dict
 
-    Returns:     Hash: A blessed TestPlan object hash
+    Example::
 
-    Example:
-    >>> TestPlan.get(137)
+        >>> TestPlan.get(1)
     """
     tp = TestPlan.objects.get(plan_id=plan_id)
     response = tp.serialize()
@@ -284,25 +284,25 @@ def get(request, plan_id):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_change_history(request, plan_id):
-    """
-    *** FIXME: NOT IMPLEMENTED - History is different than before ***
-    Description: Get the list of changes to the fields of this plan.
+    """Get the list of changes to the fields of this plan.
 
-    Params:      $plan_id - Integer: An integer representing the ID of this plan in the database
+    :param int plan_id: plan ID.
+    :return: a list of mappings of found history.
 
-    Returns:     Array: An array of hashes with changed fields and their details.
+    .. warning::
+
+       NOT IMPLEMENTED - History is different than before.
     """
     raise NotImplementedError('Not implemented RPC method')
 
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_env_groups(request, plan_id):
-    """
-    Description: Get the list of env groups to the fields of this plan.
+    """Get the list of env groups to the fields of this plan.
 
-    Params:      $plan_id - Integer: An integer representing the ID of this plan in the database
-
-    Returns:     Array: An array of hashes with env groups.
+    :param int plan_id: plan ID.
+    :return: list of mappings of found :class:`TCMSEnvGroup`.
+    :rtype: list[dict]
     """
     from tcms.management.models import TCMSEnvGroup
 
@@ -312,28 +312,30 @@ def get_env_groups(request, plan_id):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_plan_type(request, id):
-    """
-    Params:      $id - Integer: ID of the plan type to return
+    """Get plan type
 
-    Returns:     Hash: Matching plan type object hash or error if not found.
+    :param int id: plan ID.
+    :return: a mapping of found :class:`TestPlanType`.
+    :rtype: dict
 
-    Example:
-    >>> TestPlan.get_plan_type(3)
+    Example::
+
+        >>> TestPlan.get_plan_type(1)
     """
     return TestPlanType.objects.get(id=id).serialize()
 
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_product(request, plan_id):
-    """
-    Description: Get the Product the plan is assiciated with.
+    """Get the Product the plan is assiciated with.
 
-    Params:      $plan_id - Integer: An integer representing the ID of the plan in the database.
+    :param int plan_id: plan ID.
+    :return: a mapping of found :class:`Product`.
+    :rtype: dict
 
-    Returns:     Hash: A blessed Product hash.
+    Example::
 
-    Example:
-    >>> TestPlan.get_product(137)
+        >>> TestPlan.get_product(1)
     """
     products = Product.objects.filter(plan=plan_id)
     products = products.select_related('classification')
@@ -346,15 +348,15 @@ def get_product(request, plan_id):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_tags(request, plan_id):
-    """
-    Description: Get the list of tags attached to this plan.
+    """Get the list of tags attached to this plan.
 
-    Params:      $plan_id - Integer An integer representing the ID of this plan in the database
+    :param int plan_id: plan ID.
+    :return: list of mappings of found :class:`TestTag`.
+    :rtype: list[dict]
 
-    Returns:     Array: An array of tag object hashes.
+    Example::
 
-    Example:
-    >>> TestPlan.get_tags(137)
+        >>> TestPlan.get_tags(1)
     """
     tp = TestPlan.objects.get(plan_id=plan_id)
 
@@ -365,15 +367,15 @@ def get_tags(request, plan_id):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_components(request, plan_id):
-    """
-    Description: Get the list of components attached to this plan.
+    """Get the list of components attached to this plan.
 
-    Params:      $plan_id - Integer/String: An integer representing the ID in the database
+    :param int plan_id: plan ID.
+    :return: list of mappings of found :class:`Component`.
+    :rtype: list[dict]
 
-    Returns:     Array: An array of component object hashes.
+    Example::
 
-    Example:
-    >>> TestPlan.get_components(12345)
+        >>> TestPlan.get_components(1)
     """
     tp = TestPlan.objects.get(plan_id=plan_id)
 
@@ -384,15 +386,15 @@ def get_components(request, plan_id):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_all_cases_tags(request, plan_id):
-    """
-    Description: Get the list of tags attached to this plan's testcases.
+    """Get the list of tags attached to this plan's testcases.
 
-    Params:      $plan_id - Integer An integer representing the ID of this plan in the database
+    :param int plan_id: plan ID.
+    :return: list of mappings of found :class:`TestTag`.
+    :rtype: list[dict]
 
-    Returns:     Array: An array of tag object hashes.
+    Example::
 
-    Example:
-    >>> TestPlan.get_all_cases_tags(137)
+        >>> TestPlan.get_all_cases_tags(137)
     """
     tp = TestPlan.objects.get(plan_id=plan_id)
 
@@ -407,15 +409,15 @@ def get_all_cases_tags(request, plan_id):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_test_cases(request, plan_id):
-    """
-    Description: Get the list of cases that this plan is linked to.
+    """Get the list of cases that this plan is linked to.
 
-    Params:      $plan_id - Integer: An integer representing the ID of the plan in the database
+    :param int plan_id: plan ID.
+    :return: list of mappings of found :class:`TestCase`.
+    :rtype: list[dict]
 
-    Returns:     Array: An array of test case object hashes.
+    Example::
 
-    Example:
-    >>> TestPlan.get_test_cases(137)
+        >>> TestPlan.get_test_cases(1)
     """
     from tcms.testcases.models import TestCase
     from tcms.testplans.models import TestPlan
@@ -434,15 +436,15 @@ def get_test_cases(request, plan_id):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_test_runs(request, plan_id):
-    """
-    Description: Get the list of runs in this plan.
+    """Get the list of runs in this plan.
 
-    Params:      $plan_id - Integer: An integer representing the ID of this plan in the database
+    :param int plan_id: plan ID.
+    :return: list of mappings of found :class:`TestRun`.
+    :rtype: list[dict]
 
-    Returns:     Array: An array of test run object hashes.
+    Example::
 
-    Example:
-    >>> TestPlan.get_test_runs(plan_id)
+        >>> TestPlan.get_test_runs(1)
     """
     from tcms.testruns.models import TestRun
 
@@ -452,21 +454,21 @@ def get_test_runs(request, plan_id):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_text(request, plan_id, plan_text_version=None):
-    """
-    Description: The plan document for a given test plan.
+    """The plan document for a given test plan.
 
-    Params:      $plan_id - Integer: An integer representing the ID of this plan in the database
+    :param int plan_id: plan ID.
+    :param str text: the content to be added. Could contain HTML.
+    :param int plan_text_version: optional text version. Defaults to the latest
+        if omitted.
+    :return: a mapping of text.
+    :rtype: dict
 
-                 $version - Integer: (OPTIONAL) The version of the text you want returned.
-                                     Defaults to the latest.
+    Example::
 
-    Returns:     Hash: Text and author information.
-
-    Example:
-    # Get all latest case text
-    >>> TestPlan.get_text(137)
-    # Get all case text with version 4
-    >>> TestPlan.get_text(137, 4)
+        # Get all latest case text
+        >>> TestPlan.get_text(1)
+        # Get all case text with version 4
+        >>> TestPlan.get_text(1, 4)
     """
     tp = TestPlan.objects.get(plan_id=plan_id)
     test_plan_text = tp.get_text_with_version(
@@ -492,23 +494,24 @@ def lookup_type_name_by_id(request, id):
 @log_call(namespace=__xmlrpc_namespace__)
 @permission_required('testplans.delete_testplantag', raise_exception=True)
 def remove_tag(request, plan_ids, tags):
-    """
-    Description: Remove a tag from a plan.
+    """Remove a tag from a plan.
 
-    Params:      $plan_ids - Integer/Array/String: An integer or alias representing the ID in the database,
-                                                   an array of plan_ids, or a string of comma separated plan_ids.
+    :param plan_ids: give one or more plan IDs. It could be an integer, a
+        string containing comma separated IDs, or a list of int each of them is
+        a plan ID.
+    :type plan_ids: int, str or list
+    :param tags: a tag name or a list of tag names to be removed.
+    :type tags: str or list[str]
+    :return: Empty on success.
 
-                 $tag - String - A single tag to be removed.
+    Example::
 
-    Returns:     Array: Empty on success.
-
-    Example:
-    # Remove tag 'foo' from plan 1234
-    >>> TestPlan.remove_tag(1234, 'foo')
-    # Remove tag 'foo' and 'bar' from plan list [56789, 12345]
-    >>> TestPlan.remove_tag([56789, 12345], ['foo', 'bar'])
-    # Remove tag 'foo' and 'bar' from plan list '56789, 12345' with String
-    >>> TestPlan.remove_tag('56789, 12345', 'foo, bar')
+        # Remove tag 'foo' from plan 1
+        >>> TestPlan.remove_tag(1, 'foo')
+        # Remove tag 'foo' and 'bar' from plan list [1, 2]
+        >>> TestPlan.remove_tag([1, 2], ['foo', 'bar'])
+        # Remove tag 'foo' and 'bar' from plan list '1, 2' with String
+        >>> TestPlan.remove_tag('1, 2', 'foo, bar')
     """
     from tcms.management.models import TestTag
 
@@ -535,23 +538,26 @@ def remove_tag(request, plan_ids, tags):
 @permission_required('testplans.delete_testplancomponent',
                      raise_exception=True)
 def remove_component(request, plan_ids, component_ids):
-    """
-    Description: Removes selected component from the selected test plan.
+    """Removes selected component from the selected test plan.
 
-    Params:      $plan_ids - Integer/Array/String: An integer representing the ID in the database,
-                             an array of plan_ids, or a string of comma separated plan_ids.
+    :param plan_ids: give one or more plan IDs. It could be an integer, a
+        string containing comma separated IDs, or a list of int each of them is
+        a plan ID.
+    :type plan_ids: int, str or list
+    :param component_ids: give one or more component IDs. It could be an
+        integer, a string containing comma separated IDs, or a list of int each
+        of them is a component ID.
+    :type component_ids: int, str or list
+    :return: Empty on success.
 
-                 $component_ids - Integer: - The component ID to be removed.
+    Example::
 
-    Returns:     Array: Empty on success.
-
-    Example:
-    # Remove component id 54321 from plan 1234
-    >>> TestPlan.remove_component(1234, 54321)
-    # Remove component ids list [1234, 5678] from plan list [56789, 12345]
-    >>> TestPlan.remove_component([56789, 12345], [1234, 5678])
-    # Remove component ids list '1234, 5678' from plan list '56789, 12345' with String
-    >>> TestPlan.remove_component('56789, 12345', '1234, 5678')
+        # Remove component id 2 from plan 1
+        >>> TestPlan.remove_component(1, 2)
+        # Remove component ids list [3, 4] from plan list [1, 2]
+        >>> TestPlan.remove_component([1, 2], [3, 4])
+        # Remove component ids list '3, 4' from plan list '1, 2' with String
+        >>> TestPlan.remove_component('1, 2', '3, 4')
     """
     tps = TestPlan.objects.filter(
         plan_id__in=pre_process_ids(value=plan_ids)
@@ -575,18 +581,18 @@ def remove_component(request, plan_ids, component_ids):
 @log_call(namespace=__xmlrpc_namespace__)
 @permission_required('testplans.add_testplantext', raise_exception=True)
 def store_text(request, plan_id, text, author=None):
-    """
-    Description: Update the document field of a plan.
+    """Update the document field of a plan.
 
-    Params:      $plan_id - Integer: An integer representing the ID of this plan in the database.
-                 $text - String: Text for the document. Can contain HTML.
-                 [$author] = Integer: (OPTIONAL) The numeric ID or the login of the author.
-                      Defaults to logged in user.
+    :param int plan_id: plan ID.
+    :param str text: the content to be added. Could contain HTML.
+    :param int author: optional user ID of author. Defaults to ``request.user``
+        if omitted.
+    :return: a mapping of newly stored text.
+    :rtype: dict
 
-    Returns:     Hash: The new text object hash.
+    Example::
 
-    Example:
-    >>> TestPlan.store_text(1234, 'Plan Text', 2207)
+        >>> TestPlan.store_text(1, 'Plan Text', 2)
     """
     from django.contrib.auth.models import User
 
@@ -606,33 +612,34 @@ def store_text(request, plan_id, text, author=None):
 @log_call(namespace=__xmlrpc_namespace__)
 @permission_required('testplans.change_testplan', raise_exception=True)
 def update(request, plan_ids, values):
-    """
-    Description: Updates the fields of the selected test plan.
+    """Updates the fields of the selected test plan.
 
-    Params:      $plan_ids - Integer: A single (or list of) TestPlan ID.
+    :param plan_ids: give one or more plan IDs. It could be an integer, a
+        string containing comma separated IDs, or a list of int each of them is
+        a plan ID.
+    :type plan_ids: int, str or list
+    :param dict values: a mapping containing these plan data to update
 
-                 $values - Hash of keys matching TestPlan fields and the new values
-                           to set each field to.
-      +-------------------------------------------+----------------+--------------------------------------------+
-      | Field                                     | Type           | Description                                |
-      +-------------------------------------------+----------------+--------------------------------------------+
-      | product                                   | Integer        | ID of product                              |
-      | name                                      | String         |                                            |
-      | type                                      | Integer        | ID of plan type                            |
-      | product_version(default_product_version)  | Integer        | ID of version, product_version(recommend), |
-      |                                           |                | default_product_version will be deprecated |
-      |                                           |                | in future release.                         |
-      | owner                                     | String/Integer | user_name/user_id                          |
-      | parent                                    | Integer        | Parent plan ID                             |
-      | is_active                                 | Boolean        | True/False                                 |
-      | env_group                                 | Integer        | New environment group ID                   |
-      +-------------------------+----------------+--------------------------------------------------------------+
+        * product: (int) ID of product
+        * name: (str)
+        * type: (int) ID of plan type
+        * product_version: (int) ID of version
+        * default_product_version: (int) alternative version ID.
+        * owner: (str)/(int) user_name/user_id
+        * parent: (int) Parent plan ID
+        * is_active: bool True/False
+        * env_group: (int) New environment group ID
 
-    Returns:     Hash: The updated test plan object.
+    :return: a mapping of updated :class:`TestPlan`.
+    :rtype: dict
 
-    Example:
-    # Update product to 61 for plan 207 and 208
-    >>> TestPlan.update([207, 208], {'product': 61})
+    Example::
+
+        # Update product to 7 for plan 1 and 2
+        >>> TestPlan.update([1, 2], {'product': 7})
+
+    .. deprecated:: x.y
+       ``default_product_version`` is deprecated and will be removed.
     """
     from tcms.core import forms
     from tcms.xmlrpc.forms import EditPlanForm
@@ -703,19 +710,16 @@ def update(request, plan_ids, values):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def import_case_via_XML(request, plan_id, values):
-    """
-    Description: Add cases to plan via XML file
+    """Add cases to plan via XML file
 
-    Params:      $plan_id - Integer: A single TestPlan ID.
+    :param int plan_id: plan ID.
+    :param str xml_content: content of XML document containing cases.
+    :return: a simple string to indicate a successful import.
 
-                 $values - String: String which read from XML file object.
+    Example::
 
-    Returns:     String: Success update cases
-
-    Example:
-    # Update product to 61 for plan 207 and 208
-    >>> fb = open('tcms.xml', 'rb')
-    >>> TestPlan.import_case_via_XML(3798, fb.read())
+        >>> fb = open('tcms.xml', 'rb')
+        >>> TestPlan.import_case_via_XML(1, fb.read())
     """
     from tcms.testplans.models import TestPlan
     from tcms.testcases.models import TestCase, TestCasePlan, \

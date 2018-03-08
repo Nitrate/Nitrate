@@ -64,24 +64,24 @@ __xmlrpc_namespace__ = 'TestCase'
 
 @log_call(namespace=__xmlrpc_namespace__)
 def add_comment(request, case_ids, comment):
-    """
-    Description: Adds comments to selected test cases.
+    """Adds comments to selected test cases.
 
-    Params:      $case_ids - Integer/Array/String: An integer representing the ID in the database,
-                             an array of case_ids, or a string of comma separated case_ids.
+    :param case_ids: give one or more case IDs. It could be an integer, a
+        string containing comma separated IDs, or a list of int each of them is
+        a case ID.
+    :type case_ids: int, str or list
+    :param str comment: the comment content to add.
+    :return: a list which is empty on success or a list of mappings with
+        failure codes if a failure occured.
 
-                 $comment - String - The comment
+    Example::
 
-    Returns:     Array: empty on success or an array of hashes with failure
-                        codes if a failure occured.
-
-    Example:
-    # Add comment 'foobar' to case 1234
-    >>> TestCase.add_comment(1234, 'foobar')
-    # Add 'foobar' to cases list [56789, 12345]
-    >>> TestCase.add_comment([56789, 12345], 'foobar')
-    # Add 'foobar' to cases list '56789, 12345' with String
-    >>> TestCase.add_comment('56789, 12345', 'foobar')
+        # Add comment 'foobar' to case 1
+        >>> TestCase.add_comment(1, 'foobar')
+        # Add 'foobar' to cases list [1, 2]
+        >>> TestCase.add_comment([1, 2], 'foobar')
+        # Add 'foobar' to cases list '1, 2' with String
+        >>> TestCase.add_comment('1, 2', 'foobar')
     """
     from tcms.xmlrpc.utils import Comment
 
@@ -99,25 +99,27 @@ def add_comment(request, case_ids, comment):
 @log_call(namespace=__xmlrpc_namespace__)
 @permission_required('testcases.add_testcasecomponent', raise_exception=True)
 def add_component(request, case_ids, component_ids):
-    """
-    Description: Adds one or more components to the selected test cases.
+    """Adds one or more components to the selected test cases.
 
-    Params:      $case_ids - Integer/Array/String: An integer representing the ID in the database,
-                             an array of case_ids, or a string of comma separated case_ids.
+    :param case_ids: give one or more case IDs. It could be an integer, a
+        string containing comma separated IDs, or a list of int each of them is
+        a case ID.
+    :type case_ids: int, str or list
+    :param component_ids: give one or more component IDs. It could be an integer, a
+        string containing comma separated IDs, or a list of int each of them is
+        a component ID.
+    :type component_ids: int, str or list
+    :return: a list which is empty on success or a list of mappings with
+        failure codes if a failure occured.
 
-                 $component_ids - Integer/Array/String - The component ID, an array of Component IDs
-                                  or a comma separated list of component IDs
+    Example::
 
-    Returns:     Array: empty on success or an array of hashes with failure
-                        codes if a failure occured.
-
-    Example:
-    # Add component id 54321 to case 1234
-    >>> TestCase.add_component(1234, 54321)
-    # Add component ids list [1234, 5678] to cases list [56789, 12345]
-    >>> TestCase.add_component([56789, 12345], [1234, 5678])
-    # Add component ids list '1234, 5678' to cases list '56789, 12345' with String
-    >>> TestCase.add_component('56789, 12345', '1234, 5678')
+        # Add component id 1 to case 1
+        >>> TestCase.add_component(1, 1)
+        # Add component ids list [3, 4] to cases list [1, 2]
+        >>> TestCase.add_component([1, 2], [3, 4])
+        # Add component ids list '3, 4' to cases list '1, 2' with String
+        >>> TestCase.add_component('1, 2', '3, 4')
     """
     from tcms.management.models import Component
 
@@ -134,25 +136,25 @@ def add_component(request, case_ids, component_ids):
 @log_call(namespace=__xmlrpc_namespace__)
 @permission_required('testcases.add_testcasetag', raise_exception=True)
 def add_tag(request, case_ids, tags):
-    """
-    Description: Add one or more tags to the selected test cases.
+    """Add one or more tags to the selected test cases.
 
-    Params:     $case_ids - Integer/Array/String: An integer representing the ID in the database,
-                            an array of case_ids, or a string of comma separated case_ids.
+    :param case_ids: give one or more case IDs. It could be an integer, a
+        string containing comma separated IDs, or a list of int each of them is
+        a case ID.
+    :type case_ids: int, str or list
+    :param tags: tag name or a list of tag names to remove.
+    :type tags: str or list
+    :return: a list which is empty on success or a list of mappings with
+        failure codes if a failure occured.
 
-                $tags - String/Array - A single tag, an array of tags,
-                        or a comma separated list of tags.
+    Example::
 
-    Returns:    Array: empty on success or an array of hashes with failure
-                       codes if a failure occured.
-
-    Example:
-    # Add tag 'foobar' to case 1234
-    >>> TestCase.add_tag(1234, 'foobar')
-    # Add tag list ['foo', 'bar'] to cases list [12345, 67890]
-    >>> TestCase.add_tag([12345, 67890], ['foo', 'bar'])
-    # Add tag list ['foo', 'bar'] to cases list [12345, 67890] with String
-    >>> TestCase.add_tag('12345, 67890', 'foo, bar')
+        # Add tag 'foobar' to case 1
+        >>> TestCase.add_tag(1, 'foobar')
+        # Add tag list ['foo', 'bar'] to cases list [1, 2]
+        >>> TestCase.add_tag([1, 2], ['foo', 'bar'])
+        # Add tag list ['foo', 'bar'] to cases list [1, 2] with String
+        >>> TestCase.add_tag('1, 2', 'foo, bar')
     """
     tcs = TestCase.objects.filter(
         case_id__in=pre_process_ids(value=case_ids))
@@ -170,25 +172,27 @@ def add_tag(request, case_ids, tags):
 @log_call(namespace=__xmlrpc_namespace__)
 @permission_required('testruns.add_testcaserun', raise_exception=True)
 def add_to_run(request, case_ids, run_ids):
-    """
-    Description: Add one or more cases to the selected test runs.
+    """Add one or more cases to the selected test runs.
 
-    Params:      $case_ids - Integer/Array/String: An integer representing the ID in the database,
-                             an array of case_ids, or a string of comma separated case_ids.
+    :param case_ids: give one or more case IDs. It could be an integer, a
+        string containing comma separated IDs, or a list of int each of them is
+        a case ID.
+    :type case_ids: int, str or list
+    :param run_ids: give one or more run IDs. It could be an integer, a string
+        containing comma separated IDs, or a list of int each of them is a run
+        ID.
+    :type run_ids: int, str or list
+    :return: a list which is empty on success or a list of mappings with
+        failure codes if a failure occured.
 
-                 $run_ids - Integer/Array/String: An integer representing the ID in the database
-                             an array of IDs, or a comma separated list of IDs.
+    Example::
 
-    Returns:     Array: empty on success or an array of hashes with failure
-                        codes if a failure occured.
-
-    Example:
-    # Add case 1234 to run id 54321
-    >>> TestCase.add_to_run(1234, 54321)
-    # Add case ids list [56789, 12345] to run list [1234, 5678]
-    >>> TestCase.add_to_run([56789, 12345], [1234, 5678])
-    # Add case ids list 56789 and 12345 to run list 1234 and 5678 with String
-    >>> TestCase.add_to_run('56789, 12345', '1234, 5678')
+        # Add case 1 to run id 1
+        >>> TestCase.add_to_run(1, 1)
+        # Add case ids list [1, 2] to run list [3, 4]
+        >>> TestCase.add_to_run([1, 2], [3, 4])
+        # Add case ids list 1 and 2 to run list 3 and 4 with String
+        >>> TestCase.add_to_run('1, 2', '3, 4')
     """
     from tcms.testruns.models import TestRun
 
@@ -213,33 +217,30 @@ def add_to_run(request, case_ids, run_ids):
 @log_call(namespace=__xmlrpc_namespace__)
 @permission_required('testcases.add_testcasebug', raise_exception=True)
 def attach_bug(request, values):
-    """
-    Description: Add one or more bugs to the selected test cases.
+    """Add one or more bugs to the selected test cases.
 
-    Params:     $values - Array/Hash: A reference to a hash or array of hashes with keys and values
-                                      matching the fields of the test case bug to be created.
+    :param values: mapping or list of mappings containing these bug information.
 
-      +-------------------+----------------+-----------+-------------------------------+
-      | Field             | Type           | Null      | Description                   |
-      +-------------------+----------------+-----------+-------------------------------+
-      | case_id           | Integer        | Required  | ID of Case                    |
-      | bug_id            | Integer        | Required  | ID of Bug                     |
-      | bug_system_id     | Integer        | Required  | 1: BZ(Default), 2: JIRA       |
-      | summary           | String         | Optional  | Bug summary                   |
-      | description       | String         | Optional  | Bug description               |
-      +-------------------+----------------+-----------+-------------------------------+
+        * case_id: (int) **Required**. Case ID.
+        * bug_id: (int) **Required**. Bug ID.
+        * bug_system_id: (int) **Required**. It could be ``1`` representing BZ(Default) and ``2`` representing JIRA.
+        * summary: (str) optional Bug summary.
+        * description: (str) optional bug description.
 
-    Returns:     Array: empty on success or an array of hashes with failure
-                 codes if a failure occured.
+    :return: a list which is empty on success or a list of mappings with
+        failure codes if a failure occured.
 
-    Example:
-    >>> TestCase.attach_bug({
-        'case_id': 12345,
-        'bug_id': 67890,
-        'bug_system_id': 1,
-        'summary': 'Testing TCMS',
-        'description': 'Just foo and bar',
-    })
+    Example::
+
+        # Bug data to add
+        >>> values = {
+                'case_id': 1,
+                'bug_id': 1000,
+                'bug_system_id': 1,
+                'summary': 'Testing TCMS',
+                'description': 'Just foo and bar',
+            }
+        >>> TestCase.attach_bug(values)
     """
     from tcms.core import forms
     from tcms.testcases.models import TestCaseBugSystem
@@ -276,15 +277,15 @@ def attach_bug(request, values):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def check_case_status(request, name):
-    """
-    Description: Looks up and returns a case status by name.
+    """Looks up and returns a case status by name.
 
-    Params:      $name - String: name of the case status.
+    :param str name: name of the case status.
+    :return: a mapping representing found case status.
+    :rtype: :class:`TestCaseStatus`.
 
-    Returns:     Hash: Matching case status object hash or error if not found.
+    Example::
 
-    Example:
-    >>> TestCase.check_case_status('proposed')
+        >>> TestCase.check_case_status('proposed')
     """
     from tcms.testcases.models import TestCaseStatus
 
@@ -293,15 +294,15 @@ def check_case_status(request, name):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def check_priority(request, value):
-    """
-    Description: Looks up and returns a priority by name.
+    """Looks up and returns a priority by name.
 
-    Params:      $value - String: name of the priority.
+    :param str value: name of the priority.
+    :return: a mapping representing found priority.
+    :rtype: :class:`Priority`.
 
-    Returns:     Hash: Matching priority object hash or error if not found.
+    Example::
 
-    Example:
-    >>> TestCase.check_priority('p1')
+        >>> TestCase.check_priority('p1')
     """
     from tcms.management.models import Priority
 
@@ -310,15 +311,18 @@ def check_priority(request, value):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def calculate_average_estimated_time(request, case_ids):
-    """
-    Description: Returns an average estimated time for cases.
+    """Returns an average estimated time for cases.
 
-    Params:      $case_ids - Integer/String: An integer representing the ID in the database.
+    :param case_ids: give one or more case IDs. It could be an integer, a
+        string containing comma separated IDs, or a list of int each of them is
+        a case ID.
+    :type case_ids: int, str or list
+    :return: Time in "HH:MM:SS" format.
+    :rtype: str
 
-    Returns:     String: Time in "HH:MM:SS" format.
+    Example::
 
-    Example:
-    >>> TestCase.calculate_average_time([609, 610, 611])
+        >>> TestCase.calculate_average_estimated_time([609, 610, 611])
     """
     from django.db.models import Avg
 
@@ -339,15 +343,18 @@ def calculate_average_estimated_time(request, case_ids):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def calculate_total_estimated_time(request, case_ids):
-    """
-    Description: Returns an total estimated time for cases.
+    """Returns an total estimated time for cases.
 
-    Params:      $case_ids - Integer/String: An integer representing the ID in the database.
+    :param case_ids: give one or more case IDs. It could be an integer, a
+        string containing comma separated IDs, or a list of int each of them is
+        a case ID.
+    :type case_ids: int, str or list
+    :return: Time in "HH:MM:SS" format.
+    :rtype: str
 
-    Returns:     String: Time in "HH:MM:SS" format.
+    Example::
 
-    Example:
-    >>> TestCase.calculate_total_time([609, 610, 611])
+        >>> TestCase.calculate_total_estimated_time([609, 610, 611])
     """
     from django.db.models import Sum
 
@@ -369,51 +376,48 @@ def calculate_total_estimated_time(request, case_ids):
 @log_call(namespace=__xmlrpc_namespace__)
 @permission_required('testcases.add_testcase', raise_exception=True)
 def create(request, values):
-    """
-    Description: Creates a new Test Case object and stores it in the database.
+    """Creates a new Test Case object and stores it in the database.
 
-    Params:      $values - Array/Hash: A reference to a hash or array of hashes with keys and values
-                 matching the fields of the test case to be created.
-      +----------------------------+----------------+-----------+---------------------------------------+
-      | Field                      | Type           | Null      | Description                           |
-      +----------------------------+----------------+-----------+---------------------------------------+
-      | product                    | Integer        | Required  | ID of Product                         |
-      | category                   | Integer        | Required  | ID of Category                        |
-      | priority                   | Integer        | Required  | ID of Priority                        |
-      | summary                    | String         | Required  |                                       |
-      | case_status                | Integer        | Optional  | ID of case status                     |
-      | plan                       | Array/Str/Int  | Optional  | ID or List of plan_ids                |
-      | component                  | Integer/String | Optional  | ID of Priority                        |
-      | default_tester             | String         | Optional  | Login of tester                       |
-      | estimated_time             | String         | Optional  | 2h30m30s(recommend) or HH:MM:SS Format|
-      | is_automated               | Integer        | Optional  | 0: Manual, 1: Auto, 2: Both           |
-      | is_automated_proposed      | Boolean        | Optional  | Default 0                             |
-      | script                     | String         | Optional  |                                       |
-      | arguments                  | String         | Optional  |                                       |
-      | requirement                | String         | Optional  |                                       |
-      | alias                      | String         | Optional  | Must be unique                        |
-      | action                     | String         | Optional  |                                       |
-      | effect                     | String         | Optional  | Expected Result                       |
-      | setup                      | String         | Optional  |                                       |
-      | breakdown                  | String         | Optional  |                                       |
-      | tag                        | Array/String   | Optional  | String Comma separated                |
-      | bug                        | Array/String   | Optional  | String Comma separated                |
-      | extra_link                 | String         | Optional  | reference link                        |
-      +----------------------------+----------------+-----------+---------------------------------------+
+    :param values: a mapping or list of mappings containing these case
+        information for creation.
 
-    Returns:     Array/Hash: The newly created object hash if a single case was created, or
-                             an array of objects if more than one was created. If any single case threw an
-                             error during creation, a hash with an ERROR key will be set in its place.
+        * product: (int) **Required** ID of Product
+        * category: (int) **Required** ID of Category
+        * priority: (int) **Required** ID of Priority
+        * summary: (str) **Required**
+        * case_status: (int) optional ID of case status
+        * plan Array/Str/Int optional ID or List of plan_ids
+        * component: (int)/str optional ID of Priority
+        * default_tester: (str) optional Login of tester
+        * estimated_time: (str) optional 2h30m30s(recommend) or HH:MM:SS Format|
+        * is_automated: (int) optional 0: Manual, 1: Auto, 2: Both
+        * is_automated_proposed: (bool) optional Default 0
+        * script: (str) optional
+        * arguments: (str) optional
+        * requirement: (str) optional
+        * alias: (str) optional Must be unique
+        * action: (str) optional
+        * effect: (str) optional Expected Result
+        * setup: (str) optional
+        * breakdown: (str) optional
+        * tag Array/str optional String Comma separated
+        * bug Array/str optional String Comma separated
+        * extra_link: (str) optional reference link
 
-    Example:
-    # Minimal test case parameters
-    >>> values = {
-        'category': 135,
-        'product': 61,
-        'summary': 'Testing XML-RPC',
-        'priority': 1,
-    }
-    >>> TestCase.create(values)
+    :return: a mapping of newly created test case if a single case was created,
+        or a list of mappings of created cases if more than one are created.
+    :rtype: dict of list[dict]
+
+    Example::
+
+        # Minimal test case parameters
+        >>> values = {
+                'category': 1,
+                'product': 1,
+                'summary': 'Testing XML-RPC',
+                'priority': 1,
+            }
+        >>> TestCase.create(values)
     """
     from tcms.core import forms
     from tcms.xmlrpc.forms import NewCaseForm
@@ -466,25 +470,27 @@ def create(request, values):
 @log_call(namespace=__xmlrpc_namespace__)
 @permission_required('testcases.delete_testcasebug', raise_exception=True)
 def detach_bug(request, case_ids, bug_ids):
-    """
-    Description: Remove one or more bugs to the selected test cases.
+    """Remove one or more bugs to the selected test cases.
 
-    Params:      $case_ids - Integer/Array/String: An integer representing the ID in the database,
-                             an array of case_ids, or a string of comma separated case_ids
+    :param case_ids: give one or more case IDs. It could be an integer, a
+        string containing comma separated IDs, or a list of int each of them is
+        a case ID.
+    :type case_ids: int, str or list
+    :param bug_ids: give one or more bug IDs. It could be an integer, a string
+        containing comma separated IDs, or a list of int each of them is a bug
+        ID.
+    :type component_ids: int, str or list
+    :return: a list which is empty on success or a list of mappings with
+        failure codes if a failure occured.
 
-                 $bug_ids - Integer/Array/String: An integer representing the ID in the database,
-                           an array of bug_ids, or a string of comma separated primary key of bug_ids.
+    Example::
 
-    Returns:     Array: empty on success or an array of hashes with failure
-                 codes if a failure occured.
-
-    Example:
-    # Remove bug id 54321 from case 1234
-    >>> TestCase.detach_bug(1234, 54321)
-    # Remove bug ids list [1234, 5678] from cases list [56789, 12345]
-    >>> TestCase.detach_bug([56789, 12345], [1234, 5678])
-    # Remove bug ids list '1234, 5678' from cases list '56789, 12345' with String
-    >>> TestCase.detach_bug('56789, 12345', '1234, 5678')
+        # Remove bug id 1000 from case 1
+        >>> TestCase.detach_bug(1, 1000)
+        # Remove bug ids list [1000, 1001] from cases list [1, 2]
+        >>> TestCase.detach_bug([1, 2], [1000, 1001])
+        # Remove bug ids list '1000, 1001' from cases list '1, 2' with String
+        >>> TestCase.detach_bug('1, 2', '1000, 1001')
     """
     case_ids = pre_process_ids(case_ids)
     bug_ids = pre_process_ids(bug_ids)
@@ -502,49 +508,45 @@ def detach_bug(request, case_ids, bug_ids):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def filter(request, query):
-    """
-    Description: Performs a search and returns the resulting list of test cases.
+    """Performs a search and returns the resulting list of test cases.
 
-    Params:      $query - Hash: keys must match valid search fields.
+    :param dict query: a mapping containing these criteria.
 
-        +------------------------------------------------------------------+
-        |                 Case Search Parameters                           |
-        +------------------------------------------------------------------+
-        |        Key          |          Valid Values                      |
-        | author              | A bugzilla login (email address)           |
-        | attachment          | ForeignKey: Attchment                      |
-        | alias               | String                                     |
-        | case_id             | Integer                                    |
-        | case_status         | ForeignKey: Case Stat                      |
-        | category            | ForeignKey: Category                       |
-        | component           | ForeignKey: Component                      |
-        | default_tester      | ForeignKey: Auth.User                      |
-        | estimated_time      | String: 2h30m30s(recommend) or HH:MM:SS    |
-        | plan                | ForeignKey: Test Plan                      |
-        | priority            | ForeignKey: Priority                       |
-        | category__product   | ForeignKey: Product                        |
-        | summary             | String                                     |
-        | tags                | ForeignKey: Tags                           |
-        | create_date         | Datetime                                   |
-        | is_automated        | 1: Only show current 0: show not current   |
-        | script              | Text                                       |
-        +------------------------------------------------------------------+
+        * author: A Bugzilla login (email address)
+        * attachment: ForeignKey: Attachment
+        * alias: (str)
+        * case_id: (int)
+        * case_status: ForeignKey: Case Stat
+        * category: ForeignKey: :class:`Category`
+        * component: ForeignKey: :class:`Component`
+        * default_tester: ForeignKey: ``Auth.User``
+        * estimated_time: String: 2h30m30s(recommend) or HH:MM:SS
+        * plan: ForeignKey: :class:`TestPlan`
+        * priority: ForeignKey: :class:`Priority`
+        * category__product: ForeignKey: :class:`Product`
+        * summary: (str)
+        * tags: ForeignKey: :class:`Tags`
+        * create_date: Datetime
+        * is_automated: 1: Only show current 0: show not current
+        * script: (str)
 
-    Returns:     Array: Matching test cases are retuned in a list of hashes.
+    :return: list of mappings of found :class:`TestCase`.
+    :rtype: list
 
-    Example:
-    # Get all of cases contain 'TCMS' in summary
-    >>> TestCase.filter({'summary__icontain': 'TCMS'})
-    # Get all of cases create by xkuang
-    >>> TestCase.filter({'author__username': 'xkuang'})
-    # Get all of cases the author name starts with x
-    >>> TestCase.filter({'author__username__startswith': 'x'})
-    # Get all of cases belong to the plan 137
-    >>> TestCase.filter({'plan__plan_id': 137})
-    # Get all of cases belong to the plan create by xkuang
-    >>> TestCase.filter({'plan__author__username': 'xkuang'})
-    # Get cases with ID 12345, 23456, 34567 - Here is only support array so far.
-    >>> TestCase.filter({'case_id__in': [12345, 23456, 34567]})
+    Example::
+
+        # Get all of cases contain 'TCMS' in summary
+        >>> TestCase.filter({'summary__icontain': 'TCMS'})
+        # Get all of cases create by xkuang
+        >>> TestCase.filter({'author__username': 'xkuang'})
+        # Get all of cases the author name starts with x
+        >>> TestCase.filter({'author__username__startswith': 'x'})
+        # Get all of cases belong to the plan 1
+        >>> TestCase.filter({'plan__plan_id': 1})
+        # Get all of cases belong to the plan create by xkuang
+        >>> TestCase.filter({'plan__author__username': 'xkuang'})
+        # Get cases with ID 12345, 23456, 34567 - Here is only support array so far.
+        >>> TestCase.filter({'case_id__in': [12345, 23456, 34567]})
     """
     if query.get('estimated_time'):
         query['estimated_time'] = timedelta2int(
@@ -556,15 +558,14 @@ def filter(request, query):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def filter_count(request, values={}):
-    """
-    Description: Performs a search and returns the resulting count of cases.
+    """Performs a search and returns the resulting count of cases.
 
-    Params:      $values - Hash: keys must match valid search fields (see filter).
+    :param dict values: a mapping containing same criteria with
+        :meth:`TestCase.filter <tcms.xmlrpc.api.testcase.filter>`.
+    :return: the number of matching cases.
+    :rtype: int
 
-    Returns:     Integer - total matching cases.
-
-    Example:
-    # See TestCase.filter()
+    .. seealso:: Examples of :meth:`TestCase.filter <tcms.xmlrpc.api.testcase.filter>`.
     """
 
     if values.get('estimated_time'):
@@ -577,15 +578,16 @@ def filter_count(request, values={}):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get(request, case_id):
-    """
-    Description: Used to load an existing test case from the database.
+    """Used to load an existing test case from the database.
 
-    Params:      $id - Integer/String: An integer representing the ID in the database
+    :param case_id: case ID.
+    :type case_id: int or str
+    :return: a mappings representing found test case.
+    :rtype: dict
 
-    Returns:     A blessed TestCase object Hash
+    Example::
 
-    Example:
-    >>> TestCase.get(1193)
+        >>> TestCase.get(1)
     """
     tc = TestCase.objects.get(case_id=case_id)
 
@@ -606,15 +608,16 @@ def get(request, case_id):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_bug_systems(request, id):
-    """
-    Description: Used to load an existing test case bug system from the database.
+    """Used to load an existing test case bug system from the database.
 
-    Params:      $id - Integer/String: An integer representing the ID in the database
+    :param id: bug system ID.
+    :type id: int or str
+    :return: a mappings representing found :class:`TestCaseBugSystem`.
+    :rtype: dict
 
-    Returns:     Array: An array of bug object hashes.
+    Example::
 
-    Example:
-    >>> TestCase.get_bug_systems(1)
+        >>> TestCase.get_bug_systems(1)
     """
     from tcms.testcases.models import TestCaseBugSystem
 
@@ -623,20 +626,23 @@ def get_bug_systems(request, id):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_bugs(request, case_ids):
-    """
-    Description: Get the list of bugs that are associated with this test case.
+    """Get the list of bugs that are associated with this test case.
 
-    Params:      $case_ids - Integer/String: An integer representing the ID in the database
+    :param case_ids: give one or more case IDs. It could be an integer, a
+        string containing comma separated IDs, or a list of int each of them is
+        a case ID.
+    :type case_ids: int, str or list
+    :return: list of mappings of :class:`TestCaseBug`.
+    :rtype: list
 
-    Returns:     Array: An array of bug object hashes.
+    Example::
 
-    Example:
-    # Get bugs belong to ID 12345
-    >>> TestCase.get_bugs(12345)
-    # Get bug belong to case ids list [12456, 23456]
-    >>> TestCase.get_bugs([12456, 23456])
-    # Get bug belong to case ids list 12456 and 23456 with string
-    >>> TestCase.get_bugs('12456, 23456')
+        # Get bugs belong to ID 1
+        >>> TestCase.get_bugs(1)
+        # Get bug belong to case ids list [1, 2]
+        >>> TestCase.get_bugs([1, 2])
+        # Get bug belong to case ids list 1 and 2 with string
+        >>> TestCase.get_bugs('1, 2')
     """
     from tcms.testcases.models import TestCaseBug
 
@@ -650,35 +656,38 @@ def get_bugs(request, case_ids):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_case_run_history(request, case_id):
-    """
-    *** FIXME: NOT IMPLEMENTED - Case run history is different than before***
-    Description: Get the list of case-runs for all runs this case appears in.
-                 To limit this list by build or other attribute, see TestCaseRun.filter.
+    """Get the list of case-runs for all runs this case appears in.
 
-    Params:      $case_id - Integer/String: An integer representing the ID in the database
+    To limit this list by build or other attribute, see
+    :meth:`TestCaseRun.filter <tcms.xmlrpc.api.testcaserun.filter>`.
 
-    Returns:     Array: An array of case-run object hashes.
+    :param case_id: case ID.
+    :type case_id: int or str
+    :return: list of mappings of case runs.
 
-    Example:
-    >>> TestCase.get_case_run_history(12345)
+    Example::
+
+        >>> TestCase.get_case_run_history(1)
+
+    .. warning:: NOT IMPLEMENTED - Case run history is different than before
     """
     raise NotImplementedError('Not implemented RPC method')
 
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_case_status(request, id=None):
-    """
-    Description: Get the case status matching the given id.
+    """Get the case status matching the given id.
 
-    Params:      $id - Integer: ID of the case status in the database.
+    :param int id: case status ID.
+    :return: a mapping representing found :class:`TestCaseStatus`.
+    :rtype: dict
 
-    Returns:     Hash: case status object hash.
+    Example::
 
-    Example:
-    # Get all of case status
-    >>> TestCase.get_case_status()
-    # Get case status by ID 1
-    >>> TestCase.get_case_status(1)
+        # Get all of case status
+        >>> TestCase.get_case_status()
+        # Get case status by ID 1
+        >>> TestCase.get_case_status(1)
     """
     from tcms.testcases.models import TestCaseStatus
 
@@ -690,31 +699,35 @@ def get_case_status(request, id=None):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_change_history(request, case_id):
-    """
-    *** FIXME: NOT IMPLEMENTED - Case history is different than before***
-    Description: Get the list of changes to the fields of this case.
+    """Get the list of changes to the fields of this case.
 
-    Params:      $case_id - Integer/String: An integer representing the ID in the database
+    :param case_id: case ID.
+    :type case_id: int or str
+    :return: a list of mappings of history.
 
-    Returns:     Array: An array of hashes with changed fields and their details.
+    Example::
 
-    Example:
-    >>> TestCase.get_change_history(12345)
+        >>> TestCase.get_change_history(12345)
+
+    .. warning::
+
+       NOT IMPLEMENTED - Case history is different than before
     """
     raise NotImplementedError('Not implemented RPC method')
 
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_components(request, case_id):
-    """"
-    Description: Get the list of components attached to this case.
+    """Get the list of components attached to this case.
 
-    Params:      $case_id - Integer/String: An integer representing the ID in the database
+    :param case_id: case ID.
+    :type case_id: int or str
+    :return: a list of mappings of :class:`Component`.
+    :rtype: list[dict]
 
-    Returns:     Array: An array of component object hashes.
+    Example::
 
-    Example:
-    >>> TestCase.get_components(12345)
+        >>> TestCase.get_components(1)
     """
     from tcms.management.models import Component
 
@@ -727,15 +740,16 @@ def get_components(request, case_id):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_plans(request, case_id):
-    """
-    Description: Get the list of plans that this case is linked to.
+    """Get the list of plans that this case is linked to.
 
-    Params:      $case_id - Integer/String: An integer representing the ID in the database
+    :param case_id: case ID.
+    :type case_id: int or str
+    :return: a list of mappings of :class:`TestPlan`.
+    :rtype: list[dict]
 
-    Returns:     Array: An array of test plan object hashes.
+    Example::
 
-    Example:
-    >>> TestCase.get_plans(12345)
+        >>> TestCase.get_plans(1)
     """
     tc = TestCase.objects.get(case_id=case_id)
 
@@ -746,15 +760,16 @@ def get_plans(request, case_id):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_tags(request, case_id):
-    """
-    Description: Get the list of tags attached to this case.
+    """Get the list of tags attached to this case.
 
-    Params:      $case_id - Integer/String: An integer representing the ID in the database
+    :param case_id: case ID.
+    :type case_id: int or str
+    :return: a list of mappings of :class:`TestTag`.
+    :rtype: list[dict]
 
-    Returns:     Array: An array of tag object hashes.
+    Example::
 
-    Example:
-    >>> TestCase.get_tags(12345)
+        >>> TestCase.get_tags(1)
     """
     tc = TestCase.objects.get(case_id=case_id)
 
@@ -766,21 +781,22 @@ def get_tags(request, case_id):
 @log_call(namespace=__xmlrpc_namespace__)
 def get_text(request, case_id, case_text_version=None):
     """
-    Description: The associated large text fields: Action, Expected Results, Setup, Breakdown
-                 for a given version.
+    Get the associated case' Action, Expected Results, Setup, Breakdown for a
+    given version
 
-    Params:      $case_id - Integer/String: An integer representing the ID in the database
+    :param case_id: case ID.
+    :type case_id: int or str
+    :param int case_text_version: optional version of the text you want
+        returned. Defaults to the latest, if omitted.
+    :return: a mapping representing a case text.
+    :rtype: dict
 
-                 $version - Integer: (OPTIONAL) The version of the text you want returned.
-                            Defaults to the latest.
+    Example::
 
-    Returns:     Hash: case text object hash.
-
-    Example:
-    # Get all latest case text
-    >>> TestCase.get_text(12345)
-    # Get all case text with version 4
-    >>> TestCase.get_text(12345, 4)
+        # Get all latest case text
+        >>> TestCase.get_text(1)
+        # Get all case text with version 4
+        >>> TestCase.get_text(1, 4)
     """
     tc = TestCase.objects.get(case_id=case_id)
 
@@ -790,15 +806,15 @@ def get_text(request, case_id, case_text_version=None):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_priority(request, id):
-    """
-    Description: Get the priority matching the given id.
+    """Get the priority matching the given id.
 
-    Params:      $id - Integer: ID of the priority in the database.
+    :param int id: priority ID.
+    :return: a mapping representing found :class:`Priority`.
+    :rtype: dict
 
-    Returns:     Hash: Priority object hash.
+    Example::
 
-    Example:
-    >>> TestCase.get_priority(1)
+        >>> TestCase.get_priority(1)
     """
     from tcms.management.models import Priority
 
@@ -808,25 +824,28 @@ def get_priority(request, id):
 @log_call(namespace=__xmlrpc_namespace__)
 @permission_required('testcases.add_testcaseplan', raise_exception=True)
 def link_plan(request, case_ids, plan_ids):
-    """"
-    Description: Link test cases to the given plan.
+    """"Link test cases to the given plan.
 
-    Params:      $case_ids - Integer/Array/String: An integer representing the ID in the database,
-                             an array of case_ids, or a string of comma separated case_ids.
+    :param case_ids: give one or more case IDs. It could be an integer, a
+        string containing comma separated IDs, or a list of int each of them is
+        a case ID.
+    :type case_ids: int, str or list
+    :param plan_ids: give one or more plan IDs. It could be an integer, a
+        string containing comma separated IDs, or a list of int each of them is
+        a plan ID.
+    :type plan_ids: int, str or list
+    :return: a list which is empty on success or a list of mappings with
+        failure codes if a failure occured.
+    :rtype: list or list[dict]
 
-                 $plan_ids - Integer/Array/String: An integer representing the ID in the database,
-                             an array of plan_ids, or a string of comma separated plan_ids.
+    Example::
 
-    Returns:     Array: empty on success or an array of hashes with failure
-                        codes if a failure occurs
-
-    Example:
-    # Add case 1234 to plan id 54321
-    >>> TestCase.link_plan(1234, 54321)
-    # Add case ids list [56789, 12345] to plan list [1234, 5678]
-    >>> TestCase.link_plan([56789, 12345], [1234, 5678])
-    # Add case ids list 56789 and 12345 to plan list 1234 and 5678 with String
-    >>> TestCase.link_plan('56789, 12345', '1234, 5678')
+        # Add case 1 to plan id 2
+        >>> TestCase.link_plan(1, 2)
+        # Add case ids list [1, 2] to plan list [3, 4]
+        >>> TestCase.link_plan([1, 2], [3, 4])
+        # Add case ids list 1 and 2 to plan list 3 and 4 with String
+        >>> TestCase.link_plan('1, 2', '3, 4')
     """
     case_ids = pre_process_ids(value=case_ids)
     qs = TestCase.objects.filter(pk__in=case_ids)
@@ -879,70 +898,98 @@ def link_plan(request, case_ids, plan_ids):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def lookup_category_name_by_id(request, id):
-    """DEPRECATED - CONSIDERED HARMFUL Use Product.get_category instead"""
-    from product import get_category
+    """Lookup category name by ID
+
+    .. deprecated:: x.y
+
+       Use :meth:`Product.get_category <tcms.xmlrpc.api.product.get_category>` instead.
+    """
+    from tcms.xmlrpc.api.product import get_category
 
     return get_category(request=request, id=id)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
 def lookup_category_id_by_name(request, name, product):
+    """Lookup category ID by name
+
+    .. deprecated:: x.y
+
+       Use :meth:`Product.check_category <tcms.xmlrpc.api.product.check_category>` instead.
     """
-    DEPRECATED - CONSIDERED HARMFUL Use Product.check_category instead
-    """
-    from product import check_category
+    from tcms.xmlrpc.api.product import check_category
 
     return check_category(request=request, name=name, product=product)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
 def lookup_priority_name_by_id(request, id):
-    """
-    DEPRECATED - CONSIDERED HARMFUL Use TestCase.get_priority instead
+    """Lookup priority name by ID
+
+    .. deprecated:: x.y
+
+       Use :meth:`TestCase.get_priority <tcms.xmlrpc.api.testcase.get_priority>` instead.
     """
     return get_priority(request=request, id=id)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
 def lookup_priority_id_by_name(request, value):
-    """
-    DEPRECATED - CONSIDERED HARMFUL Use TestCase.check_priority instead
+    """Lookup priority ID by name
+
+    .. deprecated:: x.y
+
+       Use :meth:`TestCase.check_priority <tcms.xmlrpc.api.testcase.check_priority>` instead.
     """
     return check_priority(request=request, value=value)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
 def lookup_status_name_by_id(request, id):
-    """DEPRECATED - CONSIDERED HARMFUL Use TestCase.get_case_status instead"""
+    """Lookup status name by ID
+
+    .. deprecated:: x.y
+
+       Use :meth:`TestCase.get_case_status <tcms.xmlrpc.api.testcase.get_case_status >` instead.
+    """
     return get_case_status(request=request, id=id)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
 def lookup_status_id_by_name(request, name):
-    """DEPRECATED - CONSIDERED HARMFUL Use TestCase.check_case_status instead"""
+    """Lookup status ID by name
+
+    .. deprecated:: x.y
+
+       Use :meth:`TestCase.check_case_status <tcms.xmlrpc.api.testcase.check_case_status >` instead.
+    """
     return check_case_status(request=request, name=name)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
 @permission_required('testcases.delete_testcasecomponent', raise_exception=True)
 def remove_component(request, case_ids, component_ids):
-    """
-    Description: Removes selected component from the selected test case.
+    """Removes selected component from the selected test case.
 
-    Params:      $case_ids - Integer/Array/String: An integer representing the ID in the database,
-                             an array of case_ids, or a string of comma separated case_ids.
+    :param case_ids: give one or more case IDs. It could be an integer, a
+        string containing comma separated IDs, or a list of int each of them is
+        a case ID.
+    :type case_ids: int, str or list
+    :param component_ids: give one or more component IDs. It could be an
+        integer, a string containing comma separated IDs, or a list of int each
+        of them is a component ID.
+    :type plan_ids: int, str or list
+    :return: a list which is emtpy on success.
+    :rtype: list
 
-                 $component_ids - Integer: - The component ID to be removed.
+    Example::
 
-    Returns:     Array: Empty on success.
-
-    Example:
-    # Remove component id 54321 from case 1234
-    >>> TestCase.remove_component(1234, 54321)
-    # Remove component ids list [1234, 5678] from cases list [56789, 12345]
-    >>> TestCase.remove_component([56789, 12345], [1234, 5678])
-    # Remove component ids list '1234, 5678' from cases list '56789, 12345' with String
-    >>> TestCase.remove_component('56789, 12345', '1234, 5678')
+        # Remove component id 1 from case 1
+        >>> TestCase.remove_component(1, 1)
+        # Remove component ids list [3, 4] from cases list [1, 2]
+        >>> TestCase.remove_component([1, 2], [3, 4])
+        # Remove component ids list '3, 4' from cases list '1, 2' with String
+        >>> TestCase.remove_component('1, 2', '3, 4')
     """
     from tcms.management.models import Component
 
@@ -966,23 +1013,25 @@ def remove_component(request, case_ids, component_ids):
 @log_call(namespace=__xmlrpc_namespace__)
 @permission_required('testcases.delete_testcasetag', raise_exception=True)
 def remove_tag(request, case_ids, tags):
-    """
-    Description: Remove a tag from a case.
+    """Remove a tag from a case.
 
-    Params:      $case_ids - Integer/Array/String: An integer or alias representing the ID in the database,
-                             an array of case_ids, or a string of comma separated case_ids.
+    :param case_ids: give one or more case IDs. It could be an integer, a
+        string containing comma separated IDs, or a list of int each of them is
+        a case ID.
+    :type case_ids: int, str or list
+    :param tags: tag name or a list of tag names to remove.
+    :type tags: str or list
+    :return: a list which is emtpy on success.
+    :rtype: list
 
-                 $tags - String/Array - A single or multiple tag to be removed.
+    Example::
 
-    Returns:     Array: Empty on success.
-
-    Example:
-    # Remove tag 'foo' from case 1234
-    >>> TestCase.remove_tag(1234, 'foo')
-    # Remove tag 'foo' and bar from cases list [56789, 12345]
-    >>> TestCase.remove_tag([56789, 12345], ['foo', 'bar'])
-    # Remove tag 'foo' and 'bar' from cases list '56789, 12345' with String
-    >>> TestCase.remove_tag('56789, 12345', 'foo, bar')
+        # Remove tag 'foo' from case 1
+        >>> TestCase.remove_tag(1, 'foo')
+        # Remove tag 'foo' and bar from cases list [1, 2]
+        >>> TestCase.remove_tag([1, 2], ['foo', 'bar'])
+        # Remove tag 'foo' and 'bar' from cases list '1, 2' with String
+        >>> TestCase.remove_tag('1, 2', 'foo, bar')
     """
     tcs = TestCase.objects.filter(
         case_id__in=pre_process_ids(value=case_ids)
@@ -1007,21 +1056,21 @@ def remove_tag(request, case_ids, tags):
 @permission_required('testcases.add_testcasetext', raise_exception=True)
 def store_text(request, case_id, action, effect='', setup='', breakdown='',
                author_id=None):
-    """
-    Description: Update the large text fields of a case.
+    """Update the large text fields of a case.
 
-    Params:      $case_id - Integer: An integer or alias representing the ID in the database.
-                 $action, $effect, $setup, $breakdown - String: Text for these fields.
-                 [$author_id] = Integer/String: (OPTIONAL) The numeric ID or the login of the author.
-                                Defaults to logged in user
+    :param int case_id: case ID.
+    :param str action: action text of specified case.
+    :param str effect: effect text of specified case. Defaults to empty string if omitted.
+    :param str setup: setup text of specified case. Defaults to empty string if omitted.
+    :param str breakdown: breakdown text of specified case. Defaults to empty string if omitted.
+    :param int auth_id: author's user ID.
+    :return: a mapping of newly added text of specified case.
+    :rtype: dict
 
-    Returns:     Hash: case text object hash.
+    Example::
 
-    Example:
-    # Minimal
-    >>> TestCase.store_text(12345, 'Action')
-    # Full arguments
-    >>> TestCase.store_text(12345, 'Action', 'Effect', 'Setup', 'Breakdown', 2260)
+        >>> TestCase.store_text(1, 'Action')
+        >>> TestCase.store_text(1, 'Action', 'Effect', 'Setup', 'Breakdown', 2)
     """
     from django.contrib.auth.models import User
 
@@ -1045,16 +1094,21 @@ def store_text(request, case_id, action, effect='', setup='', breakdown='',
 @permission_required('testcases.delete_testcaseplan', raise_exception=True)
 def unlink_plan(requst, case_id, plan_id):
     """
-    Description: Unlink a test case from the given plan. If only one plan is linked, this will delete
-                 the test case.
+    Unlink a test case from the given plan. If only one plan is linked, this
+    will delete the test case.
 
-    Params:      $case_id - Integer/String: An integer or alias representing the ID in the database.
-                 $plan_id - Integer: An integer representing the ID in the database.
+    :param case_id: case ID.
+    :type case_id: int or str
+    :param int plan_id: plan ID from where to unlink the specified case.
+    :return: a list of mappings of test plans that are still linked to the
+        specified case. If there is no linked test plans, empty list will be
+        returned.
+    :rtype: list[dict]
 
-    Returns:     Array: Array of plans hash still linked if any, empty if not.
+    Example::
 
-    Example:
-    >>> TestCase.unlink_plan(12345, 137)
+        # Unlink case 100 from plan 10
+        >>> TestCase.unlink_plan(100, 10)
     """
     TestCasePlan.objects.filter(case=case_id, plan=plan_id).delete()
     plan_pks = TestCasePlan.objects.filter(case=case_id).values_list('plan',
@@ -1065,44 +1119,40 @@ def unlink_plan(requst, case_id, plan_id):
 @log_call(namespace=__xmlrpc_namespace__)
 @permission_required('testcases.change_testcase', raise_exception=True)
 def update(request, case_ids, values):
-    """
-    Description: Updates the fields of the selected case or cases.
-
-    Params:      $case_ids - Integer/String/Array
-                             Integer: A single TestCase ID.
-                             String:  A comma separates string of TestCase IDs for batch
-                                      processing.
-                             Array:   An array of case IDs for batch mode processing
+    """Updates the fields of the selected case or cases.
 
                  $values   - Hash of keys matching TestCase fields and the new values
                              to set each field to.
 
-    Returns:  Array: an array of case hashes. If the update on any particular
-                     case failed, the has will contain a ERROR key and the
-                     message as to why it failed.
-        +-----------------------+----------------+-----------------------------------------+
-        | Field                 | Type           | Null                                    |
-        +-----------------------+----------------+-----------------------------------------+
-        | case_status           | Integer        | Optional                                |
-        | product               | Integer        | Optional(Required if changes category)  |
-        | category              | Integer        | Optional                                |
-        | priority              | Integer        | Optional                                |
-        | default_tester        | String/Integer | Optional(str - user_name, int - user_id)|
-        | estimated_time        | String         | Optional(2h30m30s(recommend) or HH:MM:SS|
-        | is_automated          | Integer        | Optional(0 - Manual, 1 - Auto, 2 - Both)|
-        | is_automated_proposed | Boolean        | Optional                                |
-        | script                | String         | Optional                                |
-        | arguments             | String         | Optional                                |
-        | summary               | String         | Optional                                |
-        | requirement           | String         | Optional                                |
-        | alias                 | String         | Optional                                |
-        | notes                 | String         | Optional                                |
-        | extra_link            | String         | Optional(reference link)
-        +-----------------------+----------------+-----------------------------------------+
+    :param case_ids: give one or more case IDs. It could be an integer, a
+        string containing comma separated IDs, or a list of int each of them is
+        a case ID.
+    :type case_ids: int, str or list
+    :param dict values: a mapping containing these case data to update.
 
-    Example:
-    # Update alias to 'tcms' for case 12345 and 23456
-    >>> TestCase.update([12345, 23456], {'alias': 'tcms'})
+        * case_status: (ini) optional
+        * product: (ini) optional (Required if changes category)
+        * category: (ini) optional
+        * priority: (ini) optional
+        * default_tester: (str or int) optional (str - user_name, int - user_id)
+        * estimated_time: (str) optional (2h30m30s(recommend) or HH:MM:SS
+        * is_automated: (ini) optional (0 - Manual, 1 - Auto, 2 - Both)
+        * is_automated_proposed: (bool) optional
+        * script: (str) optional
+        * arguments: (str) optional
+        * summary: (str) optional
+        * requirement: (str) optional
+        * alias: (str) optional
+        * notes: (str) optional
+        * extra_link: (str) optional (reference link)
+
+    :return: a list of mappings of updated :class:`TestCase`.
+    :rtype: list(dict)
+
+    Example::
+
+        # Update alias to 'tcms' for case 1 and 2
+        >>> TestCase.update([1, 2], {'alias': 'tcms'})
     """
     from tcms.core import forms
     from tcms.xmlrpc.forms import UpdateCaseForm
@@ -1161,18 +1211,14 @@ def validate_cc_list(cc_list):
 @log_call(namespace=__xmlrpc_namespace__)
 @permission_required('testcases.change_testcase', raise_exception=True)
 def notification_add_cc(request, case_ids, cc_list):
-    """
-    Description: Add email addresses to the notification CC list of specific TestCases
+    """Add email addresses to the notification CC list of specific TestCases
 
-    Params:      $case_ids - Integer/Array: one or more TestCase IDs
-
-                 $cc_list - Array: one or more Email addresses, which will be
-                            added to each TestCase indicated by the case_ids.
-
-    Returns:     JSON. When succeed, status is 0, and message maybe empty or
-                 anything else that depends on the implementation. If something
-                 wrong, status will be 1 and message will be a short description
-                 to the error.
+    :param case_ids: give one or more case IDs. It could be an integer, a
+        string containing comma separated IDs, or a list of int each of them is
+        a case ID.
+    :type case_ids: int, str or list
+    :param list cc_list: list of email addresses to be added to the specified
+        cases.
     """
 
     try:
@@ -1197,18 +1243,13 @@ def notification_add_cc(request, case_ids, cc_list):
 @log_call(namespace=__xmlrpc_namespace__)
 @permission_required('testcases.change_testcase', raise_exception=True)
 def notification_remove_cc(request, case_ids, cc_list):
-    """
-    Description: Remove email addresses from the notification CC list of specific TestCases
+    """Remove email addresses from the notification CC list of specific TestCases
 
-    Params:      $case_ids - Integer/Array: one or more TestCase IDs
-
-                 $cc_list - Array: contians the email addresses that will
-                            be removed from each TestCase indicated by case_ids.
-
-    Returns:     JSON. When succeed, status is 0, and message maybe empty or
-                 anything else that depends on the implementation. If something
-                 wrong, status will be 1 and message will be a short description
-                 to the error.
+    :param case_ids: give one or more case IDs. It could be an integer, a
+        string containing comma separated IDs, or a list of int each of them is
+        a case ID.
+    :type case_ids: int, str or list
+    :param list cc_list: list of email addresses to be removed from specified cases.
     """
 
     try:
@@ -1229,13 +1270,14 @@ def notification_remove_cc(request, case_ids, cc_list):
 @log_call(namespace=__xmlrpc_namespace__)
 @permission_required('testcases.change_testcase', raise_exception=True)
 def notification_get_cc_list(request, case_ids):
-    """
-    Description: Return whole CC list of each TestCase
+    """Return whole CC list of each TestCase
 
-    Params:      $case_ids - Integer/Array: one or more TestCase IDs
-
-    Returns:     An dictionary object with case_id as key and a list of CC as the value
-                 Each case_id will be converted to a str object in the result.
+    :param case_ids: give one or more case IDs. It could be an integer, a
+        string containing comma separated IDs, or a list of int each of them is
+        a case ID.
+    :type case_ids: int, str or list
+    :return: a mapping from case ID to list of CC email addresses.
+    :rtype: dict(str, list)
     """
 
     result = {}

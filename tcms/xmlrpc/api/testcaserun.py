@@ -60,24 +60,25 @@ gcr = GetCaseRun()
 
 @log_call(namespace=__xmlrpc_namespace__)
 def add_comment(request, case_run_ids, comment):
-    """
-    Description: Adds comments to selected test case runs.
+    """Adds comments to selected test case runs.
 
-    Params:      $case_run_ids - Integer/Array/String: An integer representing the ID in the database,
-                             an array of case_run_ids, or a string of comma separated case_run_ids.
+    :param case_run_ids: give one or more case run IDs. It could be an integer,
+        a string containing comma separated IDs, or a list of int each of them
+        is a case run ID.
+    :type run_ids: int, str or list
+    :param str comment: the comment content to add.
+    :return: a list which is empty on success or a list of mappings with
+        failure codes if a failure occured.
+    :rtype: list
 
-                 $comment - String - The comment
+    Example::
 
-    Returns:     Array: empty on success or an array of hashes with failure
-                        codes if a failure occured.
-
-    Example:
-    # Add comment 'foobar' to case run 1234
-    >>> TestCaseRun.add_comment(1234, 'foobar')
-    # Add 'foobar' to case runs list [56789, 12345]
-    >>> TestCaseRun.add_comment([56789, 12345], 'foobar')
-    # Add 'foobar' to case runs list '56789, 12345' with String
-    >>> TestCaseRun.add_comment('56789, 12345', 'foobar')
+        # Add comment 'foobar' to case run 1
+        >>> TestCaseRun.add_comment(1, 'foobar')
+        # Add 'foobar' to case runs list [1, 2]
+        >>> TestCaseRun.add_comment([1, 2], 'foobar')
+        # Add 'foobar' to case runs list '1, 2' with String
+        >>> TestCaseRun.add_comment('1, 2', 'foobar')
     """
     from tcms.xmlrpc.utils import Comment
 
@@ -96,33 +97,30 @@ def add_comment(request, case_run_ids, comment):
 @log_call(namespace=__xmlrpc_namespace__)
 @permission_required('testcases.add_testcasebug', raise_exception=True)
 def attach_bug(request, values):
-    """
-    Description: Add one or more bugs to the selected test cases.
+    """Add one or more bugs to the selected test cases.
 
-    Params:     $values - Array/Hash: A reference to a hash or array of hashes with keys and values
-                                      matching the fields of the test case bug to be created.
+    :param dict values: a mapping containing these data to create a test run.
 
-      +-------------------+----------------+-----------+------------------------+
-      | Field             | Type           | Null      | Description            |
-      +-------------------+----------------+-----------+------------------------+
-      | case_run_id       | Integer        | Required  | ID of Case             |
-      | bug_id            | Integer        | Required  | ID of Bug              |
-      | bug_system_id     | Integer        | Required  | 1: BZ(Default), 2: JIRA|
-      | summary           | String         | Optional  | Bug summary            |
-      | description       | String         | Optional  | Bug description        |
-      +-------------------+----------------+-----------+------------------------+
+        * case_run_id: (int) **Required** ID of Case
+        * bug_id: (int) **Required** ID of Bug
+        * bug_system_id: (int) **Required** 1: BZ(Default), 2: JIRA
+        * summary: (str) optional Bug summary
+        * description: (str) optional Bug description
 
-    Returns:     Array: empty on success or an array of hashes with failure
-                 codes if a failure occured.
+    :return: a list which is empty on success or a list of mappings with
+        failure codes if a failure occured.
+    :rtype: list
 
-    Example:
-    >>> TestCaseRun.attach_bug({
-        'case_run_id': 12345,
-        'bug_id': 67890,
-        'bug_system_id': 1,
-        'summary': 'Testing TCMS',
-        'description': 'Just foo and bar',
-    })
+    Example::
+
+        # Attach a bug 67890 to case run 12345
+        >>> TestCaseRun.attach_bug({
+                'case_run_id': 12345,
+                'bug_id': 67890,
+                'bug_system_id': 1,
+                'summary': 'Testing TCMS',
+                'description': 'Just foo and bar',
+            })
     """
     from tcms.core import forms
     from tcms.testcases.models import TestCaseBugSystem
@@ -152,13 +150,15 @@ def attach_bug(request, values):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def check_case_run_status(request, name):
-    """
-    Params:      $name - String: the status name.
+    """Get case run status by name
 
-    Returns:     Hash: Matching case run status object hash or error if not found.
+    :param str name: the status name.
+    :return: a mapping representing found case run status.
+    :rtype: dict
 
-    Example:
-    >>> TestCaseRun.check_case_run_status('idle')
+    Example::
+
+        >>> TestCaseRun.check_case_run_status('idle')
     """
     return TestCaseRunStatus.objects.get(name=name).serialize()
 
@@ -166,36 +166,31 @@ def check_case_run_status(request, name):
 @log_call(namespace=__xmlrpc_namespace__)
 @permission_required('testruns.add_testcaserun', raise_exception=True)
 def create(request, values):
-    """
-    *** It always report - ValueError: invalid literal for int() with base 10: '' ***
+    """Creates a new Test Case Run object and stores it in the database.
 
-    Description: Creates a new Test Case Run object and stores it in the database.
+    :param dict values: a mapping containing these data to create a case run.
 
-    Params:      $values - Hash: A reference to a hash with keys and values
-                           matching the fields of the test case to be created.
-  +--------------------+----------------+-----------+------------------------------------------------+
-  | Field              | Type           | Null      | Description                                    |
-  +--------------------+----------------+-----------+------------------------------------------------+
-  | run                | Integer        | Required  | ID of Test Run                                 |
-  | case               | Integer        | Required  | ID of test case                                |
-  | build              | Integer        | Required  | ID of a Build in plan's product                |
-  | assignee           | Integer        | Optional  | ID of assignee                                 |
-  | case_run_status    | Integer        | Optional  | Defaults to "IDLE"                             |
-  | case_text_version  | Integer        | Optional  | Default to latest case text version            |
-  | notes              | String         | Optional  |                                                |
-  | sortkey            | Integer        | Optional  | a.k.a. Index, Default to 0                     |
-  +--------------------+----------------+-----------+------------------------------------------------+
+        * run: (int) **Required** ID of Test Run
+        * case: (int) **Required** ID of test case
+        * build: (int) **Required** ID of a Build in plan's product
+        * assignee: (int) optional ID of assignee
+        * case_run_status: (int) optional Defaults to "IDLE"
+        * case_text_version: (int) optional Default to latest case text version
+        * notes: (str) optional
+        * sortkey: (int) optional a.k.a. Index, Default to 0
 
-    Returns:     The newly created object hash.
+    :return: a mapping representing a newly created case run.
+    :rtype: dict
 
-    Example:
-    # Minimal test case parameters
-    >>> values = {
-        'run': 1990,
-        'case': 12345,
-        'build': 123,
-    }
-    >>> TestCaseRun.create(values)
+    Example::
+
+        # Minimal test case parameters
+        >>> values = {
+            'run': 1990,
+            'case': 12345,
+            'build': 123,
+        }
+        >>> TestCaseRun.create(values)
     """
     from tcms.core import forms
     from tcms.testruns.forms import XMLRPCNewCaseRunForm
@@ -228,25 +223,28 @@ def create(request, values):
 @log_call(namespace=__xmlrpc_namespace__)
 @permission_required('testcases.delete_testcasebug', raise_exception=True)
 def detach_bug(request, case_run_ids, bug_ids):
-    """
-    Description: Remove one or more bugs to the selected test case-runs.
+    """Remove one or more bugs to the selected test case-runs.
 
-    Params:      $case_run_ids - Integer/Array/String: An integer or alias representing the ID in the database,
-                                                       an array of case_run_ids, or a string of comma separated case_run_ids.
+    :param case_run_ids: give one or more case run IDs. It could be an integer,
+        a string containing comma separated IDs, or a list of int each of them
+        is a case run ID.
+    :type run_ids: int, str or list
+    :param bug_ids: give one or more case run IDs. It could be an integer,
+        a string containing comma separated IDs, or a list of int each of them
+        is a case run ID.
+    :type run_ids: int, str or list
+    :return: a list which is empty on success or a list of mappings with
+        failure codes if a failure occured.
+    :rtype: list
 
-                 $bug_ids - Integer/Array/String: An integer representing the ID in the database,
-                           an array of bug_ids, or a string of comma separated primary key of bug_ids.
+    Example::
 
-    Returns:     Array: empty on success or an array of hashes with failure
-                        codes if a failure occured.
-
-    Example:
-    # Remove bug id 54321 from case 1234
-    >>> TestCaseRun.detach_bug(1234, 54321)
-    # Remove bug ids list [1234, 5678] from cases list [56789, 12345]
-    >>> TestCaseRun.detach_bug([56789, 12345], [1234, 5678])
-    # Remove bug ids list '1234, 5678' from cases list '56789, 12345' with String
-    >>> TestCaseRun.detach_bug('56789, 12345', '1234, 5678')
+        # Remove bug id 1000 from case run 1
+        >>> TestCaseRun.detach_bug(1, 1000)
+        # Remove bug ids list [1000, 2000] from case runs list [1, 2]
+        >>> TestCaseRun.detach_bug([1, 2], [1000, 2000])
+        # Remove bug ids list '1000, 2000' from case runs list '1, 2' with String
+        >>> TestCaseRun.detach_bug('1, 2', '1000, 2000')
     """
     tcrs = TestCaseRun.objects.filter(
         case_run_id__in=pre_process_ids(case_run_ids)
@@ -266,47 +264,43 @@ def detach_bug(request, case_run_ids, bug_ids):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def filter(request, values={}):
-    """
-    Description: Performs a search and returns the resulting list of test cases.
+    """Performs a search and returns the resulting list of test cases.
 
-    Params:      $values - Hash: keys must match valid search fields.
+    :param dict values: a mapping containing these criteria.
 
-        +----------------------------------------------------------------+
-        |               Case-Run Search Parameters                       |
-        +----------------------------------------------------------------+
-        |        Key          |          Valid Values                    |
-        | case_run_id         | Integer                                  |
-        | assignee            | ForeignKey: Auth.User                    |
-        | build               | ForeignKey: Build                        |
-        | case                | ForeignKey: Test Case                    |
-        | case_run_status     | ForeignKey: Case Run Status              |
-        | notes               | String                                   |
-        | run                 | ForeignKey: Test Run                     |
-        | tested_by           | ForeignKey: Auth.User                    |
-        | running_date        | Datetime                                 |
-        | close_date          | Datetime                                 |
-        +----------------------------------------------------------------+
+        * case_run_id: (int)
+        * assignee: ForeignKey: Auth.User
+        * build: ForeignKey: TestBuild
+        * case: ForeignKey: TestCase
+        * case_run_status: ForeignKey: TestCaseRunStatus
+        * notes: (str)
+        * run: ForeignKey: TestRun
+        * tested_by: ForeignKey: Auth.User
+        * running_date: Datetime
+        * close_date: Datetime
 
-    Returns:     Object: Matching test cases are retuned in a list of hashes.
+    :return: a list of found :class:`TestCaseRun`.
+    :rtype: list[dict]
 
-    Example:
-    # Get all case runs contain 'TCMS' in case summary
-    >>> TestCaseRun.filter({'case__summary__icontain': 'TCMS'})
+    Example::
+
+        # Get all case runs contain 'TCMS' in case summary
+        >>> TestCaseRun.filter({'case__summary__icontain': 'TCMS'})
     """
     return TestCaseRun.to_xmlrpc(values)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
 def filter_count(request, values={}):
-    """
-    Description: Performs a search and returns the resulting count of cases.
+    """Performs a search and returns the resulting count of cases.
 
-    Params:      $query - Hash: keys must match valid search fields (see filter).
+    :param dict values: a mapping containing criteria. See also
+        :class:`TestCaseRun.filter <tcms.xmlrpc.api.testcaserun.filter>`.
+    :return: total matching cases.
+    :rtype: int
 
-    Returns:     Integer - total matching cases.
-
-    Example:
-    # See distinct_count()
+    .. seealso::
+       See example in :class:`TestCaseRun.filter <tcms.xmlrpc.api.testcaserun.filter>`.
     """
     from tcms.testruns.models import TestCaseRun
 
@@ -315,34 +309,33 @@ def filter_count(request, values={}):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get(request, case_run_id):
-    """
-    Description: Used to load an existing test case-run from the database.
+    """Used to load an existing test case-run from the database.
 
-    Params:      $case_run_id - Integer: An integer representing the ID in
-                                         the database for this case-run.
+    :param int case_run_id: case run ID.
+    :return: a mapping representing found :class:`TestCaseRun`.
+    :rtype: dict
 
-    Returns:     A blessed TestCaseRun object hash
+    Example::
 
-    Example:
-    >>> TestCaseRun.get(1193)
+        >>> TestCaseRun.get(1)
     """
     return gcr.pre_process_tcr(case_run_id=case_run_id).serialize()
 
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_s(request, case_id, run_id, build_id, environment_id=0):
-    """
-    Description: Used to load an existing test case from the database.
+    """Used to load an existing test case from the database.
 
-    Params:      $case_id - Integer: An integer representing the ID of the test case in the database.
-                 $run_id - Integer: An integer representing the ID of the test run in the database.
-                 $build_id - Integer: An integer representing the ID of the test build in the database.
-                 $environment_id - Optional Integer: An integer representing the ID of the environment in the database.
+    :param int case_id: case ID.
+    :param int run_id: run ID.
+    :param int build_id: build ID.
+    :param int environment_id: optional environment ID. Defaults to ``0``.
+    :return: a list of found :class:`TestCaseRun`.
+    :rtype: list[dict]
 
-    Returns:     A blessed TestCaseRun object hash
+    Example::
 
-    Example:
-    >>> TestCaseRun.get_s(3113, 565, 72, 90)
+        >>> TestCaseRun.get_s(1, 2, 3, 4)
     """
     return gcr.pre_process_tcr_s(run_id, case_id, build_id,
                                  environment_id).serialize()
@@ -350,16 +343,15 @@ def get_s(request, case_id, run_id, build_id, environment_id=0):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_bugs(request, case_run_id):
-    """
-    Description: Get the list of bugs that are associated with this test case.
+    """Get the list of bugs that are associated with this test case.
 
-    Params:      $case_run_ids - Integer: An integer representing the ID in
-                               the database for this case-run.
+    :param int case_run_id: case run ID.
+    :return: a list of mappings of :class:`TestCaseBug`.
+    :rytpe: list[dict]
 
-    Returns:     Array: An array of bug object hashes.
+    Example::
 
-    Example:
-    >>> TestCase.get_bugs(12345)
+        >>> TestCase.get_bugs(10)
     """
     query = {'case_run': int(case_run_id)}
     return TestCaseBug.to_xmlrpc(query)
@@ -367,18 +359,18 @@ def get_bugs(request, case_run_id):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_bugs_s(request, run_id, case_id, build_id, environment_id=0):
-    """
-    Description: Get the list of bugs that are associated with this test case.
+    """Get the list of bugs that are associated with this test case.
 
-    Params:      $run_id - Integer: An integer representing the ID of the test run in the database.
-                 $case_id - Integer: An integer representing the ID of the test case in the database.
-                 $build_id - Integer: An integer representing the ID of the test build in the database.
-                 $environment_id - Optional Integer: An integer representing the ID of the environment in the database.
+    :param int case_id: case ID.
+    :param int run_id: run ID.
+    :param int build_id: build ID.
+    :param int environment_id: optional environment ID. Defaults to ``0``.
+    :return: a list of found :class:`TestCaseBug`.
+    :rtype: list[dict]
 
-    Returns:     Array: An array of bug object hashes.
+    Example::
 
-    Example:
-    >>> TestCaseRun.get_bugs_s(3113, 565, 72, 90)
+        >>> TestCaseRun.get_bugs_s(1, 2, 3, 4)
     """
     query = {
         'case_run__run': int(run_id),
@@ -396,40 +388,40 @@ def get_bugs_s(request, run_id, case_id, build_id, environment_id=0):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-def get_case_run_status(request, id=None):
-    """
-    Params:      $case_run_status_id - Integer(Optional): ID of the status to return
+def get_case_run_status(request, case_run_status_id=None):
+    """Get case run status
 
-    Returns:     Hash: Matching case run status object hash when your specific the case_run_status_id
-                       or return all of case run status.
-                       It will return error the case run status you specific id not found.
+    :param int case_run_status_id: optional case run status ID.
+    :return: a mapping representing a case run status of specified ID.
+        Otherwise, a list of mappings of all case run status will be returned,
+        if ``case_run_status_id`` is omitted.
+    :rtype: dict or list[dict]
 
-    Example:
-    # Get all of case run status
-    >>> TestCaseRun.get_case_run_status()
-    # Get case run status by ID 1
-    >>> TestCaseRun.get_case_run_status(1)
+    Example::
+
+        # Get all of case run status
+        >>> TestCaseRun.get_case_run_status()
+        # Get case run status by ID 1
+        >>> TestCaseRun.get_case_run_status(1)
     """
-    if id:
-        return TestCaseRunStatus.objects.get(id=id).serialize()
+    if case_run_status_id:
+        return TestCaseRunStatus.objects.get(pk=case_run_status_id).serialize()
 
     return TestCaseRunStatus.to_xmlrpc()
 
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_completion_time(request, case_run_id):
-    """
-    Description: Returns the time in seconds that it took for this case to complete.
+    """Returns the time in seconds that it took for this case to complete.
 
-    Params:      $case_run_id - Integer: An integer representing the ID in
-                                         the database for this case-run.
+    :param int case_run_id: caes run ID.
+    :return: Seconds since run was started till this case was completed.  Or
+        empty hash for insufficent data.
+    :rtype: int
 
-    Returns:     Integer: Seconds since run was started till this case was completed.
-                          Or empty hash for insufficent data.
+    Example::
 
-    Example:
-    >>> TestCaseRun.get_completion_time(1193)
-
+        >>> TestCaseRun.get_completion_time(1)
     """
     from tcms.core.forms.widgets import SECONDS_PER_DAY
 
@@ -444,19 +436,19 @@ def get_completion_time(request, case_run_id):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_completion_time_s(request, run_id, case_id, build_id, environment_id=0):
-    """
-    Description: Returns the time in seconds that it took for this case to complete.
+    """Returns the time in seconds that it took for this case to complete.
 
-    Params:      $case_id - Integer: An integer representing the ID of the test case in the database.
-                 $run_id - Integer: An integer representing the ID of the test run in the database.
-                 $build_id - Integer: An integer representing the ID of the test build in the database.
-                 $environment_id - Optional Integer: An integer representing the ID of the environment in the database.
+    :param int case_id: case ID.
+    :param int run_id: run ID.
+    :param int build_id: build ID.
+    :param int environment_id: optional environment ID. Defaults to ``0``.
+    :return: Seconds since run was started till this case was completed.  Or
+        empty hash for insufficent data.
+    :rtype: int
 
-    Returns:     Integer: Seconds since run was started till this case was completed.
-                          Or empty hash for insufficent data.
+    Example::
 
-    Example:
-    >>> TestCaseRun.get_completion_time_s(3113, 565, 72, 90)
+        >>> TestCaseRun.get_completion_time_s(1, 2, 3, 4)
     """
     from tcms.core.forms.widgets import SECONDS_PER_DAY
 
@@ -476,32 +468,31 @@ def get_completion_time_s(request, run_id, case_id, build_id, environment_id=0):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_history(request, case_run_id):
-    """
-    *** FIXME: NOT IMPLEMENTED - Case history is different than before ***
-    Description: Get the list of case-runs for all runs this case appears in.
-                  To limit this list by build or other attribute, see TestCaseRun.query
+    """Get the list of case-runs for all runs this case appears in.
 
-    Params:      $caserun_id - Integer: An integer representing the ID in
-                                        the database for this case-run.
+    :param int case_run_id: case run ID.
+    :return: a list of mappings of :class:`TestCaseRun`.
+    :rtype: list[dict]
 
-    Returns:     Array: An array of case-run object hashes.
+    .. warning::
+       NOT IMPLEMENTED
     """
     raise NotImplementedError('Not implemented RPC method')
 
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_history_s(request, run_id, build_id, environment_id):
-    """
-    *** FIXME: NOT IMPLEMENTED - Case history is different than before ***
-    Description: Get the list of case-runs for all runs this case appears in.
-                  To limit this list by build or other attribute, see TestCaseRun.filter.
+    """Get the list of case-runs for all runs this case appears in.
 
-    Params:      $case_id - Integer: An integer representing the ID of the test case in the database.
-                 $run_id - Integer: An integer representing the ID of the test run in the database.
-                 $build_id - Integer: An integer representing the ID of the test build in the database.
-                 $environment_id - Integer: An integer representing the ID of the environment in the database.
+    :param int case_id: case ID.
+    :param int run_id: run ID.
+    :param int build_id: build ID.
+    :param int environment_id: optional environment ID. Defaults to ``0``.
+    :return: a list mappings of :class:`TestCaseRun`.
+    :rtype: list[dict]
 
-    Returns:     Array: An array of case-run object hashes.
+    .. warning::
+       NOT IMPLEMENTED
     """
     raise NotImplementedError('Not implemented RPC method')
 
@@ -525,35 +516,30 @@ def lookup_status_id_by_name(request, name):
 @log_call(namespace=__xmlrpc_namespace__)
 @permission_required('testruns.change_testcaserun', raise_exception=True)
 def update(request, case_run_ids, values):
-    """
-    Description: Updates the fields of the selected case-runs.
+    """Updates the fields of the selected case-runs.
 
-    Params:      $caserun_ids - Integer/String/Array
-                        Integer: A single TestCaseRun ID.
-                        String:  A comma separates string of TestCaseRun IDs for batch
-                                 processing.
-                        Array:   An array of TestCaseRun IDs for batch mode processing
+    :param case_run_ids: give one or more case run IDs. It could be an integer,
+        a string containing comma separated IDs, or a list of int each of them
+        is a case run ID.
+    :type run_ids: int, str or list
+    :param dict values: a mapping containing these data to update specified
+        case runs.
 
-                 $values - Hash of keys matching TestCaseRun fields and the new values
-                 to set each field to.
-                         +--------------------+----------------+
-                         | Field              | Type           |
-                         +--------------------+----------------+
-                         | build              | Integer        |
-                         | assignee           | Integer        |
-                         | case_run_status    | Integer        |
-                         | notes              | String         |
-                         | sortkey            | Integer        |
-                         +--------------------+----------------+
+        * build: (int)
+        * assignee: (int)
+        * case_run_status: (int)
+        * notes: (str)
+        * sortkey: (int)
 
-    Returns:     Hash/Array: In the case of a single object, it is returned. If a
-                 list was passed, it returns an array of object hashes. If the
-                 update on any particular object failed, the hash will contain a
-                 ERROR key and the message as to why it failed.
+    :return: In the case of a single object, it is returned. If a list was
+        passed, it returns an array of object hashes. If the update on any
+        particular object failed, the hash will contain a ERROR key and the
+        message as to why it failed.
 
-    Example:
-    # Update alias to 'tcms' for case 12345 and 23456
-    >>> TestCaseRun.update([12345, 23456], {'assignee': 2206})
+    Example::
+
+        # Update alias to 'tcms' for case 12345 and 23456
+        >>> TestCaseRun.update([12345, 23456], {'assignee': 2206})
     """
     from datetime import datetime
     from tcms.core import forms
@@ -598,12 +584,11 @@ def update(request, case_run_ids, values):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def attach_log(request, case_run_id, name, url):
-    """
-    Description: Add new log link to TestCaseRun
+    """Add new log link to TestCaseRun
 
-    Params:     $caserun_id - Integer
-                $name       - String: A short description to this new link, and accept 64 characters at most.
-                $url        - String: The actual URL.
+    :param int case_run_id: case run ID.
+    :param str name: link name.
+    :param str url: link URL.
     """
     test_case_run = TestCaseRun.objects.get(pk=case_run_id)
     create_link(name=name, url=url, link_to=test_case_run)
@@ -611,11 +596,10 @@ def attach_log(request, case_run_id, name, url):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def detach_log(request, case_run_id, link_id):
-    """
-    Description: Remove log link to TestCaseRun
+    """Remove log link to TestCaseRun
 
-    Params:     $case_run_id - Integer
-                $link_id     - Integer: Id of LinkReference instance
+    :param int case_run_id: case run ID.
+    :param int link_id: case run ID.
     """
     TestCaseRun.objects.get(pk=case_run_id)
     LinkReference.unlink(link_id)
@@ -623,10 +607,11 @@ def detach_log(request, case_run_id, link_id):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_logs(request, case_run_id):
-    """
-    Description:  Get log links to TestCaseRun
+    """Get log links to TestCaseRun
 
-    Params:     $case_run_id - Integer:
+    :param int case_run_id: case run ID.
+    :return: list of mappings of found logs :class:`LinkReference`.
+    :rtype: list[dict]
     """
     test_case_run = TestCaseRun.objects.get(pk=case_run_id)
     links = LinkReference.get_from(test_case_run)

@@ -13,16 +13,16 @@ __xmlrpc_namespace__ = 'TestCasePlan'
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get(request, case_id, plan_id):
-    """
-    Description: Used to load an existing test-case-plan from the database.
+    """Used to load an existing test-case-plan from the database.
 
-    Params:      $case_id - Integer: An integer representing the ID of the test case in the database.
-                 $plan_id - Integer: An integer representing the ID of the test plan in the database.
+    :param int case_id: case ID.
+    :param int plan_id: plan ID.
+    :return: a mapping of :class:`TestCasePlan`.
+    :rtype: dict
 
-    Returns:     A blessed TestCasePlan object hash
+    Example::
 
-    Example:
-    >>> TestCasePlan.get(81307, 3551)
+        >>> TestCasePlan.get(1, 2)
     """
     tc = TestCase.objects.get(pk=case_id)
     tp = TestPlan.objects.get(pk=plan_id)
@@ -32,18 +32,18 @@ def get(request, case_id, plan_id):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def update(request, case_id, plan_id, sortkey):
-    """
-    Description: Updates the sortkey of the selected test-case-plan.
+    """Updates the sortkey of the selected test-case-plan.
 
-    Params:      $case_id - Integer: An integer representing the ID of the test case in the database.
-                 $plan_id - Integer: An integer representing the ID of the test plan in the database.
-                 $sortkey - Integer: An integer representing the ID of the sortkey in the database.
+    :param int case_id: case ID.
+    :param int plan_id: plan ID.
+    :param int sortkey: the sort key.
+    :return: a mapping of :class:`TestCasePlan`.
+    :rtype: dict
 
-    Returns:     A blessed TestCasePlan object hash
+    Example::
 
-    Example:
-    # Update sortkey of selected test-case-plan to 450
-    >>> TestCasePlan.update(81307, 3551, 450)
+        # Update sortkey of selected test-case-plan to 10
+        >>> TestCasePlan.update(1, 2, 10)
     """
     tc = TestCase.objects.get(pk=case_id)
     tp = TestPlan.objects.get(pk=plan_id)

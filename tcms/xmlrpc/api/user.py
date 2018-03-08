@@ -29,28 +29,24 @@ def get_user_dict(user):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def filter(request, query):
-    """
-    Description: Performs a search and returns the resulting list of test cases
+    """Performs a search and returns the resulting list of test cases
 
-    Params:      $query - Hash: keys must match valid search fields.
+    :param dict query: a mapping containing these criteria.
 
-        +------------------------------------------------------------------+
-        |                 Case Search Parameters                           |
-        +------------------------------------------------------------------+
-        |        Key          |          Valid Values                      |
-        | id                  | Integer: ID                                |
-        | username            | String: User name                          |
-        | first_name          | String: User first name                    |
-        | last_name           | String: User last  name                    |
-        | email               | String Email                               |
-        | is_active           | Boolean: Return the active users           |
-        | groups              | ForeignKey: AuthGroup                      |
-        +------------------------------------------------------------------+
+        * id: (int): ID
+        * username: (str): User name
+        * first_name: (str): User first name
+        * last_name: (str): User last name
+        * email: (str) Email
+        * is_active: bool: Return the active users
+        * groups: ForeignKey: AuthGroup
 
-    Returns:     Array: Matching test cases are retuned in a list of hashes.
+    :return: a list of mappings of found :class:`User <django.contrib.auth.models.User>`.
+    :rtype: list[dict]
 
-    Example:
-    >>> User.filter({'username__startswith': 'x'})
+    Example::
+
+        >>> User.filter({'username__startswith': 'z'})
     """
     if 'is_active' in query:
         query['is_active'] = parse_bool_value(query['is_active'])
@@ -60,29 +56,29 @@ def filter(request, query):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get(request, id):
-    """
-    Description: Used to load an existing test case from the database.
+    """Used to load an existing test case from the database.
 
-    Params:      $id - Integer/String: An integer representing the ID in the
-                       database
+    :param int id: user ID.
+    :return: a mapping of found :class:`User <django.contrib.auth.models.User>`.
+    :rtype: dict
 
-    Returns:     A blessed User object Hash
+    Example::
 
-    Example:
-    >>> User.get(2206)
+        >>> User.get(2)
     """
     return get_user_dict(User.objects.get(pk=id))
 
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_me(request):
-    """
-    Description: Get the information of myself.
+    """Get the information of myself.
 
-    Returns:     A blessed User object Hash
+    :return: a mapping of found :class:`User <django.contrib.auth.models.User>`.
+    :rtype: dict
 
-    Example:
-    >>> User.get_me()
+    Example::
+
+        >>> User.get_me()
     """
     return get_user_dict(request.user)
 
@@ -90,33 +86,27 @@ def get_me(request):
 @log_call(namespace=__xmlrpc_namespace__)
 def update(request, values=None, id=None):
     """
-    Description: Updates the fields of the selected user. it also can change
-                 the informations of other people if you have permission.
+    Updates the fields of the selected user. it also can change the
+    informations of other people if you have permission.
 
-    Params:      $values   - Hash of keys matching TestCase fields and the new
-                             values to set each field to.
+    :param int id: optional user ID. Defaults to update current user if
+        omitted.
+    :param dict values: a mapping containing these data to update a user.
 
-                 $id       - Integer/String(Optional)
-                             Integer: A single TestCase ID.
-                             String:  A comma string of User ID.
-                             Default: The ID of myself
+        * first_name: (str) optional
+        * last_name: (str) optional (**Required** if changes category)
+        * email: (str) optional
+        * password: (str) optional
+        * old_password: (str) **Required** by password
 
-    Returns:     A blessed User object Hash
+    :return: a mapping representing the updated user.
+    :rtype: dict
 
-    +--------------+--------+-----------------------------------------+
-    | Field        | Type   | Null                                    |
-    +--------------+--------+-----------------------------------------+
-    | first_name   | String | Optional                                |
-    | last_name    | String | Optional(Required if changes category)  |
-    | email        | String | Optional                                |
-    | password     | String | Optional                                |
-    | old_password | String | Required by password                    |
-    +--------------+--------+-----------------------------------------+
+    Example::
 
-    Example:
-    >>> User.update({'first_name': 'foo'})
-    >>> User.update({'password': 'foo', 'old_password': '123'})
-    >>> User.update({'password': 'foo', 'old_password': '123'}, 2206)
+        >>> User.update({'first_name': 'foo'})
+        >>> User.update({'password': 'foo', 'old_password': '123'})
+        >>> User.update({'password': 'foo', 'old_password': '123'}, 2)
     """
     if id:
         user_being_updated = User.objects.get(pk=id)
@@ -164,16 +154,18 @@ def update(request, values=None, id=None):
 @log_call(namespace=__xmlrpc_namespace__)
 @user_passes_test(lambda u: u.has_perm('auth.change_user'))
 def join(request, username, groupname):
-    """
-    Description: Add user to a group specified by name.
+    """Add user to a group specified by name.
 
-    Returns: None
+    :param str username: user name.
+    :param str groupname: group name to add given user name.
 
-    Raises: PermissionDenied
-            Object.DoesNotExist
+    :raise PermissionDenied: if the request has no permission to add a user to
+        a group.
+    :raise Object.DoesNotExist: if user name or group name does not exist.
 
-    Example:
-    >>> User.join('username', 'groupname')
+    Example::
+
+        >>> User.join('username', 'groupname')
     """
     try:
         user = User.objects.get(username=username)

@@ -16,19 +16,20 @@ __xmlrpc_namespace__ = 'TestBuild'
 
 @log_call(namespace=__xmlrpc_namespace__)
 def check_build(request, name, product):
-    """
-    Description: Looks up and returns a build by name.
+    """Looks up and returns a build by name
 
-    Params:      $name - String: name of the build.
-                 $product - product_id of the product in the Database
+    :param str name: name of the build.
+    :param product: product_id of the product in the Database
+    :type product: int or str
+    :return: matching :class:`TestBuild` object hash or error if not found.
+    :rtype: dict
 
-    Returns:     Hash: Matching Build object hash or error if not found.
+    Example::
 
-    Example:
-    # Get with product ID
-    >>> Build.check_build('2008-02-25', 61)
-    # Get with product name
-    >>> Build.check_build('2008-02-25', 'Red Hat Enterprise Linux 5')
+        # Get with product ID
+        >>> Build.check_build('2008-02-25', 1)
+        # Get with product name
+        >>> Build.check_build('2008-02-25', 'Product A')
     """
     p = pre_check_product(values=product)
     tb = TestBuild.objects.get(name=name, product=p)
@@ -38,28 +39,25 @@ def check_build(request, name, product):
 @log_call(namespace=__xmlrpc_namespace__)
 @permission_required('management.add_testbuild', raise_exception=True)
 def create(request, values):
-    """
-    Description: Creates a new build object and stores it in the database
+    """Creates a new build object and stores it in the database
 
-    Params:      $values - Hash: A reference to a hash with keys and values
-                 matching the fields of the build to be created.
+    :param dict values: a mapping containing following items to create a
+        :class:`TestBuild`
 
-        +-------------+----------------+-----------+---------------------------+
-        | Field       | Type           | Null      | Description               |
-        +-------------+----------------+-----------+---------------------------+
-        | product     | Integer/String | Required  | ID or Name of product     |
-        | name        | String         | Required  |                           |
-        | description | String         | Optional  |                           |
-        | is_active   | Boolean        | Optional  | Defaults to True (1)      |
-        +-------------+----------------+-----------+---------------------------+
+        * product: (int or str) the product ID or name the new TestBuild should belong to.
+        * name: (str) the build name.
+        * description: (str) optional description.
+        * is_active: (bool) optional. To indicate whether new build is active. Defaults to ``True``.
 
-    Returns:     The newly created object hash.
+    :return: a mapping serialized from newly created :class:`TestBuild`.
+    :rtype: dict
 
-    Example:
-    # Create build by product ID and set the build active.
-    >>> Build.create({'product': 234, 'name': 'tcms_testing', 'description': 'None', 'is_active': 1})
-    # Create build by product name and set the build to inactive.
-    >>> Build.create({'product': 'TCMS', 'name': 'tcms_testing 2', 'description': 'None', 'is_active': 0})
+    Example::
+
+        # Create build by product ID and set the build active.
+        >>> Build.create({'product': 234, 'name': 'tcms_testing', 'description': 'None', 'is_active': 1})
+        # Create build by product name and set the build to inactive.
+        >>> Build.create({'product': 'TCMS', 'name': 'tcms_testing 2', 'description': 'None', 'is_active': 0})
     """
     if not values.get('product') or not values.get('name'):
         raise ValueError('Product and name are both required.')
@@ -76,30 +74,30 @@ def create(request, values):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get(request, build_id):
-    """
-    Description: Used to load an existing build from the database.
+    """Used to load an existing build from the database.
 
-    Params:      $id - An integer representing the ID in the database
+    :param int build_id: the build ID.
+    :return: A blessed Build object hash
+    :rtype: list
 
-    Returns:     A blessed Build object hash
+    Example::
 
-    Example:
-    >>> Build.get(1234)
+        >>> Build.get(1234)
     """
     return TestBuild.objects.get(build_id=build_id).serialize()
 
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_runs(request, build_id):
-    """
-    Description: Returns the list of runs that this Build is used in.
+    """Returns the list of runs that this Build is used in.
 
-    Params:      $id -  Integer: Build ID.
+    :param int build_id: build ID.
+    :return: list of test runs.
+    :rtype: list
 
-    Returns:     Array: List of run object hashes.
+    Example::
 
-    Example:
-    >>> Build.get_runs(1234)
+        >>> Build.get_runs(1234)
     """
     from tcms.testruns.models import TestRun
 
@@ -111,15 +109,14 @@ def get_runs(request, build_id):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_caseruns(request, build_id):
-    """
-    Description: Returns the list of case-runs that this Build is used in.
+    """Returns the list of case runs that this Build is used in.
 
-    Params:      $id -  Integer: Build ID.
+    :param int build_id: build ID.
+    :return: list of mappings of found case runs.
 
-    Returns:     Array: List of case-run object hashes.
+    Example::
 
-    Example:
-    >>> Build.get_caseruns(1234)
+        >>> Build.get_caseruns(1234)
     """
     from tcms.testruns.models import TestCaseRun
 
@@ -139,8 +136,10 @@ def lookup_id_by_name(request, name, product):
 
 @log_call(namespace=__xmlrpc_namespace__)
 def lookup_name_by_id(request, build_id):
-    """
-    DEPRECATED Use Build.get instead
+    """Lookup name by ID
+
+    .. deprecated:: x.x
+       Use ``Build.get`` instead.
     """
     return get(request, build_id)
 
@@ -151,27 +150,23 @@ def update(request, build_id, values):
     """
     Description: Updates the fields of the selected build or builds.
 
-    Params:      $id - Integer: A single build ID.
+    :param int build_id: the build ID.
+    :param dict values: a mapping containing build information to update.
 
-                 $values - Hash of keys matching Build fields and the new values
-                 to set each field to.
+        * product: (int or str) optional new product ID or name.
+        * name: (str) optional new build name.
+        * description: (str) optional new description.
+        * is_active: (bool) set active or not optionally.
 
-        +-------------+----------------+-----------+---------------------------+
-        | Field       | Type           | Null      | Description               |
-        +-------------+----------------+-----------+---------------------------+
-        | product     | Integer/String | Optional  | ID or Name of product     |
-        | name        | String         | Optional  |                           |
-        | description | String         | Optional  |                           |
-        | is_active   | Boolean        | Optional  | True/False                |
-        +-------------+----------------+-----------+---------------------------+
+    :return: a mapping serialized from the updated :class:`TestBuild` object.
+    :rtype: dict
 
-    Returns:     Hash: The updated Build object hash.
+    Example::
 
-    Example:
-    # Update name to 'foo' for build id 702
-    >>> Build.update(702, {'name': 'foo'})
-    # Update status to inactive for build id 702
-    >>> Build.update(702, {'is_active': 0})
+        # Update name to 'foo' for build id 702
+        >>> Build.update(702, {'name': 'foo'})
+        # Update status to inactive for build id 702
+        >>> Build.update(702, {'is_active': 0})
     """
     tb = TestBuild.objects.get(build_id=build_id)
 
