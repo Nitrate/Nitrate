@@ -65,11 +65,20 @@
     - name: Restart docker service
       systemd: name=docker state=restarted
 
-    - name: Provison virtualenv
+    - stat:
+        path: /home/{{ ansible_user }}/nitrate-env
+      register: venv
+
+    - name: Create virtualenv
       become: false
-      pip:
-        virtualenv: /home/{{ ansible_user }}/nitrate-env
-        requirements: /code/requirements/devel.txt
+      shell: virtualenv nitrate-env
+      args:
+        chdir: /home/{{ ansible_user }}
+      when: not venv.stat.exists
+
+    - name: Install dependencies in virtualenv
+      become: false
+      shell: /home/{{ ansible_user }}/nitrate-env/bin/pip install -r /code/requirements.txt
 
     - name: Initialize Nitrate database
       become: false

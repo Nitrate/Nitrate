@@ -2,31 +2,61 @@
 
 from setuptools import setup, find_packages
 
+
 with open('VERSION.txt', 'r') as f:
     pkg_version = f.read().strip()
-
-
-def get_install_requires():
-    requires = []
-    links = []
-    with open('requirements/base.txt', 'r') as f:
-        for line in f:
-            dep_line = line.strip()
-            parts = dep_line.split('#egg=')
-            if len(parts) == 2:
-                links.append(dep_line)
-                requires.append(parts[1])
-            else:
-                requires.append(dep_line)
-        return requires, links
-
-
-install_requires, dependency_links = get_install_requires()
 
 
 def get_long_description():
     with open('README.rst', 'r') as f:
         return f.read()
+
+
+install_requires = [
+    'PyMySQL == 0.7.11',
+    'beautifulsoup4 >= 4.1.1',
+    'celery == 4.1.0',
+    'django-contrib-comments == 1.8.0',
+    'django-preserialize == 1.2.1',
+    'django-tinymce == 2.6.0',
+    'django-uuslug == 1.1.8',
+    'django >= 1.10,<2.0',
+    'html2text',
+    'kobo == 0.7.0',
+    'odfpy >= 0.9.6',
+    'six',
+    'xmltodict',
+]
+
+extras_require = {
+    # Required for tcms.core.contrib.auth.backends.KerberosBackend
+    'krbauth': [
+        'kerberos == 1.2.5'
+    ],
+
+    # Packages for building documentation
+    'docs': [
+        'Sphinx >= 1.1.2',
+        'sphinx_rtd_theme',
+    ],
+
+    # Necessary packages for running tests
+    'tests': [
+        'coverage',
+        'factory_boy',
+        'flake8',
+        'mock',
+        'pytest',
+        'pytest-cov',
+        'pytest-django',
+    ],
+
+    # Contain tools that assists the development
+    'devtools': [
+        'django-debug-toolbar == 1.7',
+        'tox',
+    ]
+}
 
 
 setup(
@@ -40,13 +70,10 @@ setup(
     url='https://github.com/Nitrate/Nitrate/',
     license='GPLv2+',
     keywords='test case',
-
     install_requires=install_requires,
-    dependency_links=dependency_links,
-
+    extras_require=extras_require,
     packages=find_packages(),
     include_package_data=True,
-
     classifiers=[
         'Framework :: Django',
         'Framework :: Django :: 1.10',

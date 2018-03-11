@@ -34,9 +34,9 @@ Install devel packages that should be installed first::
 
     sudo yum install gcc python-devel mysql-devel krb5-devel libxml2-devel libxslt-devel
 
-Install dependencies from ``requirements/base.txt``::
+Install dependencies::
 
-    sudo pip install -r requirements/base.txt
+    sudo pip install path/to/Nitrate
 
 Install from source code
 ~~~~~~~~~~~~~~~~~~~~~~~~

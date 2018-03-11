@@ -42,7 +42,7 @@ dependencies. See :doc:`set_dev_env` for more information. Then::
     (venv)# git clone https://github.com/Nitrate/Nitrate.git
     (venv)# cd ./Nitrate/
     (venv)# git checkout --track [a proper tag or branch]
-    (venv)# pip install -r ./requirements/base.txt
+    (venv)# pip install .
     (venv)# python setup.py install
 
 .. note::

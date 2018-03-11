@@ -18,7 +18,9 @@ powerful access control for each plan, run and case, and XMLRPC APIs.
 Dependencies
 ------------
 
-See also requirements/base.txt and requirements/devel.txt
+Dependencies are listed int ``setup.py``. ``requirements.txt`` file is also
+provided for provision a local virtualenv for a consistent development
+environment.
 
 Documentation
 -------------

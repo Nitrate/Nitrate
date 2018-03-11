@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import kerberos
-
 from six.moves import xmlrpc_client
 
 from django.conf import settings
@@ -125,6 +123,8 @@ class KerberosBackend(ModelBackend):
     #            )
 
     def authenticate(self, username=None, password=None):
+        import kerberos
+
         try:
             kerberos.checkPassword(
                 username, password, '',

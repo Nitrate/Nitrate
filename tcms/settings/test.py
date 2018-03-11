@@ -1,4 +1,4 @@
-from tcms.settings.devel import *
+from tcms.settings.common import *
 
 DATABASES = {
     'default': {
