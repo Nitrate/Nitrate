@@ -22,7 +22,7 @@ import os
 sys.path.insert(1, os.path.abspath('../../'))
 
 import django
-os.environ['DJANGO_SETTINGS_MODULE'] = 'tcms.settings.devel'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'tcms.settings.test'
 django.setup()
 
 with open('../../VERSION.txt', 'r') as f:
