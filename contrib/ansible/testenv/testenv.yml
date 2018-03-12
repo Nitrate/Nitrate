@@ -27,6 +27,8 @@
         - python2-sphinx
         - python2-virtualenv
         - python3-devel
+        - python3-ipdb
+        - python3-virtualenv
         - redhat-rpm-config
         - rpm-build
         - rpmdevtools
@@ -71,7 +73,7 @@
 
     - name: Create virtualenv
       become: false
-      shell: virtualenv nitrate-env
+      shell: virtualenv-3 nitrate-env
       args:
         chdir: /home/{{ ansible_user }}
       when: not venv.stat.exists
