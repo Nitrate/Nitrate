@@ -7,6 +7,9 @@ Nitrate - Test Case Management System
 .. image:: https://coveralls.io/repos/github/Nitrate/Nitrate/badge.svg?branch=develop
    :target: https://coveralls.io/github/Nitrate/Nitrate?branch=develop
 
+.. image::  https://readthedocs.org/projects/nitrate/badge/?version=latest
+   :target: http://nitrate.readthedocs.io/en/latest/
+
 Introduction
 ------------
 
