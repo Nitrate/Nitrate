@@ -1,11 +1,10 @@
 include AUTHORS CHANGELOG.rst README.rst LICENSE VERSION.txt
-include nitrate.spec Makefile
+include nitrate.spec Makefile requirements.txt
 
 graft contrib
-graft requirements
 graft tcms/locale
 graft tcms/static
 graft tcms/templates
 
-include docs/Makefile
+include docs/Makefile docs/requirements.txt docs/make.bat
 graft docs/source
