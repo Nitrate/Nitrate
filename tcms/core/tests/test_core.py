@@ -224,11 +224,6 @@ class GroupByResultLevelTest(unittest.TestCase):
 class VariousResponsesTest(unittest.TestCase):
     """Test HttpJSONResponse"""
 
-    def test_json_response(self):
-        response = responses.HttpJSONResponse('{}')
-        self.assert_(isinstance(response, http.HttpResponse))
-        self.assertEqual(response['Content-Type'], 'application/json')
-
     def test_json_response_badrequest(self):
         response = responses.HttpJSONResponseBadRequest('{}')
         self.assert_(isinstance(response, http.HttpResponseBadRequest))

@@ -5,11 +5,11 @@ from __future__ import absolute_import
 import json
 
 from django.contrib.auth.decorators import permission_required
+from django.http import JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 
 from .forms import AddLinkReferenceForm, BasicValidationForm
 from .models import create_link, LinkReference
-from tcms.core.responses import HttpJSONResponse
 from tcms.core.responses import HttpJSONResponseBadRequest
 from tcms.core.responses import HttpJSONResponseServerError
 
@@ -46,10 +46,11 @@ def add(request):
         model_instance = model_class.objects.get(pk=target_id)
         create_link(name=name, url=url, link_to=model_instance)
 
-        jd = json.dumps(
-            {'rc': 0, 'response': 'ok',
-             'data': {'name': name, 'url': url}})
-        return HttpJSONResponse(content=jd)
+        return JsonResponse({
+            'rc': 0,
+            'response': 'ok',
+            'data': {'name': name, 'url': url}
+        })
 
     else:
         jd = json.dumps(
@@ -83,9 +84,7 @@ def get(request):
         jd = []
         for link in links:
             jd.append({'name': link.name, 'url': link.url})
-        jd = json.dumps(jd)
-
-        return HttpJSONResponse(content=jd)
+        return JsonResponse(jd, safe=False)
 
     else:
         jd = json.dumps(
@@ -114,7 +113,7 @@ def remove(request, link_id):
         jd = json.dumps({'rc': 1, 'response': str(err)})
         return HttpJSONResponseBadRequest(content=jd)
 
-    return HttpJSONResponse(
-        content=json.dumps(
-            {'rc': 0,
-             'response': 'Link has been removed successfully.'}))
+    return JsonResponse({
+        'rc': 0,
+        'response': 'Link has been removed successfully.'
+    })

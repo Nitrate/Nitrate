@@ -19,6 +19,7 @@ from django.db import transaction
 from django.db.models import Count
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect, Http404
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
 from django.template.loader import get_template
@@ -32,7 +33,6 @@ from django.views.generic.base import View
 from django_comments.models import Comment
 
 from tcms.core.exceptions import NitrateException
-from tcms.core.responses import HttpJSONResponse
 from tcms.core.utils.bugtrackers import Bugzilla
 from tcms.core.utils import clean_request
 from tcms.core.utils import DataTableResult
@@ -425,8 +425,8 @@ def load_runs_of_one_plan(request, plan_id,
             'querySet': TestRun.objects.none(),
         }
 
-    return HttpJSONResponse(
-        get_template(template_name).render(response_data, request))
+    resp_data = get_template(template_name).render(response_data, request)
+    return JsonResponse(json.loads(resp_data))
 
 
 @require_GET
@@ -536,8 +536,8 @@ def ajax_search(request, template_name='run/common/json_runs.txt'):
             'runs': TestRun.objects.none(),
         }
 
-    return HttpJSONResponse(
-        get_template(template_name).render(response_data, request))
+    resp_data = get_template(template_name).render(response_data, request)
+    return JsonResponse(json.loads(resp_data))
 
 
 def open_run_get_case_runs(request, run):
@@ -884,7 +884,7 @@ def bug(request, case_run_id, template_name='run/execute_case_run.html'):
         def ajax_response(self, response=None):
             if not response:
                 response = self.default_ajax_response
-            return HttpJSONResponse(json.dumps(response))
+            return JsonResponse(response)
 
         def file(self):
             rh_bz = Bugzilla(settings.BUGZILLA_URL)

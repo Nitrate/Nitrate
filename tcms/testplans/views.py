@@ -2,6 +2,7 @@
 
 import datetime
 import itertools
+import json
 import six
 
 from six.moves import urllib
@@ -26,7 +27,6 @@ from uuslug import slugify
 
 from tcms.core.db import SQLExecution
 from tcms.core.models import TCMSLog
-from tcms.core.responses import HttpJSONResponse
 from tcms.core.utils.checksum import checksum
 from tcms.core.utils import DataTableResult
 from tcms.core.utils.raw_sql import RawSQL
@@ -413,7 +413,8 @@ def ajax_response(request, queryset, column_names, template_name):
     # prepare the JSON with the response, consider using :
     # from django.template.defaultfilters import escapejs
     t = get_template(template_name)
-    return HttpJSONResponse(t.render(data, request))
+    resp_data = t.render(data, request)
+    return JsonResponse(json.loads(resp_data))
 
 
 def get(request, plan_id, slug=None, template_name='plan/get.html'):

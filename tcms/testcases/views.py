@@ -28,7 +28,6 @@ from django_comments.models import Comment
 from tcms.core import forms
 from tcms.core.db import SQLExecution
 from tcms.core.logs.models import TCMSLogModel
-from tcms.core.responses import HttpJSONResponse
 from tcms.core.utils.raw_sql import RawSQL
 from tcms.core.utils import DataTableResult
 from tcms.core.views import Prompt
@@ -740,7 +739,8 @@ def ajax_response(request, queryset, column_names, template_name):
     # prepare the JSON with the response, consider using :
     # from django.template.defaultfilters import escapejs
     t = get_template(template_name)
-    return HttpJSONResponse(t.render(dt.get_response_data(), request))
+    resp_data = t.render(dt.get_response_data(), request)
+    return JsonResponse(json.loads(resp_data))
 
 
 class SimpleTestCaseView(TemplateView, data.TestCaseViewDataMixin):
