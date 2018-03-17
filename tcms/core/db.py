@@ -78,7 +78,7 @@ class SQLExecution(object):
 
     @property
     def scalar(self):
-        row = self.rows.next()
+        row = six.next(self.rows)
         for key, value in six.iteritems(row):
             return value
 
