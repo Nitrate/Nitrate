@@ -528,8 +528,6 @@ def remove_tag(request, plan_ids, tags):
                 tp.remove_tag(tag=tg)
             except ObjectDoesNotExist:
                 pass
-            except Exception:
-                raise
 
     return
 
@@ -572,8 +570,6 @@ def remove_component(request, plan_ids, component_ids):
                 tp.remove_component(component=c)
             except ObjectDoesNotExist:
                 pass
-            except Exception:
-                raise
 
     return
 
@@ -725,10 +721,7 @@ def import_case_via_XML(request, plan_id, values):
     from tcms.testcases.models import TestCase, TestCasePlan, \
         TestCaseCategory
 
-    try:
-        tp = TestPlan.objects.get(pk=plan_id)
-    except ObjectDoesNotExist:
-        raise
+    tp = TestPlan.objects.get(pk=plan_id)
 
     try:
         new_case_from_xml = clean_xml_file(values)

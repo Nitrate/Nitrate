@@ -100,17 +100,11 @@ def remove_cases(request, run_ids, case_ids):
         # Remove case ids list '10, 20' from run list '1, 2' with String
         TestRun.remove_cases('1, 2', '10, 20')
     """
-
-    try:
-        trs = TestRun.objects.filter(run_id__in=pre_process_ids(run_ids))
-
-        for tr in trs.iterator():
-            crs = TestCaseRun.objects.filter(run=tr,
-                                             case__in=pre_process_ids(case_ids))
-            crs.delete()
-
-    except Exception:
-        raise
+    trs = TestRun.objects.filter(run_id__in=pre_process_ids(run_ids))
+    for tr in trs.iterator():
+        crs = TestCaseRun.objects.filter(
+            run=tr, case__in=pre_process_ids(case_ids))
+        crs.delete()
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -278,8 +272,6 @@ def env_value(request, action, run_ids, env_value_ids):
                 func(env_value=ev)
             except ObjectDoesNotExist:
                 pass
-            except Exception:
-                raise
 
     return
 
@@ -560,8 +552,6 @@ def remove_tag(request, run_ids, tags):
                 tr.remove_tag(tag=tg)
             except ObjectDoesNotExist:
                 pass
-            except Exception:
-                raise
 
     return
 

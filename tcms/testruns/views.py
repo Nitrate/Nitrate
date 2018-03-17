@@ -1447,8 +1447,6 @@ def env_value(request):
                         }
             except ObjectDoesNotExist as errors:
                 self.ajax_response = {'rc': 1, 'response': errors}
-            except Exception:
-                raise
 
             fragment = render(
                 request,

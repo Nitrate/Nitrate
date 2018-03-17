@@ -1046,8 +1046,6 @@ def remove_tag(request, case_ids, tags):
                 tc.remove_tag(tg)
             except ObjectDoesNotExist:
                 pass
-            except Exception:
-                raise
 
     return
 
@@ -1220,24 +1218,16 @@ def notification_add_cc(request, case_ids, cc_list):
     :param list cc_list: list of email addresses to be added to the specified
         cases.
     """
+    validate_cc_list(cc_list)
 
-    try:
-        validate_cc_list(cc_list)
-    except (TypeError, ValidationError):
-        raise
+    tc_ids = pre_process_ids(case_ids)
 
-    try:
-        tc_ids = pre_process_ids(case_ids)
+    for tc in TestCase.objects.filter(pk__in=tc_ids).iterator():
+        # First, find those that do not exist yet.
+        existing_cc = tc.emailing.get_cc_list()
+        adding_cc = list(set(cc_list) - set(existing_cc))
 
-        for tc in TestCase.objects.filter(pk__in=tc_ids).iterator():
-            # First, find those that do not exist yet.
-            existing_cc = tc.emailing.get_cc_list()
-            adding_cc = list(set(cc_list) - set(existing_cc))
-
-            tc.emailing.add_cc(adding_cc)
-
-    except (TypeError, ValueError, Exception):
-        raise
+        tc.emailing.add_cc(adding_cc)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -1251,20 +1241,10 @@ def notification_remove_cc(request, case_ids, cc_list):
     :type case_ids: int, str or list
     :param list cc_list: list of email addresses to be removed from specified cases.
     """
-
-    try:
-        validate_cc_list(cc_list)
-    except (TypeError, ValidationError):
-        raise
-
-    try:
-        tc_ids = pre_process_ids(case_ids)
-
-        for tc in TestCase.objects.filter(pk__in=tc_ids).only('pk').iterator():
-            tc.emailing.remove_cc(cc_list)
-
-    except (TypeError, ValueError, Exception):
-        raise
+    validate_cc_list(cc_list)
+    tc_ids = pre_process_ids(case_ids)
+    for tc in TestCase.objects.filter(pk__in=tc_ids).only('pk').iterator():
+        tc.emailing.remove_cc(cc_list)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -1279,17 +1259,9 @@ def notification_get_cc_list(request, case_ids):
     :return: a mapping from case ID to list of CC email addresses.
     :rtype: dict(str, list)
     """
-
     result = {}
-
-    try:
-        tc_ids = pre_process_ids(case_ids)
-
-        for tc in TestCase.objects.filter(pk__in=tc_ids).iterator():
-            cc_list = tc.emailing.get_cc_list()
-            result[str(tc.pk)] = cc_list
-
-    except (TypeError, ValueError, Exception):
-        raise
-
+    tc_ids = pre_process_ids(case_ids)
+    for tc in TestCase.objects.filter(pk__in=tc_ids).iterator():
+        cc_list = tc.emailing.get_cc_list()
+        result[str(tc.pk)] = cc_list
     return result
