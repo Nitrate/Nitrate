@@ -284,7 +284,7 @@ class CustomReportData(object):
 
         sql = sql_statement.sql_template % {
             'joins': '\n'.join(_joins),
-            'where': ' AND '.join(six.moves.imap(str, _where_conditions)),
+            'where': ' AND '.join(six.moves.map(str, _where_conditions)),
         }
         return sql, where_params
 
