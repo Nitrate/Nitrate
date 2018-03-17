@@ -267,7 +267,7 @@ Configure mail: {2}/edit/
 You have subscribed to the changes of this TestCase
 You are related to this TestCase'''.format(self.case.summary,
                                            'editor',
-                                           self.case.get_url())
+                                           self.case.get_full_url())
 
         self.assertEqual(1, len(mail.outbox))
         self.assertEqual(expected_mail_body, mail.outbox[0].body)

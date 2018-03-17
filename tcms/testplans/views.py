@@ -254,7 +254,7 @@ def all(request, template_name='plan/all.html'):
         return HttpResponse(serializers.serialize(
             request.GET.get('f', 'json'),
             tps,
-            extras=('num_cases', 'num_runs', 'num_children', 'get_url_path')
+            extras=('num_cases', 'num_runs', 'num_children', 'get_absolute_url')
         ))
 
     if request.GET.get('t') == 'html':

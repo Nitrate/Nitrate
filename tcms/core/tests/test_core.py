@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
 
 import unittest
+from mock import patch
 
 from django import http
+from django import test
+from django.conf import settings
+from django.contrib.sites.models import Site
 
 from tcms.core import responses
 from tcms.core.db import GroupByResult
 from tcms.core.utils import string_to_list
+from tcms.tests.factories import TestPlanFactory
 
 
 class TestUtilsFunctions(unittest.TestCase):
@@ -233,3 +238,35 @@ class VariousResponsesTest(unittest.TestCase):
         response = responses.HttpJSONResponseServerError('{}')
         self.assert_(isinstance(response, http.HttpResponseServerError))
         self.assertEqual(response['Content-Type'], 'application/json')
+
+
+class TestUrlMixin(test.TestCase):
+    """Test UrlMixin"""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.plan = TestPlanFactory()
+
+        site = Site.objects.get_current()
+        site.domain = 'localhost'
+        site.save()
+
+    def test_get_full_url(self):
+        url = self.plan.get_full_url()
+        expected_url = 'http://localhost/{}'.format(
+            self.plan.get_absolute_url())
+        self.assertEqual(expected_url, url)
+
+    @patch.object(settings, 'SITE_HTTP_SCHEME', new='', create=True)
+    def test_use_default_http_if_option_is_empty(self):
+        url = self.plan.get_full_url()
+        expected_url = 'http://localhost/{}'.format(
+            self.plan.get_absolute_url())
+        self.assertEqual(expected_url, url)
+
+    @patch.object(settings, 'SITE_HTTP_SCHEME', new='https', create=True)
+    def test_use_correct_configured_scheme(self):
+        url = self.plan.get_full_url()
+        expected_url = 'https://localhost/{}'.format(
+            self.plan.get_absolute_url())
+        self.assertEqual(expected_url, url)

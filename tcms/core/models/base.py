@@ -1,46 +1,27 @@
 # -*- coding: utf-8 -*-
-from six.moves import urllib
+
+import logging
 
 from django.db import models
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.sites.models import Site
 
-# ----------------------------------------------------------
-# UrlMixin is storned from
-# http://code.djangoproject.com/wiki/ReplacingGetAbsoluteUrl
-# ----------------------------------------------------------
+logger = logging.getLogger(__name__)
 
 
 class UrlMixin(object):
-    def get_url(self):
-        if hasattr(self.get_url_path, 'dont_recurse'):
-            raise NotImplemented
-        try:
-            path = self.get_url_path()
-        except NotImplemented:
-            raise
-        protocol = getattr(settings, "PROTOCOL", "http")
-        domain = Site.objects.get_current().domain
-        port = getattr(settings, "PORT", "")
-        if port:
-            assert port.startswith(
-                ":"), "The PORT setting must have a preceeding ':'."
-        return "%s://%s%s%s" % (protocol, domain, port, path)
+    """Mixin class for getting full URL"""
 
-    get_url.dont_recurse = True
-
-    def get_url_path(self):
-        if hasattr(self.get_url, 'dont_recurse'):
-            raise NotImplemented
-        try:
-            url = self.get_url()
-        except NotImplemented:
-            raise
-        bits = urllib.parse.urlparse(url)
-        return urllib.parse.urlunparse(('', '') + bits[2:])
-
-    get_url_path.dont_recurse = True
+    def get_full_url(self):
+        site_http_scheme = getattr(settings, 'SITE_HTTP_SCHEME', None)
+        if not site_http_scheme:
+            logger.warning('SITE_HTTP_SCHEME is not configured in settings. '
+                           'Use http by default instead.')
+            site_http_scheme = 'http'
+        site = Site.objects.get_current()
+        return '{}://{}/{}'.format(
+            site_http_scheme, site.domain, self.get_absolute_url())
 
 
 class TCMSContentTypeBaseModel(models.Model):
