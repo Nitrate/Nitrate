@@ -2,16 +2,14 @@
 
 from __future__ import absolute_import
 
-import json
-
 from django.contrib.auth.decorators import permission_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 
 from .forms import AddLinkReferenceForm, BasicValidationForm
 from .models import create_link, LinkReference
-from tcms.core.responses import HttpJSONResponseBadRequest
-from tcms.core.responses import HttpJSONResponseServerError
+from tcms.core.responses import JsonResponseBadRequest
+from tcms.core.responses import JsonResponseServerError
 
 __all__ = ('add', 'get', 'remove', )
 
@@ -53,9 +51,10 @@ def add(request):
         })
 
     else:
-        jd = json.dumps(
-            {'rc': 1, 'response': form.errors.as_text()})
-        return HttpJSONResponseBadRequest(content=jd)
+        return JsonResponseBadRequest({
+            'rc': 1,
+            'response': form.errors.as_text()
+        })
 
 
 @require_GET
@@ -78,8 +77,7 @@ def get(request):
             model_instance = model_class.objects.get(pk=target_id)
             links = LinkReference.get_from(model_instance)
         except Exception as err:
-            jd = json.dumps({'rc': 1, 'response': str(err)})
-            return HttpJSONResponseServerError(content=jd)
+            return JsonResponseServerError({'rc': 1, 'response': str(err)})
 
         jd = []
         for link in links:
@@ -87,9 +85,10 @@ def get(request):
         return JsonResponse(jd, safe=False)
 
     else:
-        jd = json.dumps(
-            {'rc': 1, 'response': form.errors.as_text()})
-        return HttpJSONResponseBadRequest(content=jd)
+        return JsonResponseBadRequest({
+            'rc': 1,
+            'response': form.errors.as_text()
+        })
 
 
 @require_GET
@@ -104,14 +103,15 @@ def remove(request, link_id):
     try:
         value = field.clean(link_id)
     except ValidationError as err:
-        jd = json.dumps({'rc': 1, 'response': '\n'.join(err.messages)})
-        return HttpJSONResponseBadRequest(content=jd)
+        return JsonResponseBadRequest({
+            'rc': 1,
+            'response': '\n'.join(err.messages)
+        })
 
     try:
         LinkReference.unlink(value)
     except Exception as err:
-        jd = json.dumps({'rc': 1, 'response': str(err)})
-        return HttpJSONResponseBadRequest(content=jd)
+        return JsonResponseBadRequest({'rc': 1, 'response': str(err)})
 
     return JsonResponse({
         'rc': 0,

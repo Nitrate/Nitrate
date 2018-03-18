@@ -1,19 +1,16 @@
 # -*- coding: utf-8 -*-
 
-from functools import partial
-
 from django import http
 
-
 __all__ = (
-    'HttpJSONResponseBadRequest',
-    'HttpJSONResponseServerError',
+    'JsonResponseBadRequest',
+    'JsonResponseServerError',
 )
 
 
-MIMETYPE_JSON = 'application/json'
+class JsonResponseBadRequest(http.JsonResponse):
+    status_code = 400
 
-HttpJSONResponseBadRequest = partial(http.HttpResponseBadRequest,
-                                     content_type=MIMETYPE_JSON)
-HttpJSONResponseServerError = partial(http.HttpResponseServerError,
-                                      content_type=MIMETYPE_JSON)
+
+class JsonResponseServerError(http.JsonResponse):
+    status_code = 500

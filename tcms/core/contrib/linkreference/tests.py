@@ -4,28 +4,7 @@ from __future__ import absolute_import
 
 import unittest
 
-from django.http import HttpResponse
-
 from .forms import TargetCharField
-from tcms.core.responses import HttpJSONResponseBadRequest
-from tcms.core.responses import HttpJSONResponseServerError
-
-
-class TestCustomResponses(unittest.TestCase):
-
-    def test_HttpJSONResponseBadRequest(self):
-        resp = HttpJSONResponseBadRequest(content='{}')
-
-        self.assert_(isinstance(resp, HttpResponse))
-        self.assertEqual(resp['content-type'], 'application/json')
-        self.assertEqual(resp.status_code, 400)
-
-    def test_HttpJSONResponseServerError(self):
-        resp = HttpJSONResponseServerError(content='{}')
-
-        self.assert_(isinstance(resp, HttpResponse))
-        self.assertEqual(resp['content-type'], 'application/json')
-        self.assertEqual(resp.status_code, 500)
 
 
 class TestTargetCharField(unittest.TestCase):

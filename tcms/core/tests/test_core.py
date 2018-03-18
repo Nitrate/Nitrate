@@ -3,7 +3,6 @@
 import unittest
 from mock import patch
 
-from django import http
 from django import test
 from django.conf import settings
 from django.contrib.sites.models import Site
@@ -225,13 +224,13 @@ class VariousResponsesTest(unittest.TestCase):
     """Test HttpJSONResponse"""
 
     def test_json_response_badrequest(self):
-        response = responses.HttpJSONResponseBadRequest('{}')
-        self.assert_(isinstance(response, http.HttpResponseBadRequest))
+        response = responses.JsonResponseBadRequest({})
+        self.assertEqual(400, response.status_code)
         self.assertEqual(response['Content-Type'], 'application/json')
 
     def test_json_response_servererror(self):
-        response = responses.HttpJSONResponseServerError('{}')
-        self.assert_(isinstance(response, http.HttpResponseServerError))
+        response = responses.JsonResponseServerError({})
+        self.assertEqual(500, response.status_code)
         self.assertEqual(response['Content-Type'], 'application/json')
 
 
