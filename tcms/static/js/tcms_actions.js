@@ -261,7 +261,7 @@ function addBookmark(url, method, parameters, callback) {
   });
 }
 
-function setCookie(name, value, expires, path, domain, secure) { 
+function setCookie(name, value, expires, path, domain, secure) {
   var curCookie = name + "=" + escape(value) +
     ((expires) ? "; expires=" + expires.toGMTString() : "") +
     ((path) ? "; path=" + path : "") +
@@ -322,7 +322,7 @@ function splitString(str, num) {
   return str;
 }
 
-/* 
+/*
     Set up the <option> children of the given <select> element.
     Preserving the existing selection (if any).
 
@@ -526,7 +526,7 @@ function getVersionsByProductId(allow_blank, product_field, version_field) {
 
   product_id = jQ(product_field).val();
 
-  if (product_id == "" && allow_blank) {
+  if (!product_id && allow_blank) {
     jQ(version_field).html('<option value="">---------</option>');
       return true;
   }

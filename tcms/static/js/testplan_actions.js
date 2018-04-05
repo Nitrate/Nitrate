@@ -497,7 +497,7 @@ Nitrate.TestPlans.TreeView = {
 };
 
 Nitrate.TestPlans.Create.on_load = function() {
-  bind_version_selector_to_product(false);
+  bind_version_selector_to_product(true);
 
   jQ('#env_group_help_link').bind('click', function(t) {
     jQ('#env_group_help').toggle();
