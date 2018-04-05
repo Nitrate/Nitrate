@@ -10,7 +10,6 @@ from six.moves import urllib
 from django.utils.decorators import method_decorator
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
-from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.db.models import Count
@@ -23,6 +22,7 @@ from django.template.loader import get_template
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_http_methods
 from django.views.generic import View
+from preserialize.serialize import serialize
 from uuslug import slugify
 
 from tcms.core.db import SQLExecution
@@ -251,11 +251,12 @@ def all(request, template_name='plan/all.html'):
         tps = tps.order_by('name')
 
     if request.GET.get('t') == 'ajax':
-        return HttpResponse(serializers.serialize(
-            request.GET.get('f', 'json'),
-            tps,
-            extras=('num_cases', 'num_runs', 'num_children', 'get_absolute_url')
-        ))
+        return JsonResponse(
+            serialize(tps, fields=[
+                'pk', 'name', 'is_active', 'parent_id',
+                'num_cases', 'num_runs', 'num_children', 'get_url_path'
+            ]),
+            safe=False)
 
     if request.GET.get('t') == 'html':
         if request.GET.get('f') == 'preview':
