@@ -39,7 +39,7 @@ from tcms.testcases import sqls
 from tcms.testcases.models import TestCase, TestCaseStatus, \
     TestCaseAttachment, TestCasePlan
 from tcms.management.models import Priority, TestTag
-from tcms.testcases.models import TestCaseBug
+from tcms.testcases.models import TestCaseBug, TestCaseComponent
 from tcms.testplans.models import TestPlan
 from tcms.testruns.models import TestCaseRun
 from tcms.testruns.models import TestCaseRunStatus
@@ -1640,16 +1640,25 @@ class AddComponentView(View):
             })
 
         case_ids = [int(case_id) for case_id in request.POST.getlist('case')]
-        cases = TestCase.objects.filter(pk__in=case_ids)
+
+        # Remove duplicate pair of case and component
+        existings = set(TestCaseComponent.objects.filter(
+            case__in=case_ids).values_list('case', 'component'))
+        cases = TestCase.objects.filter(pk__in=case_ids).only('pk')
+        components_to_add = (
+            (case, comp)
+            for case in cases
+            for comp in form.cleaned_data['o_component']
+            if (case.pk, comp.pk) not in existings)
+
         errors = []
-        for case in cases:
-            for component in form.cleaned_data['o_component']:
-                try:
-                    case.add_component(component=component)
-                except Exception as e:
-                    logger.exception('Failed to add component %r from case %r',
-                                     component, case)
-                    errors.append(str(e))
+        for case, component in components_to_add:
+            try:
+                case.add_component(component=component)
+            except Exception as e:
+                logger.exception('Failed to add component %r to case %r',
+                                 component, case)
+                errors.append(str(e))
 
         if errors:
             return JsonResponse({
