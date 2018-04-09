@@ -347,7 +347,23 @@ class TestCase(TCMSActionModel):
             raise ValueError('Bug %s already exist.' % bug_id)
 
     def add_component(self, component):
-        return TestCaseComponent.objects.create(case=self, component=component)
+        """Add a component
+
+        Relationship between case and component is unique. A same component
+        with same pk is not added.
+
+        :param component: component to be added.
+        :type component: :class:`Component`
+        :return: the object representing relationship between this case and the
+            component. If component is already added to this case, nothing will
+            happen and ``None`` will be returned.
+        :rtype: :class:`TestCaseComponent`.
+        """
+        manager = TestCaseComponent.objects
+        if manager.filter(case=self, component=component).exists():
+            return
+        else:
+            return manager.create(case=self, component=component)
 
     def add_tag(self, tag):
         return TestCaseTag.objects.get_or_create(case=self, tag=tag)
@@ -599,11 +615,12 @@ class TestCaseAttachment(models.Model):
 
 
 class TestCaseComponent(models.Model):
-    case = models.ForeignKey(TestCase)  # case_id
-    component = models.ForeignKey('management.Component')  # component_id
+    case = models.ForeignKey(TestCase)
+    component = models.ForeignKey('management.Component')
 
     class Meta:
         db_table = u'test_case_components'
+        unique_together = ('case', 'component')
 
 
 class TestCaseTag(models.Model):

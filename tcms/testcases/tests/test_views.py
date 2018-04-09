@@ -975,3 +975,64 @@ class TestAJAXResponse(BasePlanCase):
         ]
         expected_id_links.sort()
         self.assertEqual(expected_id_links, id_links)
+
+
+class TestAddComponent(BasePlanCase):
+    """Test AddComponentView"""
+
+    @classmethod
+    def setUpTestData(cls):
+        super(TestAddComponent, cls).setUpTestData()
+        cls.component_db = ComponentFactory(name='db', product=cls.product)
+        cls.component_doc = ComponentFactory(name='doc', product=cls.product)
+        cls.component_cli = ComponentFactory(name='cli', product=cls.product)
+
+    def setUp(self):
+        user_should_have_perm(self.tester, 'testcases.add_testcasecomponent')
+        self.add_component_url = reverse('cases-add-component')
+
+        self.login_tester()
+
+    def test_add_one_component(self):
+        resp = self.client.post(self.add_component_url, {
+            'product': self.product.pk,
+            'case': self.case_1.pk,
+            'o_component': [self.component_db.pk],
+        })
+
+        self.assertEqual(200, resp.status_code)
+
+        components = self.case_1.component.all()
+        self.assertEqual(1, len(components))
+        self.assertEqual(self.component_db, components[0])
+
+    def test_add_multiple_components(self):
+        resp = self.client.post(self.add_component_url, {
+            'product': self.product.pk,
+            'case': self.case_1.pk,
+            'o_component': [self.component_db.pk, self.component_cli.pk],
+        })
+
+        self.assertEqual(200, resp.status_code)
+
+        components = self.case_1.component.order_by('name')
+        self.assertEqual(2, len(components))
+        self.assertEqual(self.component_cli, components[0])
+        self.assertEqual(self.component_db, components[1])
+
+    def test_avoid_duplicate_components(self):
+        TestCaseComponent.objects.create(case=self.case_1,
+                                         component=self.component_doc)
+
+        resp = self.client.post(self.add_component_url, {
+            'product': self.product.pk,
+            'case': self.case_1.pk,
+            'o_component': [self.component_doc.pk, self.component_cli.pk],
+        })
+
+        self.assertEqual(200, resp.status_code)
+
+        components = self.case_1.component.order_by('name')
+        self.assertEqual(2, len(components))
+        self.assertEqual(self.component_cli, components[0])
+        self.assertEqual(self.component_doc, components[1])
