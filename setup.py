@@ -60,7 +60,7 @@ extras_require = {
 
 
 setup(
-    name='nitrate',
+    name='Nitrate',
     version=pkg_version,
     description='Test Case Management System',
     long_description=get_long_description(),
