@@ -464,17 +464,19 @@ if register_model:
 
 
 def _listen():
-    post_save.connect(plan_watchers.on_plan_save, TestPlan)
-    pre_delete.connect(plan_watchers.pre_plan_delete, TestPlan)
-    post_delete.connect(plan_watchers.on_plan_delete, TestPlan)
+    post_save.connect(plan_watchers.notify_on_plan_is_updated, TestPlan)
+    pre_delete.connect(
+        plan_watchers.load_email_settings_for_later_deletion, TestPlan)
+    post_delete.connect(plan_watchers.notify_deletion_of_plan, TestPlan)
     pre_save.connect(plan_watchers.pre_save_clean, TestPlan)
 
 
 def _disconnect_signals():
     """ used in testing """
-    post_save.disconnect(plan_watchers.on_plan_save, TestPlan)
-    pre_delete.disconnect(plan_watchers.pre_plan_delete, TestPlan)
-    post_delete.disconnect(plan_watchers.on_plan_delete, TestPlan)
+    post_save.disconnect(plan_watchers.notify_on_plan_is_updated, TestPlan)
+    pre_delete.disconnect(
+        plan_watchers.load_email_settings_for_later_deletion, TestPlan)
+    post_delete.disconnect(plan_watchers.notify_deletion_of_plan, TestPlan)
     pre_save.disconnect(plan_watchers.pre_save_clean, TestPlan)
 
 
