@@ -169,15 +169,15 @@ class TestPlan(TCMSActionModel):
             checksum=text_checksum or checksum(plan_text)
         )
 
-    def add_case(self, case, sortkey=0):
-
+    def add_case(self, case, sortkey=1):
+        """Add a case"""
         tcp, is_created = TestCasePlan.objects.get_or_create(
             plan=self,
             case=case,
         )
         if is_created:
             tcp.sortkey = sortkey
-            tcp.save()
+            tcp.save(update_fields=['sortkey'])
 
     def add_component(self, component):
         try:
@@ -387,6 +387,59 @@ class TestPlan(TCMSActionModel):
                     tp_dest.add_case(tpcase_src, tcp.sortkey)
 
         return tp_dest
+
+    def import_cases(self, cases_info, sortkey_step=10):
+        """Import a list of cases
+
+        :param cases_info: list of mappings, each of which contains data to
+            create a case. This information is created from case XML document
+            which is exported previously from Nitrate.
+        :type cases_info: list[dict]
+        """
+        sortkey = 1
+        for info in cases_info:
+            self._import_case(info, sortkey=sortkey)
+            sortkey += sortkey_step
+
+    def _import_case(self, case_info, sortkey):
+        """Import a case
+
+        :param dict case_info: refer to `import_cases`. This is one of the case
+            information in the list.
+        :param int sortkey: the sort key of imported case.
+        """
+        category, _ = TestCaseCategory.objects.get_or_create(
+            product=self.product,
+            name=case_info['category_name'])
+
+        tc = TestCase.objects.create(
+            is_automated=case_info['is_automated'],
+            script='',
+            arguments='',
+            summary=case_info['summary'],
+            requirement='',
+            alias='',
+            estimated_time=0,
+            case_status_id=case_info['case_status_id'],
+            category_id=category.id,
+            priority_id=case_info['priority_id'],
+            author_id=case_info['author_id'],
+            default_tester_id=case_info['default_tester_id'],
+            notes=case_info['notes'])
+
+        tc.add_text(case_text_version=1,
+                    author=case_info['author'],
+                    action=case_info['action'],
+                    effect=case_info['effect'],
+                    setup=case_info['setup'],
+                    breakdown=case_info['breakdown'])
+
+        # handle tags
+        if case_info['tags']:
+            for tag in case_info['tags']:
+                tc.add_tag(tag=tag)
+
+        self.add_case(tc, sortkey=sortkey)
 
 
 class TestPlanText(TCMSActionModel):

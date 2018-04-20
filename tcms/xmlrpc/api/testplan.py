@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import six
-
 from django.contrib.auth.decorators import permission_required
 from django.core.exceptions import ObjectDoesNotExist
 
 from tcms.management.models import Component
-from tcms.management.models import TestTag
 from tcms.management.models import Product
+from tcms.management.models import TestTag
+from tcms.testplans.importer import clean_xml_file
 from tcms.testplans.models import TestPlan, TestPlanType, TCMSEnvPlanMap
 from tcms.xmlrpc.decorators import log_call
 from tcms.xmlrpc.utils import pre_process_ids, distinct_count
@@ -705,7 +704,7 @@ def update(request, plan_ids, values):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-def import_case_via_XML(request, plan_id, values):
+def import_case_via_XML(request, plan_id, xml_content):
     """Add cases to plan via XML file
 
     :param int plan_id: plan ID.
@@ -717,178 +716,7 @@ def import_case_via_XML(request, plan_id, values):
         >>> fb = open('tcms.xml', 'rb')
         >>> TestPlan.import_case_via_XML(1, fb.read())
     """
-    from tcms.testplans.models import TestPlan
-    from tcms.testcases.models import TestCase, TestCasePlan, \
-        TestCaseCategory
-
     tp = TestPlan.objects.get(pk=plan_id)
-
-    try:
-        new_case_from_xml = clean_xml_file(values)
-    except Exception:
-        raise TypeError("Invalid XML File")
-
-    i = 0
-    for case in new_case_from_xml:
-        i += 1
-        # Get the case category from the case and related to the product of the plan
-        try:
-            category = TestCaseCategory.objects.get(
-                product=tp.product, name=case['category_name']
-            )
-        except TestCaseCategory.DoesNotExist:
-            category = TestCaseCategory.objects.create(
-                product=tp.product, name=case['category_name']
-            )
-        # Start to create the objects
-        tc = TestCase.objects.create(
-            is_automated=case['is_automated'],
-            script=None,
-            arguments=None,
-            summary=case['summary'],
-            requirement=None,
-            alias=None,
-            estimated_time=0,
-            case_status_id=case['case_status_id'],
-            category_id=category.id,
-            priority_id=case['priority_id'],
-            author_id=case['author_id'],
-            default_tester_id=case['default_tester_id'],
-            notes=case['notes'],
-        )
-        TestCasePlan.objects.create(plan=tp, case=tc, sortkey=i * 10)
-
-        tc.add_text(case_text_version=1,
-                    author=case['author'],
-                    action=case['action'],
-                    effect=case['effect'],
-                    setup=case['setup'],
-                    breakdown=case['breakdown'], )
-
-        # handle tags
-        if case['tags']:
-            for tag in case['tags']:
-                tc.add_tag(tag=tag)
-
-        tc.add_to_plan(plan=tp)
-    return "Success update %d cases" % (i, )
-
-
-def clean_xml_file(xml_file):
-    from django.conf import settings
-    import xmltodict
-
-    xml_file = xml_file.replace('\n', '')
-    xml_file = xml_file.replace('&testopia_', '&')
-    xml_file = xml_file.encode("utf8")
-
-    xml_data = xmltodict.parse(xml_file)
-    root_element = xml_data.get('testopia', None)
-    if root_element is None:
-        raise ValueError('Invalid XML document.')
-    if root_element.get('@version') != settings.TESTOPIA_XML_VERSION:
-        raise ValueError(
-            'Wrong version {}'.format(root_element.get('@version')))
-    case_elements = root_element.get('testcase', None)
-    if case_elements is not None:
-        if isinstance(case_elements, list):
-            return six.moves.map(process_case, case_elements)
-        elif isinstance(case_elements, dict):
-            return six.moves.map(process_case, (case_elements,))
-        else:
-            raise
-    else:
-        raise ValueError('No case found in XML document.')
-
-
-def process_case(case):
-    from django.contrib.auth.models import User
-    from tcms.management.models import Priority
-    from tcms.testcases.models import TestCaseStatus
-
-    # Check author
-    author = case.get('@author')
-    if author:
-        author = User.objects.get(email=author)
-        author_id = author.id
-    else:
-        raise ValueError('Invalid author: "{0}"'.format(author))
-
-    # Check default tester
-    default_tester_email = case.get('defaulttester')
-    if default_tester_email:
-        default_tester = User.objects.get(email=default_tester_email)
-        default_tester_id = default_tester.id
-    else:
-        default_tester_id = None
-
-    # Check priority
-    priority = case.get('@priority')
-    if priority:
-        priority = Priority.objects.get(value=priority)
-        priority_id = priority.id
-    else:
-        raise ValueError('Invalid priority value: "{0}"'.format(priority))
-
-    # Check automated status
-    automated = case.get('@automated')
-    if automated:
-        is_automated = automated == 'Automatic' and True or False
-    else:
-        is_automated = False
-
-    # Check status
-    status = case.get('@status')
-    if status:
-        case_status = TestCaseStatus.objects.get(name=status)
-        case_status_id = case_status.id
-    else:
-        raise ValueError('Invalid status: "{0}"'.format(status))
-
-    # Check category
-    # *** Ugly code here ***
-    # There is a bug in the XML file, the category is related to product.
-    # But unfortunate it did not defined product in the XML file.
-    # So we have to define the category_name at the moment then get the product from the plan.
-    # If we did not found the category of the product we will create one.
-    category_name = case.get('categoryname')
-    if not category_name:
-        raise ValueError('Invalid category name: "{0}"'.format(category_name))
-
-    # Check or create the tag
-    element = 'tag'
-    if case.get(element, {}):
-        tags = []
-        if isinstance(case[element], dict):
-            tag, create = TestTag.objects.get_or_create(name=case[element]['value'])
-            tags.append(tag)
-
-        if isinstance(case[element], six.text_type):
-            tag, create = TestTag.objects.get_or_create(name=case[element])
-            tags.append(tag)
-
-        if isinstance(case[element], list):
-            for tag_name in case[element]:
-                tag, create = TestTag.objects.get_or_create(name=tag_name)
-                tags.append(tag)
-    else:
-        tags = None
-
-    new_case = {
-        'summary': case.get('summary') or '',
-        'author_id': author_id,
-        'author': author,
-        'default_tester_id': default_tester_id,
-        'priority_id': priority_id,
-        'is_automated': is_automated,
-        'case_status_id': case_status_id,
-        'category_name': category_name,
-        'notes': case.get('notes') or '',
-        'action': case.get('action') or '',
-        'effect': case.get('expectedresults') or '',
-        'setup': case.get('setup') or '',
-        'breakdown': case.get('breakdown') or '',
-        'tags': tags,
-    }
-
-    return new_case
+    new_case_from_xml = list(clean_xml_file(xml_content))
+    tp.import_cases(new_case_from_xml)
+    return 'Success update {} cases'.format(len(new_case_from_xml))

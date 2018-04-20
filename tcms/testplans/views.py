@@ -35,7 +35,7 @@ from tcms.management.models import TCMSEnvGroup, Component
 from tcms.search.views import remove_from_request_path
 from tcms.search.order import order_plan_queryset
 from tcms.testcases.forms import SearchCaseForm, QuickSearchCaseForm
-from tcms.testcases.models import TestCaseStatus, TestCaseCategory
+from tcms.testcases.models import TestCaseStatus
 from tcms.testcases.models import TestCase, TestCasePlan
 from tcms.testcases.views import get_selected_testcases
 from tcms.testplans.forms import ClonePlanForm
@@ -903,56 +903,9 @@ class ImportCasesView(View):
     @method_decorator(permission_required('testcases.add_testcaseplan'))
     def post(self, request, plan_id):
         plan = get_object_or_404(TestPlan.objects.only('pk'), pk=int(plan_id))
-
-        # Process import case from XML action
         xml_form = ImportCasesViaXMLForm(request.POST, request.FILES)
-
         if xml_form.is_valid():
-            i = 0
-            for case in xml_form.cleaned_data['xml_file']:
-                i += 1
-
-                # Get the case category from the case and related to
-                # the product of the plan
-                try:
-                    category = TestCaseCategory.objects.get(
-                        product=plan.product, name=case['category_name'])
-                except TestCaseCategory.DoesNotExist:
-                    category = TestCaseCategory.objects.create(
-                        product=plan.product, name=case['category_name'])
-
-                # Start to create the objects
-                tc = TestCase.objects.create(
-                    is_automated=case['is_automated'],
-                    script='',
-                    arguments='',
-                    summary=case['summary'],
-                    requirement='',
-                    alias='',
-                    estimated_time=0,
-                    case_status_id=case['case_status_id'],
-                    category_id=category.id,
-                    priority_id=case['priority_id'],
-                    author_id=case['author_id'],
-                    default_tester_id=case['default_tester_id'],
-                    notes=case['notes'],
-                )
-                TestCasePlan.objects.create(plan=plan, case=tc, sortkey=i * 10)
-
-                tc.add_text(case_text_version=1,
-                            author=case['author'],
-                            action=case['action'],
-                            effect=case['effect'],
-                            setup=case['setup'],
-                            breakdown=case['breakdown'])
-
-                # handle tags
-                if case['tags']:
-                    for tag in case['tags']:
-                        tc.add_tag(tag=tag)
-
-                tc.add_to_plan(plan=plan)
-
+            plan.import_cases(xml_form.cleaned_data['xml_file'])
             return HttpResponseRedirect(
                 reverse('plan-get', args=[plan_id]) + '#testcases')
         else:
