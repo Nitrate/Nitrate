@@ -8,6 +8,8 @@
 .tags
 .vagrant/
 .tox/
+.env/
+.pytest_cache/
 TAGS
 build/
 dist/
