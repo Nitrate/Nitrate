@@ -22,7 +22,6 @@ from django.template.loader import get_template
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_http_methods
 from django.views.generic import View
-from preserialize.serialize import serialize
 from uuslug import slugify
 
 from tcms.core.db import SQLExecution
@@ -254,12 +253,20 @@ def all(request, template_name='plan/all.html'):
         tps = tps.order_by('name')
 
     if request.GET.get('t') == 'ajax':
-        return JsonResponse(
-            serialize(tps, fields=[
-                'pk', 'name', 'is_active', 'parent_id',
-                'num_cases', 'num_runs', 'num_children', 'get_url_path'
-            ]),
-            safe=False)
+        data = [
+            dict(
+                pk=plan.pk,
+                name=plan.name,
+                is_active=plan.is_active,
+                parent_id=plan.parent_id,
+                num_cases=plan.num_cases,
+                num_runs=plan.num_runs,
+                num_children=plan.num_children,
+                get_url_path=plan.get_absolute_url(),
+            )
+            for plan in tps
+        ]
+        return JsonResponse(data, safe=False)
 
     if request.GET.get('t') == 'html':
         if request.GET.get('f') == 'preview':

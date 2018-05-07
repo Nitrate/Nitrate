@@ -17,7 +17,6 @@ install_requires = [
     'beautifulsoup4 >= 4.1.1',
     'celery == 4.1.0',
     'django-contrib-comments == 1.8.0',
-    'django-preserialize == 1.2.1',
     'django-tinymce == 2.6.0',
     'django-uuslug == 1.1.8',
     'django >= 1.10,<2.0',

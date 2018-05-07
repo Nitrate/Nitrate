@@ -14,7 +14,6 @@ coverage==4.5.1
 Django==1.11.11
 django-contrib-comments==1.8.0
 django-debug-toolbar==1.7
-django-preserialize==1.2.1
 django-tinymce==2.6.0
 django-uuslug==1.1.8
 docutils==0.14
