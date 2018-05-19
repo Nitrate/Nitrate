@@ -5,9 +5,11 @@
 		</tr>
 		{% for log in test_plan.log %}
 		<tr class="{% cycle 'even' 'odd'%}">
-			<td width="20%">{{ log.date }}</td>
-			<td width="10%">{{ log.who }}</td>
-			<td width="70%">{{ log }}</td>
+			<td width="15%">{{ log.date }}</td>
+			<td width="8%">{{ log.who }}</td>
+			<td width="7%">{{ log.field }}</td>
+            <td width="35%">{{ log.original_value }}</td>
+            <td width="35%">{{ log.new_value }}</td>
 		</tr>
 		{% endfor %}
 	</tbody>

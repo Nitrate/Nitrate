@@ -47,12 +47,23 @@ class TestVisitAndSearchGroupPage(TestCase):
                                           manager=cls.new_tester,
                                           modified_by=None)
 
-        cls.group_1.log_action(who=cls.new_tester,
-                               action='Add group {}'.format(cls.group_1.name))
-        cls.group_1.log_action(who=cls.new_tester,
-                               action='Edit group {}'.format(cls.group_1.name))
-        cls.group_2.log_action(who=cls.new_tester,
-                               action='Edit group {}'.format(cls.group_2.name))
+        cls.group_1.log_action(
+            who=cls.new_tester,
+            field='',
+            original_value='',
+            new_value='Add group {}'.format(cls.group_1.name))
+
+        cls.group_1.log_action(
+            who=cls.new_tester,
+            field='',
+            original_value='',
+            new_value='Edit group {}'.format(cls.group_1.name))
+
+        cls.group_2.log_action(
+            who=cls.new_tester,
+            field='',
+            original_value='',
+            new_value='Edit group {}'.format(cls.group_2.name))
 
         cls.property_1 = TCMSEnvPropertyFactory()
         cls.property_2 = TCMSEnvPropertyFactory()
@@ -76,11 +87,11 @@ class TestVisitAndSearchGroupPage(TestCase):
         for log in logs:
             self.assertContains(
                 response,
-                '<div class="envlog_who">{}</div>'.format(log.who.username),
+                '<td>{}</td>'.format(log.who.username),
                 html=True)
             self.assertContains(
                 response,
-                '<div class="envlog_content">{}</div>'.format(log.action),
+                '<td>{}</td>'.format(log.new_value),
                 html=True)
 
     def test_visit_group_page(self):
@@ -178,7 +189,7 @@ class TestAddGroup(TestCase):
         log = TCMSLogModel.objects.filter(content_type=env_group_ct,
                                           object_pk=new_group.pk)[0]
         self.assertEqual('Initial env group {}'.format(self.new_group_name),
-                         log.action)
+                         log.new_value)
 
     def test_add_existing_group(self):
         self.client.login(username=self.tester, password='password')

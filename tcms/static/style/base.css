@@ -264,11 +264,11 @@ fieldset .required{ clear:left;width:150px; float:left; padding-left:10px; font-
 .titlelink input[type="text"] { width: 40%; }
 .env-list-side{ width:50%; float:left; }
 
-.manage{ background:#fff; border-collapse:collapse; margin-left:auto; margin-right:auto; }
+.manage{ background:#fff; border:1px solid #CCC; border-collapse:collapse; margin-left:auto; margin-right:auto; }
 .manage .manage-tit{ font-weight:bold; padding-left:10px; background:#f1f1f1; }
 .manage .manage-tit label{  }
-.manage td{ border:1px solid #CCC; color:#333; padding-left:5px; }
-.manage th{ border:1px solid #CCC; }
+.manage td { border:1px solid #CCC; color:#333; text-align: center; }
+.manage th:nth-child(even) { border:1px solid #CCC; }
 .titlelink{ background:#235d9f; border:1px solid  #ccc; width:100%; height:24px; color:#fff; }
 .titlelink a{ cursor:pointer; }
 .groupul{ padding:0px; list-style-type:none; margin:0px; float:none; line-height:2.0em; }
@@ -1088,4 +1088,31 @@ ul.data_content_title li{ display:inline-block; margin-left:3px;}
 .show-more-cases a {
     margin-right: 12px;
     text-decoration: underline;
+}
+
+.env_groups_history {
+    width: 100%;
+    padding: 6px;
+    border: 1px solid #CCC;
+}
+.env_groups_history col:nth-child(1) {width:12%}
+.env_groups_history col:nth-child(2) {width:10%}
+.env_groups_history col:nth-child(3) {width:10%}
+.env_groups_history col:nth-child(4) {width:34%}
+.env_groups_history col:nth-child(5) {width:34%}
+.env_groups_history th {
+    border-bottom : 0px solid #ccc;
+    color:#000000;
+    text-align:left;
+    background:#235D9F url(../images/bg_th_list.png) repeat-x;
+    padding: 0px 0px 0px 5px;
+    height:25px;
+    line-height:25px;
+    font-weight:normal;
+}
+.env_groups_history td {
+    padding: 6px;
+    border-left: 0px;
+    border-right: 0px;
+    border-top: 0px;
 }

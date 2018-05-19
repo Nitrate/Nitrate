@@ -42,10 +42,13 @@ class TCMSActionModel(models.Model, UrlMixin):
         log = TCMSLog(model=self)
         return log.list()
 
-    def log_action(self, who, action):
+    def log_action(self, who, new_value, field='', original_value=''):
         log = TCMSLog(model=self)
-        log.make(who=who, action=action)
-
+        log.make(
+            who=who,
+            field=field,
+            original_value=original_value,
+            new_value=new_value)
         return log
 
     def clean(self):

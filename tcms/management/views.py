@@ -54,7 +54,7 @@ def environment_groups(request, template_name='environment/groups.html'):
                                     manager_id=request.user.id,
                                     modified_by_id=None)
             env.log_action(who=request.user,
-                           action='Initial env group %s' % env.name)
+                           new_value='Initial env group %s' % env.name)
             return JsonResponse({'rc': 0, 'response': 'ok', 'id': env.id})
 
     # Del action
@@ -87,11 +87,16 @@ def environment_groups(request, template_name='environment/groups.html'):
         try:
             env = env_groups.get(id=request.GET['id'])
             if request.GET.get('status') in ['0', '1']:
-                env.is_active = int(request.GET['status'])
-                env.save(update_fields=['is_active'])
+                returned_status = bool(int(request.GET['status']))
+                if env.is_active != returned_status:
+                    env.is_active = returned_status
+                    env.save(update_fields=['is_active'])
 
-                action = 'Change env group status to {}'.format(env.is_active)
-                env.log_action(who=request.user, action=action)
+                    env.log_action(
+                        who=request.user,
+                        field='is_active',
+                        original_value=env.is_active,
+                        new_value=returned_status)
             else:
                 return JsonResponse({'rc': 1, 'response': 'Argument illegel.'})
         except TCMSEnvGroup.DoesNotExist as error:
@@ -119,7 +124,8 @@ def environment_groups(request, template_name='environment/groups.html'):
     env_group_ct = ContentType.objects.get_for_model(TCMSEnvGroup)
     qs = TCMSLogModel.objects.filter(content_type=env_group_ct,
                                      object_pk__in=env_groups)
-    qs = qs.values('object_pk', 'who__username', 'date', 'action')
+    qs = qs.values('object_pk', 'who__username', 'date', 'field',
+                   'original_value', 'new_value')
     qs = qs.order_by('object_pk').iterator()
     # we have to convert object_pk to an integer due to it's a string stored in
     # database.
@@ -177,20 +183,30 @@ def environment_group_edit(request, template_name='environment/group_edit.html')
     if request.GET.get('action') == 'modify':   # Actions of modify
         environment_name = request.GET['name']
         if environment.name != environment_name:
+            original_value = environment.name
             environment.name = environment_name
             environment.log_action(
                 who=request.user,
-                action='Modify name %s from to %s' % (environment.name,
-                                                      environment_name))
+                field='name',
+                original_value=original_value,
+                new_value=environment_name)
 
-        if environment.is_active != request.GET.get('enabled', False):
-            environment.is_active = bool(request.GET.get('enabled', False))
+        returned_env_status = 'enabled' in request.GET
+        if environment.is_active != returned_env_status:
+            original_value = environment.is_active
+            environment.is_active = returned_env_status
             environment.log_action(
                 who=request.user,
-                action='Change env group status to %s' % environment.is_active)
+                field='is_active',
+                original_value=original_value,
+                new_value=returned_env_status)
 
         environment.modified_by_id = request.user.id
         environment.save()
+
+        original_property_values = list(
+            environment.property.values_list('name', flat=True))
+        original_property_values.sort()
 
         # Remove all of properties of the group.
         TCMSEnvGroupPropertyMap.objects.filter(group__id=environment.id).delete()
@@ -200,10 +216,15 @@ def environment_group_edit(request, template_name='environment/group_edit.html')
             TCMSEnvGroupPropertyMap.objects.create(group_id=environment.id,
                                                    property_id=property_id)
 
-        property_values = environment.property.values_list('name', flat=True)
+        new_property_values = list(
+            environment.property.values_list('name', flat=True))
+        new_property_values.sort()
+
         environment.log_action(
             who=request.user,
-            action='Properties changed to %s' % (', '.join(property_values)))
+            field='Property values',
+            original_value=', '.join(original_property_values),
+            new_value=', '.join(new_property_values))
 
         response = 'Environment group saved successfully.'
 

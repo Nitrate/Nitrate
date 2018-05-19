@@ -23,11 +23,12 @@ class TCMSLog(object):
         self.model = model
 
     def get_new_log_object(self):
-        elements = ['who', 'action']
+        elements = ['who', 'field', 'original_value', 'new_value']
 
         for element in elements:
-            if not getattr(self, element):
-                raise NotImplementedError
+            if not hasattr(self, element):
+                raise NotImplementedError(
+                    'Log does not have attribute {}'.format(element))
 
         model = self.get_log_model()
         new = model(**self.get_log_create_data())
@@ -43,15 +44,19 @@ class TCMSLog(object):
     def get_log_create_data(self):
         return dict(
             content_object=self.model,
+            site_id=settings.SITE_ID,
             who=self.who,
-            action=self.action,
-            site_id=settings.SITE_ID
+            field=self.field,
+            original_value=self.original_value,
+            new_value=self.new_value,
         )
 
-    def make(self, who, action):
+    def make(self, who, new_value, field='', original_value=''):
         """Create new log"""
         self.who = who
-        self.action = action
+        self.field = field
+        self.original_value = original_value
+        self.new_value = new_value
 
         model = self.get_new_log_object()
         model.save()

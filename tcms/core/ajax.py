@@ -419,10 +419,9 @@ def update(request):
             try:
                 t.log_action(
                     who=request.user,
-                    action='Field %s changed from %s to %s.' % (
-                        field, getattr(t, field), value
-                    )
-                )
+                    field=field,
+                    original_value=getattr(t, field),
+                    new_value=value)
             except (AttributeError, User.DoesNotExist):
                 pass
     objects_update(targets, **{field: value})
@@ -447,18 +446,16 @@ def update(request):
             field = 'close_date'
             t.log_action(
                 who=request.user,
-                action='Field %s changed from %s to %s.' % (
-                    field, getattr(t, field), now
-                )
-            )
+                field=field,
+                original_value=getattr(t, field),
+                new_value=now)
             if t.tested_by != request.user:
                 field = 'tested_by'
                 t.log_action(
                     who=request.user,
-                    action='Field %s changed from %s to %s.' % (
-                        field, getattr(t, field), request.user
-                    )
-                )
+                    field=field,
+                    original_value=getattr(t, field),
+                    new_value=request.user)
 
             field = 'assignee'
             try:
@@ -466,10 +463,9 @@ def update(request):
                 if assignee != request.user:
                     t.log_action(
                         who=request.user,
-                        action='Field %s changed from %s to %s.' % (
-                            field, getattr(t, field), request.user
-                        )
-                    )
+                        field=field,
+                        original_value=getattr(t, field),
+                        new_value=request.user)
                     # t.assignee = request.user
                 t.save()
             except (AttributeError, User.DoesNotExist):
@@ -521,12 +517,9 @@ def update_case_run_status(request):
             try:
                 t.log_action(
                     who=request.user,
-                    action='Field {} changed from {} to {}.'.format(
-                        field,
-                        getattr(t, field),
-                        TestCaseRunStatus.id_to_string(value),
-                    )
-                )
+                    field=field,
+                    original_value=getattr(t, field),
+                    new_value=TestCaseRunStatus.id_to_string(value))
             except (AttributeError, User.DoesNotExist):
                 pass
     objects_update(targets, **{field: value})
@@ -551,18 +544,16 @@ def update_case_run_status(request):
             field = 'close_date'
             t.log_action(
                 who=request.user,
-                action='Field %s changed from %s to %s.' % (
-                    field, getattr(t, field), now
-                )
-            )
+                field=field,
+                original_value=getattr(t, field) or '',
+                new_value=now)
             if t.tested_by != request.user:
                 field = 'tested_by'
                 t.log_action(
                     who=request.user,
-                    action='Field %s changed from %s to %s.' % (
-                        field, getattr(t, field), request.user
-                    )
-                )
+                    field=field,
+                    original_value=getattr(t, field) or '',
+                    new_value=request.user)
 
             field = 'assignee'
             try:
@@ -570,10 +561,9 @@ def update_case_run_status(request):
                 if assignee != request.user:
                     t.log_action(
                         who=request.user,
-                        action='Field %s changed from %s to %s.' % (
-                            field, getattr(t, field), request.user
-                        )
-                    )
+                        field=field,
+                        original_value=getattr(t, field) or '',
+                        new_value=request.user)
                     # t.assignee = request.user
                 t.save()
             except (AttributeError, User.DoesNotExist):

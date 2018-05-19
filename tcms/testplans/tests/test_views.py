@@ -233,14 +233,14 @@ class TestDeleteCasesFromPlan(BasePlanCase):
         expected_log = 'Remove from plan {}'.format(self.plan.pk)
         for pk in (self.case_1.pk, self.case_3.pk):
             log = TCMSLogModel.get_logs_for_model(TestCase, pk)[0]
-            self.assertEqual(expected_log, log.action)
+            self.assertEqual(expected_log, log.new_value)
 
         for plan_pk, case_pk in ((self.plan.pk, self.case_1.pk),
                                  (self.plan.pk, self.case_3.pk)):
             expected_log = 'Remove case {} from plan {}'.format(
                 case_pk, plan_pk)
             self.assertTrue(
-                TCMSLogModel.objects.filter(action=expected_log).exists())
+                TCMSLogModel.objects.filter(new_value=expected_log).exists())
 
 
 class TestSortCases(BasePlanCase):

@@ -968,8 +968,6 @@ def get(request, case_id, template_name='case/get.html'):
     log_id = str(case_id)
     logs = TCMSLogModel.get_logs_for_model(TestCase, log_id)
 
-    logs = itertools.groupby(logs, lambda l: l.date)
-    logs = [(day, list(log_actions)) for day, log_actions in logs]
     # Get the specific test plan
     plan_id_from_request = request.GET.get('from_plan')
     if plan_id_from_request:
@@ -1165,20 +1163,19 @@ def update_testcase(request, tc, tc_form):
 
     for field in fields:
         if getattr(tc, field) != tc_form.cleaned_data[field]:
-            tc.log_action(request.user,
-                          'Case %s changed from %s to %s in edit page.' % (
-                              field, getattr(tc, field),
-                              tc_form.cleaned_data[field]
-                          ))
+            tc.log_action(
+                request.user,
+                field=field,
+                original_value=getattr(tc, field) or '',
+                new_value=tc_form.cleaned_data[field] or '')
             setattr(tc, field, tc_form.cleaned_data[field])
     try:
         if tc.default_tester != tc_form.cleaned_data['default_tester']:
             tc.log_action(
                 request.user,
-                'Case default tester changed from %s to %s in edit page.' % (
-                    tc.default_tester_id and tc.default_tester,
-                    tc_form.cleaned_data['default_tester']
-                ))
+                field='default tester',
+                original_value=tc.default_tester_id and tc.default_tester,
+                new_value=tc_form.cleaned_data['default_tester'])
             tc.default_tester = tc_form.cleaned_data['default_tester']
     except ObjectDoesNotExist:
         pass
@@ -1194,10 +1191,9 @@ def update_testcase(request, tc, tc_form):
             if getattr(latest_text, field) != form_cleaned:
                 tc.log_action(
                     request.user,
-                    ' Case %s changed from %s to %s in edit page.' % (
-                        field, getattr(latest_text, field) or None,
-                        form_cleaned or None
-                    ))
+                    field=field,
+                    original_value=getattr(latest_text, field) or '',
+                    new_value=form_cleaned or '')
     except ObjectDoesNotExist:
         pass
 

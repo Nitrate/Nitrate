@@ -119,7 +119,7 @@
 				<h4 class="borderB">Change Log<span>[ <a href="javascript:void(0);" class="js-show-changelog" data-param="changeLog{{ test_case_run.pk }}">Show All</a> ]</span></h4>
 				<ul id="changeLog{{test_case_run.pk}}" style="display:none;">
 					{% for log in caserun_logs %}
-					<li><span>{{ log.date }}</span><span>{{ log.who__username }}</span><br />{{ log.action }}</li>
+					<li><span>{{ log.date }}</span><span>{{ log.who__username }}</span><br />Field {{ log.field }} changed from {{ log.original_value }} to {{ log.new_value }}</li>
 					{% endfor %}
 				</ul>
 				{% else %}

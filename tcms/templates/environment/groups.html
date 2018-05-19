@@ -28,7 +28,7 @@
 	<div class="mixbar">
 		<form method="get" action="{% url "management-env-groups" %}" id="changelist-search">
 			<input type="hidden" name="action" value="search">
-            <label for="searchbar"><img alt="Search" height="20px" src="{{ STATIC_URL }}images/search.png"/></label>
+			<label for="searchbar"><img alt="Search" height="20px" src="{{ STATIC_URL }}images/search.png"/></label>
 			<input type="text" id="searchbar" value="{{ REQUEST_CONTENTS.name }}" name="name" size="40"/>
 			<input type="submit" value="Search environment group"/>
 		</form>
@@ -89,14 +89,32 @@
 			</tr>
 			<tr style="display:none">
 				<td colspan="5">
-					{% for log in env.another_logs %}
-					<div class="envlog">
-                    	<div class="envlog_time">{{ log.date }}</div>
-                        <div class="envlog_who">{{ log.who__username }}</div>
-                        <div class="envlog_content">{{ log.action }}</div>
-                    </div>
-                    <div class="clear"></div>
-					{% endfor %}
+					<table class="env_groups_history">
+						<colgroup>
+							<col><col><col><col><col>
+						</colgroup>
+						<thead>
+							<tr>
+								<th>When</th>
+								<th>Who</th>
+								<th>Field</th>
+								<th>Original Value</th>
+								<th>New Value</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for log in env.another_logs %}
+							<tr class="{% cycle 'even' 'odd'%}">
+								<td>{{ log.date }}</td>
+								<td>{{ log.who__username }}</td>
+								<td>{{ log.field }}</td>
+								<td>{{ log.original_value }}</td>
+								<td>{{ log.new_value }}</td>
+							</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+					<div class="clear"></div>
 				</td>
 			</tr>
 			{% endfor %}
