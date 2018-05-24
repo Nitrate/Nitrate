@@ -34,10 +34,8 @@ def validate_bug_id(bug_id, bug_system_id):
             return None
         reg_exp = re.compile(id_pattern)
 
-        def error_if_not_match(bug_id):
+        for bug_id in bug_ids:
             if not reg_exp.match(bug_id):
                 raise InvalidBugSystemException(
                     'Please input a valid %s id. %s' % (
                         bug_system.name, bug_system.description))
-
-        map(error_if_not_match, bug_ids)

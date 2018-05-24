@@ -25,6 +25,7 @@ from tcms.xmlrpc.api import testplan as XmlrpcTestPlan
 from tcms.xmlrpc.api.testplan import import_case_via_XML
 from tcms.xmlrpc.tests.utils import XmlrpcAPIBaseTest
 from tcms.xmlrpc.tests.utils import make_http_request
+from tcms.xmlrpc.serializer import datetime_to_str
 
 __all__ = (
     'TestAddComponent',
@@ -367,3 +368,61 @@ class TestImportCaseViaXML(XmlrpcAPIBaseTest):
         self.assertEqual(2, TestCase.objects.count())
         self.assertTrue(TestCase.objects.filter(summary='case 2').exists())
         self.assertEqual('Success update 2 cases', result)
+
+
+class TestGet(test.TestCase):
+    """Test TestPlan.get"""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.author = UserFactory(username='user', email='user@example.com')
+        cls.http_req = make_http_request(user=cls.author)
+
+        cls.product = ProductFactory()
+        cls.version = VersionFactory(product=cls.product)
+        cls.type = TestPlanTypeFactory(name='temp')
+        cls.tag_fedora = TestTagFactory(name='fedora')
+        cls.tag_centos = TestTagFactory(name='centos')
+
+        cls.plan = TestPlanFactory(
+            is_active=True,
+            extra_link=None,
+            product=cls.product,
+            product_version=cls.version,
+            owner=cls.author,
+            author=cls.author,
+            parent=None,
+            type=cls.type,
+            tag=[cls.tag_fedora, cls.tag_centos]
+        )
+
+    def test_get(self):
+        self.maxDiff = None
+        expected_plan = dict(
+            plan_id=self.plan.pk,
+            name=self.plan.name,
+            create_date=datetime_to_str(self.plan.create_date),
+            is_active=True,
+            extra_link=None,
+            product_version_id=self.version.pk,
+            product_version=self.version.value,
+            default_product_version=self.version.value,
+            owner_id=self.author.pk,
+            owner=self.author.username,
+            author_id=self.author.pk,
+            author=self.author.username,
+            product_id=self.product.pk,
+            product=self.product.name,
+            type_id=self.type.pk,
+            type=self.type.name,
+            parent_id=None,
+            parent=None,
+            attachment=[],
+            component=[],
+            env_group=[],
+            tag=['centos', 'fedora']
+        )
+
+        plan = XmlrpcTestPlan.get(self.http_req, self.plan.pk)
+        plan['tag'].sort()
+        self.assertEqual(expected_plan, plan)

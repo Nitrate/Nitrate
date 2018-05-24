@@ -50,18 +50,17 @@ class UploadedHTMLFile(UploadedFile):
     """
 
     def get_content(self):
-        def remove_tag(tag):
-            return tag.extract()
-
         from bs4 import BeautifulSoup
         from itertools import chain
 
         soup = BeautifulSoup(self.uploaded_file.read(), 'html.parser')
         find_all = soup.body.find_all
 
-        map(remove_tag, chain(find_all('script'),
-                              find_all('style'),
-                              find_all('link')))
+        tags_to_remove = chain(find_all('script'),
+                               find_all('style'),
+                               find_all('link'))
+        for tag in tags_to_remove:
+            tag.extract()
 
         for tag in soup.body.find_all():
             pop = tag.attrs.pop
@@ -72,7 +71,7 @@ class UploadedHTMLFile(UploadedFile):
             pop('id', None)
             pop('ID', None)
 
-        return soup.body
+        return soup.body.decode_contents()
 
 
 class UploadedODTFile(UploadedFile):

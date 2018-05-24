@@ -2,13 +2,18 @@
 
 from django import test
 
+from tcms.management.models import Priority
 from tcms.testcases.models import TestCasePlan
-from tcms.xmlrpc.api import testcase as XmlrpcTestCase
-from tcms.xmlrpc.tests.utils import make_http_request
-
+from tcms.testcases.models import TestCaseStatus
+from tcms.tests.factories import TestCaseCategoryFactory
 from tcms.tests.factories import TestCaseFactory
+from tcms.tests.factories import TestCasePlanFactory
 from tcms.tests.factories import TestPlanFactory
+from tcms.tests.factories import TestTagFactory
 from tcms.tests.factories import UserFactory
+from tcms.xmlrpc.api import testcase as XmlrpcTestCase
+from tcms.xmlrpc.serializer import datetime_to_str
+from tcms.xmlrpc.tests.utils import make_http_request
 
 
 class TestNotificationRemoveCC(test.TestCase):
@@ -108,3 +113,72 @@ class TestLinkPlan(test.TestCase):
                         case=case_id
                     ).count()
                 )
+
+
+class TestGet(test.TestCase):
+    """Test XML-RPC testcase.get"""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = UserFactory()
+        cls.http_req = make_http_request(user=cls.user)
+        cls.reviewer = UserFactory(username='reviewer')
+
+        cls.plan_1 = TestPlanFactory()
+        cls.plan_2 = TestPlanFactory()
+
+        cls.status = TestCaseStatus.objects.get(name='CONFIRMED')
+        cls.priority = Priority.objects.get(value='P2')
+        cls.category = TestCaseCategoryFactory(name='fast')
+        cls.case = TestCaseFactory(
+            priority=cls.priority,
+            case_status=cls.status,
+            category=cls.category,
+            author=cls.user,
+            default_tester=cls.user,
+            reviewer=cls.reviewer)
+        cls.tag_fedora = TestTagFactory(name='fedora')
+        cls.tag_python = TestTagFactory(name='python')
+        cls.case.add_tag(cls.tag_fedora)
+        cls.case.add_tag(cls.tag_python)
+
+        TestCasePlanFactory(plan=cls.plan_1, case=cls.case)
+        TestCasePlanFactory(plan=cls.plan_2, case=cls.case)
+
+    def test_get_a_case(self):
+        resp = XmlrpcTestCase.get(self.http_req, self.case.pk)
+        resp['tag'].sort()
+        resp['plan'].sort()
+
+        expected_resp = dict(
+            case_id=self.case.pk,
+            summary=self.case.summary,
+            create_date=datetime_to_str(self.case.create_date),
+            is_automated=self.case.is_automated,
+            is_automated_proposed=self.case.is_automated_proposed,
+            script='',
+            arguments='',
+            extra_link=None,
+            requirement='',
+            alias='',
+            estimated_time='00:00:00',
+            notes='',
+            case_status_id=self.status.pk,
+            case_status=self.status.name,
+            category_id=self.category.pk,
+            category=self.category.name,
+            author_id=self.user.pk,
+            author=self.user.username,
+            default_tester_id=self.user.pk,
+            default_tester=self.user.username,
+            priority=self.priority.value,
+            priority_id=self.priority.pk,
+            reviewer_id=self.reviewer.pk,
+            reviewer=self.reviewer.username,
+            text={},
+            tag=['fedora', 'python'],
+            attachment=[],
+            plan=[self.plan_1.pk, self.plan_2.pk],
+            component=[],
+        )
+        self.assertEqual(expected_resp, resp)

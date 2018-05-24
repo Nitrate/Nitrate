@@ -201,7 +201,8 @@ class TestCase(TCMSActionModel):
         )
         tags = values.get('tag')
         if tags:
-            map(lambda c: case.add_tag(c), tags)
+            for tag in tags:
+                case.add_tag(tag)
         return case
 
     @classmethod
@@ -369,9 +370,10 @@ class TestCase(TCMSActionModel):
         return TestCaseTag.objects.get_or_create(case=self, tag=tag)
 
     def update_tags(self, new_tags):
-        """
-        Update case.tag
-        so that case.tag == new_tags
+        """Update case.tag so that case.tag == new_tags
+
+        :param list new_tags: list of tags to be updated to this case. Each of
+            them is an instance of :class:`TestTag`.
         """
         if new_tags is None or not isinstance(new_tags, list):
             return
@@ -379,8 +381,10 @@ class TestCase(TCMSActionModel):
         new_tags = set(new_tags)
         tags_to_remove = owning_tags.difference(new_tags)
         tags_to_add = new_tags.difference(owning_tags)
-        map(lambda c: self.add_tag(c), tags_to_add)
-        map(lambda c: self.remove_tag(c), tags_to_remove)
+        for tag in tags_to_add:
+            self.add_tag(tag)
+        for tag in tags_to_remove:
+            self.remove_tag(tag)
 
     def add_text(
             self,

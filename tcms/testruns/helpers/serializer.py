@@ -92,13 +92,6 @@ class TCR2File(object):
                          u'category="%s" status="%s" summary="%s" ' \
                          u'scripts="%s" automated="%s">'
 
-        def write_loglink(link):
-            return write_to_output(
-                u'<loglink name="%s" url="%s" />' % (link.name, link.url))
-
-        def write_bug(bug):
-            return write_to_output(u'<bug id="%s" />' % bug.bug_id)
-
         write_to_output(u'<%s>' % self.root)
         for tcr in self.tcrs.iterator():
             summary = escape_entities(tcr.case.summary)
@@ -110,10 +103,13 @@ class TCR2File(object):
                                               script or u'',
                                               str(tcr.case.is_automated)))
             write_to_output(u'<loglinks>')
-            map(write_loglink, tcr.links.iterator())
+            for link in tcr.links.iterator():
+                write_to_output(
+                    u'<loglink name="%s" url="%s" />' % (link.name, link.url))
             write_to_output(u'</loglinks>')
             write_to_output(u'<bugs>')
-            map(write_bug, tcr.case_run_bug.iterator())
+            for bug in tcr.case_run_bug.iterator():
+                write_to_output(u'<bug id="%s" />' % bug.bug_id)
             write_to_output(u'</bugs>')
             write_to_output(u'</testcaserun>')
         write_to_output(u'</%s>' % self.root)

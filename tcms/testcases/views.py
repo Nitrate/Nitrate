@@ -519,7 +519,7 @@ def get_selected_cases_ids(request):
     REQUEST = request.POST
     if REQUEST.get('case'):
         # FIXME: why do not use list comprehension.
-        return map(lambda f: int(f), REQUEST.getlist('case'))
+        return [int(case_id) for case_id in REQUEST.getlist('case')]
     else:
         return []
 

@@ -7,6 +7,7 @@ from mock import patch
 from django.contrib.auth.models import User
 from django.core import mail
 from django.db.models.signals import post_save, post_delete, pre_save
+from django import test
 
 from ..models import TestCaseBugSystem
 from ..models import TestCaseText
@@ -24,6 +25,9 @@ from tcms.tests.factories import TestCaseRunFactory
 from tcms.tests.factories import TestCaseTagFactory
 from tcms.tests.factories import TestRunFactory
 from tcms.tests.factories import TestTagFactory
+from tcms.testcases.models import TestCaseStatus
+from tcms.testcases.models import TestCaseCategory
+from tcms.management.models import Priority
 
 
 class TestCaseRemoveBug(BasePlanCase):
@@ -272,3 +276,57 @@ You are related to this TestCase'''.format(self.case.summary,
         self.assertEqual(1, len(mail.outbox))
         self.assertEqual(expected_mail_body, mail.outbox[0].body)
         self.assertEqual([self.case.author.email], mail.outbox[0].to)
+
+
+class TestCreate(BasePlanCase):
+    """Test TestCase.create"""
+
+    @classmethod
+    def setUpTestData(cls):
+        super(TestCreate, cls).setUpTestData()
+        cls.tag_fedora = TestTagFactory(name='fedora')
+        cls.tag_python = TestTagFactory(name='python')
+
+    def test_create(self):
+        values = dict(
+            summary='Test new case: {}'.format(self.__class__.__name__),
+            is_automated=True,
+            is_automated_proposed=True,
+            script='',
+            arguments='',
+            extra_link='https://localhost/case-2',
+            requirement='',
+            alias='alias',
+            estimated_time=0,
+            case_status=TestCaseStatus.objects.get(name='CONFIRMED'),
+            category=TestCaseCategory.objects.all()[0],
+            priority=Priority.objects.all()[0],
+            default_tester=self.tester,
+            notes='',
+            tag=[self.tag_fedora, self.tag_python]
+        )
+        case = TestCase.create(self.tester, values=values)
+
+        new_case = TestCase.objects.get(summary=values['summary'])
+
+        self.assertEqual(case, new_case)
+        self.assertEqual(values['case_status'], new_case.case_status)
+        self.assertEqual(set(values['tag']), set(new_case.tag.all()))
+
+
+class TestUpdateTags(test.TestCase):
+    """Test TestCase.update_tags"""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.tag_fedora = TestTagFactory(name='fedora')
+        cls.tag_python = TestTagFactory(name='python')
+        cls.tag_perl = TestTagFactory(name='perl')
+        cls.tag_cpp = TestTagFactory(name='C++')
+        cls.case = TestCaseFactory(tag=[cls.tag_fedora, cls.tag_python])
+
+    def test_add_and_remove_tags(self):
+        # Tag fedora is removed.
+        self.case.update_tags([self.tag_python, self.tag_perl, self.tag_cpp])
+        self.assertEqual({self.tag_python, self.tag_perl, self.tag_cpp},
+                         set(self.case.tag.all()))

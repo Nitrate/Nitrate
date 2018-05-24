@@ -1235,7 +1235,7 @@ class AddCasesToRunView(View):
             ))
 
         try:
-            ncs_id = map(int, ncs_id)
+            ncs_id = [int(item) for item in ncs_id]
         except (ValueError, TypeError):
             return HttpResponse(Prompt.render(
                 request=request,
