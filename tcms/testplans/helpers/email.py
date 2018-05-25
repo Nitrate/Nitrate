@@ -36,4 +36,4 @@ def get_plan_notification_recipients(plan):
         case_testers = plan.case.values_list('default_tester__email',
                                              flat=True)
         recipients.update(case_testers)
-    return filter(lambda e: bool(e), recipients)
+    return [r for r in recipients if r]
