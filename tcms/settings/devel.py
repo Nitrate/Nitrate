@@ -26,6 +26,7 @@ MIDDLEWARE_CLASSES += (
 
 INSTALLED_APPS += (
     'debug_toolbar',
+    'django_extensions',
 )
 
 DEBUG_TOOLBAR_CONFIG = {
