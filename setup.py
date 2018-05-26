@@ -54,6 +54,8 @@ extras_require = {
     'devtools': [
         'django-debug-toolbar == 1.7',
         'tox',
+        'django-extensions',
+        'pygraphviz',
     ]
 }
 
