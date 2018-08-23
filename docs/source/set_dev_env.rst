@@ -16,9 +16,13 @@ Create virtualenv
 Install database and devel packages which are required to compile some of the
 Python dependencies::
 
-    sudo dnf install gcc python-devel mariadb mariadb-devel krb5-devel \
-        libxml2-devel libxslt-devel
+    sudo dnf install gcc python-devel mariadb mariadb-devel mariadb-server \
+        krb5-devel libxml2-devel libxslt-devel 
 
+Start the db server::
+
+    sudo systemctl start mariadb
+  
 Create a virtual environment::
 
     virtualenv ~/virtualenvs/nitrate
