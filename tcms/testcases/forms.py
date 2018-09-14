@@ -6,7 +6,6 @@ from django import forms
 
 from tinymce.widgets import TinyMCE
 from tcms.core.forms import UserField, DurationField, StripURLField
-from tcms.core.utils.validations import validate_bug_id
 from tcms.core.exceptions import NitrateException
 from tcms.testplans.models import TestPlan
 from tcms.testruns.models import TestCaseRun
@@ -14,6 +13,7 @@ from tcms.management.models import Priority, Product, Component, TestTag
 from .models import TestCase, TestCaseCategory, TestCaseStatus
 from .models import TestCaseBug, AUTOMATED_CHOICES as FULL_AUTOMATED_CHOICES
 from .fields import MultipleEmailField
+from tcms.integration.issuetracker.models import Issue
 
 AUTOMATED_CHOICES = (
     (0, 'Manual'),
@@ -552,25 +552,28 @@ class CaseAutomatedForm(forms.Form):
 
 
 class CaseBugForm(forms.ModelForm):
-    case = forms.ModelChoiceField(queryset=TestCase.objects.all(),
-                                  widget=forms.HiddenInput())
-    case_run = forms.ModelChoiceField(queryset=TestCaseRun.objects.all(),
-                                      widget=forms.HiddenInput(),
-                                      required=False)
+    case = forms.ModelChoiceField(
+        queryset=TestCase.objects.all(),
+        widget=forms.HiddenInput())
 
-    def clean(self):
-        super(CaseBugForm, self).clean()
-        bug_id = self.cleaned_data['bug_id']
-        bug_system_id = self.cleaned_data['bug_system'].pk
-        try:
-            validate_bug_id(bug_id, bug_system_id)
-        except NitrateException as e:
-            raise forms.ValidationError(str(e))
+    case_run = forms.ModelChoiceField(
+        queryset=TestCaseRun.objects.all(),
+        widget=forms.HiddenInput(),
+        required=False)
 
-        return self.cleaned_data
+    #def clean(self):
+        #super(CaseBugForm, self).clean()
+        #issue_key = self.cleaned_data['issue_key']
+        #issue_tracker = self.cleaned_data['tracker']
+        #try:
+            #issue_tracker.validate_issue_key(issue_key)
+        #except ValueError as e:
+            #raise forms.ValidationError(str(e))
+
+        #return self.cleaned_data
 
     class Meta:
-        model = TestCaseBug
+        model = Issue
         fields = '__all__'
 
 

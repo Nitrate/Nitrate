@@ -16,7 +16,9 @@ from tcms.core.models import TCMSContentTypeBaseModel
 from tcms.core.models.fields import DurationField
 from tcms.core.utils.checksum import checksum
 from tcms.core.utils.timedeltaformat import format_timedelta
-from tcms.integration.bugzilla.task import bugzilla_external_track
+from tcms.integration.issuetracker.models import Issue
+from tcms.integration.issuetracker.models import IssueTracker
+from tcms.integration.issuetracker.services import IssueTrackerService
 from tcms.testcases import signals as case_watchers
 
 
@@ -334,21 +336,22 @@ class TestCase(TCMSActionModel):
 
         return scence_templates.get(field)
 
-    def add_bug(self, bug_id, bug_system_id, summary=None, description=None,
+    def add_bug(self, issue_key, issue_tracker,
+                summary=None, description=None,
                 case_run=None, bz_external_track=False):
-        bug, created = self.case_bug.get_or_create(
-            bug_id=bug_id,
-            case_run=case_run,
-            bug_system_id=bug_system_id,
-            summary=summary,
-            description=description,
-        )
-
-        if created:
-            if settings.BUGZILLA_EXTERNAL_TRACKER and bz_external_track:
-                bugzilla_external_track.delay(bug)
-        else:
+        if issue_tracker.issues.filter(issue_key=issue_key).exists():
             raise ValueError('Bug %s already exist.' % bug_id)
+
+        Issue.objects.create(issue_key=issue_key,
+                             tracker=issue_tracker,
+                             case=self,
+                             case_run=case_run,
+                             summary=summary,
+                             description=description)
+
+        if bz_external_track:
+            service = IssueTrackerService.get(issue_tracker)
+            service.add_external_tracker(issue_key)
 
     def add_component(self, component):
         """Add a component
@@ -446,10 +449,10 @@ class TestCase(TCMSActionModel):
         """Converts a integer to time"""
         return format_timedelta(self.estimated_time)
 
-    def get_bugs(self):
-        return TestCaseBug.objects.select_related(
-            'case_run', 'bug_system'
-        ).filter(case__case_id=self.case_id)
+    def get_issues(self):
+        return Issue.objects.filter(case__pk=self.pk).select_related('tracker')
+
+    get_bugs = get_issues
 
     def get_components(self):
         return self.component.all()
@@ -535,17 +538,20 @@ class TestCase(TCMSActionModel):
         to = list(set(to))
         mailto(template, subject, to, context, request)
 
-    def remove_bug(self, bug_id, run_id=None):
-        query = TestCaseBug.objects.filter(
-            bug_id=bug_id,
-            case=self.pk
-        )
-        if run_id:
-            query = query.filter(case_run=run_id)
-        else:
-            query = query.filter(case_run__isnull=True)
+    def remove_bug(self, issue_key, case_run=None):
+        """Remove bug from this case or case run together
 
-        query.delete()
+        :param str issue_key: Issue key to be removed.
+        :param case_run: object of TestCaseRun or an integer representing a
+            test case run pk. If omitted, only remove issue key from this case.
+        :type case_run: :class:`TestCaseRun` or int
+        """
+        q = Issue.objects.filter(issue_key=issue_key, case=self)
+        if case_run is None:
+            q = q.filter(case_run__isnull=True)
+        else:
+            q = q.filter(case_run=case_run)
+        q.delete()
 
     def remove_component(self, component):
         TestCaseComponent.objects.filter(case=self, component=component).delete()

@@ -63,3 +63,10 @@ def absolute_url(context):
         return None
 
     return object.get_absolute_url(request)
+
+
+@register.filter()
+def replace_str(value, arg):
+    """Template filter to replace a substring"""
+    old, new = arg.split(' ', 1)
+    return value.replace(old, new)

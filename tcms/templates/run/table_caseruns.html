@@ -17,14 +17,14 @@
 			<th width="140">Automated </th>
 			<th width="100">Category</th>
 			<th width="50">Priority</th>
-			<th width="40">Bugs</th>
+			<th width="40">Issues</th>
 			<th width="50" style='text-align:center'>Status</th>
 			<th width="65">Comments</th>
 			<th width="40">Sort</th>
 		</tr>
 	</thead>
 	<tbody>
-		{% for test_case_run, tester, assignee, priority_value, status_name, comments_count in test_case_runs %}
+		{% for test_case_run, tester, assignee, priority_value, status_name, comments_count, issues_count in test_case_runs %}
 		<tr class="{% cycle 'odd' 'even' %} {% ifequal test_case_run.assignee_id user.pk %} mine {% endifequal %}">
 			<td>
 				<input type="checkbox" name="case_run" value="{{ test_case_run.pk }}" class="caserun_selector" title="Select/Unselect" />
@@ -40,7 +40,7 @@
 			<td "{{ test_case_run.case_id }}" class="case_title expandable">
 				<a href="{% url "case-get" test_case_run.case_id %}?from_plan={{ test_case_run.run.plan_id }}">{{ test_case_run.case_id }}</a>
 			</td>
-			
+
 			<td class="expandable">
 				<a id="link_{{ forloop.counter }}" href="#caserun_{{ test_case_run.pk }}" title="Expand test case">{{ test_case_run.case.summary }}</a>
 			</td>
@@ -59,7 +59,7 @@
 			<td class="expandable">{{ test_case_run.case.get_is_automated_status }}</td>
 			<td class="expandable">{{ test_case_run.case.category }}</td>
 			<td class="expandable">{{ priority_value }}</td>
-			<td class="expandable"><span id="{{ test_case_run.pk }}_case_bug_count" {% if test_case_run.num_bug %}class="have_bug"{% endif %}>{{ test_case_run.num_bug }}</span></td>
+			<td class="expandable"><span id="{{ test_case_run.pk }}_case_bug_count" {% if issues_count %}class="have_bug"{% endif %}>{{ issues_count }}</span></td>
 			<td class="expandable center">
 				<img border="0" alt="" class="icon_status btn_{{ status_name|lower }}" />
 			</td>

@@ -11,6 +11,7 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
 from django.db.models.signals import post_save, post_delete, pre_save
+from django.db.models import Count
 
 from django_comments.models import Comment
 
@@ -22,6 +23,7 @@ from tcms.core.utils.tcms_router import connection
 from tcms.core.utils.timedeltaformat import format_timedelta
 from tcms.testcases.models import TestCaseBug, TestCaseText, NoneText
 from tcms.testruns import signals as run_watchers
+from tcms.integration.issuetracker.models import Issue
 
 
 try:
@@ -237,16 +239,16 @@ class TestRun(TCMSActionModel):
         to = self.get_notify_addrs()
         mailto(template, subject, to, context, request)
 
-    def get_bug_count(self):
+    def get_issues_count(self):
         """
             Return the count of distinct bug numbers recorded for
             this particular TestRun.
         """
         # note fom Django docs: A count() call performs a SELECT COUNT(*)
         # behind the scenes !!!
-        return TestCaseBug.objects.filter(
-            case_run__run=self.pk
-        ).values('bug_id').distinct().count()
+        return Issue.objects.filter(
+            case_run__run=self
+        ).values('issue_key').distinct().count()
 
     def get_percentage(self, count):
         case_run_count = self.total_num_caseruns
@@ -321,6 +323,18 @@ class TestRun(TCMSActionModel):
             else:
                 self.stop_date = None
             self.save()
+
+    def subtotal_issues_by_case_run(self):
+        """Return issues subtotal of this run
+
+        :return: a mapping from case run pk to issues count that the case run
+            has.
+        :rtype: dict
+        """
+        q = Issue.objects.filter(
+            case_run__run=self
+        ).values('case_run').annotate(issues_count=Count('pk'))
+        return {item['case_run']: item['issues_count'] for item in q}
 
 
 # FIXME: replace TestCaseRunStatus' internal cache with Django's cache
@@ -592,17 +606,21 @@ class TestCaseRun(TCMSActionModel):
         )
 
     def remove_bug(self, bug_id, run_id=None):
+        # FIXME: migrate to new issue tracker
         self.case.remove_bug(bug_id=bug_id, run_id=run_id)
 
     def is_finished(self):
         return self.case_run_status.is_finished()
 
-    def get_bugs(self):
-        return TestCaseBug.objects.filter(
-            case_run__case_run_id=self.case_run_id)
+    def get_issues(self):
+        return Issue.objects.filter(case_run=self)
 
-    def get_bugs_count(self):
-        return self.get_bugs().count()
+    get_bugs = get_issues
+
+    def get_issues_count(self):
+        return self.get_issues().values('pk').count()
+
+    get_bugs_count = get_issues_count
 
     def get_text_versions(self):
         return TestCaseText.objects.filter(

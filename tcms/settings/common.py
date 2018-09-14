@@ -180,7 +180,7 @@ INSTALLED_APPS = (
     'tcms.core.contrib.comments.apps.AppConfig',
     'tcms.core.contrib.linkreference',
     'tcms.core.logs',
-    'tcms.integration.bugzilla',
+    'tcms.integration.issuetracker',
     'tcms.integration.errata',
     'tcms.management',
     'tcms.profiles',

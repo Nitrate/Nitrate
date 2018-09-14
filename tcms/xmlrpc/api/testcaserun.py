@@ -4,10 +4,11 @@ from django.contrib.auth.decorators import permission_required
 from django.db.models import ObjectDoesNotExist
 
 from tcms.core.contrib.linkreference.models import create_link, LinkReference
-from tcms.xmlrpc.serializer import XMLRPCSerializer
+from tcms.integration.issuetracker.models import Issue
 from tcms.testcases.models import TestCaseBug
 from tcms.testruns.models import TestCaseRun, TestCaseRunStatus
 from tcms.xmlrpc.decorators import log_call
+from tcms.xmlrpc.serializer import XMLRPCSerializer
 from tcms.xmlrpc.utils import pre_process_ids, distinct_count
 
 __all__ = (
@@ -384,7 +385,13 @@ def get_bugs_s(request, run_id, case_id, build_id, environment_id=0):
     # judgement should not happen.
     if environment_id:
         query['case_run__environment_id'] = int(environment_id)
-    return TestCaseBug.to_xmlrpc(query)
+    issues = Issue.to_xmlrpc(query)
+    # These two keys are added for backward compatibility. They will be removed
+    # eventually one day.
+    for item in issues:
+        item['bug_id'] = item['issue_key']
+        item['bug_system'] = item['tracker_id']
+    return issues
 
 
 @log_call(namespace=__xmlrpc_namespace__)

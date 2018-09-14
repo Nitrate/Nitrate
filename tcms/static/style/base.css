@@ -209,10 +209,10 @@ caption a,caption a:visited{ text-decoration:none; color:#fff; }
 .sub .submit-row{ background:none; border:none}
 .wrap{ width:98%; float:left; margin-left:1%; }
 fieldset{ text-align:left; border:none; border:1px solid #ccc; padding:1px; }
-fieldset .form-row{ padding-top:10px; width:100%; background:#f1f1f1; clear:both; float:left; padding-bottom:5px; }
+fieldset .form-row{ padding-top:10px; width:100%; background:#f1f1f1; clear:both; padding-bottom:5px; }
 fieldset h2{ margin:0px; background:#235D9F; color:#fff; border-bottom:1px solid #ccc; border-top:1px solid #fff; border-left:1px solid #fff; border-right:1px solid #fff; padding-bottom:3px; padding-top:3px; font-size:1.1em; padding-left:10px; }
 .form-row label	{ width:150px; float:left; padding-left:10px; font-weight:600; color:#666;  }
-fieldset .required{ clear:left;width:150px; float:left; padding-left:10px; font-weight:600; color:#666; }
+fieldset .required{ clear:left;width:150px; padding-left:10px; font-weight:600; color:#666; }
 .errornote{ background:#FCE595; color:red; background : url("static/admin/img/admin/icon_error.gif") left 3px  no-repeat; padding-left:20px; }
 .errorlist{ width:99%; margin:10px auto;background:#AF2B2B;font-size:12px;-moz-border-radius:5px 5px 5px 5px;-moz-box-shadow:0 1px 4px #666666; border:1px solid #6F1B1B;color:#FFF;display:block;text-shadow:0 0px 0 #000000; padding:10px 0; font-weight:bold;}
 .errorlist li{ list-style:none; margin-left:10px;}
@@ -814,7 +814,7 @@ ul.data_content_title li{ display:inline-block; margin-left:3px;}
 .underline a {text-decoration: underline;}
 .golink{padding-left:20px;background:url(../images/execute_link.png) no-repeat left center; font-size:12px}
 .viewall{margin-left:10px;color:#666; background:url(../images/hand.png) no-repeat left center; padding-left:28px; padding-top:5px;}
-.help{margin-left:10px;color:#666;font-size:0.9em;float:left;}
+.help{margin-left:10px;color:#666;font-size:0.9em;}
 
 .system_help{background:url("../images/icon_system_help.png") 5px 2px no-repeat; padding:0 0 5px 25px;color:#52677A;}
 .system_alert{background:url("../images/icon_system_alert.png") top left no-repeat; padding-left:20px;color:#bd7f04;}

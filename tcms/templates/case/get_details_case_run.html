@@ -88,21 +88,21 @@
 					</span>
 				</h4>
 				<ul class="ul-no-format">
-					{% for bug_id, bugs in grouped_case_bugs %}
+					{% for issue_key, issues in grouped_case_issues %}
 						<li>
 							<table cellpadding="3" cellspacing="0" border="0">
 								<tr>
-									<td><a href="{{ bugs.0.get_full_url }}">{{ bug_id }}</a></td>
+									<td><a href="{{ issues.0.get_full_url }}">{{ issue_key }}</a></td>
 								<td>
-								{% for bug in bugs %}
-								    {% if bug.case_run_id %}
-								        <span class="grey">From Run</span><a href="{% url "run-get" bug.case_run.run_id %}">{{ bug.case_run.run_id }}</a>
-								        {% ifequal bug.case_run_id test_case_run.pk %}
-								        <a href="javascript:void(0);" title="Remove This Bug" class="js-remove-caserun-bug" data-params='[{{ test_case_run.run.pk }}, "{{ bug.bug_id }}", {{ test_case_run.case_id }}, {{ test_case_run.pk }}]'><img width="9" height="9" title="remove this bug" src="{{ STATIC_URL }}images/remove_small.png"></a>
+								{% for issue in issues %}
+								    {% if issue.case_run_id %}
+								        <span class="grey">From Run</span><a href="{% url "run-get" issue.case_run.run_id %}">{{ issue.case_run.run_id }}</a>
+								        {% ifequal issue.case_run_id test_case_run.pk %}
+								        <a href="javascript:void(0);" title="Remove This Bug" class="js-remove-caserun-bug" data-params='[{{ test_case_run.run.pk }}, "{{ issue.issue_key }}", {{ test_case_run.case_id }}, {{ test_case_run.pk }}]'><img width="9" height="9" title="remove this bug" src="{{ STATIC_URL }}images/remove_small.png"></a>
 								        {% endifequal %}
 								    {% else %}
 								        <span class="grey">From Case</span>
-								        <a href="{% url "case-get" bug.case_id %}">{{ bug.case_id }}</a>
+								        <a href="{% url "case-get" issue.case_id %}">{{ issue.case_id }}</a>
 								    {% endif %}
 								{% endfor %}
 								</td>

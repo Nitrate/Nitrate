@@ -60,9 +60,14 @@ class TCMSActionModel(models.Model, UrlMixin):
                        models.GenericIPAddressField,
                        models.SlugField)
 
+        # FIXME: reconsider alternative solution
+        # It makes no sense to add field name each time when a new field is
+        # added and it accepts values containing either \t, \r and \n.
+
+        ignored_fields = ('notes', 'issue_report_params', 'issue_report_templ')
         for field in self._meta.fields:
             # TODO: hardcode 'notes' here
-            if not (field.name is 'notes') and isinstance(field, strip_types):
+            if field.name not in ignored_fields and isinstance(field, strip_types):
                 value = getattr(self, field.name)
                 if value:
                     setattr(self, field.name, value.replace('\t', ' ').replace('\n', ' ').replace('\r', ' '))

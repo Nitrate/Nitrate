@@ -39,6 +39,7 @@ from tcms.testcases import sqls
 from tcms.testcases.models import TestCase, TestCaseStatus, \
     TestCaseAttachment, TestCasePlan
 from tcms.management.models import Priority, TestTag
+from tcms.management.models import Product
 from tcms.testcases.models import TestCaseBug, TestCaseComponent
 from tcms.testplans.models import TestPlan
 from tcms.testruns.models import TestCaseRun
@@ -50,6 +51,7 @@ from tcms.testplans.forms import SearchPlanForm
 from tcms.utils.dict_utils import create_group_by_dict as create_dict
 from tcms.testcases.fields import CC_LIST_DEFAULT_DELIMITER
 from tcms.testcases.forms import CaseComponentForm
+from tcms.integration.issuetracker.models import IssueTracker
 
 logger = logging.getLogger(__name__)
 
@@ -118,11 +120,10 @@ def update_case_email_settings(tc, n_form):
     tc.emailing.update_cc_list(valid_emails)
 
 
-def group_case_bugs(bugs):
+def group_case_bugs(issues):
     """Group bugs using bug_id."""
-    bugs = itertools.groupby(bugs, lambda b: b.bug_id)
-    bugs = [(pk, list(_bugs)) for pk, _bugs in bugs]
-    return bugs
+    issues = itertools.groupby(issues, lambda b: b.issue_key)
+    return [(pk, list(_issues)) for pk, _issues in issues]
 
 
 def create_testcase(request, form, tp):
@@ -936,7 +937,7 @@ class TestCaseCaseRunDetailPanelView(TemplateView,
 
         caserun_status = TestCaseRunStatus.objects.values('pk', 'name')
         caserun_status = caserun_status.order_by('sortkey')
-        bugs = group_case_bugs(case_run.case.get_bugs().order_by('bug_id'))
+        issues = group_case_bugs(case_run.case.get_issues().order_by('issue_key'))
 
         data.update({
             'test_case': case,
@@ -947,7 +948,7 @@ class TestCaseCaseRunDetailPanelView(TemplateView,
             'caserun_comments': caserun_comments,
             'caserun_logs': caserun_logs,
             'test_case_run_status': caserun_status,
-            'grouped_case_bugs': bugs,
+            'grouped_case_issues': issues,
         })
 
         return data
@@ -1031,6 +1032,9 @@ def get(request, case_id, template_name='case/get.html'):
             request.GET['template_type'], 'case')
 
     grouped_case_bugs = tcr and group_case_bugs(tcr.case.get_bugs())
+    issue_trackers = IssueTracker.get_by_case(tc).only(
+        'pk', 'name', 'validate_regex')
+
     # Render the page
     context_data = {
         'logs': logs,
@@ -1045,6 +1049,7 @@ def get(request, case_id, template_name='case/get.html'):
         'test_case_text': tc_text,
         'test_case_status': TestCaseStatus.objects.all(),
         'test_case_run_status': TestCaseRunStatus.objects.all(),
+        'issue_trackers': issue_trackers,
         'module': request.GET.get('from_plan') and 'testplans' or MODULE_NAME,
     }
     return render(request, template_name, context=context_data)
@@ -1796,6 +1801,7 @@ def bug(request, case_id, template_name='case/get_bug.html'):
         def render(self, response=None):
             context_data = {
                 'test_case': self.case,
+                'issue_trackers': IssueTracker.get_by_case(self.case),
                 'response': response
             }
             return render(request, template_name, context=context_data)
@@ -1817,8 +1823,8 @@ def bug(request, case_id, template_name='case/get_bug.html'):
 
             try:
                 self.case.add_bug(
-                    bug_id=form.cleaned_data['bug_id'],
-                    bug_system_id=form.cleaned_data['bug_system'].pk,
+                    issue_key=form.cleaned_data['issue_key'],
+                    issue_tracker=form.cleaned_data['tracker'],
                     summary=form.cleaned_data['summary'],
                     description=form.cleaned_data['description'],
                 )

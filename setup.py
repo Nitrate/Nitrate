@@ -56,6 +56,7 @@ extras_require = {
         'tox',
         'django-extensions',
         'pygraphviz',
+        'future-breakpoint',
     ]
 }
 

@@ -22,14 +22,18 @@ Nitrate.Utils.enableShiftSelectOnCheckbox = function (className){
 Nitrate.Utils.convert = function(argument, data) {
   switch(argument) {
     case 'obj_to_list':
-      if (data.length != 0 && !data.length) {
+      if (data.length !== 0 && !data.length) {
         var data = jQ.extend({}, {0: data, length: 1});
       }
       return data;
       break;
-  };
+  }
 };
 
+/*
+ * Collect form data from input elements.
+ * @param {HTMLForm} f - A HTML form from where to collect data.
+ */
 Nitrate.Utils.formSerialize = function(f) {
   var params = {};
   jQ(f).serializeArray().forEach(function(param) {

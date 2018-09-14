@@ -5,6 +5,7 @@ import six
 import sys
 
 from six.moves import http_client
+from six.moves.urllib_parse import urlparse, parse_qs
 
 from django import test
 from django.contrib.auth.models import Permission
@@ -114,6 +115,23 @@ class HelperAssertions(object):
     def assertJsonResponse(self, response, expected, status_code=200):
         self.assertEqual(status_code, response.status_code)
         self.assertEqual(expected, json_loads(response.content))
+
+    def assert_url(self, expected_url, url):
+        """Check if two URL are same
+
+        Assertions are called inside this this method. If anything is
+        different, it will fail immediately.
+
+        :param str expected_url: expected URL compare.
+        :param str url: the URL to check if it is same as the expected URL.
+        """
+        url = urlparse(url)
+        expected_url = urlparse(expected_url)
+
+        self.assertEqual(expected_url.scheme, url.scheme)
+        self.assertEqual(expected_url.netloc, url.netloc)
+        self.assertEqual(expected_url.path, url.path)
+        self.assertEqual(parse_qs(expected_url.query), parse_qs(url.query))
 
 
 class BasePlanCase(HelperAssertions, test.TestCase):

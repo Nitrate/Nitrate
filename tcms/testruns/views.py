@@ -14,6 +14,7 @@ from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.db.models import Count
@@ -39,7 +40,6 @@ from tcms.core.utils import DataTableResult
 from tcms.core.utils.raw_sql import RawSQL
 from tcms.core.utils.tcms_router import connection
 from tcms.core.utils.timedeltaformat import format_timedelta
-from tcms.core.utils.validations import validate_bug_id
 from tcms.core.views import Prompt
 from tcms.management.models import Priority, TCMSEnvValue, TestTag
 from tcms.search.forms import RunForm
@@ -559,12 +559,6 @@ def open_run_get_case_runs(request, run):
                      'case__is_automated',
                      'case__priority',
                      'case__category__name')
-    # Get the bug count for each case run
-    # 5. have to show the number of bugs of each case run
-    tcrs = tcrs.extra(select={
-        'num_bug': RawSQL.num_case_run_bugs,
-    })
-    tcrs = tcrs.distinct()
     # Continue to search the case runs with conditions
     # 4. case runs preparing for render case runs table
     tcrs = tcrs.filter(**clean_request(request))
@@ -629,7 +623,7 @@ def get(request, run_id, template_name='run/get.html'):
 
     # Get the test case run bugs summary
     # 6. get the number of bugs of this run
-    tcr_bugs_count = tr.get_bug_count()
+    tcr_issues_count = tr.get_issues_count()
 
     # Get tag list of testcases
     # 7. get tags
@@ -646,14 +640,18 @@ def get(request, run_id, template_name='run/get.html'):
         comments_subtotal = open_run_get_comments_subtotal(
             [cr.pk for cr in tcrs])
         case_run_status = TestCaseRunStatus.get_names()
+        issues_subtotal = tr.subtotal_issues_by_case_run()
 
         for case_run in tcrs:
-            yield (case_run,
-                   testers.get(case_run.tested_by_id, None),
-                   assignees.get(case_run.assignee_id, None),
-                   priorities.get(case_run.case.priority_id),
-                   case_run_status[case_run.case_run_status_id],
-                   comments_subtotal.get(case_run.pk, 0))
+            yield (
+                case_run,
+                testers.get(case_run.tested_by_id, None),
+                assignees.get(case_run.assignee_id, None),
+                priorities.get(case_run.case.priority_id),
+                case_run_status[case_run.case_run_status_id],
+                comments_subtotal.get(case_run.pk, 0),
+                issues_subtotal.get(case_run.pk, 0),
+            )
 
     context_data = {
         'module': MODULE_NAME,
@@ -663,11 +661,12 @@ def get(request, run_id, template_name='run/get.html'):
         'test_case_runs': walk_case_runs(),
         'test_case_runs_count': len(tcrs),
         'status_stats': status_stats_result,
-        'test_case_run_bugs_count': tcr_bugs_count,
+        'test_case_run_issues_count': tcr_issues_count,
         'test_case_run_status': case_run_statuss,
         'priorities': Priority.objects.all(),
         'case_own_tags': ttags,
         'errata_url_prefix': settings.ERRATA_URL_PREFIX,
+        'issue_trackers': tr.plan.product.issue_trackers.all(),
     }
     return render(request, template_name, context=context_data)
 
@@ -846,38 +845,36 @@ def bug(request, case_run_id, template_name='run/execute_case_run.html'):
             self.default_ajax_response = {'rc': 0, 'response': 'ok'}
 
         def add(self):
+            # TODO: make a migration for the permission
             if not self.request.user.has_perm('testcases.add_testcasebug'):
                 response = {'rc': 1, 'response': 'Permission denied'}
                 return self.ajax_response(response=response)
 
-            bug_id = request.GET.get('bug_id')
-            bug_system_id = request.GET.get('bug_system_id')
+            issue_key = request.GET.get('issue_key')
+            issue_tracker_id = request.GET.get('issue_tracker_id')
+
+            from tcms.integration.issuetracker.models import Issue
+            from tcms.integration.issuetracker.models import IssueTracker
+            from tcms.integration.issuetracker.models import IssueTrackerService
+
+            tracker = get_object_or_404(IssueTracker, pk=issue_tracker_id)
+
+            add_case_to_issue = 'true' == request.GET.get(
+                'allow_add_case_to_issue', None)
 
             try:
-                validate_bug_id(bug_id, bug_system_id)
-            except NitrateException as e:
+                service = IssueTrackerService.get(tracker)
+                service.add_issue(issue_key, tcr.case, case_run=tcr,
+                                  add_case_to_issue=add_case_to_issue)
+            except ValidationError as e:
                 return self.ajax_response({
                     'rc': 1,
-                    'response': str(e)
-                })
-
-            bz_external_track = True if request.GET.get('bz_external_track',
-                                                        False) else False
-
-            try:
-                tcr.add_bug(bug_id=bug_id,
-                            bug_system_id=bug_system_id,
-                            bz_external_track=bz_external_track)
-            except Exception as e:
-                msg = str(e) if str(e) else 'Failed to add bug %s' % bug_id
-                return self.ajax_response({
-                    'rc': 1,
-                    'response': msg
+                    'response': e.messages,
                 })
 
             self.default_ajax_response.update({
-                'run_bug_count': self.get_run_bug_count(),
-                'caserun_bugs_count': self.case_run.get_bugs_count(),
+                'run_bug_count': self.get_run_issues_count(),
+                'caserun_bugs_count': self.case_run.issues.count(),
             })
             return self.ajax_response()
 
@@ -887,9 +884,16 @@ def bug(request, case_run_id, template_name='run/execute_case_run.html'):
             return JsonResponse(response)
 
         def file(self):
-            rh_bz = Bugzilla(settings.BUGZILLA_URL)
-            url = rh_bz.make_url(self.case_run.run, self.case_run,
-                                 self.case_run.case_text_version)
+            from tcms.integration.issuetracker.services import find_service
+            from tcms.integration.issuetracker.models import IssueTracker
+
+            # This name should be get from rendered webpage dynamically.
+            # It is hardcoded as a temporary solution right now.
+            # FIXME: name here should be RHBugzilla in final solution.
+            bz_model = IssueTracker.objects.get(name='Bugzilla')
+            # An eventual solution would be to just call this method
+            # and pass loaded issue tracker name.
+            url = find_service(bz_model).make_issue_report_url(self.case_run)
 
             return HttpResponseRedirect(url)
 
@@ -899,9 +903,9 @@ def bug(request, case_run_id, template_name='run/execute_case_run.html'):
                 return self.render(response=response)
 
             try:
-                bug_id = self.request.GET.get('bug_id')
-                run_id = self.request.GET.get('case_run')
-                self.case_run.remove_bug(bug_id, run_id)
+                issue_key = self.request.GET.get('issue_key')
+                case_run = self.request.GET.get('case_run')
+                self.case_run.remove_bug(issue_key, case_run)
             except ObjectDoesNotExist as error:
                 response = {'rc': 1, 'response': str(error)}
                 return self.ajax_response(response=response)
@@ -920,14 +924,11 @@ def bug(request, case_run_id, template_name='run/execute_case_run.html'):
 
             return HttpResponse(form.as_p())
 
-        def get_run_bug_count(self):
+        def get_run_issues_count(self):
             run = self.case_run.run
-            return run.get_bug_count()
+            return run.get_issues_count()
 
-    try:
-        tcr = TestCaseRun.objects.get(case_run_id=case_run_id)
-    except ObjectDoesNotExist:
-        raise Http404
+    tcr = get_object_or_404(TestCaseRun, pk=case_run_id)
 
     crba = CaseRunBugActions(request=request,
                              case_run=tcr,

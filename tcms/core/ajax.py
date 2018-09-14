@@ -34,8 +34,7 @@ from tcms.testruns.models import TestRun, TestCaseRun, TestCaseRunStatus
 from tcms.core.exceptions import NitrateException
 from tcms.core.helpers.comments import add_comment
 from tcms.core.utils import get_string_combinations
-from tcms.core.utils.validations import validate_bug_id
-
+    
 post_update = Signal(providing_args=["instances", "kwargs"])
 post_update.connect(run_watchers.post_update_handler)
 

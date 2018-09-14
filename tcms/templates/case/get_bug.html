@@ -10,14 +10,14 @@
         <th>Action</th>
 
 	</tr>
-	{% for bug in test_case.get_bugs %}
+	{% for issue in test_case.get_issues %}
 	<tr class="{% cycle 'even' 'odd' %}">
-		<td>{{ bug.case_run_id }}</td>
-		<td>{% if bug.case_run_id %}<a href="{% url "run-get" bug.case_run.run_id %}">{{ bug.case_run.run_id }}</a>{% else %}None{% endif %}</td>
-		<td><a href="{{ bug.get_absolute_url }}">{{ bug.get_absolute_url }}</a></td>
+		<td>{{ issue.case_run_id }}</td>
+		<td>{% if issue.case_run_id %}<a href="{% url "run-get" issue.case_run.run_id %}">{{ issue.case_run.run_id }}</a>{% else %}None{% endif %}</td>
+		<td><a href="{{ issue.get_absolute_url }}">{{ issue.get_absolute_url }}</a></td>
         <td>
 			{% if perms.testcases.delete_testcasebug %}
-			<a class="remove js-remove-button" data-params='{"id": "{{ bug.bug_id }}", "caseId": "{{ test_case.pk }}", "caseRunId": "{{ bug.case_run_id|default:'' }}"}'>Remove</a>
+			<a class="remove js-remove-button" data-params='{"id": "{{ issue.bug_id }}", "caseId": "{{ test_case.pk }}", "caseRunId": "{{ issue.case_run_id|default:'' }}"}'>Remove</a>
 			{% else %}
 			<label class="grey">None</label>
 			{% endif %}
@@ -25,7 +25,7 @@
 	</tr>
 	{% empty %}
 	<tr>
-		<td colspan="4" align="center" class="grey">No bug related to this case.</td>
+		<td colspan="4" align="center" class="grey">No issues related to this case.</td>
 	</tr>
 	{% endfor %}
 	{% if perms.testcases.add_testcasebug %}
@@ -37,11 +37,12 @@
 					<input type="hidden" name="handle" value="add" />
 					<input type="hidden" name="case" value="{{ test_case.case_id }}" />
 					<input type="hidden" name="case_run" value="" />
-					<select name='bug_system'>
-						<option value='1' selected="selected">Bugzilla</option>
-						<option value='2'>JIRA</option>
+					<select name='tracker' class="js-issue-tracker">
+						{% for tracker in issue_trackers %}
+						<option value="{{ tracker.pk }}" data-issue-key-regex="{{ tracker.validate_regex }}">{{ tracker.name }}</option>
+						{% endfor %}
 					</select>
-					<input id="id_bugs" type="text" size="20" name="bug_id" />
+					<input id="issue_key" class="js-issue-key" type="text" size="20" name="issue_key" />
 					<input style="display:none">
 					<a href="#bug" class="addlink js-add-bug" >Add</a>
 				</div>

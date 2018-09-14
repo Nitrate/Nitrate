@@ -147,6 +147,25 @@
 		</fieldset>
 	</form>
 </div>
+<script type="text/javascript">
+/*
+ * Global variable used by AddIssueDialog to add issue to a case run.
+ *
+ * I feel a little uncomfortable to make this variable global, but I haven't
+ * found a good way to associate it with AddIssueDialog object. If you have
+ * any idea to improve, please improve it. It will be appreciated.
+ */
+var g_issue_trackers = [
+	{% for tracker in issue_trackers %}
+	{
+		"pk": {{ tracker.pk }},
+		"name": "{{ tracker.name }}",
+		"allow_add_case_to_issue": {%if tracker.allow_add_case_to_issue%}true{%else%}false{%endif%},
+		"validate_regex": /{{ tracker.validate_regex }}/
+	},
+	{% endfor %}
+]
+</script>
 {% verbatim %}
 	<script id="add_issue_form_template" type="text/x-handlebars-template">
 		<form id="add_issue_form">
@@ -154,23 +173,24 @@
 				{{#each hiddenFields}}
 					<input type="hidden" name="{{ this.name }}" value="{{ this.value }}">
 				{{/each}}
-			<div class="bug_type" id="id_bug_type">Issue Tracker</div>
-			<select name="bug_system_id" id="bug_system_id">
-				<option value="1" selected="selected" data-tab="bug-system-bugzilla">Bugzilla</option>
-				<option value="2" data-tab="bug-system-jira">JIRA</option>
+			<div class="bug_type" id="id_issue_tracker">Issue Tracker</div>
+			<select name="issue_tracker_id" id="issue_tracker_id">
+				{{#each issue_trackers}}
+				<option value="{{ this.pk }}" data-tab="issue-tracker-{{ this.name.replace(' ', '_') }}">{{ this.name }}</option>
+				{{/each}}
 			</select>
 			</br>
-			<div id="bug-system-bugzilla" style="line-height:30px;">
-				<div class="bug_id">Bug ID</div>
-					<input type="text" name="bug_id">
-					</br>
-					<input type="checkbox" name="bz_external_track" value="bz_external_track">&nbsp;
-					<span class="use_bz_external_track">Check to add Test Cases to BZ</span>
+			{{#each issue_trackers}}
+			<div id="issue-tracker-{{ this.name.replace(' ', '_') }}" style="{{#unless @first}}display:none;{{/unless}}line-height:30px;">
+				<div class="bug_id">Issue ID</div>
+				<input type="text" name="issue_key">
+				{{#if this.allow_add_case_to_issue}}
+				</br>
+				<input type="checkbox" name="add_case_to_issue" value="true">&nbsp;
+				<span class="use_bz_external_track">Check to add Test Cases to issue</span>
+				{{/if}}
 			</div>
-			<div id="bug-system-jira" style="display:none;line-height:30px;">
-				<div class="bug_id">Issue Key</div>
-				<input type="text" name="bug_id">
-			</div>
+			{{/each}}
 			</br></br>
 			<div>
 				<input type="submit" value="Add">

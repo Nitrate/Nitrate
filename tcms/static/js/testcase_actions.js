@@ -357,7 +357,7 @@ Nitrate.TestCases.Details.on_load = function() {
     addCaseBug(jQ('#id_case_bug_form')[0]);
   });
 
-  jQ('#id_bugs').bind('keydown', function(event) {
+  jQ('#issue_key').bind('keydown', function(event) {
     addCaseBugViaEnterKey(jQ('#id_case_bug_form')[0], event);
   });
 };
@@ -749,14 +749,19 @@ function changeCasePriority(object_pk, value, callback) {
 
 function addCaseBug(form, callback) {
   var addBugInfo = Nitrate.Utils.formSerialize(form);
-  addBugInfo.bug_id = addBugInfo.bug_id.trim();
+  addBugInfo.issue_key = addBugInfo.issue_key.trim();
 
-  if (!addBugInfo.bug_id.length) {
+  if (!addBugInfo.issue_key.length) {
     // No bug ID input, no any response is required
     return false;
-  } else if (!validateIssueID(addBugInfo.bug_system, addBugInfo.bug_id)) {
-    return false;
   }
+
+//   var validateRegex = jQ('.js-issue-tracker option:selected').data('issue-key-regex');
+//   var re = RegExp(validateRegex)
+//   if (!re.test(addBugInfo.issue_key)) {
+//     alert('Issue key is in malformat.');
+//     return;
+//   }
 
   var complete = function(t) {
     jQ('.js-add-bug').bind('click', function(event) {
