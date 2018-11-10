@@ -6,12 +6,13 @@
     - name: Ensure dependencies are installed
       dnf: name={{ item }} state=present
       with_items:
-        - ctags
         - copr-cli
+        - ctags
         - docker
         - findutils
         - gcc
         - git
+        - graphviz-devel
         - ipython
         - mariadb-devel
         - mariadb-server
