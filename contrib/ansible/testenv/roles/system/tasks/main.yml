@@ -1,0 +1,90 @@
+
+- name: Ensure dependencies are installed
+  dnf:
+    name: '{{ item }}'
+    state: present
+  with_items:
+    - copr-cli
+    - ctags
+    - docker
+    - findutils
+    - gcc
+    - git
+    - graphviz-devel
+    - ipython
+    - mariadb-devel
+    - mariadb-server
+    - mock
+    - neovim
+    - postgresql
+    - postgresql-devel
+    - postgresql-server
+    - python2
+    - python2-detox
+    - python2-devel
+    - python2-ipdb
+    - python2-sphinx
+    - python2-virtualenv
+    - python3-devel
+    - python3-ipdb
+    - python3-virtualenv
+    - redhat-rpm-config
+    - rpm-build
+    - rpmdevtools
+    - rpmlint
+
+- name: Configure mock
+  user:
+    name: vagrant
+    group: mock
+    append: yes
+
+- name: Service mariadb
+  systemd:
+    name: mariadb
+    state: started
+    enabled: yes
+
+- name: Service docker
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Check if PostgreSQL data cluster is initialized
+  stat:
+    path: '/var/lib/pgsql/data/pg_hba.conf'
+  register: pgsql_data
+
+- name: Init PostgreSQL data cluster
+  command: postgresql-setup --initdb
+  when: not pgsql_data.stat.exists
+
+- name: Service PostgreSQL
+  systemd:
+    name: postgresql
+    state: started
+    enabled: yes
+
+- name: Create database nitrate
+  become: false
+  mysql_db:
+    name: nitrate
+    state: present
+    login_user: root
+
+- name: Add group docker
+  group:
+    name: docker
+    state: present
+
+- name: Add user to group docker
+  user:
+    name: vagrant
+    group: docker
+    append: yes
+
+- name: Restart docker service
+  systemd:
+    name: docker
+    state: restarted

@@ -1,0 +1,2 @@
+venv_dir: '{{ ansible_user_dir }}/nitrate-env'
+code_dir: '/code'

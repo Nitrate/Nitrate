@@ -1,0 +1,54 @@
+
+- stat:
+    path: '{{ venv_dir }}'
+  register: venv
+
+- name: Create virtualenv
+  command: virtualenv-3 nitrate-env
+  args:
+    chdir: '{{ ansible_user_dir }}'
+  when: not venv.stat.exists
+
+- name: Install dependencies in virtualenv
+  command: '{{ venv_dir }}/bin/pip install -e .[krbauth,docs,tests,devtools]'
+  args:
+    chdir: '{{ code_dir }}'
+  when: not venv.stat.exists
+
+- name: Initialize Nitrate database
+  django_manage:
+    command: migrate
+    app_path: '{{ code_dir }}'
+    virtualenv: '{{ venv_dir }}'
+
+- name: Find out if superuser admin exists
+  shell: |
+    cd {{ code_dir }}
+    {{ venv_dir }}/bin/python manage.py shell -c "
+      from django.contrib.auth.models import User
+      users = User.objects.filter(username='admin')
+      print(users[0].is_superuser if users else False)
+    "
+  register: output
+
+- name: Create superuser admin
+  django_manage:
+    command: "createsuperuser --noinput --username admin --email admin@example.com"
+    app_path: '{{ code_dir }}'
+    virtualenv: '{{ venv_dir }}'
+  when: output.stdout == 'False'
+
+- name: Set superuser's password to admin
+  django_manage:
+    command: "shell -c \"from django.contrib.auth.models import User; admin = User.objects.get(username='admin'); admin.set_password('admin'); admin.save()\""
+    app_path: '{{ code_dir }}'
+    virtualenv: '{{ venv_dir }}'
+  when: output.stdout == 'False'
+
+- name: Add auto steps for login
+  lineinfile:
+    path: '{{ ansible_user_dir }}/.bashrc'
+    line: '{{ item }}'
+  with_items:
+  - 'source {{ venv_dir }}/bin/activate'
+  - 'cd {{ code_dir }}'

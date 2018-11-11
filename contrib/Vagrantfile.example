@@ -1,20 +1,22 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+vm_born_at = Time.now.strftime("%Y%m%d%H%M")
 
 Vagrant.configure(2) do |config|
-  config.vm.box = "fedora/27-cloud-base"
+  config.vm.box = "fedora/28-cloud-base"
   config.vm.box_check_update = false
   config.vm.network "forwarded_port", guest: 8000, host: 8087
   config.vm.synced_folder ".", "/code"
+  config.vm.synced_folder ".", "/vagrant", disabled: true
 
   config.vm.provider "virtualbox" do |vb|
     vb.memory = "1024"
-    vb.name = 'nitrate-dev'
+    vb.name = "nitrate-dev-#{vm_born_at}"
   end
 
+  config.vm.provision "shell", inline: "dnf install -y libselinux-python"
   config.vm.provision "shell", inline: "dnf install -y python2"
-
   config.vm.provision "shell", inline: "dnf install -y MySQL-python"
 
   config.vm.provision "ansible" do |ansible|

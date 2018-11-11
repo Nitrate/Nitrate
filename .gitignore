@@ -30,3 +30,4 @@ htmlcov/
 install/
 uploads/
 Vagrantfile
+*.retry
