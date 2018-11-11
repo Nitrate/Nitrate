@@ -21,9 +21,16 @@ powerful access control for each plan, run and case, and XMLRPC APIs.
 Dependencies
 ------------
 
-Dependencies are listed int ``setup.py``. ``requirements.txt`` file is also
+Dependencies are listed in ``setup.py``. ``requirements.txt`` file is also
 provided for provision a local virtualenv for a consistent development
 environment.
+
+Wanna hack on Nitrate quickly?
+------------------------------
+
+A ready-to-use Vagrantfile is provided in ``contrib`` directory, copy that to
+root directory, then ``vagrant up``. Currently, it requires VirtualBox
+installed to create virtual machine.
 
 Documentation
 -------------
