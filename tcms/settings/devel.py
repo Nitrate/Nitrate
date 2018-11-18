@@ -20,7 +20,7 @@ DATABASES = {
 }
 
 # django-debug-toolbar settings
-MIDDLEWARE_CLASSES += (
+MIDDLEWARE += (
     'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
 
