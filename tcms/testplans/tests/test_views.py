@@ -67,56 +67,56 @@ class PlanTests(test.TestCase):
     def test_open_plans_search(self):
         location = reverse('plans-all')
         response = self.c.get(location)
-        self.assertEquals(response.status_code, http_client.OK)
+        self.assertEqual(response.status_code, http_client.OK)
 
     def test_search_plans(self):
         location = reverse('plans-all')
         response = self.c.get(location, {'action': 'search', 'type': self.test_plan.type.pk})
-        self.assertEquals(response.status_code, http_client.OK)
+        self.assertEqual(response.status_code, http_client.OK)
 
     def test_plan_new_get(self):
         location = reverse('plans-new')
         response = self.c.get(location, follow=True)
-        self.assertEquals(response.status_code, http_client.OK)
+        self.assertEqual(response.status_code, http_client.OK)
 
     def test_plan_details(self):
         location = reverse('plan-get', args=[self.plan_id])
         response = self.c.get(location)
-        self.assertEquals(response.status_code, http_client.MOVED_PERMANENTLY)
+        self.assertEqual(response.status_code, http_client.MOVED_PERMANENTLY)
 
         response = self.c.get(location, follow=True)
-        self.assertEquals(response.status_code, http_client.OK)
+        self.assertEqual(response.status_code, http_client.OK)
 
     def test_plan_delete(self):
         tp_pk = self.test_plan.pk
 
         location = reverse('plan-delete', args=[tp_pk])
         response = self.c.get(location)
-        self.assertEquals(response.status_code, http_client.OK)
+        self.assertEqual(response.status_code, http_client.OK)
 
         response = self.c.get(location, {'sure': 'no'})
-        self.assertEquals(response.status_code, http_client.OK)
+        self.assertEqual(response.status_code, http_client.OK)
 
         response = self.c.get(location, {'sure': 'yes'})
-        self.assertEquals(response.status_code, http_client.OK)
+        self.assertEqual(response.status_code, http_client.OK)
         deleted = not TestPlan.objects.filter(pk=tp_pk).exists()
-        self.assert_(deleted,
+        self.assertTrue(deleted,
                      'TestPlan {0} should be deleted. But, not.'.format(tp_pk))
 
     def test_plan_edit(self):
         location = reverse('plan-edit', args=[self.plan_id])
         response = self.c.get(location)
-        self.assertEquals(response.status_code, http_client.OK)
+        self.assertEqual(response.status_code, http_client.OK)
 
     def test_plan_printable(self):
         location = reverse('plans-printable')
         response = self.c.get(location, {'plan_id': self.plan_id})
-        self.assertEquals(response.status_code, http_client.OK)
+        self.assertEqual(response.status_code, http_client.OK)
 
     def test_plan_export(self):
         location = reverse('plans-export')
         response = self.c.get(location, {'plan': self.plan_id})
-        self.assertEquals(response.status_code, http_client.OK)
+        self.assertEqual(response.status_code, http_client.OK)
 
         xml_doc = response.content
         try:
@@ -127,16 +127,16 @@ class PlanTests(test.TestCase):
     def test_plan_attachment(self):
         location = reverse('plan-attachment', args=[self.plan_id])
         response = self.c.get(location)
-        self.assertEquals(response.status_code, http_client.OK)
+        self.assertEqual(response.status_code, http_client.OK)
 
     def test_plan_history(self):
         location = reverse('plan-text-history',
                            args=[self.plan_id])
         response = self.c.get(location)
-        self.assertEquals(response.status_code, http_client.OK)
+        self.assertEqual(response.status_code, http_client.OK)
 
         response = self.c.get(location, {'plan_text_version': 1})
-        self.assertEquals(response.status_code, http_client.OK)
+        self.assertEqual(response.status_code, http_client.OK)
 
 
 class TestPlanModel(test.TestCase):
@@ -727,7 +727,7 @@ class TestAJAXSearch(BasePlanCase):
         expected_plans = TestPlan.objects.all()[0:3]
 
         for i, plan in enumerate(expected_plans):
-            self.assertEquals(
+            self.assertEqual(
                 "<a href='{}'>{}</a>".format(plan.get_absolute_url(), plan.pk),
                 data['aaData'][i]['1'])
 
@@ -752,7 +752,7 @@ class TestAJAXSearch(BasePlanCase):
         ]
 
         for i, plan in enumerate(expected_plans):
-            self.assertEquals(
+            self.assertEqual(
                 "<a href='{}'>{}</a>".format(plan.get_absolute_url(), plan.pk),
                 data['aaData'][i]['1'])
 
@@ -775,6 +775,6 @@ class TestAJAXSearch(BasePlanCase):
         expected_plans = TestPlan.objects.order_by('-pk')[3:6]
 
         for i, plan in enumerate(expected_plans):
-            self.assertEquals(
+            self.assertEqual(
                 "<a href='{}'>{}</a>".format(plan.get_absolute_url(), plan.pk),
                 data['aaData'][i]['1'])

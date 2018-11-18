@@ -18,7 +18,7 @@ class TestTargetCharField(unittest.TestCase):
     def test_type(self):
         from django.forms import Field
 
-        self.assert_(isinstance(self.field, Field))
+        self.assertIsInstance(self.field, Field)
 
     def test_clean(self):
         url_argu_value = 'TestCaseRun'

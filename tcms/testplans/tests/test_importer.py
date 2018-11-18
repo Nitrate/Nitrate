@@ -189,7 +189,7 @@ class TestProcessCase(test.TestCase):
         self.assertEqual(False, cleaned_case['is_automated'])
         self.assertEqual(sample_case_data['categoryname'],
                          cleaned_case['category_name'])
-        self.assert_(isinstance(cleaned_case['tags'], list))
+        self.assertIsInstance(cleaned_case['tags'], list)
         for tag in sample_case_data['tag']:
             expected_tag = TestTag.objects.get(name=tag)
             self.assertEqual(expected_tag, cleaned_case['tags'][0])

@@ -61,11 +61,11 @@ class GroupByResultDictLikeTest(unittest.TestCase):
         self.groupby_result = GroupByResult({'total': 100})
 
     def test_in(self):
-        self.assert_('a' not in self.groupby_result)
-        self.assert_('total' in self.groupby_result)
+        self.assertNotIn('a', self.groupby_result)
+        self.assertIn('total', self.groupby_result)
 
     def test_key(self):
-        self.assert_(self.groupby_result.keys(), ['total'])
+        self.assertTrue(self.groupby_result.keys(), ['total'])
 
     def test_setdefault(self):
         ret_val = self.groupby_result.setdefault('count', {})
@@ -108,9 +108,9 @@ class GroupByResultDictLikeTest(unittest.TestCase):
     def test_del(self):
         self.groupby_result['count'] = 200
         del self.groupby_result['total']
-        self.assert_('total' not in self.groupby_result)
+        self.assertNotIn('total', self.groupby_result)
         del self.groupby_result['count']
-        self.assert_('count' not in self.groupby_result)
+        self.assertNotIn('count', self.groupby_result)
         self.assertEqual(len(self.groupby_result), 0)
 
 

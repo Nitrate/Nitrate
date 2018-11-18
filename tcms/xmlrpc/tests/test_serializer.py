@@ -192,10 +192,10 @@ class TestQuerySetBasedSerializer(test.TestCase):
 
     def verify_m2m_field_query_result(self, m2m_field_name, result):
         for object_pk, objects in six.iteritems(result):
-            self.assert_(isinstance(objects, tuple))
+            self.assertIsInstance(objects, tuple)
             for object_value in objects:
                 self.assertEqual(object_pk, object_value['pk'])
-                self.assert_(m2m_field_name in object_value)
+                self.assertIn(m2m_field_name, object_value)
 
     def test_query_m2m_field(self):
         m2m_field_name = 'case'
@@ -207,12 +207,12 @@ class TestQuerySetBasedSerializer(test.TestCase):
 
     def test_query_m2m_fields(self):
         result = self.plan_serializer._query_m2m_fields()
-        self.assert_(isinstance(result, dict))
+        self.assertIsInstance(result, dict)
         self.assertEqual(len(result), len(MockTestPlanSerializer.m2m_fields))
 
         for m2m_field_name, this_query_result in six.iteritems(result):
-            self.assert_(m2m_field_name in MockTestPlanSerializer.m2m_fields)
-            self.assert_(isinstance(this_query_result, dict))
+            self.assertIn(m2m_field_name, MockTestPlanSerializer.m2m_fields)
+            self.assertIsInstance(this_query_result, dict)
 
             # Method to verify object_values is same with test case
             # test_query_m2m_field
@@ -236,7 +236,7 @@ class TestQuerySetBasedSerializer(test.TestCase):
     def test_get_extra_fields(self):
         extra_fields = self.plan_serializer.get_extra_fields()
         self.assertNotEqual(extra_fields, {})
-        self.assert_('alias' in extra_fields)
+        self.assertIn('alias', extra_fields)
 
         extra_fields = self.case_serializer.get_extra_fields()
         self.assertEqual(extra_fields, {})
@@ -245,7 +245,7 @@ class TestQuerySetBasedSerializer(test.TestCase):
         serialize_result = {'plan_id': 1000, 'product_version': 1}
         test_data = serialize_result.copy()
         self.plan_serializer._handle_extra_fields(test_data)
-        self.assert_('default_product_version' in test_data)
+        self.assertIn('default_product_version', test_data)
         self.assertEqual(test_data['default_product_version'],
                          serialize_result['product_version'])
         self.assertEqual(test_data['plan_id'], serialize_result['plan_id'])
@@ -281,4 +281,4 @@ class TestQuerySetBasedSerializer(test.TestCase):
         cases = self.cases.filter(pk__lt=0)
         serializer = MockTestCaseSerializer(TestCase, cases)
         result = serializer.serialize_queryset()
-        self.assert_(len(result) == 0)
+        self.assertEqual(0, len(result))
