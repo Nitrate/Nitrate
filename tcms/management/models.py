@@ -54,7 +54,7 @@ class Classification(TCMSActionModel):
 class Product(TCMSActionModel):
     id = models.AutoField(max_length=5, primary_key=True)
     name = models.CharField(unique=True, max_length=64)
-    classification = models.ForeignKey(Classification)
+    classification = models.ForeignKey(Classification, on_delete=models.CASCADE)
     description = models.TextField(blank=True)
     milestone_url = models.CharField(db_column='milestoneurl', max_length=128, default='---')
     disallow_new = models.BooleanField(db_column='disallownew', default=False)
@@ -145,7 +145,7 @@ class Priority(TCMSActionModel):
 
 class Milestone(models.Model):
     id = models.AutoField(primary_key=True)
-    product = models.ForeignKey(Product)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
     value = models.CharField(unique=True, max_length=60)
     sortkey = models.IntegerField(default=0)
 
@@ -159,20 +159,14 @@ class Milestone(models.Model):
 class Component(TCMSActionModel):
     id = models.AutoField(max_length=5, primary_key=True)
     name = models.CharField(max_length=64)
-    product = models.ForeignKey(Product, related_name='component')
+    product = models.ForeignKey(
+        Product, related_name='component', on_delete=models.CASCADE)
     initial_owner = models.ForeignKey(
-        'auth.User',
-        db_column='initialowner',
-        related_name='initialowner',
-        null=True
-    )
+        'auth.User', null=True, db_column='initialowner',
+        related_name='initialowner', on_delete=models.CASCADE)
     initial_qa_contact = models.ForeignKey(
-        'auth.User',
-        db_column='initialqacontact',
-        related_name='initialqacontact',
-        blank=True,
-        null=True
-    )
+        'auth.User', blank=True, null=True, db_column='initialqacontact',
+        related_name='initialqacontact', on_delete=models.CASCADE)
     description = models.TextField()
 
     # Auto-generated attributes from back-references:
@@ -189,7 +183,9 @@ class Component(TCMSActionModel):
 class Version(TCMSActionModel):
     id = models.AutoField(primary_key=True)
     value = models.CharField(max_length=192)
-    product = models.ForeignKey(Product, related_name='version')
+    product = models.ForeignKey(Product,
+                                related_name='version',
+                                on_delete=models.CASCADE)
 
     class Meta:
         db_table = u'versions'
@@ -221,11 +217,14 @@ class TestBuildManager(models.Manager):
 class TestBuild(TCMSActionModel):
     build_id = models.AutoField(max_length=10, unique=True, primary_key=True)
     name = models.CharField(max_length=255)
-    product = models.ForeignKey(Product, related_name='build')
     milestone = models.CharField(max_length=20, default='---')
     description = models.TextField(blank=True)
     is_active = NitrateBooleanField(db_column='isactive', default=True)
     objects = TestBuildManager()
+
+    product = models.ForeignKey(Product,
+                                related_name='build',
+                                on_delete=models.CASCADE)
 
     class Meta:
         db_table = u'test_builds'
@@ -294,9 +293,12 @@ class TestEnvironment(TCMSActionModel):
         max_length=10,
         primary_key=True
     )
-    product = models.ForeignKey(Product, related_name='environments')
     name = models.CharField(max_length=255, blank=True)
     is_active = models.BooleanField(db_column="isactive", default=True)
+
+    product = models.ForeignKey(Product,
+                                related_name='environments',
+                                on_delete=models.CASCADE)
 
     class Meta:
         db_table = u'test_environments'
@@ -310,8 +312,11 @@ class TestEnvironment(TCMSActionModel):
 
 class TestEnvironmentCategory(models.Model):
     env_category_id = models.AutoField(primary_key=True)
-    product = models.ForeignKey(Product, related_name='environment_categories')
     name = models.CharField(unique=True, max_length=255, blank=True)
+
+    product = models.ForeignKey(Product,
+                                related_name='environment_categories',
+                                on_delete=models.CASCADE)
 
     class Meta:
         db_table = u'test_environment_category'
@@ -323,10 +328,15 @@ class TestEnvironmentCategory(models.Model):
 
 class TestEnvironmentElement(models.Model):
     element_id = models.AutoField(max_length=10, primary_key=True)
-    env_category = models.ForeignKey(TestEnvironmentCategory)
     name = models.CharField(unique=True, max_length=255, blank=True)
-    parent = models.ForeignKey('self', null=True, related_name='parent_set')
     is_private = models.BooleanField(db_column='isprivate', default=False)
+
+    env_category = models.ForeignKey(TestEnvironmentCategory,
+                                     on_delete=models.CASCADE)
+    parent = models.ForeignKey('self',
+                               null=True,
+                               related_name='parent_set',
+                               on_delete=models.SET_NULL)
 
     class Meta:
         db_table = u'test_environment_element'
@@ -337,9 +347,11 @@ class TestEnvironmentElement(models.Model):
 
 class TestEnvironmentProperty(models.Model):
     property_id = models.IntegerField(primary_key=True)
-    element = models.ForeignKey(TestEnvironmentElement)
     name = models.CharField(unique=True, max_length=255, blank=True)
     valid_express = models.TextField(db_column='validexp', blank=True)
+
+    element = models.ForeignKey(TestEnvironmentElement,
+                                on_delete=models.CASCADE)
 
     class Meta:
         db_table = u'test_environment_property'
@@ -349,10 +361,14 @@ class TestEnvironmentProperty(models.Model):
 
 
 class TestEnvironmentMap(models.Model):
-    environment = models.ForeignKey(TestEnvironment)
-    property = models.ForeignKey(TestEnvironmentProperty)
-    element = models.ForeignKey(TestEnvironmentElement)
     value_selected = models.TextField(blank=True)
+
+    environment = models.ForeignKey(TestEnvironment,
+                                    on_delete=models.CASCADE)
+    property = models.ForeignKey(TestEnvironmentProperty,
+                                 on_delete=models.CASCADE)
+    element = models.ForeignKey(TestEnvironmentElement,
+                                on_delete=models.CASCADE)
 
     class Meta:
         db_table = u'test_environment_map'
@@ -396,12 +412,16 @@ class TestTag(TCMSActionModel):
 
 class TestAttachment(models.Model):
     attachment_id = models.AutoField(max_length=10, primary_key=True)
-    submitter = models.ForeignKey('auth.User', related_name='attachments', blank=True, null=True)
     description = models.CharField(max_length=1024, blank=True, null=True)
     file_name = models.CharField(db_column='filename', max_length=255, unique=True, blank=True)
     stored_name = models.CharField(max_length=128, unique=True, blank=True, null=True)
     create_date = models.DateTimeField(db_column='creation_ts')
     mime_type = models.CharField(max_length=100)
+
+    submitter = models.ForeignKey('auth.User',
+                                  blank=True, null=True,
+                                  related_name='attachments',
+                                  on_delete=models.SET_NULL)
 
     def __str__(self):
         return self.file_name
@@ -411,8 +431,8 @@ class TestAttachment(models.Model):
 
 
 class TestAttachmentData(models.Model):
-    attachment = models.ForeignKey(TestAttachment)
     contents = models.BinaryField(blank=True)
+    attachment = models.ForeignKey(TestAttachment, on_delete=models.CASCADE)
 
     class Meta:
         db_table = u'test_attachment_data'
@@ -424,14 +444,17 @@ class TestAttachmentData(models.Model):
 
 class TCMSEnvGroup(TCMSActionModel):
     name = models.CharField(unique=True, max_length=255)
-    manager = models.ForeignKey('auth.User', related_name='env_group_manager')
-    modified_by = models.ForeignKey(
-        'auth.User',
-        related_name='env_group_modifier',
-        blank=True,
-        null=True
-    )
     is_active = models.BooleanField(default=True)
+
+    manager = models.ForeignKey('auth.User',
+                                related_name='env_group_manager',
+                                on_delete=models.CASCADE)
+
+    modified_by = models.ForeignKey('auth.User',
+                                    blank=True, null=True,
+                                    related_name='env_group_modifier',
+                                    on_delete=models.CASCADE)
+
     property = models.ManyToManyField(
         'management.TCMSEnvProperty',
         through='management.TCMSEnvGroupPropertyMap',
@@ -465,8 +488,8 @@ class TCMSEnvProperty(TCMSActionModel):
 
 
 class TCMSEnvGroupPropertyMap(models.Model):
-    group = models.ForeignKey(TCMSEnvGroup)
-    property = models.ForeignKey(TCMSEnvProperty)
+    group = models.ForeignKey(TCMSEnvGroup, on_delete=models.CASCADE)
+    property = models.ForeignKey(TCMSEnvProperty, on_delete=models.CASCADE)
 
     class Meta:
         db_table = u'tcms_env_group_property_map'
@@ -474,8 +497,11 @@ class TCMSEnvGroupPropertyMap(models.Model):
 
 class TCMSEnvValue(TCMSActionModel):
     value = models.CharField(max_length=255)
-    property = models.ForeignKey(TCMSEnvProperty, related_name='value')
     is_active = models.BooleanField(default=True)
+
+    property = models.ForeignKey(TCMSEnvProperty,
+                                 related_name='value',
+                                 on_delete=models.CASCADE)
 
     class Meta:
         db_table = u'tcms_env_values'

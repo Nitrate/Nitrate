@@ -9,9 +9,10 @@ from django.db import models
 
 
 class UserActivateKey(models.Model):
-    user = models.ForeignKey('auth.User')
     activation_key = models.CharField(max_length=40, null=True, blank=True)
     key_expires = models.DateTimeField(null=True, blank=True)
+
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE)
 
     class Meta:
         db_table = u'tcms_user_activate_keys'

@@ -106,7 +106,8 @@ class TestCaseStatus(TCMSActionModel):
 class TestCaseCategory(TCMSActionModel):
     id = models.AutoField(db_column='category_id', primary_key=True)
     name = models.CharField(max_length=255)
-    product = models.ForeignKey('management.Product', related_name="category")
+    product = models.ForeignKey('management.Product', related_name="category",
+                                on_delete=models.CASCADE)
     description = models.TextField(blank=True)
 
     class Meta:
@@ -132,17 +133,19 @@ class TestCase(TCMSActionModel):
     estimated_time = DurationField(db_column='estimated_time', default=0)
     notes = models.TextField(blank=True)
 
-    case_status = models.ForeignKey(TestCaseStatus)
-    category = models.ForeignKey(TestCaseCategory, related_name='category_case')
-    priority = models.ForeignKey('management.Priority', related_name='priority_case')
-    author = models.ForeignKey('auth.User', related_name='cases_as_author')
-    default_tester = models.ForeignKey('auth.User',
-                                       related_name='cases_as_default_tester',
-                                       blank=True,
-                                       null=True)
-    reviewer = models.ForeignKey('auth.User',
-                                 related_name='cases_as_reviewer',
-                                 null=True)
+    case_status = models.ForeignKey(TestCaseStatus, on_delete=models.CASCADE)
+    category = models.ForeignKey(
+        TestCaseCategory, related_name='category_case', on_delete=models.CASCADE)
+    priority = models.ForeignKey(
+        'management.Priority', related_name='priority_case', on_delete=models.CASCADE)
+    author = models.ForeignKey(
+        'auth.User', related_name='cases_as_author', on_delete=models.CASCADE)
+    default_tester = models.ForeignKey(
+        'auth.User', blank=True, null=True,
+        related_name='cases_as_default_tester', on_delete=models.SET_NULL)
+    reviewer = models.ForeignKey(
+        'auth.User', blank=True, null=True,
+        related_name='cases_as_reviewer', on_delete=models.SET_NULL)
 
     attachment = models.ManyToManyField('management.TestAttachment', related_name='cases',
                                         through='testcases.TestCaseAttachment')
@@ -566,9 +569,9 @@ class TestCase(TCMSActionModel):
 
 
 class TestCaseText(TCMSActionModel):
-    case = models.ForeignKey(TestCase, related_name='text')
+    case = models.ForeignKey(TestCase, related_name='text', on_delete=models.CASCADE)
     case_text_version = models.IntegerField()
-    author = models.ForeignKey('auth.User', db_column='who')
+    author = models.ForeignKey('auth.User', db_column='who', on_delete=models.CASCADE)
     create_date = models.DateTimeField(db_column='creation_ts', auto_now_add=True)
     action = models.TextField(blank=True)
     effect = models.TextField(blank=True)
@@ -594,8 +597,8 @@ class TestCaseText(TCMSActionModel):
 
 
 class TestCasePlan(models.Model):
-    plan = models.ForeignKey('testplans.TestPlan')
-    case = models.ForeignKey(TestCase)
+    plan = models.ForeignKey('testplans.TestPlan', on_delete=models.CASCADE)
+    case = models.ForeignKey(TestCase, on_delete=models.CASCADE)
     sortkey = models.IntegerField(null=True, blank=True)
 
     # TODO: create FOREIGN KEY constraint on plan_id and case_id individually
@@ -607,11 +610,17 @@ class TestCasePlan(models.Model):
 
 
 class TestCaseAttachment(models.Model):
-    attachment = models.ForeignKey('management.TestAttachment')
-    case = models.ForeignKey(TestCase, default=None, related_name='case_attachment')
+    attachment = models.ForeignKey('management.TestAttachment',
+                                   on_delete=models.CASCADE)
+
+    case = models.ForeignKey(TestCase, default=None,
+                             related_name='case_attachment',
+                             on_delete=models.CASCADE)
+
     case_run = models.ForeignKey('testruns.TestCaseRun', default=None,
                                  null=True, blank=True,
-                                 related_name='case_run_attachment')
+                                 related_name='case_run_attachment',
+                                 on_delete=models.CASCADE)
 
     class Meta:
         db_table = u'test_case_attachments'
@@ -619,8 +628,8 @@ class TestCaseAttachment(models.Model):
 
 
 class TestCaseComponent(models.Model):
-    case = models.ForeignKey(TestCase)
-    component = models.ForeignKey('management.Component')
+    case = models.ForeignKey(TestCase, on_delete=models.CASCADE)
+    component = models.ForeignKey('management.Component', on_delete=models.CASCADE)
 
     class Meta:
         db_table = u'test_case_components'
@@ -628,8 +637,8 @@ class TestCaseComponent(models.Model):
 
 
 class TestCaseTag(models.Model):
-    tag = models.ForeignKey('management.TestTag')
-    case = models.ForeignKey(TestCase)
+    tag = models.ForeignKey('management.TestTag', on_delete=models.CASCADE)
+    case = models.ForeignKey(TestCase, on_delete=models.CASCADE)
     user = models.IntegerField(db_column='userid', default='0')
 
     class Meta:
@@ -655,10 +664,16 @@ class TestCaseBugSystem(TCMSActionModel):
 
 class TestCaseBug(TCMSActionModel):
     bug_id = models.CharField(max_length=25)
-    case_run = models.ForeignKey('testruns.TestCaseRun', default=None, blank=True, null=True,
-                                 related_name='case_run_bug')
-    case = models.ForeignKey(TestCase, related_name='case_bug')
-    bug_system = models.ForeignKey(TestCaseBugSystem, default=1)
+    case_run = models.ForeignKey('testruns.TestCaseRun', default=None,
+                                 blank=True, null=True,
+                                 related_name='case_run_bug',
+                                 on_delete=models.CASCADE)
+    case = models.ForeignKey(TestCase,
+                             related_name='case_bug',
+                             on_delete=models.CASCADE)
+    bug_system = models.ForeignKey(TestCaseBugSystem,
+                                   default=1,
+                                   on_delete=models.CASCADE)
     summary = models.CharField(max_length=255, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
 
@@ -725,7 +740,10 @@ class Contact(TCMSContentTypeBaseModel):
 
 
 class TestCaseEmailSettings(models.Model):
-    case = models.OneToOneField(TestCase, related_name='email_settings')
+    case = models.OneToOneField(TestCase,
+                                related_name='email_settings',
+                                on_delete=models.CASCADE)
+
     notify_on_case_update = models.BooleanField(default=False)
     notify_on_case_delete = models.BooleanField(default=False)
     auto_to_case_author = models.BooleanField(default=False)

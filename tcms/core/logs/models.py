@@ -12,12 +12,15 @@ from .managers import TCMSLogManager
 # Create your models here.
 
 class TCMSLogModel(TCMSContentTypeBaseModel):
-    who = models.ForeignKey('auth.User', related_name='log_who')
     date = models.DateTimeField(auto_now_add=True)
     action = models.TextField()
     field = models.CharField(max_length=50, default='')
     original_value = models.TextField(default='')
     new_value = models.TextField(default='')
+
+    who = models.ForeignKey('auth.User',
+                            related_name='log_who',
+                            on_delete=models.CASCADE)
 
     objects = TCMSLogManager()
 
