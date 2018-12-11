@@ -11,8 +11,6 @@ from django.utils import formats
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 
-from tcms.testcases.models import TestCaseBug
-from tcms.testcases.models import TestCaseBugSystem
 from tcms.testruns.models import TCMSEnvRunValueMap
 from tcms.testruns.models import TestCaseRun
 from tcms.testruns.models import TestCaseRunStatus
@@ -32,6 +30,7 @@ from tcms.tests.factories import TestRunFactory
 from tcms.tests.factories import TestTagFactory
 from tcms.tests.factories import UserFactory
 from tcms.tests.factories import VersionFactory
+from tcms.utils import HTTP_BAD_REQUEST
 
 
 class TestOrderCases(BaseCaseRun):
@@ -97,8 +96,8 @@ class TestGetRun(BaseCaseRun):
                 html=True)
             self.assertContains(
                 response,
-                '<a id="link_{0}" href="#caserun_{1}" title="Expand test case">'
-                '{2}</a>'.format(i, case_run.pk, case_run.case.summary),
+                '<a id="link_{}" href="#caserun_{}" title="Expand test case">{}</a>'
+                .format(i, case_run.pk, case_run.case.summary),
                 html=True)
 
 
@@ -1048,31 +1047,45 @@ class TestExportTestRunCases(BaseCaseRun):
         self.assertEqual(self.test_run.case_run.count(), len(case_run_nodes))
 
 
-class TestBugActions(BaseCaseRun):
-    """Test bug view method"""
+class TestIssueActions(BaseCaseRun):
+    """Test issue view method"""
 
     @classmethod
     def setUpTestData(cls):
-        super(TestBugActions, cls).setUpTestData()
+        super(TestIssueActions, cls).setUpTestData()
 
         user_should_have_perm(cls.tester, 'testruns.change_testrun')
         user_should_have_perm(cls.tester, 'testcases.delete_testcasebug')
 
-        cls.bugzilla = TestCaseBugSystem.objects.get(name='Bugzilla')
-        cls.jira = TestCaseBugSystem.objects.get(name='JIRA')
+        from tcms.integration.issuetracker.factories import IssueTrackerFactory
+        from tcms.integration.issuetracker.factories import IssueTrackerProductFactory
 
-        cls.case_run_bug_url = reverse('caserun-bug', args=[cls.test_run.pk])
+        cls.bz_tracker_product = IssueTrackerProductFactory(name='BZ')
+        cls.bugzilla = IssueTrackerFactory(
+            service_url='http://localhost/',
+            tracker_product=cls.bz_tracker_product,
+            validate_regex=r'^\d+$',
+            issue_report_endpoint='/enter_bug.cgi')
+
+        cls.jira_tracker_product = IssueTrackerProductFactory(name='ORGJIRA')
+        cls.orgjira = IssueTrackerFactory(
+            service_url='http://localhost/',
+            tracker_product=cls.jira_tracker_product,
+            validate_regex=r'^[A-Z]+-\d+$',
+            issue_report_endpoint='/createissue')
+
+        cls.case_run_issue_url = reverse('caserun-issue', args=[cls.test_run.pk])
 
         cls.bug_12345 = '12345'
         cls.jira_nitrate_100 = 'NITRATE-100'
-        cls.case_run_1.add_bug(cls.bug_12345, bug_system_id=cls.bugzilla.pk)
-        cls.case_run_1.add_bug(cls.jira_nitrate_100, bug_system_id=cls.jira.pk)
+        cls.case_run_1.add_issue(cls.bug_12345, cls.bugzilla)
+        cls.case_run_1.add_issue(cls.jira_nitrate_100, cls.orgjira)
 
     def test_404_if_case_run_id_not_exist(self):
         self.login_tester()
-        self.case_run_bug_url = reverse('caserun-bug', args=[999])
+        self.case_run_issue_url = reverse('caserun-issue', args=[999])
 
-        response = self.client.get(self.case_run_bug_url, {})
+        response = self.client.get(self.case_run_issue_url, {})
         self.assert404(response)
 
     def test_refuse_if_action_is_unknown(self):
@@ -1082,36 +1095,36 @@ class TestBugActions(BaseCaseRun):
             'a': 'unknown action',
             'case_run': self.case_run_1.pk,
             'case': self.case_run_1.case.pk,
-            'bug_system_id': TestCaseBugSystem.objects.get(name='Bugzilla').pk,
-            'bug_id': '123456',
+            'tracker': self.bz_tracker_product.pk,
+            'issue_key': '123456',
         }
 
-        response = self.client.get(self.case_run_bug_url, post_data)
-
+        response = self.client.get(self.case_run_issue_url, post_data)
         self.assertJsonResponse(
-            response,
-            {'rc': 1, 'response': 'Unrecognizable actions'})
+            response, {'messages': ['Unrecognizable actions']}, HTTP_BAD_REQUEST)
 
-    def test_remove_bug_from_case_run(self):
+    def test_remove_issue_from_case_run(self):
         self.login_tester()
 
         post_data = {
             'a': 'remove',
             'case_run': self.case_run_1.pk,
-            'bug_id': self.bug_12345,
+            'issue_key': self.bug_12345,
         }
 
-        response = self.client.get(self.case_run_bug_url, post_data)
+        response = self.client.get(self.case_run_issue_url, post_data)
 
-        bug_exists = TestCaseBug.objects.filter(
-            bug_id=self.bug_12345,
+        from tcms.integration.issuetracker.models import Issue
+        issue_exists = Issue.objects.filter(
+            issue_key=self.bug_12345,
             case=self.case_run_1.case,
-            case_run=self.case_run_1).exists()
-        self.assertFalse(bug_exists)
+            case_run=self.case_run_1,
+        ).exists()
+        self.assertFalse(issue_exists)
 
         self.assertJsonResponse(
             response,
-            {'rc': 0, 'response': 'ok', 'run_bug_count': 1})
+            {'run_issues_count': 1, 'caserun_issues_count': 1})
 
 
 class TestRemoveCaseRuns(BaseCaseRun):
@@ -1175,14 +1188,13 @@ class TestRemoveCaseRuns(BaseCaseRun):
         response = self.client.post(
             self.remove_case_run_url,
             {
-                'case_run': [case_run.pk for case_run
-                             in self.test_run.case_run.all()]
+                'case_run': [case_run.pk for case_run in self.test_run.case_run.all()]
             })
 
-        self.assertRedirects(response,
-                             reverse('add-cases-to-run',
-                                     args=[self.test_run.pk]),
-                             target_status_code=302)
+        self.assertRedirects(
+            response,
+            reverse('add-cases-to-run', args=[self.test_run.pk]),
+            target_status_code=302)
 
 
 class TestUpdateCaseRunText(BaseCaseRun):

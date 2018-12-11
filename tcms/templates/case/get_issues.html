@@ -1,14 +1,9 @@
-{% if response %}
-<div id="response">{{ response }}</div>
-{% endif %}
-
-<table id='bugs' count='{{ test_case.get_bugs.count }}' class="list" cellpadding="0" cellspacing="0" width="100%">
+<table id='issues' count='{{ test_case.get_issues.count }}' class="list" cellpadding="0" cellspacing="0" width="100%">
 	<tr>
 		<th class="widthID">Case Run ID</th>
 		<th class="widthID">Run ID</th>
 		<th>Bug URL</th>
         <th>Action</th>
-
 	</tr>
 	{% for issue in test_case.get_issues %}
 	<tr class="{% cycle 'even' 'odd' %}">
@@ -17,7 +12,8 @@
 		<td><a href="{{ issue.get_absolute_url }}">{{ issue.get_absolute_url }}</a></td>
         <td>
 			{% if perms.testcases.delete_testcasebug %}
-			<a class="remove js-remove-button" data-params='{"id": "{{ issue.bug_id }}", "caseId": "{{ test_case.pk }}", "caseRunId": "{{ issue.case_run_id|default:'' }}"}'>Remove</a>
+			<a href="javascript:void(0)" class="remove js-remove-issue"
+				data-params='{"issueKey": "{{ issue.issue_key }}", "caseId": "{{ test_case.pk }}", "caseRunId": "{{ issue.case_run_id|default:'' }}"}'>Remove</a>
 			{% else %}
 			<label class="grey">None</label>
 			{% endif %}
@@ -31,12 +27,12 @@
 	{% if perms.testcases.add_testcasebug %}
 	<tr>
 		<td colspan="4" style="padding:0;">
-			<form id="id_case_bug_form" action="{% url "case-bug" test_case.case_id %}" method="get">
+			<form id="id_case_issue_form" action="{% url "case-issue" test_case.case_id %}" method="get">
+                <input type="hidden" name="handle" value="add" />
+                <input type="hidden" name="case" value="{{ test_case.case_id }}" />
+                <input type="hidden" name="case_run" value="" />
 				<div class="addtag">
-					<span class="tit">Add Bug</span>
-					<input type="hidden" name="handle" value="add" />
-					<input type="hidden" name="case" value="{{ test_case.case_id }}" />
-					<input type="hidden" name="case_run" value="" />
+					<span class="tit">Add Issue</span>
 					<select name='tracker' class="js-issue-tracker">
 						{% for tracker in issue_trackers %}
 						<option value="{{ tracker.pk }}" data-issue-key-regex="{{ tracker.validate_regex }}">{{ tracker.name }}</option>
@@ -44,7 +40,7 @@
 					</select>
 					<input id="issue_key" class="js-issue-key" type="text" size="20" name="issue_key" />
 					<input style="display:none">
-					<a href="#bug" class="addlink js-add-bug" >Add</a>
+					<a href="javascript:void(0)" class="addlink js-add-issue">Add</a>
 				</div>
 			</form>
 		</td>

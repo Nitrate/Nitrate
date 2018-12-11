@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import
 
+import six
 import unittest
 import xml.etree.ElementTree
 
@@ -14,15 +15,16 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.forms import ValidationError
 from django.test import RequestFactory
-
 from uuslug import slugify
 
 from ..fields import MultipleEmailField
 from ..forms import CaseTagForm
+from tcms.integration.issuetracker.factories import IssueTrackerFactory
+from tcms.integration.issuetracker.factories import IssueTrackerProductFactory
+from tcms.integration.issuetracker.models import Issue
 from tcms.management.models import TestTag
 from tcms.testcases.models import TestCase
 from tcms.testcases.models import TestCaseTag
-from tcms.testcases.models import TestCaseBugSystem
 from tcms.testcases.models import TestCaseComponent
 from tcms.testcases.models import TestCasePlan
 from tcms.testcases.views import ajax_response
@@ -37,6 +39,9 @@ from tcms.tests import BasePlanCase
 from tcms.tests import remove_perm_from_user
 from tcms.tests import user_should_have_perm
 from tcms.tests import json_loads
+from tcms.tests import BaseCaseRun
+from tcms.utils import HTTP_BAD_REQUEST
+from tcms.utils import HTTP_FORBIDDEN
 
 
 class TestMultipleEmailField(unittest.TestCase):
@@ -297,10 +302,10 @@ class TestAddIssueToCase(BasePlanCase):
                                                    password='password')
         user_should_have_perm(cls.plan_tester, 'testcases.change_testcasebug')
 
-        cls.case_bug_url = reverse('case-bug', args=[cls.case_1.pk])
-        cls.issue_tracker = TestCaseBugSystem.objects.get(name='Bugzilla')
+        cls.case_issue_url = reverse('case-issue', args=[cls.case_1.pk])
+        cls.issue_tracker = IssueTrackerFactory(name='TestBZ')
 
-    def test_add_and_remove_a_bug(self):
+    def test_add_and_remove_a_issue(self):
         user_should_have_perm(self.plan_tester, 'testcases.add_testcasebug')
         user_should_have_perm(self.plan_tester, 'testcases.delete_testcasebug')
 
@@ -308,21 +313,20 @@ class TestAddIssueToCase(BasePlanCase):
         request_data = {
             'handle': 'add',
             'case': self.case_1.pk,
-            'bug_id': '123456',
-            'bug_system': self.issue_tracker.pk,
+            'issue_key': '123456',
+            'tracker': self.issue_tracker.pk,
         }
-        self.client.get(self.case_bug_url, request_data)
-        self.assertTrue(self.case_1.case_bug.filter(bug_id='123456').exists())
+        self.client.get(self.case_issue_url, request_data)
+        self.assertTrue(self.case_1.issues.filter(issue_key='123456').exists())
 
         request_data = {
             'handle': 'remove',
-            'case': self.case_1.pk,
-            'bug_id': '123456',
+            'issue_key': '123456',
         }
-        self.client.get(self.case_bug_url, request_data)
+        response = self.client.get(self.case_issue_url, request_data)
 
-        not_have_bug = self.case_1.case_bug.filter(bug_id='123456').exists()
-        self.assertTrue(not_have_bug)
+        self.assertEqual(200, response.status_code)
+        self.assertFalse(self.case_1.issues.filter(issue_key='123456').exists())
 
 
 class TestOperateCasePlans(BasePlanCase):
@@ -1036,3 +1040,151 @@ class TestAddComponent(BasePlanCase):
         self.assertEqual(2, len(components))
         self.assertEqual(self.component_cli, components[0])
         self.assertEqual(self.component_doc, components[1])
+
+
+class TestIssueManagement(BaseCaseRun):
+    """Test add and remove issue to and from a test case"""
+
+    @classmethod
+    def setUpTestData(cls):
+        super(TestIssueManagement, cls).setUpTestData()
+
+        user_should_have_perm(cls.tester, 'testcases.change_testcasebug')
+        cls.issue_manage_url = reverse('case-issue', args=[cls.case_1.pk])
+
+        cls.tracker_product = IssueTrackerProductFactory(name='BZ')
+        cls.issue_tracker = IssueTrackerFactory(
+            service_url='http://localhost/',
+            issue_report_endpoint='/enter_bug.cgi',
+            tracker_product=cls.tracker_product,
+            validate_regex=r'^\d+$',
+        )
+
+        # Used for testing removing issue from test case.
+        cls.case_2_issue_manage_url = reverse('case-issue', args=[cls.case_2.pk])
+        cls.case_2.add_issue('67890', cls.issue_tracker)
+        cls.case_2.add_issue('78901', cls.issue_tracker)
+
+    def setUp(self):
+        self.login_tester()
+
+    def tearDown(self):
+        self.client.logout()
+        remove_perm_from_user(self.tester, 'testcases.add_testcasebug')
+        remove_perm_from_user(self.tester, 'testcases.delete_testcasebug')
+
+    def test_bad_issue_key_to_remove(self):
+        user_should_have_perm(self.tester, 'testcases.delete_testcasebug')
+
+        resp = self.client.get(self.issue_manage_url, data={
+            'handle': 'remove',
+            'issue_key': '',
+            'case_run': self.case_run_1.pk,
+        })
+
+        self.assertEqual(HTTP_BAD_REQUEST, resp.status_code)
+        self.assertIn('Missing issue key to delete.', resp.json()['messages'])
+
+    def test_bad_case_run_to_remove(self):
+        user_should_have_perm(self.tester, 'testcases.delete_testcasebug')
+
+        resp = self.client.get(self.issue_manage_url, data={
+            'handle': 'remove',
+            # Whatever the issue key is, which does not impact this test.
+            'issue_key': '123456',
+            'case_run': 1000,
+        })
+
+        self.assertEqual(HTTP_BAD_REQUEST, resp.status_code)
+        self.assertIn('Test case run does not exists.', resp.json()['messages'])
+
+    def test_bad_case_run_case_rel_to_remove(self):
+        user_should_have_perm(self.tester, 'testcases.delete_testcasebug')
+
+        resp = self.client.get(self.issue_manage_url, data={
+            'handle': 'remove',
+            # Whatever the issue key is, which does not impact this test.
+            'issue_key': '123456',
+            'case_run': self.case_run_2.pk,
+        })
+
+        self.assertEqual(HTTP_BAD_REQUEST, resp.status_code)
+        self.assertIn(
+            'Case run {} is not associated with case {}.'.format(
+                self.case_run_2.pk, self.case_1.pk),
+            resp.json()['messages'])
+
+    def test_no_permission_to_add(self):
+        # Note that, required permission is not granted by default. Hence, the
+        # request should be forbidden.
+        resp = self.client.get(self.issue_manage_url, data={
+            'handle': 'add',
+            # Whatever the issue key is, which does not impact this test.
+            'issue_key': '123456',
+            'tracker': self.issue_tracker.pk,
+        })
+
+        self.assertEqual(HTTP_FORBIDDEN, resp.status_code)
+
+    def test_no_permission_to_remove(self):
+        # Note that, no permission is set for self.tester.
+        resp = self.client.get(self.issue_manage_url, data={
+            'handle': 'remove',
+            # Whatever the issue key is, which does not impact this test.
+            'issue_key': '123456',
+            'case_run': self.case_run_1.pk,
+        })
+
+        self.assertEqual(HTTP_FORBIDDEN, resp.status_code)
+
+    def test_add_an_issue(self):
+        user_should_have_perm(self.tester, 'testcases.add_testcasebug')
+
+        resp = self.client.get(self.issue_manage_url, data={
+            'handle': 'add',
+            'issue_key': '123456',
+            'case': self.case_1.pk,
+            'tracker': self.issue_tracker.pk,
+        })
+
+        self.assertEqual(200, resp.status_code)
+
+        added_issue = Issue.objects.filter(
+            issue_key='123456', case=self.case_1, case_run__isnull=True
+        ).first()
+
+        self.assertIsNotNone(added_issue)
+        self.assertIn(added_issue.get_absolute_url(), resp.json()['html'])
+
+    def test_remove_an_issue(self):
+        user_should_have_perm(self.tester, 'testcases.delete_testcasebug')
+
+        # Assert later
+        removed_issue_url = Issue.objects.filter(
+            issue_key='67890', case=self.case_2, case_run__isnull=True
+        ).first().get_absolute_url()
+
+        resp = self.client.get(self.case_2_issue_manage_url, data={
+            'handle': 'remove',
+            'issue_key': '67890',
+            'case': self.case_2.pk,
+        })
+
+        self.assertEqual(200, resp.status_code)
+
+        removed_issue = Issue.objects.filter(
+            issue_key='67890', case=self.case_2, case_run__isnull=True
+        ).first()
+
+        self.assertIsNone(removed_issue)
+        self.assertNotIn(removed_issue_url, resp.json()['html'])
+
+        # There were two issues added to self.case_2. This issue should be
+        # still there after removing the above one.
+
+        remained_issue = Issue.objects.filter(
+            issue_key='78901', case=self.case_2, case_run__isnull=True
+        ).first()
+
+        self.assertIsNotNone(remained_issue)
+        self.assertIn(remained_issue.get_absolute_url(), resp.json()['html'])

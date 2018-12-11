@@ -188,8 +188,8 @@ Nitrate.TestCases.Instance = {
 			<li id="tab_case_tag" class="tab">
 				<a href="#tag" title="tag">Tags (<span id='tag_count'>{{ test_case.tag.count }}</span>)</a>
 			</li>
-			<li id="tab_case_bug" class="tab">
-				<a href="#bug" title="bug">Bugs (<span id='case_bug_count'>{{ test_case.issues.count }}</span>)</a>
+			<li id="tab_case_issues" class="tab">
+				<a href="#issues" title="issues">Issues (<span id='case_issues_count'>{{ test_case.issues.count }}</span>)</a>
 			</li>
 			<li id="tab_case_run" class="tab">
 				<a href="#case_run" title="case_run">Case Runs (<span id='case_run_count'>{{ test_case_runs.count }}</span>)</a>
@@ -213,8 +213,8 @@ Nitrate.TestCases.Instance = {
 		<div id="tag" class="tab_list" style="display:none">
 			<div class="ajax_loading"></div>
 		</div>
-		<div id="bug" class="tab_list" style="display:none">
-			{% include "case/get_bug.html" %}
+		<div id="issues" class="tab_list" style="display:none">
+			{% include "case/get_issues.html" %}
 		</div>
 		 <div id="case_run" class="tab_list" style="display:none">
 			{% include "case/get_case_run.html" %}

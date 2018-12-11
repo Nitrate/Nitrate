@@ -79,11 +79,12 @@
 				{% endif %}
 			</div>
 			<div class="container">
-				<h4 class="borderB">bug
+				<h4 class="borderB">Issues
 					<span>
-						[ <a href="{% url "caserun-bug" test_case_run.pk %}?a=file" target="_blank" class="buglink" title="File a bug on bugzilla">File</a>&nbsp;|&nbsp;
+						[ <a href="{% url "caserun-issue" test_case_run.pk %}?a=file" target="_blank" class="buglink" title="File a bug on bugzilla">File</a>&nbsp;|&nbsp;
 						{% if perms.testcases.add_testcasebug %}
-						<a href="javascript:void(0);" title="Add" class="js-add-caserun-bug" data-params='[{{ test_case_run.run_id }}, {{ test_case_run.case_id }}, {{ test_case_run.pk }}]'>Add</a>
+						<a href="javascript:void(0);" title="Add an issue" class="js-add-caserun-issue"
+							data-params='{ "runId": {{ test_case_run.run_id }}, "caseId": {{ test_case_run.case_id }}, "caseRunId": {{ test_case_run.pk }} }'>Add</a>
 						{% endif %} ]
 					</span>
 				</h4>
@@ -98,7 +99,10 @@
 								    {% if issue.case_run_id %}
 								        <span class="grey">From Run</span><a href="{% url "run-get" issue.case_run.run_id %}">{{ issue.case_run.run_id }}</a>
 								        {% ifequal issue.case_run_id test_case_run.pk %}
-								        <a href="javascript:void(0);" title="Remove This Bug" class="js-remove-caserun-bug" data-params='[{{ test_case_run.run.pk }}, "{{ issue.issue_key }}", {{ test_case_run.case_id }}, {{ test_case_run.pk }}]'><img width="9" height="9" title="remove this bug" src="{{ STATIC_URL }}images/remove_small.png"></a>
+								        <a href="javascript:void(0);" title="Remove This Bug" class="js-remove-caserun-issue"
+											data-params='{"runId": {{ test_case_run.run.pk }}, "issueKey": "{{ issue.issue_key }}", "caseId": {{ test_case_run.case_id }}, "caseRunId": {{ test_case_run.pk }}}'>
+												<img width="9" height="9" title="Remove this issue" src="{{ STATIC_URL }}images/remove_small.png" />
+										</a>
 								        {% endifequal %}
 								    {% else %}
 								        <span class="grey">From Case</span>

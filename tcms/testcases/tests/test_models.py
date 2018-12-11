@@ -2,6 +2,8 @@
 
 from __future__ import absolute_import
 
+import six
+
 from mock import patch
 
 from django.contrib.auth.models import User
@@ -9,13 +11,15 @@ from django.core import mail
 from django.db.models.signals import post_save, post_delete, pre_save
 from django import test
 
-from ..models import TestCaseBugSystem
 from ..models import TestCaseText
 from tcms.core.utils.checksum import checksum
+from tcms.integration.issuetracker.factories import IssueTrackerFactory
+from tcms.integration.issuetracker.models import Issue
 from tcms.testcases import signals as case_watchers
 from tcms.testcases.models import TestCase
 from tcms.testcases.models import _listen
 from tcms.tests import BasePlanCase
+from tcms.tests import BaseCaseRun
 from tcms.tests.factories import ComponentFactory
 from tcms.tests.factories import TestBuildFactory
 from tcms.tests.factories import TestCaseComponentFactory
@@ -30,70 +34,96 @@ from tcms.testcases.models import TestCaseCategory
 from tcms.management.models import Priority
 
 
-class TestCaseRemoveBug(BasePlanCase):
-    """Test TestCase.remove_bug"""
+class TestCaseRemoveIssue(BasePlanCase):
+    """Test TestCase.remove_ssue"""
 
     @classmethod
     def setUpTestData(cls):
-        super(TestCaseRemoveBug, cls).setUpTestData()
+        super(TestCaseRemoveIssue, cls).setUpTestData()
         cls.build = TestBuildFactory(product=cls.product)
-        cls.test_run = TestRunFactory(product_version=cls.version, plan=cls.plan,
-                                      manager=cls.tester, default_tester=cls.tester)
-        cls.case_run = TestCaseRunFactory(assignee=cls.tester, tested_by=cls.tester,
-                                          case=cls.case, run=cls.test_run, build=cls.build)
-        cls.bug_system = TestCaseBugSystem.objects.get(name='Bugzilla')
+        cls.test_run = TestRunFactory(product_version=cls.version,
+                                      plan=cls.plan,
+                                      manager=cls.tester,
+                                      default_tester=cls.tester)
+        cls.case_run = TestCaseRunFactory(assignee=cls.tester,
+                                          tested_by=cls.tester,
+                                          case=cls.case,
+                                          run=cls.test_run,
+                                          build=cls.build)
+        cls.bz_tracker = IssueTrackerFactory(name='TestBZ')
 
     def setUp(self):
-        self.bug_id_1 = '12345678'
-        self.case.add_bug(self.bug_id_1, self.bug_system.pk,
-                          summary='error when add a bug to a case')
-        self.bug_id_2 = '10000'
-        self.case.add_bug(self.bug_id_2, self.bug_system.pk, case_run=self.case_run)
+        self.issue_key_1 = '12345678'
+        self.case.add_issue(self.issue_key_1, self.bz_tracker,
+                            summary='error when add a bug to a case')
+        self.issue_key_2 = '10000'
+        self.case.add_issue(self.issue_key_2, self.bz_tracker,
+                            case_run=self.case_run)
 
     def tearDown(self):
-        self.case.case_bug.all().delete()
+        self.case.issues.all().delete()
 
     def test_remove_case_bug(self):
-        self.case.remove_bug(self.bug_id_1)
+        self.case.remove_issue(self.issue_key_1)
 
-        bug_found = self.case.case_bug.filter(bug_id=self.bug_id_1).exists()
+        bug_found = self.case.issues.filter(
+            issue_key=self.issue_key_1).exists()
         self.assertFalse(bug_found)
 
-        bug_found = self.case.case_bug.filter(bug_id=self.bug_id_2).exists()
-        self.assertTrue(bug_found,
-                        'Bug {0} does not exist. It should not be deleted.'.format(self.bug_id_2))
+        bug_found = self.case.issues.filter(
+            issue_key=self.issue_key_2).exists()
+        self.assertTrue(
+            bug_found,
+            'Bug {} does not exist. It should not be deleted.'.format(
+                self.issue_key_2))
 
     def test_case_bug_not_removed_by_passing_case_run(self):
-        self.case.remove_bug(self.bug_id_1, run_id=self.case_run.pk)
+        self.case.remove_issue(self.issue_key_1, case_run=self.case_run.pk)
 
-        bug_found = self.case.case_bug.filter(bug_id=self.bug_id_1).exists()
-        self.assertTrue(bug_found,
-                        'Bug {0} does not exist. It should not be deleted.'.format(self.bug_id_1))
+        bug_found = self.case.issues.filter(
+            issue_key=self.issue_key_1).exists()
+        self.assertTrue(
+            bug_found,
+            'Bug {} does not exist. It should not be deleted.'.format(
+                self.issue_key_1))
 
-        bug_found = self.case.case_bug.filter(bug_id=self.bug_id_2).exists()
-        self.assertTrue(bug_found,
-                        'Bug {0} does not exist. It should not be deleted.'.format(self.bug_id_2))
+        bug_found = self.case.issues.filter(
+            issue_key=self.issue_key_2).exists()
+        self.assertTrue(
+            bug_found,
+            'Bug {} does not exist. It should not be deleted.'.format(
+                self.issue_key_2))
 
     def test_remove_case_run_bug(self):
-        self.case.remove_bug(self.bug_id_2, run_id=self.case_run.pk)
+        self.case.remove_issue(self.issue_key_2, case_run=self.case_run.pk)
 
-        bug_found = self.case.case_bug.filter(bug_id=self.bug_id_2).exists()
+        bug_found = self.case.issues.filter(
+            issue_key=self.issue_key_2).exists()
         self.assertFalse(bug_found)
 
-        bug_found = self.case.case_bug.filter(bug_id=self.bug_id_1).exists()
-        self.assertTrue(bug_found,
-                        'Bug {0} does not exist. It should not be deleted.'.format(self.bug_id_1))
+        bug_found = self.case.issues.filter(
+            issue_key=self.issue_key_1).exists()
+        self.assertTrue(
+            bug_found,
+            'Bug {} does not exist. It should not be deleted.'.format(
+                self.issue_key_1))
 
     def test_case_run_bug_not_removed_by_missing_case_run(self):
-        self.case.remove_bug(self.bug_id_2)
+        self.case.remove_issue(self.issue_key_2)
 
-        bug_found = self.case.case_bug.filter(bug_id=self.bug_id_1).exists()
-        self.assertTrue(bug_found,
-                        'Bug {0} does not exist. It should not be deleted.'.format(self.bug_id_1))
+        bug_found = self.case.issues.filter(
+            issue_key=self.issue_key_1).exists()
+        self.assertTrue(
+            bug_found,
+            'Bug {} does not exist. It should not be deleted.'.format(
+                self.issue_key_1))
 
-        bug_found = self.case.case_bug.filter(bug_id=self.bug_id_2).exists()
-        self.assertTrue(bug_found,
-                        'Bug {0} does not exist. It should not be deleted.'.format(self.bug_id_2))
+        bug_found = self.case.issues.filter(
+            issue_key=self.issue_key_2).exists()
+        self.assertTrue(
+            bug_found,
+            'Bug {} does not exist. It should not be deleted.'.format(
+                self.issue_key_2))
 
 
 class TestCaseRemoveComponent(BasePlanCase):
@@ -330,3 +360,89 @@ class TestUpdateTags(test.TestCase):
         self.case.update_tags([self.tag_python, self.tag_perl, self.tag_cpp])
         self.assertEqual({self.tag_python, self.tag_perl, self.tag_cpp},
                          set(self.case.tag.all()))
+
+
+class TestAddIssue(BaseCaseRun):
+    """Test TestCase.add_issue"""
+
+    @classmethod
+    def setUpTestData(cls):
+        super(TestAddIssue, cls).setUpTestData()
+        cls.issue_tracker = IssueTrackerFactory()
+        cls.issue_tracker_1 = IssueTrackerFactory()
+
+    def test_case_run_is_not_associated_with_case(self):
+        # self.case_run_6 is not associated with self.case
+        six.assertRaisesRegex(
+            self, ValueError, r'Case run .+ is not associated with',
+            self.case.add_issue,
+            issue_key='123456',
+            issue_tracker=self.issue_tracker,
+            case_run=self.case_run_6)
+
+    def test_issue_already_exists(self):
+        issue_key = '234567'
+        self.case_1.add_issue(issue_key=issue_key,
+                              issue_tracker=self.issue_tracker)
+
+        existing_issue = Issue.objects.get(issue_key=issue_key,
+                                           tracker=self.issue_tracker)
+
+        # Add same issue key to same issue tracker againe, no new issue should
+        # be added.
+        issue = self.case_1.add_issue(issue_key=issue_key,
+                                      issue_tracker=self.issue_tracker)
+
+        self.assertEqual(existing_issue, issue)
+
+    def test_add_issue_key_to_different_issue_tracker(self):
+        issue_key = '456789'
+        self.case_1.add_issue(issue_key=issue_key,
+                              issue_tracker=self.issue_tracker)
+        self.case_1.add_issue(issue_key=issue_key,
+                              issue_tracker=self.issue_tracker_1)
+
+        self.assertTrue(
+            Issue.objects.filter(
+                issue_key=issue_key, tracker=self.issue_tracker
+            ).exists())
+
+        self.assertTrue(
+            Issue.objects.filter(
+                issue_key=issue_key, tracker=self.issue_tracker_1
+            ).exists())
+
+    def test_add_issue_to_case(self):
+        issue_key = '123890'
+        issue = self.case_1.add_issue(issue_key=issue_key,
+                                      issue_tracker=self.issue_tracker)
+        added_issue = Issue.objects.get(issue_key=issue_key,
+                                        tracker=self.issue_tracker)
+        self.assertEqual(added_issue, issue)
+
+    def test_add_issue_to_case_run(self):
+        issue_key = '223890'
+        issue = self.case_1.add_issue(issue_key=issue_key,
+                                      issue_tracker=self.issue_tracker,
+                                      case_run=self.case_run_1)
+        added_issue = Issue.objects.get(issue_key=issue_key,
+                                        tracker=self.issue_tracker,
+                                        case_run=self.case_run_1)
+        self.assertEqual(added_issue, issue)
+
+    @patch('tcms.testcases.models.find_service')
+    def test_link_external_tracker(self, find_service):
+        tracker_service = find_service.return_value
+        issue_key = '243891'
+        self.case_1.add_issue(issue_key=issue_key,
+                              issue_tracker=self.issue_tracker,
+                              case_run=self.case_run_1,
+                              link_external_tracker=True)
+        tracker_service.add_external_tracker.assert_called_once_with(issue_key)
+
+    def test_issue_must_be_validated_before_add(self):
+        self.assertValidationError(
+            {'issue_key': r'Issue key PROJ-1 is in malformat'},
+            self.case_1.add_issue,
+            issue_key='PROJ-1',
+            issue_tracker=self.issue_tracker)

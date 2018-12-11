@@ -551,7 +551,7 @@ class CaseAutomatedForm(forms.Form):
         self.fields['case'].queryset = TestCase.objects.all()
 
 
-class CaseBugForm(forms.ModelForm):
+class CaseIssueForm(forms.ModelForm):
     case = forms.ModelChoiceField(
         queryset=TestCase.objects.all(),
         widget=forms.HiddenInput())
@@ -561,16 +561,7 @@ class CaseBugForm(forms.ModelForm):
         widget=forms.HiddenInput(),
         required=False)
 
-    #def clean(self):
-        #super(CaseBugForm, self).clean()
-        #issue_key = self.cleaned_data['issue_key']
-        #issue_tracker = self.cleaned_data['tracker']
-        #try:
-            #issue_tracker.validate_issue_key(issue_key)
-        #except ValueError as e:
-            #raise forms.ValidationError(str(e))
-
-        #return self.cleaned_data
+    link_external_tracker = forms.BooleanField(required=False)
 
     class Meta:
         model = Issue

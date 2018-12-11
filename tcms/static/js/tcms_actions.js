@@ -223,12 +223,15 @@ var default_messages = {
 
 
 // Exceptions for Ajax
-var json_failure = function(t) {
-  returnobj = jQ.parseJSON(t.responseText);
-  if (returnobj.response) {
+function json_failure(jqXHR) {
+  var responseJSON = jQ.parseJSON(jqXHR.responseText);
+  // response property will be deprecated from server response.
+  if (responseJSON.response) {
     window.alert(returnobj.response);
+  } else if (responseJSON.messages) {
+    window.alert(responseJSON.messages);
   } else {
-    window.alert(returnobj);
+    window.alert(responseJSON);
   }
   return false;
 };
@@ -1347,23 +1350,3 @@ function exportCase(url, form, table) {
 }
 
 var printableCases = exportCase;
-
-function validateIssueID(bugSystemId, bugId) {
-  if (bugSystemId == 1) {
-    var result = /^\d{1,7}$/.test(bugId);
-    if (!result) {
-      window.alert(default_messages.alert.invalid_bug_id);
-    }
-    return result;
-  } else if (bugSystemId == 2) {
-    var result = /^[A-Z0-9]+-\d+$/.test(bugId);
-    if (!result) {
-      window.alert(default_messages.alert.invalid_jira_id);
-    }
-    return result;
-  }
-}
-
-function getBugSystemId(bugId) {
-  return /^\d{1,7}$/.test(bugId) ? 1 : (/^[A-Z0-9]+-\d+$/.test(bugId) ? 2 : 3)
-}

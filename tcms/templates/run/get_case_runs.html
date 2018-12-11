@@ -41,7 +41,7 @@
 			</ul>
 		</div>
 		<div class="btnBlueCaserun">
-			<span>Bugs</span>
+			<span>Issues</span>
 			<ul>
 				<li><a href="javascript:void(0);" class="addBlue9 js-add-bugs">Add</a></li>
 				<li><a href="javascript:void(0);" class="removeBlue9 js-remove-bugs">Remove</a></li>
@@ -147,56 +147,36 @@
 		</fieldset>
 	</form>
 </div>
-<script type="text/javascript">
-/*
- * Global variable used by AddIssueDialog to add issue to a case run.
- *
- * I feel a little uncomfortable to make this variable global, but I haven't
- * found a good way to associate it with AddIssueDialog object. If you have
- * any idea to improve, please improve it. It will be appreciated.
- */
-var g_issue_trackers = [
-	{% for tracker in issue_trackers %}
-	{
-		"pk": {{ tracker.pk }},
-		"name": "{{ tracker.name }}",
-		"allow_add_case_to_issue": {%if tracker.allow_add_case_to_issue%}true{%else%}false{%endif%},
-		"validate_regex": /{{ tracker.validate_regex }}/
-	},
-	{% endfor %}
-]
-</script>
+
+<div id="add-issue-dialog" title="Add issue to case run" style="display: none">
+	<form>
+	<fieldset>
+		<div class="bug_type" id="id_issue_tracker">Issue Tracker</div>
+		<select name="issue_tracker_id" id="issue_tracker_id">
+			{% for tracker in issue_trackers %}
+			<option {% if forloop.counter == 1 %}selected{% endif %}
+                    value="{{ tracker.pk }}"
+                    data-tab="issue-tracker-{{ tracker.code_name }}"
+                    data-validate-regex="{{ tracker.validate_regex }}">{{ tracker.name }}</option>
+			{% endfor %}
+		</select>
+		{% for tracker in issue_trackers %}
+		<div id="issue-tracker-{{ tracker.code_name }}" style="{% if forloop.counter == 1 %}line-height:30px;{% else %}display:none;{% endif %}">
+			<div class="bug_id">Issue ID</div>
+			<input type="text" name="issue_key" />
+			{% if tracker.allow_add_case_to_issue %}
+			</br>
+			<input type="checkbox" name="link_external_tracker" />&nbsp;
+			<span class="use_bz_external_track">Check to add Test Cases to issue</span>
+			{% endif %}
+		</div>
+		{% endfor %}
+	</fieldset>
+	</form>
+</div>
+
 {% verbatim %}
 	<script id="add_issue_form_template" type="text/x-handlebars-template">
-		<form id="add_issue_form">
-			<input type="hidden" name="a" value="add">
-				{{#each hiddenFields}}
-					<input type="hidden" name="{{ this.name }}" value="{{ this.value }}">
-				{{/each}}
-			<div class="bug_type" id="id_issue_tracker">Issue Tracker</div>
-			<select name="issue_tracker_id" id="issue_tracker_id">
-				{{#each issue_trackers}}
-				<option value="{{ this.pk }}" data-tab="issue-tracker-{{ this.name.replace(' ', '_') }}">{{ this.name }}</option>
-				{{/each}}
-			</select>
-			</br>
-			{{#each issue_trackers}}
-			<div id="issue-tracker-{{ this.name.replace(' ', '_') }}" style="{{#unless @first}}display:none;{{/unless}}line-height:30px;">
-				<div class="bug_id">Issue ID</div>
-				<input type="text" name="issue_key">
-				{{#if this.allow_add_case_to_issue}}
-				</br>
-				<input type="checkbox" name="add_case_to_issue" value="true">&nbsp;
-				<span class="use_bz_external_track">Check to add Test Cases to issue</span>
-				{{/if}}
-			</div>
-			{{/each}}
-			</br></br>
-			<div>
-				<input type="submit" value="Add">
-				<input type="button" value="Cancel" class="js-cancel-button" >
-			</div>
-		</form>
 	</script>
 	<script id="batch_add_comment_to_caseruns_template" type="text/x-handlebars-template">
 		<ul>

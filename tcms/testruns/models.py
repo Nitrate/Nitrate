@@ -594,20 +594,25 @@ class TestCaseRun(TCMSActionModel):
 
         return scence_templates.get(field)
 
-    def add_bug(self, bug_id, bug_system_id=settings.DEFAULT_BUG_SYSTEM_ID,
-                summary=None, description=None, bz_external_track=False):
-        return self.case.add_bug(
-            bug_id=bug_id,
-            bug_system_id=bug_system_id,
+    def add_issue(self, issue_key, issue_tracker,
+                  summary=None, description=None, bz_external_track=False):
+        """Add issue to this case run
+
+        Every argument has same meaning of argument of
+        :meth:`TestCase.add_issue <tcms.testcases.models.TestCase.add_issue>`.
+        """
+        return self.case.add_issue(
+            issue_key=issue_key,
+            issue_tracker=issue_tracker,
             summary=summary,
             description=description,
             case_run=self,
-            bz_external_track=bz_external_track
+            link_external_tracker=bz_external_track,
         )
 
-    def remove_bug(self, bug_id, run_id=None):
-        # FIXME: migrate to new issue tracker
-        self.case.remove_bug(bug_id=bug_id, run_id=run_id)
+    def remove_issue(self, issue_key, case_run):
+        """Remove issue from this case run"""
+        self.case.remove_issue(issue_key, case_run=case_run)
 
     def is_finished(self):
         return self.case_run_status.is_finished()

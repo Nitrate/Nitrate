@@ -348,17 +348,17 @@ Nitrate.TestCases.Details.on_load = function() {
     deleConfirm(params.attachmentId, params.source, params.sourceId);
   });
 
-  jQ('.js-remove-button').bind('click', function(event) {
+  jQ('.js-remove-issue').bind('click', function(event) {
     var params = jQ(event.target).data('params');
-    removeCaseBug(params.id, params.caseId, params.caseRunId);
+    removeCaseIssue(params.issueKey, params.caseId, params.caseRunId);
   });
 
-  jQ('.js-add-bug').bind('click', function(event) {
-    addCaseBug(jQ('#id_case_bug_form')[0]);
+  jQ('.js-add-issue').bind('click', function(event) {
+    addCaseIssue(jQ('#id_case_issue_form')[0]);
   });
 
   jQ('#issue_key').bind('keydown', function(event) {
-    addCaseBugViaEnterKey(jQ('#id_case_bug_form')[0], event);
+    addCaseIssueViaEnterKey(jQ('#id_case_issue_form')[0], event);
   });
 };
 
@@ -747,32 +747,28 @@ function changeCasePriority(object_pk, value, callback) {
   updateObject(ctype, object_pk, field, value, vtype, callback);
 }
 
-function addCaseBug(form, callback) {
-  var addBugInfo = Nitrate.Utils.formSerialize(form);
-  addBugInfo.issue_key = addBugInfo.issue_key.trim();
+function addCaseIssue(form, callback) {
+  var addIssueInfo = Nitrate.Utils.formSerialize(form);
+  addIssueInfo.issue_key = addIssueInfo.issue_key.trim();
 
-  if (!addBugInfo.issue_key.length) {
+  var issueKeyRegex = jQ(form).find('option:selected').data('issue-key-regex');
+  if (! RegExp(issueKeyRegex).test(addIssueInfo.issue_key)) {
+    alert('Issue key is in malformat.');
+    return;
+  }
+
+  if (!addIssueInfo.issue_key.length) {
     // No bug ID input, no any response is required
     return false;
   }
 
-//   var validateRegex = jQ('.js-issue-tracker option:selected').data('issue-key-regex');
-//   var re = RegExp(validateRegex)
-//   if (!re.test(addBugInfo.issue_key)) {
-//     alert('Issue key is in malformat.');
-//     return;
-//   }
-
   var complete = function(t) {
-    jQ('.js-add-bug').bind('click', function(event) {
-      addCaseBug(jQ('#id_case_bug_form')[0]);
+    jQ('.js-add-issue').bind('click', function(event) {
+      addCaseIssue(jQ('#id_case_issue_form')[0]);
     });
-    jQ('#id_bugs').bind('keydown', function(event) {
-      addCaseBugViaEnterKey(jQ('#id_case_bug_form')[0], event);
-    });
-    jQ('.js-remove-button').bind('click', function(event) {
+    jQ('.js-remove-issue').bind('click', function(event) {
       var params = jQ(event.target).data('params');
-      removeCaseBug(params.id, params.caseId, params.caseRunId);
+      removeCaseIssue(params.issueKey, params.caseId, params.caseRunId);
     });
     if (jQ('#response').length) {
       window.alert(jQ('#response').html());
@@ -782,57 +778,65 @@ function addCaseBug(form, callback) {
     if (callback) {
       callback();
     }
-    jQ('#case_bug_count').text(jQ('table#bugs').attr('count'));
+    jQ('#case_issues_count').text(jQ('table#issues').attr('count'));
   };
 
   jQ.ajax({
-    'url': form.action,
-    'type': form.method,
-    'data': addBugInfo,
-    'success': function (data, textStatus, jqXHR) {
-      jQ('#bug').html(data);
+    url: form.action,
+    type: form.method,
+    data: addIssueInfo,
+    dataType: 'json',
+    success: function (responseJSON, textStatus, jqXHR) {
+      jQ('#issues').html(responseJSON.html);
     },
-    'complete': function () {
-      complete();
+    complete: function (jqXHR, textStatus) {
+      if (textStatus !== 'error') {
+        complete();
+      }
+    },
+    error: function(jqXHR, textStatus, errorThrown) {
+      json_failure(jqXHR);
     }
   });
 }
 
-function removeCaseBug(id, case_id, case_run_id) {
-  if(!window.confirm('Are you sure to remove the bug?')) {
+function removeCaseIssue(issue_key, case_id, case_run_id) {
+  if(!window.confirm('Are you sure to remove issue $id?'.replace('$id', issue_key))) {
     return false;
   }
 
-  var parameteres = { 'handle': 'remove', 'id': id, 'run_id': case_run_id };
+  var parameteres = {
+    'handle': 'remove',
+    'issue_key': issue_key,
+    'case_run': case_run_id
+  };
 
   var complete = function(t) {
-    jQ('.js-remove-button').bind('click', function(event) {
+    jQ('.js-remove-issue').bind('click', function(event) {
       var params = jQ(event.target).data('params');
-      removeCaseBug(params.id, params.caseId, params.caseRunId);
+      removeCaseIssue(params.issueKey, params.caseId, params.caseRunId);
     });
-    jQ('.js-add-bug').bind('click', function(event) {
-      addCaseBug(jQ('#id_case_bug_form')[0]);
-    });
-    jQ('#id_bugs').bind('keydown', function(event) {
-      addCaseBugViaEnterKey(jQ('#id_case_bug_form')[0], event);
+    jQ('.js-add-issue').bind('click', function(event) {
+      addCaseIssue(jQ('#id_case_issue_form')[0]);
     });
 
-    if (jQ('#response').length) {
-      window.alert(jQ('#response').html());
-      return false;
-    }
-    jQ('#case_bug_count').text(jQ('table#bugs').attr('count'));
+    jQ('#case_issue_count').text(jQ('table#issues').attr('count'));
   };
 
   jQ.ajax({
-    'url': '/case/' + case_id + '/bug/',
+    'url': '/case/' + case_id + '/issue/',
     'type': 'GET',
     'data': parameteres,
     'success': function (data, textStatus, jqXHR) {
-      jQ('#bug').html(data);
+      jQ('#issues').html(data);
     },
-    'complete': function () {
-      complete();
+    'complete': function (jqXHR, textStatus) {
+      if (textStatus !== 'error') {
+        complete();
+      }
+    },
+    'error': function(jqXHR, textStatus, errorThrown) {
+      json_failure(jqXHR);
     }
   });
 }
@@ -1236,9 +1240,9 @@ function toggleDiv(link, divId) {
   }
 }
 
-function addCaseBugViaEnterKey(element, e) {
+function addCaseIssueViaEnterKey(element, e) {
   if (e.keyCode == 13) {
-    addCaseBug(element);
+    addCaseIssue(element);
   }
 }
 

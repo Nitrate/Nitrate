@@ -6,6 +6,7 @@ from django.contrib import admin
 from django.views.i18n import JavaScriptCatalog
 
 from tcms.testruns import views as testruns_views
+from tcms.testruns import ajax as testruns_ajax
 from tcms.core import ajax as tcms_core_ajax
 
 # XML RPC handler
@@ -32,8 +33,9 @@ urlpatterns = [
     url(r'^runs/', include('tcms.testruns.urls.runs_urls')),
 
     url(r'^caseruns/$', testruns_views.caseruns),
-    url(r'^caserun/(?P<case_run_id>\d+)/bug/$', testruns_views.bug,
-        name='caserun-bug'),
+    url(r'^caserun/(?P<case_run_id>\d+)/issue/$',
+        testruns_ajax.manage_case_run_issues,
+        name='caserun-issue'),
     url(r'^caserun/comment-many/', tcms_core_ajax.comment_case_runs,
         name='caserun-comment-caseruns'),
     url(r'^caserun/update-bugs-for-many/',

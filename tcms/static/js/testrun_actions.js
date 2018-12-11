@@ -3,10 +3,10 @@ Nitrate.TestRuns.List = {};
 Nitrate.TestRuns.Details = {};
 Nitrate.TestRuns.New = {};
 Nitrate.TestRuns.Edit = {};
-Nitrate.TestRuns.Execute = {}
+Nitrate.TestRuns.Execute = {};
 Nitrate.TestRuns.Clone = {};
 Nitrate.TestRuns.ChooseRuns = {};
-Nitrate.TestRuns.AssignCase = {}
+Nitrate.TestRuns.AssignCase = {};
 
 Nitrate.TestRuns.List.on_load = function() {
   bind_version_selector_to_product(true, jQ('#id_product')[0]);
@@ -70,7 +70,150 @@ Nitrate.TestRuns.List.on_load = function() {
   });
 };
 
+
+/*
+ * Show the number of case run's issues in run statistics after adding issue to
+ * a case run.
+ *
+ * Args:
+ * newIssuesCount: the number of case run's issues.
+ * runId: test run ID to construct report URL if there is issue added.
+ */
+function showTheNumberOfCaseRunIssues(newIssuesCount, runId) {
+  if (newIssuesCount === 0) {
+    jQ('div#run-statistics')
+      .find('span#total_run_issues_count')
+      .html('No Issues');
+  } else {
+    // NOTE: Construct this HTML would be not good. Probably we could refresh
+    //       the run statistics section with an AJAX call to server-side API.
+    //       This could be also a good point for creating a reusable run
+    //       statistics API for general use.
+    var runReportUrl = '/run/' + runId + '/report/#buglist';
+    jQ('div#run-statistics')
+      .find('span#total_run_issues_count')
+      .html('<a title="Show All Issues" href=' + runReportUrl + '>Issues [' + newIssuesCount + ']</a>');
+  }
+}
+
+
+function updateIssuesCountInCaseRunRow(caseRunRow, caseRunIssuesCount) {
+  var caseRunIssuesCountSpan = jQ(caseRunRow).find('span[id$="_case_bug_count"]');
+  caseRunIssuesCountSpan.text(caseRunIssuesCount);
+  if (caseRunIssuesCount > 0) {
+    caseRunIssuesCountSpan.addClass('have_bug');
+  } else {
+    caseRunIssuesCountSpan.removeClass('have_bug');
+  }
+}
+
+
+function AddIssueDialog() {
+  this.dialog = jQ('#add-issue-dialog').dialog({
+    autoOpen: false,
+    resizable: false,
+    modal: true,
+
+    beforeClose: function(event, ui) {
+      // Whenever dialog is closed, previous input issue key should be cleared
+      // in order to not confuse user when use next time.
+      jQ(this).find('input:text').val('');
+    },
+
+    buttons: {
+      Add: function() {
+        var dialog = jQ(this);
+        var selectedIssueTracker = dialog
+            .find('select[id="issue_tracker_id"] option:selected');
+        var issueTrackerID = selectedIssueTracker.val();
+        var validateRegex = selectedIssueTracker.data('validate-regex');
+        var issueInputSection = dialog.find('div#' + selectedIssueTracker.data('tab'));
+
+        var issueKey = issueInputSection.find('input[name="issue_key"]').val();
+        var optLinkExternalTracker = issueInputSection.find('input[name="link_external_tracker"]');
+        var addIssueInfo = dialog.dialog('option', 'addIssueInfo');
+
+        if (! new RegExp(validateRegex).test(issueKey)) {
+          window.alert('Issue key is malformated.');
+          return;
+        }
+
+        var data = {
+          'a': 'add',
+          'issue_key': issueKey,
+          'tracker': issueTrackerID,
+          'case_run': addIssueInfo.caseRunId,
+          'case':addIssueInfo.caseId
+        };
+
+        // If selected issue tracker has option "add case to issue's external
+        // tracker", handle it. If no, just ignore it.
+        if (optLinkExternalTracker.length > 0 && optLinkExternalTracker[0].checked) {
+          data.link_external_tracker = 'on';
+        }
+
+        jQ.ajax({
+          url: '/caserun/' + addIssueInfo.caseRunId + '/issue/',
+          // FIXME: should be POST
+          method: 'get',
+          dataType: 'json',
+          data: data,
+
+          // After adding an issue successfully, number of issues inside the run
+          // page has to be updated and reload case run detail content eventually.
+          success: function(responseJSON, textStatus, jqXHR) {
+            // After succeeding to add issue, we close the add dialog.
+            dialog.dialog('close');
+
+            var caseRunReloadInfo = dialog.dialog('option', 'caseRunReloadInfo');
+
+            // Update issues count associated with just updated case run
+            updateIssuesCountInCaseRunRow(caseRunReloadInfo.caseRunRow, responseJSON.caserun_issues_count);
+            showTheNumberOfCaseRunIssues(responseJSON.run_issues_count, addIssueInfo.runId);
+
+            constructCaseRunZone(caseRunReloadInfo.caseRunDetailRow,
+                                 caseRunReloadInfo.caseRunRow,
+                                 addIssueInfo.caseId);
+          },
+
+          error: function(jqXHR, textStatus, errorThrown) {
+            json_failure(jqXHR);
+          }
+        });
+      },
+
+      Cancel: function() {
+        jQ(this).dialog('close');
+      }
+    }
+  });
+}
+
+AddIssueDialog.prototype.open = function(addIssueInfo, reloadInfo) {
+  var dialog = this.dialog;
+
+  dialog.dialog('option', 'title', 'Add issue to case run ' + addIssueInfo.caseRunId);
+  dialog.dialog('option', 'caseRunReloadInfo', reloadInfo);
+  dialog.dialog('option', 'addIssueInfo', addIssueInfo);
+
+  // Switch issue tracker tab
+  dialog.find('#issue_tracker_id').change(function (event) {
+    dialog.find('div[id^="issue-tracker-"]').filter(function () {
+      return jQ(this).css('display') === 'block';
+    }).toggle();
+
+    var tabIdToShow = jQ('#issue_tracker_id option:selected').data('tab');
+    dialog.find('#' + tabIdToShow).toggle();
+  });
+
+  dialog.dialog('open');
+};
+
+
 Nitrate.TestRuns.Details.on_load = function() {
+
+  var addIssueDialog = new AddIssueDialog();
+
   // Observe the interface buttons
   if (jQ('#id_sort').length) {
     jQ('#id_sort').bind('click', taggleSortCaseRun);
@@ -148,13 +291,21 @@ Nitrate.TestRuns.Details.on_load = function() {
       c_container.find('.js-show-changelog').bind('click', function() {
         toggleDiv(this, jQ(this).data('param'));
       });
-      c_container.find('.js-add-caserun-bug').bind('click', function(){
-        var params = jQ(this).data('params');
-        addCaseRunBug(params[0], c[0], c_container[0], params[1], params[2]);
+      c_container.find('.js-add-caserun-issue').bind('click', function() {
+        var addIssueInfo = jQ(this).data('params');
+        var caseRunReloadInfo = {
+          caseRunRow: c[0],
+          caseRunDetailRow: c_container[0]
+        };
+        addIssueDialog.open(addIssueInfo, caseRunReloadInfo);
       });
-      c_container.find('.js-remove-caserun-bug').bind('click', function(){
-        var params = jQ(this).data('params');
-        removeCaseRunBug(params[0], c[0], c_container[0], params[1], params[2], params[3]);
+      c_container.find('.js-remove-caserun-issue').bind('click', function(){
+        var removeIssueInfo = jQ(this).data('params');
+        var caseRunReloadInfo = {
+          caseRunRow: c[0],
+          caseRunDetailRow: c_container[0]
+        };
+        removeIssueFromCaseRun(caseRunReloadInfo, removeIssueInfo);
       });
       c_container.find('.js-add-testlog').bind('click', function(){
         var params = jQ(this).data('params');
@@ -600,219 +751,29 @@ function constructCaseRunZone(container, title_container, case_id) {
 }
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////
-////////   AddIssueDialog Definition //////////////
+function removeIssueFromCaseRun(caseRunReloadInfo, removeIssueInfo) {
+  if (removeIssueInfo.issueKey === undefined || removeIssueInfo.issueKey === '')
+    throw new Error('Missing issue key to remove.');
 
-
-/*
- * Dialog to allow user to add sort of issue keys to case run(s).
- *
- * Here, issue key is a general to whatever the issue tracker system is.
- * Currently, two issue tracker systems get supported, Bugzilla and Jira.
- *
- * options:
- * @param extraFormHiddenData: used for providing extra data for specific AJAX request.
- * @param onSubmit: callback function when user click Add button
- */
-/*
- * FIXME: which namespace is proper to hold this dialog class?
- */
-function AddIssueDialog(options) {
-  this.onSubmit = options.onSubmit;
-  if (this.onSubmit !== undefined && typeof this.onSubmit !== "function") {
-    throw new Error("onSubmit should be a function object.");
-  }
-  this.extraFormHiddenData = options.extraFormHiddenData;
-  if (this.extraFormHiddenData !== undefined && typeof this.extraFormHiddenData !== "object") {
-    throw new Error("extraFormHiddenData sould be an object if present.");
-  }
-}
-
-
-AddIssueDialog.prototype.show = function () {
-  var dialog = jQ("#dialog")[0];
-  if (dialog == null) {
-    throw new Error("No HTML element with ID dialog. This should not happen in the runtime.");
-  }
-
-  var hiddenPart = [];
-  if (this.extraFormHiddenData !== undefined) {
-    for (var name_attr in this.extraFormHiddenData) {
-      hiddenPart.push({'name': name_attr, 'value': this.extraFormHiddenData[name_attr]});
-    }
-  }
-
-  var template = Handlebars.compile(jQ("#add_issue_form_template").html());
-  var context = {'hiddenFields': hiddenPart, 'issue_trackers': g_issue_trackers};
-  jQ('#dialog').html(template(context))
-    .find('.js-cancel-button').bind('click', function() {
-      jQ('#dialog').hide();
-    })
-    .end().show();
-
-  this.previousVisibleIssueSystem = "issue-tracker-" + g_issue_trackers[0].name;
-  this.form = jQ("#add_issue_form")[0];
-
-  // Used for following event callbacks to ref this dialog's instance
-  var that = this;
-
-  // Switch issue tracker panel
-  jQ('#issue_tracker_id').change(function (e) {
-    var tabName = jQ('#issue_tracker_id option:selected').data('tab');
-    jQ('#add_issue_form').find('#' + that.previousVisibleIssueSystem).toggle();
-    jQ('#add_issue_form').find('#' + tabName).toggle();
-    that.previousVisibleIssueSystem = tabName;
-  });
-
-  // Set custom callback functions
-  if (this.onSubmit !== undefined) {
-    jQ(this.form).bind('submit', function (form_event) {
-      that.onSubmit(form_event, that);
-    });
-  }
-};
-
-AddIssueDialog.prototype.get_data = function () {
-  var form_data = Nitrate.Utils.formSerialize(this.form);
-
-  var selected_tracker_name = jQ('#issue_tracker_id option:selected').text();
-  var tracker_panel_name = '#issue-tracker-' + selected_tracker_name.replace(' ', '-');
-  form_data.issue_key = jQ(tracker_panel_name).find('[name="issue_key"]').val().trim();
-  return form_data;
-};
-
-//// end of AddIssueDialog definition /////////
-/////////////////////////////////////////////////////////////////////////////////////////////
-
-function addCaseRunBug(run_id, title_container, container, case_id, case_run_id, callback) {
-  var dialog = new AddIssueDialog({
-    'extraFormHiddenData': { 'case_run': case_run_id, 'case': case_id },
-
-    'onSubmit': function (e, dialog) {
-      e.stopPropagation();
-      e.preventDefault();
-
-      var form_data = dialog.get_data();
-
-      if (!form_data.issue_key.length) {
-        return;
-      }
-
-      var selected_tracker_id = parseInt(jQ('#issue_tracker_id option:selected').val());
-      var tracker_info = null;
-      // Find selected issue tracker info.
-      for (var i = 0; i < g_issue_trackers.length; i++) {
-        if (selected_tracker_id === g_issue_trackers[i].pk) {
-          tracker_info = g_issue_trackers[i];
-          break;
-        }
-      }
-      if (tracker_info === null) {
-        alert('This should not happen, but it happens. No issue tracker info is found. ' +
-          'Is id ' + selected_tracker_id + ' correct?');
-        return;
-      }
-
-      if (!tracker_info.validate_regex.test(form_data.issue_key)) {
-        alert('Issue key is not invalid.');
-        return false;
-      }
-
-      var success_callback = function(t) {
-        jQ('#dialog').hide();
-        var returnobj = t;
-
-        if (returnobj.rc === 0) {
-          if (callback) {
-            return callback();
-          }
-
-          // Update bugs count associated with just updated case run
-          var jqCaserunBugCount = jQ('span#' + case_run_id + '_case_bug_count');
-          if (jqCaserunBugCount.text() === '0') {
-            jqCaserunBugCount.addClass('have_bug');
-          }
-          jqCaserunBugCount.text(returnobj.caserun_bugs_count);
-
-          // Update the total bugs count of this run
-          var html = null;
-          if (jQ('span#total_run_bug_count a').text() === 'No Bugs') {
-            html = "<a title='Show All Bugs' href='/run/" + run_id + "/report/#buglist'>Bugs [" + returnobj.run_bug_count + "]</a>";
-            jQ('span#total_run_bug_count').html(html);
-          } else {
-            html = "Bugs [" + returnobj.run_bug_count + "]";
-            jQ('span#total_run_bug_count a').html(html);
-          }
-
-          return constructCaseRunZone(container, title_container, case_id);
-        } else {
-          window.alert(returnobj.response);
-          return false;
-        }
-      };
-
-      var url = Nitrate.http.URLConf.reverse({
-        'name': 'case_run_bug',
-        'arguments': {'id': case_run_id}
-      });
-
-      jQ.ajax({
-        url: url,
-        dataType: 'json',
-        data: form_data,
-        success: success_callback
-      });
-    }
-  });
-
-  dialog.show();
-}
-
-
-function removeCaseRunBug(run_id, title_container, container, bug_id, case_id, case_run_id, callback) {
-  if (!bug_id) {
-    return false;
-  }
-
-  if (!window.confirm('Are you sure to remove the bug?')) {
-    return false;
-  }
-
-  var url = '/caserun/' + case_run_id + '/bug/';
-  var parameters = { 'a': 'remove', 'case_run': case_run_id, 'bug_id': bug_id };
-  var success = function(t) {
-    var returnobj = jQ.parseJSON(t.responseText);
-
-    if (!returnobj.rc) {
-      if (callback) {
-        return callback();
-      }
-      //update bug count
-      jQ('span#' + case_run_id + '_case_bug_count')
-        .text(window.parseInt(jQ('span#' + case_run_id + '_case_bug_count').text()) - 1);
-      if (jQ('span#' + case_run_id + '_case_bug_count').text() == '0') {
-        jQ('span#' + case_run_id + '_case_bug_count').removeClass('have_bug');
-      }
-      if (returnobj.run_bug_count == 0) {
-        jQ('span#total_run_bug_count').html("<a>No Bugs</a>");
-      } else {
-        jQ('span#total_run_bug_count a').html("Bugs [" + returnobj.run_bug_count + "]");
-      }
-      return constructCaseRunZone(container, title_container, case_id);
-    } else {
-      window.alert(returnobj.response);
-      return false;
-    }
-  };
+  if (! window.confirm('Are you sure to remove issue ' + removeIssueInfo.issueKey + ' ?'))
+    return;
 
   jQ.ajax({
-    'url': url,
-    'type': 'GET',
-    'data': parameters,
-    'success': function(data, textStatus, jqXHR) {
-      success(jqXHR);
+    url: '/caserun/' + removeIssueInfo.caseRunId + '/issue/',
+    data: {
+      'a': 'remove',
+      'case_run': removeIssueInfo.caseRunId,
+      'issue_key': removeIssueInfo.issueKey
     },
-    'error': function(jqXHR, textStatus, errorThrown) {
+    dataType: 'json',
+    success: function(responseJSON, textStatus, jqXHR) {
+      showTheNumberOfCaseRunIssues(responseJSON.run_issues_count, removeIssueInfo.runId);
+      updateIssuesCountInCaseRunRow(caseRunReloadInfo.caseRunRow, responseJSON.caserun_issues_count);
+      constructCaseRunZone(caseRunReloadInfo.caseRunDetailRow,
+                           caseRunReloadInfo.caseRunRow,
+                           removeIssueInfo.caseId);
+    },
+    error: function(jqXHR, textStatus, errorThrown) {
       json_failure(jqXHR);
     }
   });

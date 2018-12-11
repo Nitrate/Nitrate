@@ -132,7 +132,7 @@ class IssueTrackerService(object):
                       description=description)
         issue.full_clean()
         issue.save()
-        if add_case_to_issue:
+        if self.tracker_model.allow_add_case_to_issue and add_case_to_issue:
             self.add_external_tracker(issue)
         return issue
 

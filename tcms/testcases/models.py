@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import logging
+import six
+
 from datetime import datetime
 from html2text import html2text
 
@@ -17,8 +20,7 @@ from tcms.core.models.fields import DurationField
 from tcms.core.utils.checksum import checksum
 from tcms.core.utils.timedeltaformat import format_timedelta
 from tcms.integration.issuetracker.models import Issue
-from tcms.integration.issuetracker.models import IssueTracker
-from tcms.integration.issuetracker.services import IssueTrackerService
+from tcms.integration.issuetracker.services import find_service
 from tcms.testcases import signals as case_watchers
 
 
@@ -32,6 +34,8 @@ AUTOMATED_CHOICES = (
     (1, 'Auto'),
     (2, 'Both'),
 )
+
+log = logging.getLogger(__name__)
 
 
 class NoneText:
@@ -336,22 +340,60 @@ class TestCase(TCMSActionModel):
 
         return scence_templates.get(field)
 
-    def add_bug(self, issue_key, issue_tracker,
-                summary=None, description=None,
-                case_run=None, bz_external_track=False):
-        if issue_tracker.issues.filter(issue_key=issue_key).exists():
-            raise ValueError('Bug %s already exist.' % bug_id)
+    def add_issue(self, issue_key, issue_tracker,
+                  summary=None, description=None,
+                  case_run=None, link_external_tracker=False):
+        """Add issue to case or case run
 
-        Issue.objects.create(issue_key=issue_key,
-                             tracker=issue_tracker,
-                             case=self,
-                             case_run=case_run,
-                             summary=summary,
-                             description=description)
+        :param str issue_key: issue key to add.
+        :param issue_tracker: to which the issue is added.
+        :type issue_tracker:
+            :class:`IssueTracker <tcms.integration.issuetracker.models.IssueTracker>`
+        :param str summary: issue's summary. It's optional.
+        :param str description: a longer description for the issue. It's
+            optional.
+        :param case_run: If specified, that means issue is added to a test case
+            run and also associated with this case. If omitted, it just means
+            issue is added to this case only.
+        :type case_run: :class:`TestCaseRun <tcms.testruns.models.TestCaseRun>`
+        :param bool link_external_tracker: whether to add the issue to issue
+            tracker's external tracker just after issue is added. Default to
+            not to do that.
+        :return: newly created issue. If issue already exists (checking the
+            existence of issue key), nothing changes and just return
+            immediately with None.
+        :rtype: :class:`Issue <tcms.integration.issuetracker.models.Issue>`
+        :raises ValueError: if passed case run is not associated with this case.
 
-        if bz_external_track:
-            service = IssueTrackerService.get(issue_tracker)
+        .. versionchanged:: 4.2
+           ``bug_id`` is replaced with ``issue_key``. ``bug_system_id`` is
+           replaced with ``issue_tracker``.
+        """
+        if case_run and case_run.case != self:
+            raise ValueError('Case run {} is not associated with case {}'
+                             .format(case_run, self))
+
+        existing_issue = Issue.objects.filter(
+            issue_key=issue_key, tracker=issue_tracker
+        ).only('issue_key').first()
+        if existing_issue is not None:
+            log.info('Issue %s already exist. Skip add.', issue_key)
+            return existing_issue
+
+        issue = Issue(issue_key=issue_key,
+                      tracker=issue_tracker,
+                      case=self,
+                      case_run=case_run,
+                      summary=summary,
+                      description=description)
+        issue.full_clean()
+        issue.save()
+
+        if link_external_tracker:
+            service = find_service(issue_tracker)
             service.add_external_tracker(issue_key)
+
+        return issue
 
     def add_component(self, component):
         """Add a component
@@ -450,7 +492,11 @@ class TestCase(TCMSActionModel):
         return format_timedelta(self.estimated_time)
 
     def get_issues(self):
-        return Issue.objects.filter(case__pk=self.pk).select_related('tracker')
+        return (
+            Issue.objects.filter(case__pk=self.pk)
+            .select_related('tracker')
+            .order_by('pk')
+        )
 
     get_bugs = get_issues
 
@@ -538,20 +584,44 @@ class TestCase(TCMSActionModel):
         to = list(set(to))
         mailto(template, subject, to, context, request)
 
-    def remove_bug(self, issue_key, case_run=None):
-        """Remove bug from this case or case run together
+    def remove_issue(self, issue_key, case_run=None):
+        """Remove issue from this case or case run together
 
         :param str issue_key: Issue key to be removed.
         :param case_run: object of TestCaseRun or an integer representing a
             test case run pk. If omitted, only remove issue key from this case.
-        :type case_run: :class:`TestCaseRun` or int
+        :type case_run: :class:`TestCaseRun <tcms.testruns.models.TestCaseRun>`
+            or int
+        :return: True if issue is removed, otherwise False is returned.
+        :rtype: bool
+        :raises TypeError: if type of argument ``case_run`` is not recognized.
+        :raises ValueError: if test case run represented by argument ``case_run`` is
+            not associated with this case.
         """
-        q = Issue.objects.filter(issue_key=issue_key, case=self)
+        from tcms.testruns.models import TestCaseRun
+
+        if case_run is not None:
+            if isinstance(case_run, TestCaseRun):
+                case_run_id = case_run.pk
+                rel_exists = case_run.case == self
+            elif isinstance(case_run, six.integer_types):
+                case_run_id = case_run
+                rel_exists = TestCaseRun.objects.filter(
+                    pk=case_run, case=self).exists()
+            else:
+                raise TypeError('Argument case_run should be an object of '
+                                'TestCaseRun or an int.')
+            if not rel_exists:
+                raise ValueError('Case run {} is not associated with case {}.'
+                                 .format(case_run_id, self.pk))
+
+        criteria = {'issue_key': issue_key, 'case': self}
         if case_run is None:
-            q = q.filter(case_run__isnull=True)
+            criteria['case_run__isnull'] = True
         else:
-            q = q.filter(case_run=case_run)
-        q.delete()
+            criteria['case_run'] = case_run
+        num_deletes, _ = Issue.objects.filter(**criteria).delete()
+        return num_deletes > 0
 
     def remove_component(self, component):
         TestCaseComponent.objects.filter(case=self, component=component).delete()

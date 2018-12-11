@@ -4,28 +4,29 @@ import json
 import six
 import sys
 
-from six.moves import http_client
 from six.moves.urllib_parse import urlparse, parse_qs
 
 from django import test
 from django.contrib.auth.models import Permission
 from django.contrib.auth.models import User
 
-from tcms.testruns.models import TestCaseRunStatus
 from tcms.testcases.models import TestCaseStatus
+from tcms.testruns.models import TestCaseRunStatus
 from tcms.tests.factories import ProductFactory
+from tcms.tests.factories import TestBuildFactory
 from tcms.tests.factories import TestCaseFactory
 from tcms.tests.factories import TestCaseRunFactory
 from tcms.tests.factories import TestPlanFactory
 from tcms.tests.factories import TestRunFactory
 from tcms.tests.factories import UserFactory
 from tcms.tests.factories import VersionFactory
-from tcms.tests.factories import TestBuildFactory
+from tcms.utils import HTTP_NOT_FOUND
 
 __all__ = (
     'user_should_have_perm',
     'remove_perm_from_user',
     'BasePlanCase',
+    'BaseCaseRun',
     'encode_if_py3',
 )
 
@@ -110,7 +111,7 @@ class HelperAssertions(object):
     """Helper assertion methods"""
 
     def assert404(self, response):
-        self.assertEqual(http_client.NOT_FOUND, response.status_code)
+        self.assertEqual(HTTP_NOT_FOUND, response.status_code)
 
     def assertJsonResponse(self, response, expected, status_code=200):
         self.assertEqual(status_code, response.status_code)

@@ -216,6 +216,10 @@ class IssueTracker(TCMSActionModel):
     def get_absolute_url(self):
         return self.service_url
 
+    @property
+    def code_name(self):
+        return self.name.replace(' ', '_')
+
     @classmethod
     def get_by_case(cls, case):
         """Find out issue trackers for a case"""
@@ -425,7 +429,8 @@ class Issue(TCMSActionModel):
             MaxLengthValidator(
                 50,
                 'Issue key has too many characters. '
-                'It must have at most 50 characters.')])
+                'It should have 50 characters at most.')
+        ])
 
     summary = models.CharField(
         max_length=255,
@@ -459,9 +464,8 @@ class Issue(TCMSActionModel):
     class Meta:
         db_table = 'issue_tracker_issues'
         unique_together = (
-            ('tracker', 'issue_key'),
-            ('issue_key', 'case'),
-            ('issue_key', 'case', 'case_run'),
+            ('tracker', 'issue_key', 'case'),
+            ('tracker', 'issue_key', 'case', 'case_run'),
         )
 
     def get_absolute_url(self):

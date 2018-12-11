@@ -12,7 +12,7 @@ urlpatterns = [
     url(r'^(?P<case_id>\d+)/history/$', views.text_history, name='case-text-history'),
     url(r'^(?P<case_id>\d+)/attachment/$', views.attachment, name='case-attachment'),
     url(r'^(?P<case_id>\d+)/log/$', views.get_log, name='case-get-log'),
-    url(r'^(?P<case_id>\d+)/bug/$', views.bug, name='case-bug'),
+    url(r'^(?P<case_id>\d+)/issue/$', views.manage_case_issues, name='case-issue'),
     url(r'^(?P<case_id>\d+)/plan/$', views.plan, name='case-plan'),
     url(r'^(?P<case_id>\d+)/readonly-pane/$', views.SimpleTestCaseView.as_view(),
         name='case-readonly-pane'),

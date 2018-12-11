@@ -3,9 +3,9 @@
 import datetime
 import itertools
 import json
-import re
-import time
+import logging
 import six
+import time
 
 from six.moves import urllib
 
@@ -14,7 +14,6 @@ from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.db.models import Count
@@ -33,8 +32,6 @@ from django.views.generic.base import View
 
 from django_comments.models import Comment
 
-from tcms.core.exceptions import NitrateException
-from tcms.core.utils.bugtrackers import Bugzilla
 from tcms.core.utils import clean_request
 from tcms.core.utils import DataTableResult
 from tcms.core.utils.raw_sql import RawSQL
@@ -44,7 +41,6 @@ from tcms.core.views import Prompt
 from tcms.management.models import Priority, TCMSEnvValue, TestTag
 from tcms.search.forms import RunForm
 from tcms.search.query import SmartDjangoQuery
-from tcms.testcases.forms import CaseBugForm
 from tcms.testcases.models import TestCase
 from tcms.testcases.models import TestCasePlan, TestCaseStatus
 from tcms.testcases.views import get_selected_testcases
@@ -57,8 +53,9 @@ from tcms.testruns.forms import NewRunForm, SearchRunForm, EditRunForm, RunClone
 from tcms.testruns.helpers.serializer import TCR2File
 from tcms.testruns.models import TestRun, TestCaseRun, TestCaseRunStatus, TCMSEnvRunValueMap
 
-
 MODULE_NAME = "testruns"
+
+logger = logging.getLogger(__name__)
 
 
 @require_POST
@@ -826,121 +823,6 @@ class TestRunReportView(TemplateView, TestCaseRunDataMixin):
         })
 
         return context
-
-
-@require_GET
-@permission_required('testruns.change_testrun')
-def bug(request, case_run_id, template_name='run/execute_case_run.html'):
-    """Process the bugs for case runs."""
-
-    class CaseRunBugActions(object):
-        __all__ = ['add', 'file', 'remove', 'render_form']
-        bugzilla_regex = re.compile(r'^\d{1,7}$')
-        jira_regex = re.compile(r'^[A-Z0-9]+-\d+$')
-
-        def __init__(self, request, case_run, template_name):
-            self.request = request
-            self.case_run = case_run
-            self.template_name = template_name
-            self.default_ajax_response = {'rc': 0, 'response': 'ok'}
-
-        def add(self):
-            # TODO: make a migration for the permission
-            if not self.request.user.has_perm('testcases.add_testcasebug'):
-                response = {'rc': 1, 'response': 'Permission denied'}
-                return self.ajax_response(response=response)
-
-            issue_key = request.GET.get('issue_key')
-            issue_tracker_id = request.GET.get('issue_tracker_id')
-
-            from tcms.integration.issuetracker.models import Issue
-            from tcms.integration.issuetracker.models import IssueTracker
-            from tcms.integration.issuetracker.models import IssueTrackerService
-
-            tracker = get_object_or_404(IssueTracker, pk=issue_tracker_id)
-
-            add_case_to_issue = 'true' == request.GET.get(
-                'allow_add_case_to_issue', None)
-
-            try:
-                service = IssueTrackerService.get(tracker)
-                service.add_issue(issue_key, tcr.case, case_run=tcr,
-                                  add_case_to_issue=add_case_to_issue)
-            except ValidationError as e:
-                return self.ajax_response({
-                    'rc': 1,
-                    'response': e.messages,
-                })
-
-            self.default_ajax_response.update({
-                'run_bug_count': self.get_run_issues_count(),
-                'caserun_bugs_count': self.case_run.issues.count(),
-            })
-            return self.ajax_response()
-
-        def ajax_response(self, response=None):
-            if not response:
-                response = self.default_ajax_response
-            return JsonResponse(response)
-
-        def file(self):
-            from tcms.integration.issuetracker.services import find_service
-            from tcms.integration.issuetracker.models import IssueTracker
-
-            # This name should be get from rendered webpage dynamically.
-            # It is hardcoded as a temporary solution right now.
-            # FIXME: name here should be RHBugzilla in final solution.
-            bz_model = IssueTracker.objects.get(name='Bugzilla')
-            # An eventual solution would be to just call this method
-            # and pass loaded issue tracker name.
-            url = find_service(bz_model).make_issue_report_url(self.case_run)
-
-            return HttpResponseRedirect(url)
-
-        def remove(self):
-            if not self.request.user.has_perm('testcases.delete_testcasebug'):
-                response = {'rc': 1, 'response': 'Permission denied'}
-                return self.render(response=response)
-
-            try:
-                issue_key = self.request.GET.get('issue_key')
-                case_run = self.request.GET.get('case_run')
-                self.case_run.remove_bug(issue_key, case_run)
-            except ObjectDoesNotExist as error:
-                response = {'rc': 1, 'response': str(error)}
-                return self.ajax_response(response=response)
-
-            self.default_ajax_response[
-                'run_bug_count'] = self.get_run_bug_count()
-            return self.ajax_response()
-
-        def render_form(self):
-            form = CaseBugForm(initial={
-                'case_run': self.case_run.case_run_id,
-                'case': self.case_run.case_id,
-            })
-            if self.request.GET.get('type') == 'table':
-                return HttpResponse(form.as_table())
-
-            return HttpResponse(form.as_p())
-
-        def get_run_issues_count(self):
-            run = self.case_run.run
-            return run.get_issues_count()
-
-    tcr = get_object_or_404(TestCaseRun, pk=case_run_id)
-
-    crba = CaseRunBugActions(request=request,
-                             case_run=tcr,
-                             template_name=template_name)
-
-    if not request.GET.get('a') in crba.__all__:
-        return crba.ajax_response(response={
-            'rc': 1,
-            'response': 'Unrecognizable actions'})
-
-    func = getattr(crba, request.GET['a'])
-    return func()
 
 
 @require_POST
