@@ -1,30 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import re
 import tcms.integration.issuetracker.factories as f
+
 from django import test
-from django.core.exceptions import ValidationError
+from tcms.tests import HelperAssertions
 
 
-class Assertions(object):
-
-    def assertValidationError(self, field, message_regex, func, *args, **kwargs):
-        """Assert django.core.exceptions.ValidationError is raised with expected message"""
-        try:
-            func(*args, **kwargs)
-        except Exception as e:
-            self.assertIsInstance(
-                e, ValidationError, 'Exception {} is not a ValidationError.'.format(e))
-            self.assertIn(field, e.message_dict,
-                          'Field {} is not included in errors.'.format(field))
-            matches = [re.search(message_regex, item) is not None
-                       for item in e.message_dict[field]]
-            self.assertTrue(any(matches), 'Expected match message is not included.')
-        else:
-            self.fail('ValidationError is not raised.')
-
-
-class TestIssueTrackerValidation(Assertions, test.TestCase):
+class TestIssueTrackerValidation(HelperAssertions, test.TestCase):
 
     @classmethod
     def setUpTestData(cls):

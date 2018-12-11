@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+import re
 import six
 import sys
 
@@ -9,6 +10,7 @@ from six.moves.urllib_parse import urlparse, parse_qs
 from django import test
 from django.contrib.auth.models import Permission
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 
 from tcms.testcases.models import TestCaseStatus
 from tcms.testruns.models import TestCaseRunStatus
@@ -133,6 +135,21 @@ class HelperAssertions(object):
         self.assertEqual(expected_url.netloc, url.netloc)
         self.assertEqual(expected_url.path, url.path)
         self.assertEqual(parse_qs(expected_url.query), parse_qs(url.query))
+
+    def assertValidationError(self, field, message_regex, func, *args, **kwargs):
+        """Assert django.core.exceptions.ValidationError is raised with expected message"""
+        try:
+            func(*args, **kwargs)
+        except Exception as e:
+            self.assertIsInstance(
+                e, ValidationError, 'Exception {} is not a ValidationError.'.format(e))
+            self.assertIn(field, e.message_dict,
+                          'Field {} is not included in errors.'.format(field))
+            matches = [re.search(message_regex, item) is not None
+                       for item in e.message_dict[field]]
+            self.assertTrue(any(matches), 'Expected match message is not included.')
+        else:
+            self.fail('ValidationError is not raised.')
 
 
 class BasePlanCase(HelperAssertions, test.TestCase):

@@ -442,7 +442,9 @@ class TestAddIssue(BaseCaseRun):
 
     def test_issue_must_be_validated_before_add(self):
         self.assertValidationError(
-            {'issue_key': r'Issue key PROJ-1 is in malformat'},
+            'issue_key',
+            r'Issue key PROJ-1 is in malformat',
             self.case_1.add_issue,
             issue_key='PROJ-1',
-            issue_tracker=self.issue_tracker)
+            issue_tracker=self.issue_tracker,
+        )
