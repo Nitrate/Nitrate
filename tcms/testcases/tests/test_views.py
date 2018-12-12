@@ -312,7 +312,6 @@ class TestAddIssueToCase(BasePlanCase):
         self.client.login(username=self.plan_tester.username, password='password')
         request_data = {
             'handle': 'add',
-            'case': self.case_1.pk,
             'issue_key': '123456',
             'tracker': self.issue_tracker.pk,
         }

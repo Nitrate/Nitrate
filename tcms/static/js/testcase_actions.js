@@ -747,17 +747,18 @@ function changeCasePriority(object_pk, value, callback) {
   updateObject(ctype, object_pk, field, value, vtype, callback);
 }
 
-function addCaseIssue(form, callback) {
-  var addIssueInfo = Nitrate.Utils.formSerialize(form);
-  addIssueInfo.issue_key = addIssueInfo.issue_key.trim();
+function addCaseIssue(form) {
+  var addIssueForm = jQ(form);
+  var issueKey = addIssueForm.find('input#issue_key').val().trim();
 
-  var issueKeyRegex = jQ(form).find('option:selected').data('issue-key-regex');
-  if (! RegExp(issueKeyRegex).test(addIssueInfo.issue_key)) {
-    alert('Issue key is in malformat.');
+  var selectedIssueTrackerOption = addIssueForm.find('option:selected');
+  var issueKeyRegex = selectedIssueTrackerOption.data('issue-key-regex');
+  if (! RegExp(issueKeyRegex).test(issueKey)) {
+    alert('Issue key is malformat.');
     return;
   }
 
-  if (!addIssueInfo.issue_key.length) {
+  if (!issueKey.length) {
     // No bug ID input, no any response is required
     return false;
   }
@@ -783,8 +784,13 @@ function addCaseIssue(form, callback) {
 
   jQ.ajax({
     url: form.action,
-    type: form.method,
-    data: addIssueInfo,
+    // URL has the case ID, hence no need to pass case ID again through request
+    // data.
+    data: {
+      handle: 'add',
+      issue_key: issueKey,
+      tracker: parseInt(selectedIssueTrackerOption.val())
+    },
     dataType: 'json',
     success: function (responseJSON, textStatus, jqXHR) {
       jQ('#issues').html(responseJSON.html);

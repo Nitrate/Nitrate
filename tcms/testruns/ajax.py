@@ -14,7 +14,7 @@ from django.views.decorators.http import require_GET
 
 from tcms.integration.issuetracker.models import IssueTracker
 from tcms.integration.issuetracker.services import find_service
-from tcms.testcases.forms import CaseIssueForm
+from tcms.testcases.forms import CaseRunIssueForm
 from tcms.testruns.models import TestCaseRun
 from tcms.utils import HTTP_BAD_REQUEST
 from tcms.utils import HTTP_FORBIDDEN
@@ -44,7 +44,7 @@ def manage_case_run_issues(request, case_run_id):
                 return JsonResponse({'messages': ['Permission denied.']},
                                     status=HTTP_FORBIDDEN)
 
-            form = CaseIssueForm(request.GET)
+            form = CaseRunIssueForm(request.GET)
 
             if not form.is_valid():
                 msgs = form_errors_to_list(form)
@@ -52,10 +52,11 @@ def manage_case_run_issues(request, case_run_id):
 
             try:
                 service = find_service(form.cleaned_data['tracker'])
+                case_run = form.cleaned_data['case_run']
                 service.add_issue(
                     form.cleaned_data['issue_key'],
-                    form.cleaned_data['case'],
-                    case_run=form.cleaned_data['case_run'],
+                    case_run.case,
+                    case_run=case_run,
                     add_case_to_issue=form.cleaned_data['link_external_tracker'])
             except ValidationError as e:
                 logger.exception(

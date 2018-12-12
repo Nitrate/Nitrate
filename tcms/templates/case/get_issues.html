@@ -28,9 +28,6 @@
 	<tr>
 		<td colspan="4" style="padding:0;">
 			<form id="id_case_issue_form" action="{% url "case-issue" test_case.case_id %}" method="get">
-                <input type="hidden" name="handle" value="add" />
-                <input type="hidden" name="case" value="{{ test_case.case_id }}" />
-                <input type="hidden" name="case_run" value="" />
 				<div class="addtag">
 					<span class="tit">Add Issue</span>
 					<select name='tracker' class="js-issue-tracker">

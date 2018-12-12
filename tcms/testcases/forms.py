@@ -3,17 +3,18 @@
 from __future__ import absolute_import
 
 from django import forms
+from django.core.validators import MaxLengthValidator
 
 from tinymce.widgets import TinyMCE
+
+from .fields import MultipleEmailField
+from .models import AUTOMATED_CHOICES as FULL_AUTOMATED_CHOICES
+from .models import TestCase, TestCaseCategory, TestCaseStatus
 from tcms.core.forms import UserField, DurationField, StripURLField
-from tcms.core.exceptions import NitrateException
+from tcms.integration.issuetracker.models import IssueTracker
+from tcms.management.models import Priority, Product, Component, TestTag
 from tcms.testplans.models import TestPlan
 from tcms.testruns.models import TestCaseRun
-from tcms.management.models import Priority, Product, Component, TestTag
-from .models import TestCase, TestCaseCategory, TestCaseStatus
-from .models import TestCaseBug, AUTOMATED_CHOICES as FULL_AUTOMATED_CHOICES
-from .fields import MultipleEmailField
-from tcms.integration.issuetracker.models import Issue
 
 AUTOMATED_CHOICES = (
     (0, 'Manual'),
@@ -551,21 +552,75 @@ class CaseAutomatedForm(forms.Form):
         self.fields['case'].queryset = TestCase.objects.all()
 
 
-class CaseIssueForm(forms.ModelForm):
+class BaseAddIssueForm(forms.Form):
+    """Base form for adding an issue
+
+    Case app has a URL to add an issue to a test case, which has case ID inside
+    URL, for example, /case/id/issue/. Hence, adding an issue from Webpage does
+    not need to pass case ID via request data.
+
+    However, XMLRPC call does not have such a URL, instead, case ID must be
+    passed via arguments. This is the major reason why form is separated into
+    different forms for different use cases. Refer to following form subclasses
+    derived from this base form.
+    """
+    issue_key = forms.CharField(
+        error_messages={
+            'required': 'Issue key is missed.'
+        }
+    )
+    summary = forms.CharField(
+        required=False,
+        validators=[
+            MaxLengthValidator(
+                255,
+                'Summary is too long. Only 255 characters are accepted at most.')
+        ]
+    )
+    description = forms.CharField(
+        required=False,
+        validators=[
+            MaxLengthValidator(
+                255,
+                'Description is too long. Only 255 characters are accepted at most.')
+        ]
+    )
+    tracker = forms.ModelChoiceField(
+        queryset=IssueTracker.objects.all(),
+        error_messages={
+            'required': 'Issue tracker is missed.',
+            'invalid_choice': 'Invalid issue tracker that does not exist.'
+        }
+    )
+
+
+class CaseIssueForm(BaseAddIssueForm):
+    """
+    Form for adding an issue to a case especially used for validating XMLRPC
+    arguments.
+
+    When call XMLRPC API to add an issue to a case, case ID must be passed via
+    argument.
+    """
     case = forms.ModelChoiceField(
         queryset=TestCase.objects.all(),
-        widget=forms.HiddenInput())
+        error_messages={
+            'required': 'Case ID is missed.',
+            'invalid_choice': 'Invalid test case that does not exist.'
+        }
+    )
 
+
+class CaseRunIssueForm(BaseAddIssueForm):
+    """Form for adding an issue to a case run"""
     case_run = forms.ModelChoiceField(
         queryset=TestCaseRun.objects.all(),
-        widget=forms.HiddenInput(),
-        required=False)
-
+        error_messages={
+            'required': 'Case run ID is missed.',
+            'invalid_choice': 'Invalid test case run that does not exist.'
+        }
+    )
     link_external_tracker = forms.BooleanField(required=False)
-
-    class Meta:
-        model = Issue
-        fields = '__all__'
 
 
 class CaseComponentForm(forms.Form):

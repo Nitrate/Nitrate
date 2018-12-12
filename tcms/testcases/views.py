@@ -1812,7 +1812,9 @@ def manage_case_issues(request, case_id, template_name='case/get_issues.html'):
                 return JsonResponse({'messages': ['Permission denied.']},
                                     status=HTTP_FORBIDDEN)
 
-            form = CaseIssueForm(request.GET)
+            request_data = request.GET.copy()
+            request_data.update({'case': self.case.pk})
+            form = CaseIssueForm(request_data)
             if not form.is_valid():
                 return JsonResponse({'messages': form_errors_to_list(form)},
                                     status=HTTP_BAD_REQUEST)

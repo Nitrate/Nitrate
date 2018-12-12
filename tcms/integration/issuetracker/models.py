@@ -450,7 +450,11 @@ class Issue(TCMSActionModel):
     case = models.ForeignKey(
         'testcases.TestCase',
         related_name='issues',
-        help_text='A test case this issue is associated with.')
+        help_text='A test case this issue is associated with.',
+        error_messages={
+            'required': 'Case is missed.'
+        }
+    )
     case_run = models.ForeignKey(
         'testruns.TestCaseRun',
         null=True,

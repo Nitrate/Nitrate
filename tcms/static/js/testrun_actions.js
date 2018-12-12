@@ -143,7 +143,6 @@ function AddIssueDialog() {
           'issue_key': issueKey,
           'tracker': issueTrackerID,
           'case_run': addIssueInfo.caseRunId,
-          'case':addIssueInfo.caseId
         };
 
         // If selected issue tracker has option "add case to issue's external
