@@ -9,21 +9,22 @@ from six.moves.http_client import NOT_IMPLEMENTED
 from datetime import datetime
 
 from tcms.core.contrib.linkreference.models import LinkReference
-from tcms.xmlrpc.api import testcaserun
-from tcms.xmlrpc.tests.utils import make_http_request
+from tcms.integration.issuetracker.factories import IssueTrackerFactory
+from tcms.integration.issuetracker.factories import IssueTrackerProductFactory
+from tcms.integration.issuetracker.models import Issue
 from tcms.testruns.models import TestCaseRunStatus
-from tcms.testcases.models import TestCaseBugSystem
-
 from tcms.tests import encode_if_py3
 from tcms.tests.factories import ProductFactory
+from tcms.tests.factories import TestBuildFactory
 from tcms.tests.factories import TestCaseFactory
 from tcms.tests.factories import TestCaseRunFactory
 from tcms.tests.factories import TestPlanFactory
 from tcms.tests.factories import TestRunFactory
 from tcms.tests.factories import UserFactory
 from tcms.tests.factories import VersionFactory
-from tcms.tests.factories import TestBuildFactory
+from tcms.xmlrpc.api import testcaserun
 from tcms.xmlrpc.tests.utils import XmlrpcAPIBaseTest
+from tcms.xmlrpc.tests.utils import make_http_request
 
 
 class TestCaseRunCreate(XmlrpcAPIBaseTest):
@@ -229,8 +230,8 @@ class TestCaseRunAddComment(XmlrpcAPIBaseTest):
         self.assertIsNone(comment)
 
 
-class TestCaseRunAttachBug(XmlrpcAPIBaseTest):
-    """Test testcaserun.attach_bug"""
+class TestCaseRunAttachIssue(XmlrpcAPIBaseTest):
+    """Test testcaserun.attach_issue"""
 
     @classmethod
     def setUpTestData(cls):
@@ -240,18 +241,22 @@ class TestCaseRunAttachBug(XmlrpcAPIBaseTest):
                                               user_perm='testcases.add_testcasebug')
         cls.staff_request = make_http_request(user=cls.staff)
         cls.case_run = TestCaseRunFactory()
-        cls.bug_system_jira = TestCaseBugSystem.objects.get(name='JIRA')
-        cls.bug_system_bz = TestCaseBugSystem.objects.get(name='Bugzilla')
 
-    def test_attach_bug_with_no_perm(self):
-        self.assertRaisesXmlrpcFault(FORBIDDEN, testcaserun.attach_bug, self.staff_request, {})
+        cls.tracker_product = IssueTrackerProductFactory(name='MyBugzilla')
+        cls.tracker = IssueTrackerFactory(
+            service_url='http://localhost/',
+            issue_report_endpoint='/enter_bug.cgi',
+            tracker_product=cls.tracker_product)
+
+    def test_attach_issue_with_no_perm(self):
+        self.assertRaisesXmlrpcFault(FORBIDDEN, testcaserun.attach_issue, self.staff_request, {})
 
     @unittest.skip('TODO: not implemented yet.')
-    def test_attach_bug_with_incorrect_type_value(self):
+    def test_attach_issue_with_incorrect_type_value(self):
         pass
 
     @unittest.skip('TODO: fix code to make this test pass.')
-    def test_attach_bug_with_no_required_args(self):
+    def test_attach_issue_with_no_required_args(self):
         values = [
             {
                 "summary": "This is summary.",
@@ -265,72 +270,107 @@ class TestCaseRunAttachBug(XmlrpcAPIBaseTest):
             },
         ]
         for value in values:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.attach_bug,
+            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.attach_issue,
                                          self.admin_request, value)
 
-    def test_attach_bug_with_required_args(self):
-        bug = testcaserun.attach_bug(self.admin_request, {
-            "case_run_id": self.case_run.pk,
-            "bug_id": '1',
-            "bug_system_id": self.bug_system_bz.pk,
+    def test_attach_issue_with_required_args(self):
+        bug = testcaserun.attach_issue(self.admin_request, {
+            "case_run": self.case_run.pk,
+            "issue_key": '1',
+            "tracker": self.tracker.pk,
         })
         self.assertIsNone(bug)
 
-        bug = testcaserun.attach_bug(self.admin_request, {
-            "case_run_id": self.case_run.pk,
-            "bug_id": "TCMS-123",
-            "bug_system_id": self.bug_system_jira.pk,
+        self.assertTrue(Issue.objects.filter(
+            issue_key='1',
+            case=self.case_run.case,
+            case_run=self.case_run,
+            tracker=self.tracker.pk
+        ).exists())
+
+    def test_attach_issue_with_all_fields(self):
+        issue_summary = 'This is summary.'
+        issue_description = 'This is description.'
+        bug = testcaserun.attach_issue(self.admin_request, {
+            "case_run": self.case_run.pk,
+            "issue_key": '2',
+            "tracker": self.tracker.pk,
+            "summary": issue_summary,
+            "description": issue_description,
         })
         self.assertIsNone(bug)
 
-    def test_attach_bug_with_all_fields(self):
-        bug = testcaserun.attach_bug(self.admin_request, {
-            "case_run_id": self.case_run.pk,
-            "bug_id": '2',
-            "bug_system_id": self.bug_system_bz.pk,
-            "summary": "This is summary.",
-            "description": "This is description."
-        })
-        self.assertIsNone(bug)
+        added_issue = Issue.objects.filter(
+            issue_key='2',
+            case=self.case_run.case,
+            case_run=self.case_run,
+            tracker=self.tracker.pk
+        ).first()
 
-    def test_succeed_to_attach_bug_by_passing_extra_data(self):
-        testcaserun.attach_bug(self.admin_request, {
-            "case_run_id": self.case_run.pk,
-            "bug_id": '1200',
-            "bug_system_id": self.bug_system_bz.pk,
+        self.assertIsNotNone(added_issue)
+        self.assertEqual(issue_summary, added_issue.summary)
+        self.assertEqual(issue_description, added_issue.description)
+
+    def test_succeed_to_attach_issue_by_passing_extra_data(self):
+        testcaserun.attach_issue(self.admin_request, {
+            "case_run": self.case_run.pk,
+            "issue_key": '1200',
+            "tracker": self.tracker.pk,
             "summary": "This is summary.",
             "description": "This is description.",
             "FFFF": "aaa"
         })
-        bugs_added = self.case_run.case.case_bug.filter(
-            bug_id='1200', bug_system=self.bug_system_bz.pk).count()
-        self.assertEqual(1, bugs_added)
 
-    def test_attach_bug_with_non_existing_case_run(self):
+        self.assertTrue(Issue.objects.filter(
+            issue_key='1200',
+            case=self.case_run.case,
+            case_run=self.case_run,
+            tracker=self.tracker.pk
+        ).exists())
+
+    def test_attach_issue_with_non_existing_case_run(self):
         value = {
-            "case_run_id": 111111111,
-            "bug_id": '2',
-            "bug_system_id": self.bug_system_bz.pk,
+            "case_run": 111111111,
+            "issue_key": '2',
+            "tracker": self.tracker.pk,
         }
-        self.assertRaisesXmlrpcFault(NOT_FOUND, testcaserun.attach_bug, self.admin_request, value)
+        self.assertRaisesXmlrpcFault(
+            BAD_REQUEST,
+            testcaserun.attach_issue, self.admin_request, value)
 
-    def test_attach_bug_with_non_existing_bug_system(self):
+    def test_attach_issue_with_non_existing_bug_system(self):
         value = {
-            "case_run_id": self.case_run.pk,
-            "bug_id": '2',
-            "bug_system_id": 111111111,
+            "case_run": self.case_run.pk,
+            "issue_key": '2',
+            "tracker": 111111111,
         }
-        self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.attach_bug, self.admin_request, value)
+        self.assertRaisesXmlrpcFault(
+            BAD_REQUEST,
+            testcaserun.attach_issue, self.admin_request, value)
 
-    def test_attach_bug_with_chinese(self):
-        bug = testcaserun.attach_bug(self.admin_request, {
-            "case_run_id": self.case_run.pk,
-            "bug_id": '12',
-            "bug_system_id": self.bug_system_bz.pk,
+    def test_attach_issue_with_chinese(self):
+        issue_summary = '你好，中国'
+        issue_description = '中国是一个具有悠久历史的文明古国'
+
+        bug = testcaserun.attach_issue(self.admin_request, {
+            "case_run": self.case_run.pk,
+            "issue_key": '12',
+            "tracker": self.tracker.pk,
             "summary": "你好，中国",
             "description": "中国是一个具有悠久历史的文明古国"
         })
         self.assertIsNone(bug)
+
+        added_issue = Issue.objects.filter(
+            issue_key='12',
+            case=self.case_run.case,
+            case_run=self.case_run,
+            tracker=self.tracker.pk
+        ).first()
+
+        self.assertIsNotNone(added_issue)
+        self.assertEqual(issue_summary, added_issue.summary)
+        self.assertEqual(issue_description, added_issue.description)
 
 
 class TestCaseRunAttachLog(XmlrpcAPIBaseTest):
@@ -393,7 +433,8 @@ class TestCaseRunCheckStatus(XmlrpcAPIBaseTest):
         self.assertRaisesXmlrpcFault(NOT_FOUND, testcaserun.check_case_run_status, None, "ABCDEFG")
 
 
-class TestCaseRunDetachBug(XmlrpcAPIBaseTest):
+class TestCaseRunDetachIssue(XmlrpcAPIBaseTest):
+    """Test detach_issue"""
 
     @classmethod
     def setUpTestData(cls):
@@ -404,34 +445,43 @@ class TestCaseRunDetachBug(XmlrpcAPIBaseTest):
         cls.staff_request = make_http_request(user=cls.staff,
                                               user_perm='testcases.add_testcasebug')
 
-        cls.bug_system_bz = TestCaseBugSystem.objects.get(name='Bugzilla')
-        cls.bug_system_jira = TestCaseBugSystem.objects.get(name='JIRA')
+        cls.tracker_product = IssueTrackerProductFactory(name='MyBZ')
+        cls.bz_tracker = IssueTrackerFactory(
+            service_url='http://localhost/',
+            issue_report_endpoint='/enter_bug.cgi',
+            tracker_product=cls.tracker_product,
+            validate_regex=r'^\d+$')
+        cls.jira_tracker = IssueTrackerFactory(
+            service_url='http://localhost/',
+            issue_report_endpoint='/enter_bug.cgi',
+            tracker_product=cls.tracker_product,
+            validate_regex=r'^[A-Z]+-\d+$')
         cls.case_run = TestCaseRunFactory()
 
     def setUp(self):
-        self.bug_id = '67890'
-        testcaserun.attach_bug(self.staff_request, {
-            'case_run_id': self.case_run.pk,
-            'bug_id': self.bug_id,
-            'bug_system_id': self.bug_system_bz.pk,
+        self.bz_bug = '67890'
+        testcaserun.attach_issue(self.staff_request, {
+            'case_run': self.case_run.pk,
+            'issue_key': self.bz_bug,
+            'tracker': self.bz_tracker.pk,
             'summary': 'Testing TCMS',
             'description': 'Just foo and bar',
         })
 
         self.jira_key = 'AWSDF-112'
-        testcaserun.attach_bug(self.staff_request, {
-            'case_run_id': self.case_run.pk,
-            'bug_id': self.jira_key,
-            'bug_system_id': self.bug_system_jira.pk,
+        testcaserun.attach_issue(self.staff_request, {
+            'case_run': self.case_run.pk,
+            'issue_key': self.jira_key,
+            'tracker': self.jira_tracker.pk,
             'summary': 'Testing TCMS',
             'description': 'Just foo and bar',
         })
 
     def tearDown(self):
-        self.case_run.case.case_bug.all().delete()
+        self.case_run.case.issues.all().delete()
 
-    @unittest.skip('TODO: fix get_bugs_s to make this test pass.')
-    def test_detach_bug_with_no_args(self):
+    @unittest.skip('TODO: fix get_issues_s to make this test pass.')
+    def test_detach_issue_with_no_args(self):
         bad_args = (None, [], {}, ())
         for arg in bad_args:
             self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.detach_bug,
@@ -439,35 +489,37 @@ class TestCaseRunDetachBug(XmlrpcAPIBaseTest):
             self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.detach_bug,
                                          self.admin_request, self.case_run.pk, arg)
 
-    def test_detach_bug_with_non_exist_id(self):
-        original_links_count = self.case_run.case.case_bug.count()
-        testcaserun.detach_bug(self.admin_request, 9999999, '123456')
-        self.assertEqual(original_links_count, self.case_run.case.case_bug.count())
+    def test_detach_issue_with_non_exist_id(self):
+        original_links_count = self.case_run.case.issues.count()
+        testcaserun.detach_issue(self.admin_request, 9999999, '123456')
+        self.assertEqual(original_links_count, self.case_run.case.issues.count())
 
     @unittest.skip('Refer to #148.')
-    def test_detach_bug_with_non_exist_bug(self):
-        original_links_count = self.case_run.case.case_bug.count()
-        nonexisting_bug = '{0}111'.format(self.bug_id)
+    def test_detach_issue_with_non_exist_bug(self):
+        original_links_count = self.case_run.case.issues.count()
+        nonexisting_bug = '{0}111'.format(self.bz_bug)
         testcaserun.detach_bug(self.admin_request, self.case_run.pk, nonexisting_bug)
-        self.assertEqual(original_links_count, self.case_run.case.case_bug.count())
+        self.assertEqual(original_links_count, self.case_run.case.issues.count())
 
     @unittest.skip('Refer to #148.')
-    def test_detach_bug(self):
-        testcaserun.detach_bug(self.admin_request, self.case_run.pk, self.bug_id)
-        self.assertFalse(self.case_run.case.case_bug.filter(bug_id=self.bug_id).exists())
+    def test_detach_issue(self):
+        testcaserun.detach_bug(self.admin_request, self.case_run.pk, self.bz_bug)
+        self.assertFalse(
+            self.case_run.case.issues.filter(issue_key=self.bz_bug).exists())
 
-    @unittest.skip('TODO: fix get_bugs_s to make this test pass.')
-    def test_detach_bug_with_illegal_args(self):
+    @unittest.skip('TODO: fix get_issues_s to make this test pass.')
+    def test_detach_issue_with_illegal_args(self):
         bad_args = ("AAAA", ['A', 'B', 'C'], dict(A=1, B=2), True, False, (1, 2, 3, 4), -100)
         for arg in bad_args:
             self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.detach_bug,
-                                         self.admin_request, arg, self.bug_id)
+                                         self.admin_request, arg, self.bz_bug)
             self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.detach_bug,
                                          self.admin_request, self.case_run.pk, arg)
 
     def test_detach_bug_with_no_perm(self):
-        self.assertRaisesXmlrpcFault(FORBIDDEN, testcaserun.detach_bug,
-                                     self.staff_request, self.case_run.pk, self.bug_id)
+        self.assertRaisesXmlrpcFault(
+            FORBIDDEN, testcaserun.detach_issue,
+            self.staff_request, self.case_run.pk, self.bz_bug)
 
 
 class TestCaseRunDetachLog(XmlrpcAPIBaseTest):
@@ -485,7 +537,7 @@ class TestCaseRunDetachLog(XmlrpcAPIBaseTest):
         testcaserun.attach_log(None, self.case_run.pk, 'Related issue', 'https://localhost/issue/1')
         self.link = self.case_run.links.all()[0]
 
-    @unittest.skip('TODO: fix get_bugs_s to make this test pass.')
+    @unittest.skip('TODO: fix get_issues_s to make this test pass.')
     def test_detach_log_with_no_args(self):
         bad_args = (None, [], {}, ())
         for arg in bad_args:
@@ -507,7 +559,7 @@ class TestCaseRunDetachLog(XmlrpcAPIBaseTest):
         self.assertEqual(1, self.case_run.links.count())
         self.assertEqual(self.link.pk, self.case_run.links.all()[0].pk)
 
-    @unittest.skip('TODO: fix get_bugs_s to make this test pass.')
+    @unittest.skip('TODO: fix get_issues_s to make this test pass.')
     def test_detach_log_with_invalid_type_args(self):
         bad_args = ("", "AAA", (1,), [1], dict(a=1), True, False)
         for arg in bad_args:
@@ -542,13 +594,13 @@ class TestCaseRunGet(XmlrpcAPIBaseTest):
                                           sortkey=10,
                                           case_run_status=cls.status_idle)
 
-    @unittest.skip('TODO: fix get_bugs_s to make this test pass.')
+    @unittest.skip('TODO: fix function get to make this test pass.')
     def test_get_with_no_args(self):
         bad_args = (None, [], {}, ())
         for arg in bad_args:
             self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.get, None, arg)
 
-    @unittest.skip('TODO: fix get_bugs_s to make this test pass.')
+    @unittest.skip('TODO: fix function get to make this test pass.')
     def test_get_with_non_integer(self):
         non_integer = (True, False, '', 'aaaa', self, [1], (1,), dict(a=1), 0.7)
         for arg in non_integer:
@@ -580,7 +632,7 @@ class TestCaseRunGetSet(XmlrpcAPIBaseTest):
                                           notes='testing ...',
                                           case_run_status=cls.status_idle)
 
-    @unittest.skip('TODO: fix get_bugs_s to make this test pass.')
+    @unittest.skip('TODO: fix function get_s to make this test pass.')
     def test_get_with_no_args(self):
         bad_args = (None, [], (), {})
         for arg in bad_args:
@@ -637,7 +689,8 @@ class TestCaseRunGetSet(XmlrpcAPIBaseTest):
         self.assertEqual(tcr['environment_id'], 0)
 
 
-class TestCaseRunGetBugs(XmlrpcAPIBaseTest):
+class TestCaseRunGetIssues(XmlrpcAPIBaseTest):
+    """Test get_issues"""
 
     @classmethod
     def setUpTestData(cls):
@@ -646,40 +699,42 @@ class TestCaseRunGetBugs(XmlrpcAPIBaseTest):
                                               user_perm='testcases.add_testcasebug')
 
         cls.case_run = TestCaseRunFactory()
-        cls.bug_system_bz = TestCaseBugSystem.objects.get(name='Bugzilla')
-        testcaserun.attach_bug(cls.admin_request, {
-            'case_run_id': cls.case_run.pk,
-            'bug_id': '67890',
-            'bug_system_id': cls.bug_system_bz.pk,
+        cls.bz_tracker = IssueTrackerFactory(name='MyBZ')
+        testcaserun.attach_issue(cls.admin_request, {
+            'case_run': cls.case_run.pk,
+            'issue_key': '67890',
+            'tracker': cls.bz_tracker.pk,
             'summary': 'Testing TCMS',
             'description': 'Just foo and bar',
         })
 
-    def test_get_bugs_with_no_args(self):
-        bad_args = (None, [], {}, ())
-        for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.get_bugs, None, arg)
+    def test_get_issues_with_no_args(self):
+        for bad_arg in [None, [], {}, ()]:
+            self.assertRaisesXmlrpcFault(
+                BAD_REQUEST, testcaserun.get_issues, None, bad_arg)
 
-    @unittest.skip('TODO: fix get_bugs to make this test pass.')
-    def test_get_bugs_with_non_integer(self):
+    @unittest.skip('TODO: fix function get_issues to make this test pass.')
+    def test_get_issues_with_non_integer(self):
         non_integer = (True, False, '', 'aaaa', self, [1], (1,), dict(a=1), 0.7)
         for arg in non_integer:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.get_bugs, None, arg)
+            self.assertRaisesXmlrpcFault(
+                BAD_REQUEST, testcaserun.get_issues, None, arg)
 
-    def test_get_bugs_with_non_exist_id(self):
-        bugs = testcaserun.get_bugs(None, 11111111)
-        self.assertEqual(len(bugs), 0)
-        self.assertIsInstance(bugs, list)
+    def test_get_issues_with_non_exist_id(self):
+        issues = testcaserun.get_issues(None, 11111111)
+        self.assertEqual(len(issues), 0)
+        self.assertIsInstance(issues, list)
 
-    def test_get_bugs_with_id(self):
-        bugs = testcaserun.get_bugs(None, self.case_run.pk)
-        self.assertIsNotNone(bugs)
-        self.assertEqual(1, len(bugs))
-        self.assertEqual(bugs[0]['summary'], 'Testing TCMS')
-        self.assertEqual(bugs[0]['bug_id'], '67890')
+    def test_get_issues_with_id(self):
+        issues = testcaserun.get_issues(None, self.case_run.pk)
+        self.assertIsNotNone(issues)
+        self.assertEqual(1, len(issues))
+        self.assertEqual(issues[0]['summary'], 'Testing TCMS')
+        self.assertEqual(issues[0]['issue_key'], '67890')
 
 
-class TestCaseRunGetBugsSet(XmlrpcAPIBaseTest):
+class TestCaseRunGetIssuesSet(XmlrpcAPIBaseTest):
+    """Test get_issues_s"""
 
     @classmethod
     def setUpTestData(cls):
@@ -688,89 +743,83 @@ class TestCaseRunGetBugsSet(XmlrpcAPIBaseTest):
                                               user_perm='testcases.add_testcasebug')
 
         cls.case_run = TestCaseRunFactory()
-        cls.bug_system_bz = TestCaseBugSystem.objects.get(name='Bugzilla')
-        testcaserun.attach_bug(cls.admin_request, {
-            'case_run_id': cls.case_run.pk,
-            'bug_id': '67890',
-            'bug_system_id': cls.bug_system_bz.pk,
+        cls.bz_tracker = IssueTrackerFactory(name='MyBugzilla')
+        testcaserun.attach_issue(cls.admin_request, {
+            'case_run': cls.case_run.pk,
+            'issue_key': '67890',
+            'tracker': cls.bz_tracker.pk,
             'summary': 'Testing TCMS',
             'description': 'Just foo and bar',
         })
 
-    def test_get_bug_set_with_no_args(self):
+    def test_get_issue_set_with_no_args(self):
         bad_args = (None, [], (), {})
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.get_bugs_s,
-                                         None, arg, self.case_run.case.pk, self.case_run.build.pk,
-                                         0)
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.get_bugs_s,
-                                         None, self.case_run.run.pk, arg, self.case_run.build.pk,
-                                         0)
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.get_bugs_s,
-                                         None, self.case_run.run.pk, self.case_run.case.pk, arg,
-                                         0)
+            self.assertRaisesXmlrpcFault(
+                BAD_REQUEST,
+                testcaserun.get_issues_s,
+                None, arg, self.case_run.case.pk, self.case_run.build.pk, 0)
+            self.assertRaisesXmlrpcFault(
+                BAD_REQUEST, testcaserun.get_issues_s,
+                None, self.case_run.run.pk, arg, self.case_run.build.pk, 0)
+            self.assertRaisesXmlrpcFault(
+                BAD_REQUEST,
+                testcaserun.get_issues_s,
+                None, self.case_run.run.pk, self.case_run.case.pk, arg, 0)
 
-    @unittest.skip('TODO: fix get_bugs_s to make this test pass.')
-    def test_get_bug_set_with_invalid_environment_value(self):
+    @unittest.skip('TODO: fix get_issues_s to make this test pass.')
+    def test_get_issue_set_with_invalid_environment_value(self):
         bad_args = (None, [], (), {})
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.get_bugs_s,
+            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.get_issues_s,
                                          None,
                                          self.case_run.run.pk,
                                          self.case_run.case.pk,
                                          self.case_run.build.pk,
                                          arg)
 
-    def test_get_bug_set_with_non_exist_run(self):
-        tcr = testcaserun.get_bugs_s(None,
-                                     1111111,
-                                     self.case_run.case.pk,
-                                     self.case_run.build.pk,
-                                     0)
-        self.assertIsNotNone(tcr)
-        self.assertIsInstance(tcr, list)
-        self.assertEqual(len(tcr), 0)
+    def test_get_issue_set_with_non_exist_run(self):
+        issues = testcaserun.get_issues_s(
+            None, 1111111, self.case_run.case.pk, self.case_run.build.pk, 0)
+        self.assertIsNotNone(issues)
+        self.assertIsInstance(issues, list)
+        self.assertEqual(len(issues), 0)
 
-    def test_get_bug_set_with_non_exist_case(self):
-        tcr = testcaserun.get_bugs_s(None,
-                                     self.case_run.run.pk,
-                                     11111111,
-                                     self.case_run.build.pk,
-                                     0)
-        self.assertIsNotNone(tcr)
-        self.assertIsInstance(tcr, list)
-        self.assertEqual(len(tcr), 0)
+    def test_get_issue_set_with_non_exist_case(self):
+        issues = testcaserun.get_issues_s(
+            None,
+            self.case_run.run.pk, 11111111, self.case_run.build.pk, 0)
+        self.assertIsNotNone(issues)
+        self.assertIsInstance(issues, list)
+        self.assertEqual(len(issues), 0)
 
-    def test_get_bug_set_with_non_exist_build(self):
-        tcr = testcaserun.get_bugs_s(None,
-                                     self.case_run.run.pk,
-                                     self.case_run.case.pk,
-                                     1111111,
-                                     0)
-        self.assertIsNotNone(tcr)
-        self.assertIsInstance(tcr, list)
-        self.assertEqual(len(tcr), 0)
+    def test_get_issue_set_with_non_exist_build(self):
+        issues = testcaserun.get_issues_s(
+            None, self.case_run.run.pk, self.case_run.case.pk, 1111111, 0)
+        self.assertIsNotNone(issues)
+        self.assertIsInstance(issues, list)
+        self.assertEqual(len(issues), 0)
 
-    def test_get_bug_set_with_non_exist_env(self):
-        tcr = testcaserun.get_bugs_s(None,
-                                     self.case_run.run.pk,
-                                     self.case_run.case.pk,
-                                     self.case_run.build.pk,
-                                     999999)
-        self.assertIsNotNone(tcr)
-        self.assertIsInstance(tcr, list)
-        self.assertEqual(len(tcr), 0)
+    def test_get_issue_set_with_non_exist_env(self):
+        issues = testcaserun.get_issues_s(None,
+                                          self.case_run.run.pk,
+                                          self.case_run.case.pk,
+                                          self.case_run.build.pk,
+                                          999999)
+        self.assertIsNotNone(issues)
+        self.assertIsInstance(issues, list)
+        self.assertEqual(len(issues), 0)
 
-    def test_get_bug_set_by_omitting_argument_environment(self):
-        tcr = testcaserun.get_bugs_s(None,
-                                     self.case_run.run.pk,
-                                     self.case_run.case.pk,
-                                     self.case_run.build.pk)
-        self.assertIsNotNone(tcr)
-        self.assertIsInstance(tcr, list)
-        self.assertEqual(len(tcr), 1)
-        self.assertEqual(tcr[0]['bug_id'], '67890')
-        self.assertEqual(tcr[0]['summary'], 'Testing TCMS')
+    def test_get_issue_set_by_omitting_argument_environment(self):
+        issues = testcaserun.get_issues_s(None,
+                                          self.case_run.run.pk,
+                                          self.case_run.case.pk,
+                                          self.case_run.build.pk)
+        self.assertIsNotNone(issues)
+        self.assertIsInstance(issues, list)
+        self.assertEqual(len(issues), 1)
+        self.assertEqual(issues[0]['issue_key'], '67890')
+        self.assertEqual(issues[0]['summary'], 'Testing TCMS')
 
 
 class TestCaseRunGetStatus(XmlrpcAPIBaseTest):

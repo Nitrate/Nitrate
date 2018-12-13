@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
 
+import operator
+
 from django import test
 
+from tcms.integration.issuetracker.factories import IssueTrackerFactory
 from tcms.tests.factories import ProductFactory
 from tcms.tests.factories import TestBuildFactory
+from tcms.tests.factories import TestCaseFactory
+from tcms.tests.factories import TestCaseRunFactory
 from tcms.tests.factories import TestPlanFactory
 from tcms.tests.factories import TestRunFactory
 from tcms.tests.factories import TestTagFactory
@@ -12,6 +17,7 @@ from tcms.tests.factories import VersionFactory
 from tcms.xmlrpc.api import testrun as testrun_api
 from tcms.xmlrpc.serializer import datetime_to_str
 from tcms.xmlrpc.tests.utils import make_http_request
+from tcms.xmlrpc.tests.utils import XmlrpcAPIBaseTest
 
 
 class TestGet(test.TestCase):
@@ -75,3 +81,52 @@ class TestGet(test.TestCase):
         run = testrun_api.get(self.http_req, self.test_run.pk)
         run['tag'].sort()
         self.assertEqual(expected_run, run)
+
+
+class TestGetIssues(XmlrpcAPIBaseTest):
+    """Test get_issues"""
+
+    @classmethod
+    def setUpTestData(cls):
+        super(TestGetIssues, cls).setUpTestData()
+
+        cls.run_1 = TestRunFactory()
+        cls.case_1 = TestCaseFactory(plan=[cls.run_1.plan])
+        cls.case_2 = TestCaseFactory(plan=[cls.run_1.plan])
+        cls.case_run_1 = TestCaseRunFactory(case=cls.case_1, run=cls.run_1)
+        cls.case_run_2 = TestCaseRunFactory(case=cls.case_2, run=cls.run_1)
+
+        cls.run_2 = TestRunFactory()
+        cls.case_3 = TestCaseFactory(plan=[cls.run_2.plan])
+        cls.case_4 = TestCaseFactory(plan=[cls.run_2.plan])
+        cls.case_run_3 = TestCaseRunFactory(case=cls.case_3, run=cls.run_2)
+        cls.case_run_4 = TestCaseRunFactory(case=cls.case_4, run=cls.run_2)
+
+        cls.tracker = IssueTrackerFactory(
+            name='coolbz',
+            service_url='http://localhost/',
+            issue_report_endpoint='/enter_bug.cgi',
+            validate_regex=r'^\d+$')
+
+        cls.case_run_1.add_issue('1', cls.tracker)
+        cls.case_run_1.add_issue('2', cls.tracker)
+        cls.case_run_2.add_issue('3', cls.tracker)
+        cls.case_run_3.add_issue('4', cls.tracker)
+        cls.case_run_4.add_issue('5', cls.tracker)
+        cls.case_run_4.add_issue('6', cls.tracker)
+
+    def test_get_issues(self):
+        test_data = (
+            (self.run_1.pk, ('1', '2', '3')),
+            ([self.run_1.pk, self.run_2.pk], ('1', '2', '3', '4', '5', '6')),
+            ('{}, {}'.format(self.run_1.pk, self.run_2.pk),
+             ('1', '2', '3', '4', '5', '6')),
+        )
+
+        for run_ids, expected_issue_keys in test_data:
+            issues = testrun_api.get_issues(self.request, run_ids)
+            issue_keys = tuple(
+                item['issue_key'] for item in
+                sorted(issues, key=operator.itemgetter('issue_key'))
+            )
+            self.assertEqual(expected_issue_keys, issue_keys)

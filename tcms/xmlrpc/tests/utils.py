@@ -6,9 +6,20 @@ from django import test
 from django.contrib.auth.models import User
 
 from tcms.tests import user_should_have_perm
+from tcms.tests.factories import UserFactory
 
 
 class XmlrpcAPIBaseTest(test.TestCase):
+    """Base class for writing test case for XMLRPC functions"""
+
+    # A string set to user in order to call function to test.
+    permission = None
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.tester = UserFactory(username='tester', email='tester@example.com')
+        cls.request = make_http_request(
+            user=cls.tester, user_perm=cls.permission)
 
     def assertRaisesXmlrpcFault(self, faultCode, method, *args, **kwargs):
         assert callable(method)
@@ -42,7 +53,18 @@ def create_http_user():
 
 
 def make_http_request(user=None, user_perm=None, data=None):
-    """Factory method to make instance of FakeHTTPRequest"""
+    """Factory method to make instance of FakeHTTPRequest
+
+    :param user: a user bound to created fake HTTP request. That simulates a
+        user requests an HTTP request. If omitted, a user will be created
+        automatically.
+    :type user: :class:`User <django.contrib.auth.models.User>`
+    :param str user_perm: the permission user should have to perform the
+        request. If omitted, no permission is set.
+    :param data: not used at this moment.
+    :return: a fake HTTP request object.
+    :rtype: :class:`FakeHTTPRequest <tcms.xmlrpc.tests.utils.FakeHTTPRequest>`
+    """
     _user = user
     if _user is None:
         _user = create_http_user()

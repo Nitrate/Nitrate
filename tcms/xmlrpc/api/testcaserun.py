@@ -1,30 +1,31 @@
 # -*- coding: utf-8 -*-
 
 from django.contrib.auth.decorators import permission_required
-from django.db.models import ObjectDoesNotExist
 
 from tcms.core.contrib.linkreference.models import create_link, LinkReference
 from tcms.integration.issuetracker.models import Issue
-from tcms.testcases.models import TestCaseBug
+from tcms.integration.issuetracker.services import find_service
+from tcms.testcases.forms import CaseRunIssueForm
 from tcms.testruns.models import TestCaseRun, TestCaseRunStatus
+from tcms.utils import form_errors_to_list
 from tcms.xmlrpc.decorators import log_call
 from tcms.xmlrpc.serializer import XMLRPCSerializer
 from tcms.xmlrpc.utils import pre_process_ids, distinct_count
 
 __all__ = (
     'add_comment',
-    'attach_bug',
+    'attach_issue',
     'attach_log',
     'check_case_run_status',
     'create',
-    'detach_bug',
+    'detach_issue',
     'detach_log',
     'filter',
     'filter_count',
     'get',
     'get_s',
-    'get_bugs',
-    'get_bugs_s',
+    'get_issues',
+    'get_issues_s',
     'get_case_run_status',
     'get_completion_time',
     'get_completion_time_s',
@@ -97,14 +98,15 @@ def add_comment(request, case_run_ids, comment):
 
 @log_call(namespace=__xmlrpc_namespace__)
 @permission_required('testcases.add_testcasebug', raise_exception=True)
-def attach_bug(request, values):
-    """Add one or more bugs to the selected test cases.
+def attach_issue(request, values):
+    """Add one or more issues to the selected test cases.
 
     :param dict values: a mapping containing these data to create a test run.
 
-        * case_run_id: (int) **Required** ID of Case
-        * bug_id: (int) **Required** ID of Bug
-        * bug_system_id: (int) **Required** 1: BZ(Default), 2: JIRA
+        * issue_key: (str) **Required** the issue key.
+        * case_run: (int) **Required** ID of Case
+        * tracker: (int) **Required** ID of issue tracker that issue should
+          belong to.
         * summary: (str) optional Bug summary
         * description: (str) optional Bug description
 
@@ -114,39 +116,38 @@ def attach_bug(request, values):
 
     Example::
 
-        # Attach a bug 67890 to case run 12345
-        >>> TestCaseRun.attach_bug({
-                'case_run_id': 12345,
-                'bug_id': 67890,
-                'bug_system_id': 1,
+        # Attach an issue 67890 to case run 12345
+        >>> TestCaseRun.attach_issue({
+                'case_run': 12345,
+                'issue_key': '67890',
+                'tracker': 1,
                 'summary': 'Testing TCMS',
                 'description': 'Just foo and bar',
             })
-    """
-    from tcms.core import forms
-    from tcms.testcases.models import TestCaseBugSystem
-    from tcms.xmlrpc.forms import AttachCaseRunBugForm
 
+    .. versionchanged:: 4.2
+       Some arguments passed via ``values`` are changed. ``case_run_id`` is
+       changed to ``case_run``, ``bug_id`` is changed to ``issue_key``,
+       ``bz_system_id`` is changed to ``tracker``. ``issue_key`` accepts string
+       instead of integer.
+    """
     if isinstance(values, dict):
         values = [values, ]
 
     for value in values:
-
-        form = AttachCaseRunBugForm(value)
+        form = CaseRunIssueForm(value)
         if form.is_valid():
-            bug_system = TestCaseBugSystem.objects.get(
-                id=form.cleaned_data['bug_system_id'])
-            tcr = TestCaseRun.objects.only('pk', 'case').get(
-                case_run_id=form.cleaned_data['case_run_id'])
-            tcr.add_bug(
-                bug_id=form.cleaned_data['bug_id'],
-                bug_system_id=bug_system.pk,
+            service = find_service(form.cleaned_data['tracker'])
+            case_run = form.cleaned_data['case_run']
+            service.add_issue(
+                form.cleaned_data['issue_key'],
+                case_run.case,
+                case_run=case_run,
                 summary=form.cleaned_data['summary'],
-                description=form.cleaned_data['description']
+                description=form.cleaned_data['description'],
             )
         else:
-            raise ValueError(forms.errors_to_list(form))
-    return
+            raise ValueError(form_errors_to_list(form))
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -223,44 +224,36 @@ def create(request, values):
 
 @log_call(namespace=__xmlrpc_namespace__)
 @permission_required('testcases.delete_testcasebug', raise_exception=True)
-def detach_bug(request, case_run_ids, bug_ids):
-    """Remove one or more bugs to the selected test case-runs.
+def detach_issue(request, case_run_ids, issue_keys):
+    """Remove one or more issues to the selected test case-runs.
 
     :param case_run_ids: give one or more case run IDs. It could be an integer,
         a string containing comma separated IDs, or a list of int each of them
         is a case run ID.
     :type run_ids: int, str or list
-    :param bug_ids: give one or more case run IDs. It could be an integer,
+    :param issue_keys: give one or more case run IDs. It could be an integer,
         a string containing comma separated IDs, or a list of int each of them
         is a case run ID.
-    :type run_ids: int, str or list
+    :type issue_keys: int, str or list
     :return: a list which is empty on success or a list of mappings with
         failure codes if a failure occured.
     :rtype: list
 
     Example::
 
-        # Remove bug id 1000 from case run 1
-        >>> TestCaseRun.detach_bug(1, 1000)
-        # Remove bug ids list [1000, 2000] from case runs list [1, 2]
-        >>> TestCaseRun.detach_bug([1, 2], [1000, 2000])
-        # Remove bug ids list '1000, 2000' from case runs list '1, 2' with String
-        >>> TestCaseRun.detach_bug('1, 2', '1000, 2000')
+        # Remove issue 1000 from case run 1
+        >>> TestCaseRun.detach_issue(1, 1000)
+        # Remove issues [1000, 2000] from case runs list [1, 2]
+        >>> TestCaseRun.detach_issue([1, 2], [1000, 2000])
+        # Remove issues '1000, 2000' from case runs list '1, 2' with String
+        >>> TestCaseRun.detach_issue('1, 2', '1000, 2000')
     """
-    tcrs = TestCaseRun.objects.filter(
-        case_run_id__in=pre_process_ids(case_run_ids)
-    )
-    bug_ids = pre_process_ids(bug_ids)
+    tcrs = TestCaseRun.objects.filter(pk__in=pre_process_ids(case_run_ids))
+    issue_keys = pre_process_ids(issue_keys)
 
     for tcr in tcrs.iterator():
-        case_run_id = tcr.case_run_id
-        for opk in bug_ids:
-            try:
-                tcr.remove_bug(bug_id=opk, run_id=case_run_id)
-            except ObjectDoesNotExist:
-                pass
-
-    return
+        for issue_key in issue_keys:
+            tcr.remove_issue(issue_key=issue_key, case_run=tcr)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -343,8 +336,8 @@ def get_s(request, case_id, run_id, build_id, environment_id=0):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-def get_bugs(request, case_run_id):
-    """Get the list of bugs that are associated with this test case.
+def get_issues(request, case_run_id):
+    """Get the list of issues that are associated with this test case run
 
     :param int case_run_id: case run ID.
     :return: a list of mappings of :class:`TestCaseBug`.
@@ -352,26 +345,26 @@ def get_bugs(request, case_run_id):
 
     Example::
 
-        >>> TestCase.get_bugs(10)
+        >>> TestCaseRun.get_issues(10)
     """
     query = {'case_run': int(case_run_id)}
-    return TestCaseBug.to_xmlrpc(query)
+    return Issue.to_xmlrpc(query)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-def get_bugs_s(request, run_id, case_id, build_id, environment_id=0):
-    """Get the list of bugs that are associated with this test case.
+def get_issues_s(request, run_id, case_id, build_id, environment_id=0):
+    """Get the list of issues that are associated with this test case run
 
     :param int case_id: case ID.
     :param int run_id: run ID.
     :param int build_id: build ID.
     :param int environment_id: optional environment ID. Defaults to ``0``.
-    :return: a list of found :class:`TestCaseBug`.
+    :return: a list of found :class:`Issue`.
     :rtype: list[dict]
 
     Example::
 
-        >>> TestCaseRun.get_bugs_s(1, 2, 3, 4)
+        >>> TestCaseRun.get_issues_s(1, 2, 3, 4)
     """
     query = {
         'case_run__run': int(run_id),
@@ -385,13 +378,7 @@ def get_bugs_s(request, run_id, case_id, build_id, environment_id=0):
     # judgement should not happen.
     if environment_id:
         query['case_run__environment_id'] = int(environment_id)
-    issues = Issue.to_xmlrpc(query)
-    # These two keys are added for backward compatibility. They will be removed
-    # eventually one day.
-    for item in issues:
-        item['bug_id'] = item['issue_key']
-        item['bug_system'] = item['tracker_id']
-    return issues
+    return Issue.to_xmlrpc(query)
 
 
 @log_call(namespace=__xmlrpc_namespace__)

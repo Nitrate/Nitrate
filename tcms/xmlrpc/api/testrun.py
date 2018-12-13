@@ -3,6 +3,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from kobo.django.xmlrpc.decorators import user_passes_test
 
+from tcms.integration.issuetracker.models import Issue
 from tcms.management.models import TestTag
 from tcms.testcases.models import TestCase
 from tcms.testruns.models import TestCaseRun
@@ -20,7 +21,7 @@ __all__ = (
     'filter',
     'filter_count',
     'get',
-    'get_bugs',
+    'get_issues',
     'get_change_history',
     'get_completion_report',
     'get_env_values',
@@ -355,37 +356,28 @@ def get(request, run_id):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-def get_bugs(request, run_ids):
-    """Get the list of bugs attached to this run.
+def get_issues(request, run_ids):
+    """Get the list of issues attached to this run.
 
     :param run_ids: give one or more run IDs. It could be an integer, a
         string containing comma separated IDs, or a list of int each of them is
         a run ID.
     :type run_ids: int, str or list
-    :return: a list of mappings of :class:`TestCaseBug`.
+    :return: a list of mappings of :class:`Issue
+        <tcms.integration.issuetracker.models.Issue>`.
     :rtype: list[dict]
 
     Example::
 
-        # Get bugs belong to ID 12345
-        >>> TestRun.get_bugs(1)
-        # Get bug belong to run ids list [1, 2]
-        >>> TestRun.get_bugs([1, 2])
-        # Get bug belong to run ids list 1 and 2 with string
-        >>> TestRun.get_bugs('1, 2')
+        # Get issues belonging to ID 12345
+        >>> TestRun.get_issues(1)
+        # Get issues belonging to run ids list [1, 2]
+        >>> TestRun.get_issues([1, 2])
+        # Get issues belonging to run ids list 1 and 2 with string
+        >>> TestRun.get_issues('1, 2')
     """
-    from tcms.testcases.models import TestCaseBug
-
-    trs = TestRun.objects.filter(
-        run_id__in=pre_process_ids(value=run_ids)
-    )
-    tcrs = TestCaseRun.objects.filter(
-        run__run_id__in=trs.values_list('run_id', flat=True)
-    )
-
-    query = {'case_run__case_run_id__in': tcrs.values_list('case_run_id',
-                                                           flat=True)}
-    return TestCaseBug.to_xmlrpc(query)
+    query = {'case_run__run__in': pre_process_ids(run_ids)}
+    return Issue.to_xmlrpc(query)
 
 
 @log_call(namespace=__xmlrpc_namespace__)

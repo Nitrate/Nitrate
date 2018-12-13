@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import itertools
+import operator
+
 from django import test
 
+from tcms.integration.issuetracker.factories import IssueTrackerFactory
+from tcms.integration.issuetracker.models import Issue
 from tcms.management.models import Priority
 from tcms.testcases.models import TestCasePlan
 from tcms.testcases.models import TestCaseStatus
@@ -182,3 +187,230 @@ class TestGet(test.TestCase):
             component=[],
         )
         self.assertEqual(expected_resp, resp)
+
+
+class TestAttachIssue(test.TestCase):
+    """Test attach_issue"""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.tester = UserFactory(username='tester', email='tester@example.com')
+        cls.request = make_http_request(user=cls.tester,
+                                        user_perm='testcases.add_testcasebug')
+        cls.case = TestCaseFactory()
+        cls.tracker = IssueTrackerFactory(
+            service_url='http://localhost/',
+            issue_report_endpoint='/enter_bug.cgi',
+            validate_regex=r'^\d+$')
+
+    def test_attach_an_issue(self):
+        XmlrpcTestCase.attach_issue(
+            self.request,
+            {
+                'case': self.case.pk,
+                'issue_key': '123456',
+                'tracker': self.tracker.pk,
+                'summary': 'XMLRPC fails'
+            })
+
+        issue = Issue.objects.filter(
+            issue_key='123456',
+            tracker=self.tracker.pk,
+            case=self.case.pk,
+            case_run__isnull=True,
+        ).first()
+
+        self.assertIsNotNone(issue)
+        self.assertEqual('XMLRPC fails', issue.summary)
+
+    def test_attach_some_issues(self):
+        XmlrpcTestCase.attach_issue(
+            self.request,
+            [
+                {
+                    'case': self.case.pk,
+                    'issue_key': '123456',
+                    'tracker': self.tracker.pk,
+                    'summary': 'XMLRPC fails'
+                },
+                {
+                    'case': self.case.pk,
+                    'issue_key': '789012',
+                    'tracker': self.tracker.pk,
+                    'summary': 'abc'
+                },
+            ])
+
+        issue = Issue.objects.filter(
+            issue_key='123456',
+            tracker=self.tracker.pk,
+            case=self.case.pk,
+            case_run__isnull=True,
+        ).first()
+
+        self.assertIsNotNone(issue)
+        self.assertEqual('XMLRPC fails', issue.summary)
+
+        issue = Issue.objects.filter(
+            issue_key='789012',
+            tracker=self.tracker.pk,
+            case=self.case.pk,
+            case_run__isnull=True,
+        ).first()
+
+        self.assertIsNotNone(issue)
+        self.assertEqual('abc', issue.summary)
+
+
+class TestGetIssues(test.TestCase):
+    """Test get_issues"""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.tester = UserFactory(username='tester', email='tester@example.com')
+        cls.request = make_http_request(user=cls.tester)
+
+        cls.tracker = IssueTrackerFactory(
+            name='coolbz',
+            service_url='http://localhost/',
+            issue_report_endpoint='/enter_bug.cgi',
+            validate_regex=r'^\d+$')
+
+        cls.plan = TestPlanFactory()
+        cls.case_1 = TestCaseFactory(plan=[cls.plan])
+        cls.issue_1 = cls.case_1.add_issue('12345', cls.tracker)
+        cls.issue_2 = cls.case_1.add_issue('89072', cls.tracker)
+        cls.case_2 = TestCaseFactory(plan=[cls.plan])
+        cls.issue_3 = cls.case_2.add_issue('23456', cls.tracker)
+
+    def assert_issues(self, case_ids, expected_issues):
+        issues = XmlrpcTestCase.get_issues(self.request, case_ids)
+        issues = sorted(issues, key=operator.itemgetter('id'))
+        self.assertEqual(expected_issues, issues)
+
+    def test_get_issues_from_one_case(self):
+        expected_issues = [
+            {
+                'id': self.issue_1.pk,
+                'issue_key': '12345',
+                'tracker': 'coolbz',
+                'tracker_id': self.tracker.pk,
+                'summary': None,
+                'description': None,
+                'case_run': None,
+                'case_run_id': None,
+                'case': self.case_1.summary,
+                'case_id': self.case_1.pk,
+            },
+            {
+                'id': self.issue_2.pk,
+                'issue_key': '89072',
+                'tracker': 'coolbz',
+                'tracker_id': self.tracker.pk,
+                'summary': None,
+                'description': None,
+                'case_run': None,
+                'case_run_id': None,
+                'case': self.case_1.summary,
+                'case_id': self.case_1.pk,
+            },
+        ]
+
+        self.assert_issues(self.case_1.pk, expected_issues)
+
+    def test_get_issues_from_two_cases(self):
+        expected_issues = [
+            {
+                'id': self.issue_1.pk,
+                'issue_key': '12345',
+                'tracker': 'coolbz',
+                'tracker_id': self.tracker.pk,
+                'summary': None,
+                'description': None,
+                'case_run': None,
+                'case_run_id': None,
+                'case': self.case_1.summary,
+                'case_id': self.case_1.pk,
+            },
+            {
+                'id': self.issue_2.pk,
+                'issue_key': '89072',
+                'tracker': 'coolbz',
+                'tracker_id': self.tracker.pk,
+                'summary': None,
+                'description': None,
+                'case_run': None,
+                'case_run_id': None,
+                'case': self.case_1.summary,
+                'case_id': self.case_1.pk,
+            },
+            {
+                'id': self.issue_3.pk,
+                'issue_key': '23456',
+                'tracker': 'coolbz',
+                'tracker_id': self.tracker.pk,
+                'summary': None,
+                'description': None,
+                'case_run': None,
+                'case_run_id': None,
+                'case': self.case_2.summary,
+                'case_id': self.case_2.pk,
+            },
+        ]
+
+        for case_ids in ([self.case_1.pk, self.case_2.pk],
+                         '{}, {}'.format(self.case_1.pk, self.case_2.pk)):
+            self.assert_issues(case_ids, expected_issues)
+
+
+class TestDetachIssue(test.TestCase):
+    """Test detach_issue"""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.tester = UserFactory(username='tester', email='tester@example.com')
+        cls.request = make_http_request(
+            user=cls.tester, user_perm='testcases.delete_testcasebug')
+
+        cls.tracker = IssueTrackerFactory(
+            name='coolbz',
+            service_url='http://localhost/',
+            issue_report_endpoint='/enter_bug.cgi',
+            validate_regex=r'^\d+$')
+
+        cls.plan = TestPlanFactory()
+        cls.case_1 = TestCaseFactory(plan=[cls.plan])
+        cls.issue_1 = cls.case_1.add_issue('12345', cls.tracker)
+        cls.issue_2 = cls.case_1.add_issue('23456', cls.tracker)
+        cls.issue_3 = cls.case_1.add_issue('34567', cls.tracker)
+        cls.case_2 = TestCaseFactory(plan=[cls.plan])
+        cls.issue_4 = cls.case_2.add_issue('12345', cls.tracker)
+        cls.issue_5 = cls.case_2.add_issue('23456', cls.tracker)
+        cls.issue_6 = cls.case_2.add_issue('56789', cls.tracker)
+
+    def assert_rest_issues_after_detach(
+            self, case_ids, issue_keys_to_detach, expected_rest_issue_keys):
+        """
+        Detach issues from specified cases and assert whether expected rest
+        issue keys still exists and detached issues are really detached
+        """
+        XmlrpcTestCase.detach_issue(self.request,
+                                    case_ids, issue_keys_to_detach)
+
+        # Check if detached issues are really detached.
+        for case_id, issue_key in itertools.product(case_ids, issue_keys_to_detach):
+            self.assertFalse(Issue.objects.filter(
+                case=case_id, issue_key=issue_key).exists())
+
+        # Ensure the expected rest issue keys are still there.
+        for case_id, rest_issue_keys in expected_rest_issue_keys.items():
+            for issue_key in rest_issue_keys:
+                self.assertTrue(Issue.objects.filter(
+                    case=case_id, issue_key=issue_key).exists())
+
+    def test_detach_issues_from_cases(self):
+        self.assert_rest_issues_after_detach(
+            [self.case_1.pk, self.case_2.pk],
+            ['12345', '23456'],
+            {self.case_1.pk: ['34567'], self.case_2.pk: ['56789']}
+        )
