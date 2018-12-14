@@ -22,7 +22,7 @@ class IssueTrackerFactory(DjangoModelFactory):
 
     name = factory.Sequence(lambda n: 'Cool Issue Tracker {}'.format(n))
     issue_url_fmt = 'http://localhost/%{issue_key}s'
-    validate_regex = '^\d+$'
+    validate_regex = r'^\d+$'
     credential_type = CredentialTypes.NoNeed.name
     issue_report_endpoint = '/enter.cgi'
     # product = factory.SubFactory(f.ProductFactory)
@@ -40,6 +40,7 @@ class ProductIssueTrackerRelationshipFactory(DjangoModelFactory):
 
     class Meta:
         model = 'issuetracker.ProductIssueTrackerRelationship'
+
 
 class IssueFactory(DjangoModelFactory):
     """Factory to create model Issue"""

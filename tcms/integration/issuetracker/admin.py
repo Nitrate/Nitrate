@@ -15,12 +15,6 @@ class ProductIssueTrackerRelationshipInlineAdmin(admin.TabularInline):
     fields = ['product', 'issue_tracker', 'alias', 'namespace']
     exclude = ['__str__']
 
-    #def get_queryset(self, request):
-        #qs = super(
-            #ProductIssueTrackerRelationshipInlineAdmin, self
-        #).get_queryset(request)
-        #return qs.select_related('product')
-
 
 class IssueTrackerAdmin(admin.ModelAdmin):
     list_display = ('enabled', 'name', 'tracker_product', 'service_url',
