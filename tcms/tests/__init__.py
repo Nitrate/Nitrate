@@ -152,7 +152,35 @@ class HelperAssertions(object):
             self.fail('ValidationError is not raised.')
 
 
-class BasePlanCase(HelperAssertions, test.TestCase):
+class NitrateTestCase(test.TestCase):
+    """Base test case for writing tests for Nitrate"""
+
+    @classmethod
+    def create_bz_tracker(cls):
+        """Helper function to create a Bugzilla issue tracker"""
+        from tcms.integration.issuetracker.factories import IssueTrackerFactory
+        return IssueTrackerFactory(
+            name='bz',
+            service_url='http://bugs.example.com/',
+            issue_report_endpoint='/enter_bug.cgi',
+            issue_url_fmt='http://bugs.example.com/?id={issue_key}',
+            issues_display_url_fmt='http://bugs.example.com/?bug_id={issue_keys}',
+            validate_regex=r'^\d+$')
+
+    @classmethod
+    def create_jira_tracker(cls):
+        """Helper function to create a Bugzilla issue tracker"""
+        from tcms.integration.issuetracker.factories import IssueTrackerFactory
+        return IssueTrackerFactory(
+            name='jira',
+            service_url='http://jira.example.com/',
+            issue_report_endpoint='/enter_bug.cgi',
+            issue_url_fmt='http://jira.example.com/browse/{issue_key}',
+            issues_display_url_fmt='http://jira.example.com/?jql=issuekey in ({issue_keys})',
+            validate_regex=r'^[A-Z]+-\d+$')
+
+
+class BasePlanCase(HelperAssertions, NitrateTestCase):
     """Base test case by providing essential Plan and Case objects used in tests"""
 
     @classmethod

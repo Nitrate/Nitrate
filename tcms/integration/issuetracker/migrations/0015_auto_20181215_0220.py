@@ -7,6 +7,12 @@ from django.db import migrations, models
 import django.db.models.deletion
 
 
+"""
+Both of these fields were updated some time ago but forgot the concrete time.
+Anyway, this migration fixes that.
+"""
+
+
 class Migration(migrations.Migration):
 
     dependencies = [

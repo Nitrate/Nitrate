@@ -60,7 +60,7 @@ class TCR2File(object):
                 case_script,
                 tcr.case.is_automated,
                 self.log_links(tcr),
-                self.bug_ids(tcr))
+                self.issue_keys(tcr))
         return line
 
     def log_links(self, tcr):
@@ -70,10 +70,10 @@ class TCR2File(object):
              for url in tcr.links.values_list('url', flat=True))
         )
 
-    def bug_ids(self, tcr):
-        """Wrap bugs into a single cell by joining bug IDs"""
-        bug_ids = tcr.case_run_bug.values_list('bug_id', flat=True)
-        return ' '.join((str(pk) for pk in bug_ids.iterator()))
+    def issue_keys(self, tcr):
+        """Wrap issues into a single cell by joining issue keys"""
+        issue_keys = tcr.issues.values_list('issue_key', flat=True)
+        return ' '.join(str(pk) for pk in issue_keys.iterator())
 
     def tcrs_in_rows(self):
         tcr_attrs_in_a_list = self.tcr_attrs_in_a_list
@@ -87,6 +87,11 @@ class TCR2File(object):
         writer.writerows(self.tcrs_in_rows())
 
     def write_to_xml(self, output):
+        """Write test case runs in XML
+
+        .. versionchanged:: 4.2
+           Element ``bugs`` is renamed to ``issues``.
+        """
         write_to_output = output.write
         tcr_start_elem = u'<testcaserun case_run_id="%d" case_id="%d" ' \
                          u'category="%s" status="%s" summary="%s" ' \
@@ -107,9 +112,9 @@ class TCR2File(object):
                 write_to_output(
                     u'<loglink name="%s" url="%s" />' % (link.name, link.url))
             write_to_output(u'</loglinks>')
-            write_to_output(u'<bugs>')
-            for bug in tcr.case_run_bug.iterator():
-                write_to_output(u'<bug id="%s" />' % bug.bug_id)
-            write_to_output(u'</bugs>')
+            write_to_output(u'<issues>')
+            for issue in tcr.issues.iterator():
+                write_to_output(u'<issue key="%s" />' % issue.issue_key)
+            write_to_output(u'</issues>')
             write_to_output(u'</testcaserun>')
         write_to_output(u'</%s>' % self.root)

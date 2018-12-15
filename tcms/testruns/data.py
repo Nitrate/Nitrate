@@ -8,7 +8,6 @@ from itertools import groupby
 from django.conf import settings
 from django.db.models import Count, F
 
-from tcms.testcases.models import TestCaseBug
 from tcms.testruns.models import TestCaseRun
 from tcms.testruns.models import TestCaseRunStatus
 
@@ -76,22 +75,6 @@ def stats_caseruns_status(run_id, case_run_statuss):
                                      failure_percent)
 
 
-def get_run_bug_ids(run_id):
-    """Get list of pairs of bug ID and bug link that are added to a run
-
-    :param int run_id: ID of test run.
-    :return: list of pairs of bug ID and bug link.
-    :rtype: list
-    """
-    rows = TestCaseBug.objects.values(
-        'bug_id',
-        'bug_system__url_reg_exp'
-    ).distinct().filter(case_run__run=run_id)
-
-    return [(row['bug_id'], row['bug_system__url_reg_exp'] % row['bug_id'])
-            for row in rows]
-
-
 class TestCaseRunDataMixin(object):
     """Data for test case runs"""
 
@@ -122,25 +105,6 @@ class TestCaseRunDataMixin(object):
             'automated': automated_count,
             'manual_automated': manual_automated_count,
         }
-
-    def get_caseruns_bugs(self, run_pk):
-        """Get case run bugs for run report
-
-        :param int run_pk: run's pk whose case runs' bugs will be retrieved.
-        :return: the mapping between case run id and bug information containing
-            formatted bug URL.
-        :rtype: dict
-        """
-        rows = []
-        bugs = TestCaseBug.objects \
-            .filter(case_run__run=run_pk) \
-            .values('case_run', 'bug_id', 'bug_system__url_reg_exp') \
-            .order_by('case_run')
-        for row in bugs:
-            row['bug_url'] = row['bug_system__url_reg_exp'] % row['bug_id']
-            rows.append(row)
-        return dict([(case_run_id, list(bugs_info)) for case_run_id, bugs_info in
-                     groupby(rows, lambda row: row['case_run'])])
 
     def get_caseruns_comments(self, run_pk):
         """Get case runs' comments

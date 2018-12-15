@@ -7,6 +7,8 @@ import logging
 import six
 import time
 
+from operator import attrgetter
+from operator import itemgetter
 from six.moves import urllib
 
 from django.conf import settings
@@ -32,6 +34,8 @@ from django.views.generic.base import View
 
 from django_comments.models import Comment
 
+from tcms.integration.issuetracker.models import Issue
+from tcms.integration.issuetracker.services import find_service
 from tcms.core.utils import clean_request
 from tcms.core.utils import DataTableResult
 from tcms.core.utils.raw_sql import RawSQL
@@ -45,7 +49,6 @@ from tcms.testcases.models import TestCase
 from tcms.testcases.models import TestCasePlan, TestCaseStatus
 from tcms.testcases.views import get_selected_testcases
 from tcms.testplans.models import TestPlan
-from tcms.testruns.data import get_run_bug_ids
 from tcms.testruns.data import stats_caseruns_status
 from tcms.testruns.data import TestCaseRunDataMixin
 from tcms.testruns.forms import MulitpleRunsCloneForm, PlanFilterRunForm
@@ -774,13 +777,14 @@ class TestRunReportView(TemplateView, TestCaseRunDataMixin):
         2. Test case runs included in the TestRun
         3. Comments associated with each test case run
         4. Statistics
-        5. bugs
+        5. Issues
         """
         run = TestRun.objects.select_related('manager', 'plan').get(
             pk=self.run_id)
 
         case_runs = TestCaseRun.objects.filter(run=run).select_related(
-            'case_run_status', 'case', 'tested_by', 'case__category').only(
+            'case_run_status', 'case', 'tested_by', 'case__category'
+        ).only(
             'close_date',
             'case_run_status__name',
             'case__category__name',
@@ -789,37 +793,50 @@ class TestRunReportView(TemplateView, TestCaseRunDataMixin):
             'tested_by__username')
         mode_stats = self.stats_mode_caseruns(case_runs)
         summary_stats = self.get_summary_stats(case_runs)
-        bug_ids = get_run_bug_ids(self.run_id)
-
-        caserun_bugs = self.get_caseruns_bugs(run.pk)
         comments = self.get_caseruns_comments(run.pk)
 
+        run_issues = (
+            Issue.objects.filter(case_run__run=self.run_id)
+                         .select_related('tracker')
+        )
+
+        by_case_run_pk = attrgetter('case_run.pk')
+        issues_by_case_run = {
+            case_run_id: [
+                (item.issue_key, item.get_absolute_url()) for item in issues
+            ]
+            for case_run_id, issues in itertools.groupby(
+                sorted(run_issues, key=by_case_run_pk), by_case_run_pk)
+        }
+
         for case_run in case_runs:
-            bugs = caserun_bugs.get(case_run.pk, ())
-            case_run.bugs = bugs
+            case_run.display_issues = issues_by_case_run.get(case_run.pk, ())
             user_comments = comments.get(case_run.pk, [])
             case_run.user_comments = user_comments
 
-        jira_bug_ids = [bug_id for bug_id, bug_url in bug_ids if '-' in bug_id]
-        bugzilla_bug_ids = [bug_id for bug_id, bug_url in bug_ids if
-                            '-' not in bug_id]
-        jira_url = settings.JIRA_URL + \
-            'issues/?jql=issueKey%%20in%%20(%s)' % \
-            '%2C%20'.join(jira_bug_ids)
-        bugzilla_url = settings.BUGZILLA_URL + \
-            'buglist.cgi?bugidtype=include&bug_id=%s' % \
-            ','.join(bugzilla_bug_ids)
+        display_issues_by_tracker = [
+            (tracker.name, find_service(tracker).make_issues_display_url(
+                map(attrgetter('issue_key'), issues)))
+            for tracker, issues in itertools.groupby(
+                sorted(run_issues, key=attrgetter('tracker.pk')),
+                attrgetter('tracker'))
+        ]
+        display_issues_by_tracker.sort(key=itemgetter(0))
+
+        run_issues_display_info = [
+            (issue.issue_key, issue.get_absolute_url())
+            for issue in run_issues
+        ]
 
         context = super(TestRunReportView, self).get_context_data(**kwargs)
         context.update({
             'test_run': run,
             'test_case_runs': case_runs,
             'test_case_runs_count': len(case_runs),
-            'test_case_run_bugs': bug_ids,
+            'test_case_run_issues': run_issues_display_info,
             'mode_stats': mode_stats,
             'summary_stats': summary_stats,
-            'jira_url': jira_url,
-            'bugzilla_url': bugzilla_url
+            'display_issues_by_tracker': display_issues_by_tracker,
         })
 
         return context

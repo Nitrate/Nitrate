@@ -21,7 +21,7 @@ from tcms.core.models import TCMSActionModel
 from tcms.core.utils import is_int
 from tcms.core.utils.tcms_router import connection
 from tcms.core.utils.timedeltaformat import format_timedelta
-from tcms.testcases.models import TestCaseBug, TestCaseText, NoneText
+from tcms.testcases.models import TestCaseText, NoneText
 from tcms.testruns import signals as run_watchers
 from tcms.integration.issuetracker.models import Issue
 

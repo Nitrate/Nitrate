@@ -269,6 +269,28 @@ class IssueTrackerService(object):
             url_args))
         return args
 
+    def make_issues_display_url(self, issue_keys):
+        """Make URL linking to issue tracker to display issues
+
+        This requires issue tracker's ``issues_display_url_fmt`` is set, which
+        accepts a string format argument ``issue_keys``.
+
+        By default, issue keys are concatenated and separated by comma. This
+        should work for most of kind of issue tracker product, for example,
+        Bugzilla and JIRA. However, if it does not work for some other issue
+        tracker, developer has to subclass ``IssueTrackerService`` and override
+        this method to construct the display URL.
+
+        :param issue_keys: list of issue keys.
+        :type issue_keys: list[str]
+        :return: the display URL which could be opened in Web browser to
+            display specified issues.
+        :rtype: str
+        """
+        return self.tracker_model.issues_display_url_fmt.format(
+            issue_keys=','.join(map(str, issue_keys))
+        )
+
 
 class Bugzilla(IssueTrackerService):
     """Represent general Bugzilla issue tracker"""

@@ -4,12 +4,12 @@ from tcms.tests import BaseCaseRun
 from tcms.tests.factories import TestRunFactory
 
 
-class TestRunGetBugsCount(BaseCaseRun):
-    """Test TestRun.get_bug_count"""
+class TestRunGetIssuesCount(BaseCaseRun):
+    """Test TestRun.get_issues_count"""
 
     @classmethod
     def setUpTestData(cls):
-        super(TestRunGetBugsCount, cls).setUpTestData()
+        super(TestRunGetIssuesCount, cls).setUpTestData()
 
         cls.empty_test_run = TestRunFactory(product_version=cls.version,
                                             plan=cls.plan,
@@ -20,14 +20,15 @@ class TestRunGetBugsCount(BaseCaseRun):
                                               manager=cls.tester,
                                               default_tester=cls.tester)
 
-        # Add bugs to case runs
-        cls.case_run_1.add_bug('12345')
-        cls.case_run_1.add_bug('909090')
-        cls.case_run_3.add_bug('4567890')
+        cls.bz_tracker = cls.create_bz_tracker()
 
-    def test_get_bugs_count_if_no_bugs_added(self):
-        self.assertEqual(0, self.empty_test_run.get_bug_count())
-        self.assertEqual(0, self.test_run_no_bugs.get_bug_count())
+        cls.case_run_1.add_issue('12345', cls.bz_tracker)
+        cls.case_run_1.add_issue('909090', cls.bz_tracker)
+        cls.case_run_3.add_issue('4567890', cls.bz_tracker)
 
-    def test_get_bugs_count(self):
-        self.assertEqual(3, self.test_run.get_bug_count())
+    def test_get_issues_count_if_no_issue_added(self):
+        self.assertEqual(0, self.empty_test_run.get_issues_count())
+        self.assertEqual(0, self.test_run_no_bugs.get_issues_count())
+
+    def test_get_issues_count(self):
+        self.assertEqual(3, self.test_run.get_issues_count())

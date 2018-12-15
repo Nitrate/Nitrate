@@ -11,7 +11,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
 
 from tcms.management.models import Priority
-from tcms.testcases.models import TestCaseBug
 from tcms.testplans.models import TestPlan
 from tcms.testruns.models import TestCaseRun
 from tcms.testruns.models import TestCaseRunStatus
@@ -414,26 +413,6 @@ class CustomDetailsReportData(CustomReportData):
                          'tested_by__username', 'close_date')
         tcrs = tcrs.order_by('case')
         return tcrs
-
-    def get_case_runs_bugs(self, build_ids, status_ids):
-        """Get case runs' bugs according to builds and status
-
-        @param build_ids: IDs of builds
-        @type build_ids: list or tuple
-        @param status_ids: IDs of case run status
-        @type status_ids: list or tuple
-        @return: mapping between case run ID and its bugs
-        @rtype: dict
-        """
-        bugs = TestCaseBug.objects.filter(
-            case_run__run__build__in=build_ids,
-            case_run__case_run_status_id__in=status_ids)
-        bugs = bugs.select_related('bug_system')
-        bugs = bugs.only('bug_id',
-                         'bug_system__url_reg_exp',
-                         'case_run')
-        return dict((case_run_id, list(bugs)) for case_run_id, bugs in
-                    groupby(bugs, key=lambda bug: bug.case_run_id))
 
     def get_case_runs_comments(self, build_ids, status_ids):
         """Get case runs' bugs according to builds and status

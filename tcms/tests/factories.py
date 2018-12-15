@@ -9,7 +9,6 @@ from factory.django import DjangoModelFactory
 
 from tcms.management.models import Priority
 from tcms.testcases.models import TestCaseStatus
-from tcms.testcases.models import TestCaseBugSystem
 from tcms.testruns.models import TestCaseRunStatus
 
 
@@ -462,19 +461,6 @@ class TestCaseTextFactory(DjangoModelFactory):
     effect_checksum = factory.LazyAttribute(lambda obj: md5_hash(obj.effect))
     setup_checksum = factory.LazyAttribute(lambda obj: md5_hash(obj.setup))
     breakdown_checksum = factory.LazyAttribute(lambda obj: md5_hash(obj.breakdown))
-
-
-class TestCaseBugFactory(DjangoModelFactory):
-
-    class Meta:
-        model = 'testcases.TestCaseBug'
-
-    bug_id = '12345678'
-    summary = factory.LazyAttribute(lambda obj: 'Summary of bug %s' % obj.bug_id)
-    description = ''
-    bug_system = factory.LazyFunction(lambda: TestCaseBugSystem.objects.all()[0:1][0])
-    case_run = factory.SubFactory('tests.TestCaseRunFactory')
-    case = factory.SubFactory(TestCaseFactory)
 
 
 class ContactFactory(DjangoModelFactory):

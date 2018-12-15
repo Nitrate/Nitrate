@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import six
+import unittest
 
 from django import test
+from mock import Mock
+
 from tcms.integration.issuetracker.factories import IssueTrackerFactory
 from tcms.integration.issuetracker.factories import IssueTrackerProductFactory
 from tcms.integration.issuetracker.factories import ProductIssueTrackerRelationshipFactory
@@ -199,3 +202,17 @@ class TestMakeIssueReportURLForBugzilla(BaseCaseRun):
         )
 
         self.assert_url(expected_url, url)
+
+
+class TestFormatIssuesDisplayURL(unittest.TestCase):
+    """Test IssueTrackerService.make_issues_display_url_fmt"""
+
+    def test_format_url(self):
+        tracker = Mock(
+            issues_display_url_fmt='http://bugs.example.com/?ids={issue_keys}'
+        )
+        service = services.IssueTrackerService(tracker)
+        url = service.make_issues_display_url([1, 2, 3, 4])
+
+        expected_url = 'http://bugs.example.com/?ids=1,2,3,4'
+        self.assertEqual(expected_url, url)

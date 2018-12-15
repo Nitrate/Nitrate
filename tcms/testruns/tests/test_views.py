@@ -1351,3 +1351,40 @@ class TestAddCasesToRun(BaseCaseRun):
             ]
             for html in html_pieces:
                 self.assertContains(response, html, html=True)
+
+
+class TestRunReportView(BaseCaseRun):
+    """Test TestRunReportView"""
+
+    @classmethod
+    def setUpTestData(cls):
+        super(TestRunReportView, cls).setUpTestData()
+
+        cls.bz_tracker = cls.create_bz_tracker()
+        cls.case_run_1.add_issue('1', cls.bz_tracker)
+        cls.case_run_1.add_issue('2', cls.bz_tracker)
+        cls.case_run_2.add_issue('3', cls.bz_tracker)
+
+        cls.report_url = reverse('run-report', args=[cls.case_run_1.run.pk])
+
+    def test_show_report(self):
+        response = self.client.get(self.report_url)
+
+        # TODO: assert more.
+
+        # Ensure each case run's issues are available
+        for issue_key in [1, 2, 3]:
+            self.assertContains(
+                response,
+                '<a href="http://bugs.example.com/?id={0}">{0}</a>'.format(issue_key),
+                html=True)
+
+        # Ensure all issues display url is available in the Issues section
+        self.assertContains(
+            response, 'View all issues ({})'.format(self.bz_tracker.name))
+
+        issues_display_url = 'http://bugs.example.com/?bug_id=1,2,3'
+        self.assertContains(
+            response,
+            '<a href="{0}" target="_blank">{0}</a>'.format(issues_display_url),
+            html=True)

@@ -5,7 +5,6 @@ import logging
 from django import forms
 from django.contrib.auth.decorators import permission_required
 from django.core.validators import ValidationError
-from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.http import JsonResponse
 from django.shortcuts import Http404
@@ -32,7 +31,7 @@ def manage_case_run_issues(request, case_run_id):
     """Process the issues for case runs."""
 
     class CaseRunIssueActions(object):
-        __all__ = ['add', 'file', 'remove', 'render_form']
+        __all__ = ['add', 'file', 'remove']
 
         def __init__(self, request, case_run):
             self.request = request
@@ -114,16 +113,6 @@ def manage_case_run_issues(request, case_run_id):
                 'run_issues_count': self.get_run_issues_count(),
                 'caserun_issues_count': self.case_run.issues.count(),
             })
-
-        def render_form(self):
-            form = CaseIssueForm(initial={
-                'case_run': self.case_run.case_run_id,
-                'case': self.case_run.case_id,
-            })
-            if self.request.GET.get('type') == 'table':
-                return HttpResponse(form.as_table())
-
-            return HttpResponse(form.as_p())
 
         def get_run_issues_count(self):
             return self.case_run.run.get_issues_count()

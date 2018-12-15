@@ -5,7 +5,9 @@ import factory
 from factory.django import DjangoModelFactory
 
 from tcms.integration.issuetracker.models import CredentialTypes
-from tcms.tests import factories as f
+from tcms.tests.factories import ProductFactory
+from tcms.tests.factories import TestCaseFactory
+from tcms.tests.factories import TestCaseRunFactory
 
 
 class IssueTrackerProductFactory(DjangoModelFactory):
@@ -35,7 +37,7 @@ class IssueTrackerFactory(DjangoModelFactory):
 class ProductIssueTrackerRelationshipFactory(DjangoModelFactory):
     """Factory to create model ProductIssueTrackerRelationship"""
 
-    product = factory.SubFactory(f.ProductFactory)
+    product = factory.SubFactory(ProductFactory)
     issue_tracker = factory.SubFactory(IssueTrackerFactory)
 
     class Meta:
@@ -49,8 +51,8 @@ class IssueFactory(DjangoModelFactory):
         model = 'issuetracker.Issue'
 
     tracker = factory.SubFactory(IssueTrackerFactory)
-    case = factory.SubFactory(f.TestCaseFactory)
-    case_run = factory.SubFactory(f.TestCaseRunFactory)
+    case = factory.SubFactory(TestCaseFactory)
+    case_run = factory.SubFactory(TestCaseRunFactory)
 
 
 class UserPwdCredentialFactory(DjangoModelFactory):

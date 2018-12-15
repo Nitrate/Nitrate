@@ -133,6 +133,12 @@ class IssueTracker(TCMSActionModel):
         blank=True,
         help_text='API URL of this issue tracker.')
 
+    issues_display_url_fmt = models.URLField(
+        help_text='URL format to construct a display URL used to open in Web '
+                  'browse to display issues. For example, '
+                  'http://bugzilla.example.com/buglist.cgi?bug_id={issue_keys}'
+    )
+
     issue_url_fmt = models.URLField(
         help_text='Formatter string used to construct a specific issue\'s URL.'
                   ' Format arguments: issue_key, product. For example,'
