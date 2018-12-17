@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import sys
+
 from setuptools import setup, find_packages
 
 
@@ -26,6 +28,11 @@ install_requires = [
     'six',
     'xmltodict',
 ]
+
+if sys.version_info.major < 3:
+    install_requires += [
+        'enum34',
+    ]
 
 extras_require = {
     # Required for tcms.core.contrib.auth.backends.KerberosBackend
