@@ -4,6 +4,7 @@ branch = True
 [report]
 #show_missing = True
 skip_covered = True
+sort = Cover
 omit =
     .tox/*
     */tests.py
