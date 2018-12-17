@@ -23,7 +23,7 @@ from tcms import utils
 from tcms.management.models import Component, TestBuild, Version
 from tcms.management.models import Priority
 from tcms.management.models import TestTag
-from tcms.testcases.models import TestCase, TestCaseBug
+from tcms.testcases.models import TestCase
 from tcms.testcases.models import TestCaseCategory
 from tcms.testcases.models import TestCaseStatus
 from tcms.testcases.views import get_selected_testcases
@@ -31,10 +31,9 @@ from tcms.testcases.views import plan_from_request_or_none
 from tcms.testplans.models import TestPlan, TestCasePlan
 from tcms.testruns import signals as run_watchers
 from tcms.testruns.models import TestRun, TestCaseRun, TestCaseRunStatus
-from tcms.core.exceptions import NitrateException
 from tcms.core.helpers.comments import add_comment
 from tcms.core.utils import get_string_combinations
-    
+
 post_update = Signal(providing_args=["instances", "kwargs"])
 post_update.connect(run_watchers.post_update_handler)
 
@@ -757,69 +756,6 @@ def comment_case_runs(request):
     if not runs:
         return say_no('No caserun found.')
     add_comment(runs, comment, request.user)
-    return say_yes()
-
-
-def clean_bug_form(request):
-    """
-    Verify the form data, return a tuple (None, ERROR_MSG) on failure or
-    (data_dict, '') on success
-    """
-    data = {}
-    try:
-        data['bugs'] = request.GET.get('bug_id', '').split(',')
-        data['runs'] = map(int, request.GET.get('case_runs', '').split(','))
-    except (TypeError, ValueError) as e:
-        return (None, 'Please specify only integers for bugs, '
-                      'caseruns(using comma to seperate IDs), '
-                      'and bug_system. (DEBUG INFO: %s)' % str(e))
-
-    data['bug_system_id'] = int(request.GET.get('bug_system_id', 1))
-
-    if request.GET.get('a') not in ('add', 'remove'):
-        return (None, 'Actions only allow "add" and "remove".')
-    else:
-        data['action'] = request.GET.get('a')
-    data['bz_external_track'] = True if request.GET.get('bz_external_track',
-                                                        False) else False
-
-    return (data, '')
-
-
-def update_bugs_to_caseruns(request):
-    """
-    Add one or more bugs to or remove that from\n
-    one or more caserun at a time.
-    """
-    data, error = clean_bug_form(request)
-    if error:
-        return say_no(error)
-    runs = TestCaseRun.objects.filter(pk__in=data['runs'])
-    bug_system_id = data['bug_system_id']
-    bug_ids = data['bugs']
-
-    try:
-        validate_bug_id(bug_ids, bug_system_id)
-    except NitrateException as e:
-        return say_no(str(e))
-
-    bz_external_track = data['bz_external_track']
-    action = data['action']
-    try:
-        if action == "add":
-            for run in runs:
-                for bug_id in bug_ids:
-                    run.add_bug(bug_id=bug_id,
-                                bug_system_id=bug_system_id,
-                                bz_external_track=bz_external_track)
-        else:
-            bugs = TestCaseBug.objects.filter(bug_id__in=bug_ids)
-            for run in runs:
-                for bug in bugs:
-                    if bug.case_run_id == run.pk:
-                        run.remove_bug(bug.bug_id, run.pk)
-    except Exception as e:
-        return say_no(str(e))
     return say_yes()
 
 

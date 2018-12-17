@@ -5,11 +5,13 @@ import logging
 import os
 import re
 import enum
+import six
 
 from datetime import datetime
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxLengthValidator, RegexValidator
 from django.db import models
+from django.db.models import Count
 from django.utils.encoding import python_2_unicode_compatible
 from six.moves import configparser
 
@@ -493,3 +495,25 @@ class Issue(TCMSActionModel):
                     'Issue key {} is in malformat for issue tracker {}.'
                     .format(self.issue_key, self.tracker)
             })
+
+    @staticmethod
+    def count_by_case_run(case_run_ids=None):
+        """Subtotal issues and optionally by specified case runs
+
+        :param case_run_ids: list of test case run IDs to just return subtotal
+            for them.
+        :type case_run_ids: list[int]
+        """
+        if case_run_ids is not None:
+            assert isinstance(case_run_ids, list)
+            assert all(isinstance(item, six.integer_types)
+                       for item in case_run_ids)
+            criteria = {'case_run__in': case_run_ids}
+        else:
+            criteria = {'case_run__isnull': False}
+        return {
+            item['case_run']: item['issues_count']
+            for item in (Issue.objects.filter(**criteria)
+                                      .values('case_run')
+                                      .annotate(issues_count=Count('pk')))
+        }

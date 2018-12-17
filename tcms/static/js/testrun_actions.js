@@ -142,7 +142,7 @@ function AddIssueDialog() {
           'a': 'add',
           'issue_key': issueKey,
           'tracker': issueTrackerID,
-          'case_run': addIssueInfo.caseRunId,
+          'case_run': addIssueInfo.caseRunIds
         };
 
         // If selected issue tracker has option "add case to issue's external
@@ -152,11 +152,12 @@ function AddIssueDialog() {
         }
 
         jQ.ajax({
-          url: '/caserun/' + addIssueInfo.caseRunId + '/issue/',
+          url: '/run/' + addIssueInfo.runId + '/issues/',
           // FIXME: should be POST
           method: 'get',
           dataType: 'json',
           data: data,
+          traditional: true,
 
           // After adding an issue successfully, number of issues inside the run
           // page has to be updated and reload case run detail content eventually.
@@ -164,15 +165,25 @@ function AddIssueDialog() {
             // After succeeding to add issue, we close the add dialog.
             dialog.dialog('close');
 
-            var caseRunReloadInfo = dialog.dialog('option', 'caseRunReloadInfo');
+            var reloadInfo = dialog.dialog('option', 'reloadInfo');
 
-            // Update issues count associated with just updated case run
-            updateIssuesCountInCaseRunRow(caseRunReloadInfo.caseRunRow, responseJSON.caserun_issues_count);
-            showTheNumberOfCaseRunIssues(responseJSON.run_issues_count, addIssueInfo.runId);
+            // TODO: consider now to reload whole page.
+            //       consider with the else section to update partial page
+            //       content and reload expanded case run details.
 
-            constructCaseRunZone(caseRunReloadInfo.caseRunDetailRow,
-                                 caseRunReloadInfo.caseRunRow,
-                                 addIssueInfo.caseId);
+            if (reloadInfo.reloadPage) {
+              reloadWindow();
+            } else {
+              // When add issue to a case run, only need to reload the updated case run.
+              // Update issues count associated with just updated case run
+              for (var caseRunId in addIssueInfo.caseRunIds) {
+                var caseRunIssuesCount = responseJSON.caserun_issues_count[caseRunId];
+                updateIssuesCountInCaseRunRow(reloadInfo.caseRunRow, caseRunIssuesCount);
+              }
+              showTheNumberOfCaseRunIssues(responseJSON.run_issues_count, addIssueInfo.runId);
+              constructCaseRunZone(
+                reloadInfo.caseRunDetailRow, reloadInfo.caseRunRow, addIssueInfo.caseId);
+            }
           },
 
           error: function(jqXHR, textStatus, errorThrown) {
@@ -189,10 +200,13 @@ function AddIssueDialog() {
 }
 
 AddIssueDialog.prototype.open = function(addIssueInfo, reloadInfo) {
+  if (addIssueInfo.caseRunIds === undefined || !Array.isArray(addIssueInfo.caseRunIds))
+    throw new Error('addIssueInfo.caseRunIDs must be an array including case run IDs.');
+
   var dialog = this.dialog;
 
-  dialog.dialog('option', 'title', 'Add issue to case run ' + addIssueInfo.caseRunId);
-  dialog.dialog('option', 'caseRunReloadInfo', reloadInfo);
+  dialog.dialog('option', 'title', 'Add issue to case run');
+  dialog.dialog('option', 'reloadInfo', reloadInfo);
   dialog.dialog('option', 'addIssueInfo', addIssueInfo);
 
   // Switch issue tracker tab
@@ -300,11 +314,11 @@ Nitrate.TestRuns.Details.on_load = function() {
       });
       c_container.find('.js-remove-caserun-issue').bind('click', function(){
         var removeIssueInfo = jQ(this).data('params');
-        var caseRunReloadInfo = {
+        var reloadInfo = {
           caseRunRow: c[0],
           caseRunDetailRow: c_container[0]
         };
-        removeIssueFromCaseRun(caseRunReloadInfo, removeIssueInfo);
+        removeIssueFromCaseRuns(removeIssueInfo, reloadInfo);
       });
       c_container.find('.js-add-testlog').bind('click', function(){
         var params = jQ(this).data('params');
@@ -411,12 +425,8 @@ Nitrate.TestRuns.Details.on_load = function() {
   jQ('.js-change-assignee').bind('click', function() {
     changeCaseRunAssignee();
   });
-  jQ('.js-add-bugs').bind('click', function() {
-    updateBugs('add');
-  });
-  jQ('.js-remove-bugs').bind('click', function() {
-    updateBugs('remove');
-  });
+  jQ('.js-add-issues').bind('click', addIssueToBatchCaseRunsHandler);
+  jQ('.js-remove-issues').bind('click', removeIssueFromBatchCaseRunsHandler);
   jQ('.js-show-commentdialog').bind('click', function() {
     showCommentForm();
   });
@@ -750,27 +760,29 @@ function constructCaseRunZone(container, title_container, case_id) {
 }
 
 
-function removeIssueFromCaseRun(caseRunReloadInfo, removeIssueInfo) {
+function removeIssueFromCaseRuns(removeIssueInfo, reloadInfo) {
   if (removeIssueInfo.issueKey === undefined || removeIssueInfo.issueKey === '')
     throw new Error('Missing issue key to remove.');
 
-  if (! window.confirm('Are you sure to remove issue ' + removeIssueInfo.issueKey + ' ?'))
-    return;
-
   jQ.ajax({
-    url: '/caserun/' + removeIssueInfo.caseRunId + '/issue/',
+    url: '/run/' + removeIssueInfo.runId + '/issues/',
     data: {
-      'a': 'remove',
-      'case_run': removeIssueInfo.caseRunId,
-      'issue_key': removeIssueInfo.issueKey
+      a: 'remove',
+      case_run: removeIssueInfo.caseRunIds,
+      issue_key: removeIssueInfo.issueKey
     },
     dataType: 'json',
+    traditional: true,
     success: function(responseJSON, textStatus, jqXHR) {
-      showTheNumberOfCaseRunIssues(responseJSON.run_issues_count, removeIssueInfo.runId);
-      updateIssuesCountInCaseRunRow(caseRunReloadInfo.caseRunRow, responseJSON.caserun_issues_count);
-      constructCaseRunZone(caseRunReloadInfo.caseRunDetailRow,
-                           caseRunReloadInfo.caseRunRow,
-                           removeIssueInfo.caseId);
+      if (reloadInfo.reloadPage) {
+        reloadWindow();
+      } else {
+        var caseRunIssuesCount = responseJSON.caserun_issues_count[removeIssueInfo.caseRunId];
+        updateIssuesCountInCaseRunRow(reloadInfo.caseRunRow, caseRunIssuesCount);
+        showTheNumberOfCaseRunIssues(responseJSON.run_issues_count, removeIssueInfo.runId);
+        constructCaseRunZone(
+          reloadInfo.caseRunDetailRow, reloadInfo.caseRunRow, removeIssueInfo.caseId);
+      }
     },
     error: function(jqXHR, textStatus, errorThrown) {
       json_failure(jqXHR);
@@ -1099,8 +1111,8 @@ function removeRunCC(run_id, user, container) {
 }
 
 function changeCaseRunAssignee() {
-  var runs = serializeCaseRunFromInputList(jQ('#id_table_cases')[0]);
-  if (!runs.length) {
+  var selectedCaseRunIDs = serializeCaseRunFromInputList(jQ('#id_table_cases')[0]);
+  if (!selectedCaseRunIDs.length) {
     window.alert(default_messages.alert.no_case_selected);
     return false;
   }
@@ -1204,87 +1216,63 @@ function insertCasesIntoTestRun() {
   postToURL(url, data_to_post, 'POST');
 }
 
-function updateBugsActionAdd(case_runs) {
-  var dialog = new AddIssueDialog({
-    'extraFormHiddenData': { 'case_runs': case_runs.join() },
-    'onSubmit': function(e, dialog) {
-      e.stopPropagation();
-      e.preventDefault();
-      var form_data = dialog.get_data();
-      form_data.bug_id = form_data.bug_id.trim();
 
-      if (!form_data.bug_id.length) {
-        return;
-      }
-
-      if (!validateIssueID(form_data.bug_system_id, form_data.bug_id)) {
-        return false;
-      }
-
-      jQ.ajax({
-        url: '/caserun/update-bugs-for-many/',
-        dataType: 'json',
-        data: form_data,
-        success: function(res){
-          if (res.rc === 0) {
-            reloadWindow();
-          } else {
-            window.alert(res.response);
-            return false;
-          }
-        }
-      });
-    }
-  });
-  dialog.show();
-}
-
-function updateBugsActionRemove(case_runs) {
-  var bug_ids = jQ.trim(window.prompt("Please input a Bugzilla ID or Jira issue key."));
-  if (!bug_ids) {
-    return false;
-  }
-
-  var bug_system_id = getBugSystemId(bug_ids);
-  if (bug_system_id > 2) {
-    window.alert(default_messages.alert.invalid_issue_id);
-    return false;
-  }
-  jQ.ajax({
-    url: '/caserun/update-bugs-for-many/',
-    dataType: 'json',
-    success: function(res) {
-      if (res.rc == 0) {
-        reloadWindow();
-      } else {
-        window.alert(res.response);
-        return false;
-      }
-    },
-    data: {
-      'bug_id': bug_ids,
-      'a': 'remove',
-      'case_runs': case_runs.join(),
-      'bug_system_id': bug_system_id
-    }
-  });
-}
-
-function updateBugs(action) {
-  var runs = serializeCaseRunFromInputList(jQ('#id_table_cases')[0]);
-  if (!runs.length) {
+/*
+ * Click event handler for A .js-add-issues
+ */
+function addIssueToBatchCaseRunsHandler() {
+  var caseRunIds = serializeCaseRunFromInputList(jQ('#id_table_cases')[0]);
+  caseRunIds = caseRunIds.map(function(s) { return parseInt(s); });
+  if (caseRunIds.length === 0) {
     window.alert(default_messages.alert.no_case_selected);
-    return false;
-  }
-
-  if (action === "add") {
-    updateBugsActionAdd(runs);
-  } else if (action === "remove") {
-    updateBugsActionRemove(runs);
   } else {
-    throw new Error("Unknown operation when update case runs' bugs. This should not happen.");
+    var addIssueInfo = jQ(this).data('addIssueInfo');
+    addIssueInfo.caseRunIds = caseRunIds;
+    var reloadInfo = jQ(this).data('reloadInfo');
+    var dialog = new AddIssueDialog();
+    dialog.open(addIssueInfo, reloadInfo);
   }
 }
+
+
+/*
+ * Click event handler for A .js-remove-issues
+ */
+function removeIssueFromBatchCaseRunsHandler() {
+  var caseRunIds = serializeCaseRunFromInputList(jQ('#id_table_cases')[0]);
+  caseRunIds = caseRunIds.map(function(s) { return parseInt(s); });
+
+  if (caseRunIds.length === 0) {
+    window.alert(default_messages.alert.no_case_selected);
+  } else {
+    var reloadInfo = jQ(this).data('reloadInfo');
+    var removeIssueInfo = jQ(this).data('removeIssueInfo');
+    removeIssueInfo.caseRunIds = caseRunIds;
+
+    var removeIssueDialog = jQ('div[id=showDialog]').dialog({
+      title: 'Remove issue key',
+      modal: true,
+      resizable: false,
+      buttons: {
+        Ok: function() {
+          // Don't care about closing or destroying current dialog.
+          // Whole page will be reloaded.
+          removeIssueInfo.issueKey = jQ(this).find('input[id=issueKeyToRemove]').val();
+          removeIssueFromCaseRuns(removeIssueInfo, reloadInfo);
+        },
+        Cancel: function() {
+          jQ(this).dialog('close');
+        }
+      }
+    });
+
+    removeIssueDialog.html(
+      '<label for="issueKeyToRemove">Issue key</label><br>' +
+      '<input type="text" id="issueKeyToRemove">');
+    removeIssueDialog.dialog('open');
+  }
+}
+
 
 function showCommentForm() {
   var dialog = getDialog();

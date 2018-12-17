@@ -43,8 +43,8 @@
 		<div class="btnBlueCaserun">
 			<span>Issues</span>
 			<ul>
-				<li><a href="javascript:void(0);" class="addBlue9 js-add-bugs">Add</a></li>
-				<li><a href="javascript:void(0);" class="removeBlue9 js-remove-bugs">Remove</a></li>
+				<li><a href="javascript:void(0);" class="addBlue9 js-add-issues" data-add-issue-info='{"runId": {{ test_run.pk }}}' data-reload-info='{"reloadPage": true}'>Add</a></li>
+				<li><a href="javascript:void(0);" class="removeBlue9 js-remove-issues" data-remove-issue-info='{"runId": {{ test_run.pk }}}' data-reload-info='{"reloadPage": true}'>Remove</a></li>
 			</ul>
 		</div>
 		<div class="btnBlueCaserun">

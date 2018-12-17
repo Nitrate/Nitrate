@@ -3,7 +3,8 @@
 from __future__ import absolute_import
 from django.conf.urls import url
 
-from .. import views
+from tcms.testruns import views
+from tcms.testruns import ajax
 
 urlpatterns = [
     url(r'^new/$', views.new, name='run-new'),
@@ -26,4 +27,9 @@ urlpatterns = [
     url(r'^(?P<run_id>\d+)/cc/$', views.cc, name='run-cc'),
     url(r'^(?P<run_id>\d+)/update/$', views.update_case_run_text, name='run-update'),
     url(r'^(?P<run_id>\d+)/export/$', views.export, name='run-export'),
+
+    url(r'^(?P<run_id>\d+)/case-run/(?P<case_run_id>\d+)/file-issue/$',
+        views.FileIssueForCaseRun.as_view(), name='run-caserun-file-issue'),
+
+    url(r'^(?P<run_id>\d+)/issues/$', ajax.manage_case_run_issues, name='run-issues'),
 ]

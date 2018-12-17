@@ -275,7 +275,7 @@ class TestCaseRunAttachIssue(XmlrpcAPIBaseTest):
 
     def test_attach_issue_with_required_args(self):
         bug = testcaserun.attach_issue(self.admin_request, {
-            "case_run": self.case_run.pk,
+            "case_run": [self.case_run.pk],
             "issue_key": '1',
             "tracker": self.tracker.pk,
         })
@@ -292,7 +292,7 @@ class TestCaseRunAttachIssue(XmlrpcAPIBaseTest):
         issue_summary = 'This is summary.'
         issue_description = 'This is description.'
         bug = testcaserun.attach_issue(self.admin_request, {
-            "case_run": self.case_run.pk,
+            "case_run": [self.case_run.pk],
             "issue_key": '2',
             "tracker": self.tracker.pk,
             "summary": issue_summary,
@@ -313,7 +313,7 @@ class TestCaseRunAttachIssue(XmlrpcAPIBaseTest):
 
     def test_succeed_to_attach_issue_by_passing_extra_data(self):
         testcaserun.attach_issue(self.admin_request, {
-            "case_run": self.case_run.pk,
+            "case_run": [self.case_run.pk],
             "issue_key": '1200',
             "tracker": self.tracker.pk,
             "summary": "This is summary.",
@@ -330,7 +330,7 @@ class TestCaseRunAttachIssue(XmlrpcAPIBaseTest):
 
     def test_attach_issue_with_non_existing_case_run(self):
         value = {
-            "case_run": 111111111,
+            "case_run": [111111111],
             "issue_key": '2',
             "tracker": self.tracker.pk,
         }
@@ -340,7 +340,7 @@ class TestCaseRunAttachIssue(XmlrpcAPIBaseTest):
 
     def test_attach_issue_with_non_existing_bug_system(self):
         value = {
-            "case_run": self.case_run.pk,
+            "case_run": [self.case_run.pk],
             "issue_key": '2',
             "tracker": 111111111,
         }
@@ -353,7 +353,7 @@ class TestCaseRunAttachIssue(XmlrpcAPIBaseTest):
         issue_description = '中国是一个具有悠久历史的文明古国'
 
         bug = testcaserun.attach_issue(self.admin_request, {
-            "case_run": self.case_run.pk,
+            "case_run": [self.case_run.pk],
             "issue_key": '12',
             "tracker": self.tracker.pk,
             "summary": "你好，中国",
@@ -461,7 +461,7 @@ class TestCaseRunDetachIssue(XmlrpcAPIBaseTest):
     def setUp(self):
         self.bz_bug = '67890'
         testcaserun.attach_issue(self.staff_request, {
-            'case_run': self.case_run.pk,
+            'case_run': [self.case_run.pk],
             'issue_key': self.bz_bug,
             'tracker': self.bz_tracker.pk,
             'summary': 'Testing TCMS',
@@ -470,7 +470,7 @@ class TestCaseRunDetachIssue(XmlrpcAPIBaseTest):
 
         self.jira_key = 'AWSDF-112'
         testcaserun.attach_issue(self.staff_request, {
-            'case_run': self.case_run.pk,
+            'case_run': [self.case_run.pk],
             'issue_key': self.jira_key,
             'tracker': self.jira_tracker.pk,
             'summary': 'Testing TCMS',
@@ -701,7 +701,7 @@ class TestCaseRunGetIssues(XmlrpcAPIBaseTest):
         cls.case_run = TestCaseRunFactory()
         cls.bz_tracker = IssueTrackerFactory(name='MyBZ')
         testcaserun.attach_issue(cls.admin_request, {
-            'case_run': cls.case_run.pk,
+            'case_run': [cls.case_run.pk],
             'issue_key': '67890',
             'tracker': cls.bz_tracker.pk,
             'summary': 'Testing TCMS',
@@ -745,7 +745,7 @@ class TestCaseRunGetIssuesSet(XmlrpcAPIBaseTest):
         cls.case_run = TestCaseRunFactory()
         cls.bz_tracker = IssueTrackerFactory(name='MyBugzilla')
         testcaserun.attach_issue(cls.admin_request, {
-            'case_run': cls.case_run.pk,
+            'case_run': [cls.case_run.pk],
             'issue_key': '67890',
             'tracker': cls.bz_tracker.pk,
             'summary': 'Testing TCMS',

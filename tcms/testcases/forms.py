@@ -613,11 +613,11 @@ class CaseIssueForm(BaseAddIssueForm):
 
 class CaseRunIssueForm(BaseAddIssueForm):
     """Form for adding an issue to a case run"""
-    case_run = forms.ModelChoiceField(
+    case_run = forms.ModelMultipleChoiceField(
         queryset=TestCaseRun.objects.all(),
         error_messages={
             'required': 'Case run ID is missed.',
-            'invalid_choice': 'Invalid test case run that does not exist.'
+            'invalid_pk_value': 'Invalid test case run %(pk)s that does not exist.'
         }
     )
     link_external_tracker = forms.BooleanField(required=False)

@@ -118,7 +118,7 @@ def attach_issue(request, values):
 
         # Attach an issue 67890 to case run 12345
         >>> TestCaseRun.attach_issue({
-                'case_run': 12345,
+                'case_run': [12345],
                 'issue_key': '67890',
                 'tracker': 1,
                 'summary': 'Testing TCMS',
@@ -129,7 +129,8 @@ def attach_issue(request, values):
        Some arguments passed via ``values`` are changed. ``case_run_id`` is
        changed to ``case_run``, ``bug_id`` is changed to ``issue_key``,
        ``bz_system_id`` is changed to ``tracker``. ``issue_key`` accepts string
-       instead of integer.
+       instead of integer. ``case_run`` within ``values`` must be a list of
+       test case ids.
     """
     if isinstance(values, dict):
         values = [values, ]
@@ -138,14 +139,17 @@ def attach_issue(request, values):
         form = CaseRunIssueForm(value)
         if form.is_valid():
             service = find_service(form.cleaned_data['tracker'])
-            case_run = form.cleaned_data['case_run']
-            service.add_issue(
-                form.cleaned_data['issue_key'],
-                case_run.case,
-                case_run=case_run,
-                summary=form.cleaned_data['summary'],
-                description=form.cleaned_data['description'],
-            )
+            issue_key = form.cleaned_data['issue_key']
+            summary = form.cleaned_data['summary']
+            description = form.cleaned_data['description']
+            case_runs = form.cleaned_data['case_run']
+            for case_run in case_runs:
+                service.add_issue(
+                    issue_key,
+                    case_run.case,
+                    case_run=case_run,
+                    summary=summary,
+                    description=description)
         else:
             raise ValueError(form_errors_to_list(form))
 

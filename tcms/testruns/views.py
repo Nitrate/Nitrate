@@ -26,15 +26,17 @@ from django.shortcuts import get_object_or_404
 from django.shortcuts import render
 from django.template.loader import get_template
 from django.utils.decorators import method_decorator
-from django.views.decorators.http import require_http_methods
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_http_methods
+from django.views.generic import RedirectView
 from django.views.generic.base import TemplateView
 from django.views.generic.base import View
 
 from django_comments.models import Comment
 
 from tcms.integration.issuetracker.models import Issue
+from tcms.integration.issuetracker.models import IssueTracker
 from tcms.integration.issuetracker.services import find_service
 from tcms.core.utils import clean_request
 from tcms.core.utils import DataTableResult
@@ -1442,3 +1444,18 @@ def get_caseruns_of_runs(runs, kwargs=None):
     if status:
         caseruns = caseruns.filter(case_run_status__name__iexact=status)
     return caseruns
+
+
+class FileIssueForCaseRun(RedirectView):
+    """Construct an issue report URL and redirect to it"""
+
+    def get_redirect_url(self, *args, **kwargs):
+        _, case_run_id = self.args
+        case_run = get_object_or_404(TestCaseRun, pk=case_run_id)
+        # This name should be get from rendered webpage dynamically.
+        # It is hardcoded as a temporary solution right now.
+        # FIXME: name here should be RHBugzilla in final solution.
+        bz_model = IssueTracker.objects.get(name='Bugzilla')
+        # An eventual solution would be to just call this method
+        # and pass loaded issue tracker name.
+        return find_service(bz_model).make_issue_report_url(case_run)

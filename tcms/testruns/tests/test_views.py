@@ -11,6 +11,9 @@ from django.utils import formats
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 
+from tcms.integration.issuetracker.factories import IssueTrackerFactory
+from tcms.integration.issuetracker.factories import IssueTrackerProductFactory
+from tcms.integration.issuetracker.models import Issue
 from tcms.testruns.models import TCMSEnvRunValueMap
 from tcms.testruns.models import TestCaseRun
 from tcms.testruns.models import TestCaseRunStatus
@@ -1057,9 +1060,6 @@ class TestIssueActions(BaseCaseRun):
         user_should_have_perm(cls.tester, 'testruns.change_testrun')
         user_should_have_perm(cls.tester, 'testcases.delete_testcasebug')
 
-        from tcms.integration.issuetracker.factories import IssueTrackerFactory
-        from tcms.integration.issuetracker.factories import IssueTrackerProductFactory
-
         cls.bz_tracker_product = IssueTrackerProductFactory(name='BZ')
         cls.bugzilla = IssueTrackerFactory(
             service_url='http://localhost/',
@@ -1074,7 +1074,7 @@ class TestIssueActions(BaseCaseRun):
             validate_regex=r'^[A-Z]+-\d+$',
             issue_report_endpoint='/createissue')
 
-        cls.case_run_issue_url = reverse('caserun-issue', args=[cls.test_run.pk])
+        cls.run_issues_url = reverse('run-issues', args=[cls.test_run.pk])
 
         cls.bug_12345 = '12345'
         cls.jira_nitrate_100 = 'NITRATE-100'
@@ -1083,9 +1083,9 @@ class TestIssueActions(BaseCaseRun):
 
     def test_404_if_case_run_id_not_exist(self):
         self.login_tester()
-        self.case_run_issue_url = reverse('caserun-issue', args=[999])
+        self.run_issues_url = reverse('run-issues', args=[999])
 
-        response = self.client.get(self.case_run_issue_url, {})
+        response = self.client.get(self.run_issues_url, {})
         self.assert404(response)
 
     def test_refuse_if_action_is_unknown(self):
@@ -1093,13 +1093,13 @@ class TestIssueActions(BaseCaseRun):
 
         post_data = {
             'a': 'unknown action',
-            'case_run': self.case_run_1.pk,
+            'case_run': [self.case_run_1.pk],
             'case': self.case_run_1.case.pk,
             'tracker': self.bz_tracker_product.pk,
             'issue_key': '123456',
         }
 
-        response = self.client.get(self.case_run_issue_url, post_data)
+        response = self.client.get(self.run_issues_url, post_data)
         self.assertJsonResponse(
             response, {'messages': ['Unrecognizable actions']}, HTTP_BAD_REQUEST)
 
@@ -1108,13 +1108,12 @@ class TestIssueActions(BaseCaseRun):
 
         post_data = {
             'a': 'remove',
-            'case_run': self.case_run_1.pk,
-            'issue_key': self.bug_12345,
+            'case_run': [self.case_run_1.pk],
+            'issue_key': [self.bug_12345],
         }
 
-        response = self.client.get(self.case_run_issue_url, post_data)
+        response = self.client.get(self.run_issues_url, post_data)
 
-        from tcms.integration.issuetracker.models import Issue
         issue_exists = Issue.objects.filter(
             issue_key=self.bug_12345,
             case=self.case_run_1.case,
@@ -1124,7 +1123,11 @@ class TestIssueActions(BaseCaseRun):
 
         self.assertJsonResponse(
             response,
-            {'run_issues_count': 1, 'caserun_issues_count': 1})
+            {
+                'run_issues_count': 1,
+                'caserun_issues_count': {str(self.case_run_1.pk): 1}
+            }
+        )
 
 
 class TestRemoveCaseRuns(BaseCaseRun):

@@ -610,9 +610,9 @@ class TestCaseRun(TCMSActionModel):
             link_external_tracker=bz_external_track,
         )
 
-    def remove_issue(self, issue_key, case_run):
+    def remove_issue(self, issue_key):
         """Remove issue from this case run"""
-        self.case.remove_issue(issue_key, case_run=case_run)
+        self.case.remove_issue(issue_key, case_run=self)
 
     def is_finished(self):
         return self.case_run_status.is_finished()

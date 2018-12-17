@@ -8,7 +8,7 @@
 <script type="text/javascript" src='{{ STATIC_URL }}js/testrun_actions.js'></script>
 <script type="text/javascript" src='{{ STATIC_URL }}js/testcase_actions.js'></script>
 <script type="text/javascript">
-{#　Define the case_run_status array for all of case run status　#}
+{# Define the case_run_status array for all of case run status #}
 Nitrate.TestRuns.CaseRunStatus = new Array();
 {% for crs in test_case_run_status %}
 Nitrate.TestRuns.CaseRunStatus.push('{{ crs.name|lower }}');
@@ -70,7 +70,6 @@ jQ(function() {
 		{% endif %}
 	</div>
 	<h2 id="display_title">{{ test_run.summary }}</h2>
-	<div>
 	<div class="listinfo_content" style="float:left; width:auto; margin-bottom:0px;">
 		<div ></div>
 		<div class="leftlistinfo">
@@ -217,5 +216,7 @@ jQ(function() {
 	<div class="Detailform border-1">
 		{% include 'run/get_case_runs.html' %}
 	</div>
+
+	<div id="showDialog" style="display: none"></div>
 </div>
 {% endblock %}
