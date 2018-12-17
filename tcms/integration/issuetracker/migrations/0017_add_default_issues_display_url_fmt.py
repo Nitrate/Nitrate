@@ -7,7 +7,7 @@ from django.db import migrations
 
 def forwards(apps, schema_editor):
     IssueTracker = apps.get_model('issuetracker', 'IssueTracker')
-    
+
     bugzilla = IssueTracker.objects.get(name='Bugzilla')
     bugzilla.issues_display_url_fmt = (
         'http://bugzilla.example.com/buglist.cgi?'

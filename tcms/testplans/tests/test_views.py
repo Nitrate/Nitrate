@@ -100,8 +100,9 @@ class PlanTests(test.TestCase):
         response = self.c.get(location, {'sure': 'yes'})
         self.assertEqual(response.status_code, http_client.OK)
         deleted = not TestPlan.objects.filter(pk=tp_pk).exists()
-        self.assertTrue(deleted,
-                     'TestPlan {0} should be deleted. But, not.'.format(tp_pk))
+        self.assertTrue(
+            deleted,
+            'TestPlan {0} should be deleted. But, not.'.format(tp_pk))
 
     def test_plan_edit(self):
         location = reverse('plan-edit', args=[self.plan_id])

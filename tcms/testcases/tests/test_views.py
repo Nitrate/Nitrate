@@ -2,7 +2,6 @@
 
 from __future__ import absolute_import
 
-import six
 import unittest
 import xml.etree.ElementTree
 
