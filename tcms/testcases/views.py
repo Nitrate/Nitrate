@@ -41,7 +41,7 @@ from tcms.testcases import sqls
 from tcms.testcases.models import TestCase, TestCaseStatus, \
     TestCaseAttachment, TestCasePlan
 from tcms.management.models import Priority, TestTag
-from tcms.testcases.models import TestCaseBug, TestCaseComponent
+from tcms.testcases.models import TestCaseComponent
 from tcms.testplans.models import TestPlan
 from tcms.testruns.models import TestCaseRun
 from tcms.testruns.models import TestCaseRunStatus
@@ -295,32 +295,19 @@ def get_testcaseplan_sortkey_pk_for_testcases(plan, tc_ids):
     }) for item in qs])
 
 
-def calculate_number_of_bugs_for_testcases(tc_ids):
-    """Calculate the number of bugs for each TestCase
-
-    Arguments:
-    - tc_ids: a list of tuple of TestCases' IDs
-    """
-    qs = TestCaseBug.objects.filter(case__in=tc_ids)
-    qs = qs.values('case').annotate(total_count=Count('pk'))
-    return dict([(item['case'], item['total_count']) for item in qs])
-
-
 def calculate_for_testcases(plan, testcases):
     """Calculate extra data for TestCases
 
     Attach TestCasePlan.sortkey, TestCasePlan.pk, and the number of bugs of
     each TestCase.
 
-    Arguments:
-    - plan: the TestPlan containing searched TestCases. None means testcases
-      are not limited to a specific TestPlan.
-    - testcases: a queryset of TestCases.
+    :param plan: the TestPlan containing searched TestCases. None means
+        testcases are not limited to a specific TestPlan.
+    :param testcases: a queryset of TestCase.
     """
     tc_ids = [tc.pk for tc in testcases]
     sortkey_tcpkan_pks = get_testcaseplan_sortkey_pk_for_testcases(
         plan, tc_ids)
-    num_bugs = calculate_number_of_bugs_for_testcases(tc_ids)
 
     # FIXME: strongly recommended to upgrade to Python +2.6
     for tc in testcases:
@@ -333,7 +320,6 @@ def calculate_for_testcases(plan, testcases):
             setattr(tc, 'cal_testcaseplan_pk', data['testcaseplan_pk'])
         else:
             setattr(tc, 'cal_testcaseplan_pk', None)
-        setattr(tc, 'cal_num_bugs', num_bugs.get(tc.pk, None))
 
     return testcases
 
