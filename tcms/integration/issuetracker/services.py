@@ -57,7 +57,7 @@ class IssueTrackerService(object):
         """Property to access issue tracker model"""
         return self._model
 
-    def add_external_tracker(self, issue):
+    def link_external_tracker(self, issue):
         """Add case link to an issue's external tracker
 
         Some issue tracker product, like Bugzilla, allows to define external
@@ -295,10 +295,6 @@ class IssueTrackerService(object):
 class Bugzilla(IssueTrackerService):
     """Represent general Bugzilla issue tracker"""
 
-    def add_external_tracker(self, issue):
-        """Link case to issue's external tracker in remote Bugzilla service"""
-        bugzilla_external_track.delay(self.tracker_model.api_url, issue)
-
     def get_extra_issue_report_url_args(self, case_run):
         """Get extra URL arguments for reporting issue in Bugzilla"""
         args = super(Bugzilla, self).get_extra_issue_report_url_args(case_run)
@@ -374,6 +370,10 @@ class RHBugzilla(IssueTrackerService):
         args = super(RHBugzilla, self).get_extra_issue_report_url_args(case_run)
         args['cf_build_id'] = case_run.run.build.name
         return args
+
+    def link_external_tracker(self, issue):
+        """Link case to issue's external tracker in remote Bugzilla service"""
+        bugzilla_external_track.delay(self.tracker_model.api_url, issue)
 
 
 class JIRA(IssueTrackerService):
