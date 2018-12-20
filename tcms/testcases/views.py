@@ -1764,7 +1764,7 @@ def get_log(request, case_id, template_name="management/get_log.html"):
     return render(template_name, context=context_data)
 
 
-@permission_required('testcases.change_testcasebug')
+@permission_required('issuetracker.change_issue')
 def manage_case_issues(request, case_id, template_name='case/get_issues.html'):
     """Process the bugs for cases"""
 
@@ -1794,7 +1794,7 @@ def manage_case_issues(request, case_id, template_name='case/get_issues.html'):
         def add(self):
             # FIXME: It's may use ModelForm.save() method here.
             #        Maybe in future.
-            if not self.request.user.has_perm('testcases.add_testcasebug'):
+            if not self.request.user.has_perm('issuetracker.add_issue'):
                 return JsonResponse({'messages': ['Permission denied.']},
                                     status=HTTP_FORBIDDEN)
 
@@ -1823,7 +1823,7 @@ def manage_case_issues(request, case_id, template_name='case/get_issues.html'):
             return JsonResponse({'html': self.render()})
 
         def remove(self):
-            if not self.request.user.has_perm('testcases.delete_testcasebug'):
+            if not self.request.user.has_perm('issuetracker.delete_issue'):
                 return JsonResponse(
                     {'messages': ['Permission denied.']}, status=HTTP_FORBIDDEN)
 

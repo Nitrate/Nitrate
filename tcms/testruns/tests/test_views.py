@@ -1058,7 +1058,7 @@ class TestIssueActions(BaseCaseRun):
         super(TestIssueActions, cls).setUpTestData()
 
         user_should_have_perm(cls.tester, 'testruns.change_testrun')
-        user_should_have_perm(cls.tester, 'testcases.delete_testcasebug')
+        user_should_have_perm(cls.tester, 'issuetracker.delete_issue')
 
         cls.bz_tracker_product = IssueTrackerProductFactory(name='BZ')
         cls.bugzilla = IssueTrackerFactory(

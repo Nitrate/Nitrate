@@ -41,7 +41,7 @@ def manage_case_run_issues(request, run_id):
 
         def add(self):
             # TODO: make a migration for the permission
-            if not self.request.user.has_perm('testcases.add_testcasebug'):
+            if not self.request.user.has_perm('issuetracker.add_issue'):
                 return JsonResponse({'messages': ['Permission denied.']},
                                     status=HTTP_FORBIDDEN)
 
@@ -79,7 +79,7 @@ def manage_case_run_issues(request, run_id):
             return self.run_issues_info(case_runs)
 
         def remove(self):
-            if not self.request.user.has_perm('testcases.delete_testcasebug'):
+            if not self.request.user.has_perm('issuetracker.delete_issue'):
                 return JsonResponse({'messages': ['Permission denied.']},
                                     status=HTTP_FORBIDDEN)
 

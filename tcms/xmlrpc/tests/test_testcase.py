@@ -196,7 +196,7 @@ class TestAttachIssue(test.TestCase):
     def setUpTestData(cls):
         cls.tester = UserFactory(username='tester', email='tester@example.com')
         cls.request = make_http_request(user=cls.tester,
-                                        user_perm='testcases.add_testcasebug')
+                                        user_perm='issuetracker.add_issue')
         cls.case = TestCaseFactory()
         cls.tracker = IssueTrackerFactory(
             service_url='http://localhost/',
@@ -370,7 +370,7 @@ class TestDetachIssue(test.TestCase):
     def setUpTestData(cls):
         cls.tester = UserFactory(username='tester', email='tester@example.com')
         cls.request = make_http_request(
-            user=cls.tester, user_perm='testcases.delete_testcasebug')
+            user=cls.tester, user_perm='issuetracker.delete_issue')
 
         cls.tracker = IssueTrackerFactory(
             name='coolbz',

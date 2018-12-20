@@ -220,7 +220,7 @@ def add_to_run(request, case_ids, run_ids):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('testcases.add_testcasebug', raise_exception=True)
+@permission_required('issuetracker.add_issue', raise_exception=True)
 def attach_issue(request, values):
     """Add one or more issues to the selected test cases.
 
@@ -464,7 +464,7 @@ def create(request, values):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('testcases.delete_testcasebug', raise_exception=True)
+@permission_required('issuetracker.delete_issue', raise_exception=True)
 def detach_issue(request, case_ids, issue_keys):
     """Remove one or more issues to the selected test cases.
 

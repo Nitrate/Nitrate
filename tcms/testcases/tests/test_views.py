@@ -299,14 +299,14 @@ class TestAddIssueToCase(BasePlanCase):
         cls.plan_tester = User.objects.create_user(username='plantester',
                                                    email='plantester@example.com',
                                                    password='password')
-        user_should_have_perm(cls.plan_tester, 'testcases.change_testcasebug')
+        user_should_have_perm(cls.plan_tester, 'issuetracker.change_issue')
 
         cls.case_issue_url = reverse('case-issue', args=[cls.case_1.pk])
         cls.issue_tracker = IssueTrackerFactory(name='TestBZ')
 
     def test_add_and_remove_a_issue(self):
-        user_should_have_perm(self.plan_tester, 'testcases.add_testcasebug')
-        user_should_have_perm(self.plan_tester, 'testcases.delete_testcasebug')
+        user_should_have_perm(self.plan_tester, 'issuetracker.add_issue')
+        user_should_have_perm(self.plan_tester, 'issuetracker.delete_issue')
 
         self.client.login(username=self.plan_tester.username, password='password')
         request_data = {
@@ -1047,7 +1047,7 @@ class TestIssueManagement(BaseCaseRun):
     def setUpTestData(cls):
         super(TestIssueManagement, cls).setUpTestData()
 
-        user_should_have_perm(cls.tester, 'testcases.change_testcasebug')
+        user_should_have_perm(cls.tester, 'issuetracker.change_issue')
         cls.issue_manage_url = reverse('case-issue', args=[cls.case_1.pk])
 
         cls.tracker_product = IssueTrackerProductFactory(name='BZ')
@@ -1068,11 +1068,11 @@ class TestIssueManagement(BaseCaseRun):
 
     def tearDown(self):
         self.client.logout()
-        remove_perm_from_user(self.tester, 'testcases.add_testcasebug')
-        remove_perm_from_user(self.tester, 'testcases.delete_testcasebug')
+        remove_perm_from_user(self.tester, 'issuetracker.add_issue')
+        remove_perm_from_user(self.tester, 'issuetracker.delete_issue')
 
     def test_bad_issue_key_to_remove(self):
-        user_should_have_perm(self.tester, 'testcases.delete_testcasebug')
+        user_should_have_perm(self.tester, 'issuetracker.delete_issue')
 
         resp = self.client.get(self.issue_manage_url, data={
             'handle': 'remove',
@@ -1084,7 +1084,7 @@ class TestIssueManagement(BaseCaseRun):
         self.assertIn('Missing issue key to delete.', resp.json()['messages'])
 
     def test_bad_case_run_to_remove(self):
-        user_should_have_perm(self.tester, 'testcases.delete_testcasebug')
+        user_should_have_perm(self.tester, 'issuetracker.delete_issue')
 
         resp = self.client.get(self.issue_manage_url, data={
             'handle': 'remove',
@@ -1097,7 +1097,7 @@ class TestIssueManagement(BaseCaseRun):
         self.assertIn('Test case run does not exists.', resp.json()['messages'])
 
     def test_bad_case_run_case_rel_to_remove(self):
-        user_should_have_perm(self.tester, 'testcases.delete_testcasebug')
+        user_should_have_perm(self.tester, 'issuetracker.delete_issue')
 
         resp = self.client.get(self.issue_manage_url, data={
             'handle': 'remove',
@@ -1136,7 +1136,7 @@ class TestIssueManagement(BaseCaseRun):
         self.assertEqual(HTTP_FORBIDDEN, resp.status_code)
 
     def test_add_an_issue(self):
-        user_should_have_perm(self.tester, 'testcases.add_testcasebug')
+        user_should_have_perm(self.tester, 'issuetracker.add_issue')
 
         resp = self.client.get(self.issue_manage_url, data={
             'handle': 'add',
@@ -1155,7 +1155,7 @@ class TestIssueManagement(BaseCaseRun):
         self.assertIn(added_issue.get_absolute_url(), resp.json()['html'])
 
     def test_remove_an_issue(self):
-        user_should_have_perm(self.tester, 'testcases.delete_testcasebug')
+        user_should_have_perm(self.tester, 'issuetracker.delete_issue')
 
         # Assert later
         removed_issue_url = Issue.objects.filter(

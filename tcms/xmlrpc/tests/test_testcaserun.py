@@ -238,7 +238,7 @@ class TestCaseRunAttachIssue(XmlrpcAPIBaseTest):
         cls.admin = UserFactory(username='update_admin', email='update_admin@example.com')
         cls.staff = UserFactory(username='update_staff', email='update_staff@example.com')
         cls.admin_request = make_http_request(user=cls.admin,
-                                              user_perm='testcases.add_testcasebug')
+                                              user_perm='issuetracker.add_issue')
         cls.staff_request = make_http_request(user=cls.staff)
         cls.case_run = TestCaseRunFactory()
 
@@ -441,9 +441,9 @@ class TestCaseRunDetachIssue(XmlrpcAPIBaseTest):
         cls.admin = UserFactory()
         cls.staff = UserFactory()
         cls.admin_request = make_http_request(user=cls.admin,
-                                              user_perm='testcases.delete_testcasebug')
+                                              user_perm='issuetracker.delete_issue')
         cls.staff_request = make_http_request(user=cls.staff,
-                                              user_perm='testcases.add_testcasebug')
+                                              user_perm='issuetracker.add_issue')
 
         cls.tracker_product = IssueTrackerProductFactory(name='MyBZ')
         cls.bz_tracker = IssueTrackerFactory(
@@ -696,7 +696,7 @@ class TestCaseRunGetIssues(XmlrpcAPIBaseTest):
     def setUpTestData(cls):
         cls.admin = UserFactory()
         cls.admin_request = make_http_request(user=cls.admin,
-                                              user_perm='testcases.add_testcasebug')
+                                              user_perm='issuetracker.add_issue')
 
         cls.case_run = TestCaseRunFactory()
         cls.bz_tracker = IssueTrackerFactory(name='MyBZ')
@@ -740,7 +740,7 @@ class TestCaseRunGetIssuesSet(XmlrpcAPIBaseTest):
     def setUpTestData(cls):
         cls.admin = UserFactory(username='update_admin', email='update_admin@example.com')
         cls.admin_request = make_http_request(user=cls.admin,
-                                              user_perm='testcases.add_testcasebug')
+                                              user_perm='issuetracker.add_issue')
 
         cls.case_run = TestCaseRunFactory()
         cls.bz_tracker = IssueTrackerFactory(name='MyBugzilla')

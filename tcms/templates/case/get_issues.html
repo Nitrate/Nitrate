@@ -11,7 +11,7 @@
 		<td>{% if issue.case_run_id %}<a href="{% url "run-get" issue.case_run.run_id %}">{{ issue.case_run.run_id }}</a>{% else %}None{% endif %}</td>
 		<td><a href="{{ issue.get_absolute_url }}">{{ issue.get_absolute_url }}</a></td>
         <td>
-			{% if perms.testcases.delete_testcasebug %}
+			{% if perms.issuetracker.delete_issue %}
 			<a href="javascript:void(0)" class="remove js-remove-issue"
 				data-params='{"issueKey": "{{ issue.issue_key }}", "caseId": "{{ test_case.pk }}", "caseRunId": "{{ issue.case_run_id|default:'' }}"}'>Remove</a>
 			{% else %}
@@ -24,7 +24,7 @@
 		<td colspan="4" align="center" class="grey">No issues related to this case.</td>
 	</tr>
 	{% endfor %}
-	{% if perms.testcases.add_testcasebug %}
+	{% if perms.issuetracker.add_issue %}
 	<tr>
 		<td colspan="4" style="padding:0;">
 			<form id="id_case_issue_form" action="{% url "case-issue" test_case.case_id %}" method="get">
