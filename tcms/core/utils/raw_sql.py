@@ -16,13 +16,15 @@ class RawSQL:
         FROM test_plans AS ch_plans\
         WHERE ch_plans.parent_id = test_plans.plan_id'
 
-    num_case_bugs = 'SELECT COUNT(*) \
-        FROM test_case_bugs \
-        WHERE test_case_bugs.case_id = test_cases.case_id'
+    num_case_bugs = (
+        'SELECT COUNT(*) FROM issue_tracker_issues '
+        'WHERE issue_tracker_issues.case_id = test_cases.case_id'
+    )
 
-    num_case_run_bugs = 'SELECT COUNT(*) \
-        FROM test_case_bugs \
-        WHERE test_case_bugs.case_run_id = test_case_runs.case_run_id'
+    num_case_run_bugs = (
+        'SELECT COUNT(*) FROM issue_tracker_issues '
+        'WHERE issue_tracker_issues.case_run_id = test_case_runs.case_run_id'
+    )
 
     # Following SQL use for test case run
     completed_case_run_percent = 'SELECT ROUND(no_idle_count/total_count*100,0) \

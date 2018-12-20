@@ -16,7 +16,7 @@ def forward(apps, schema_editor):
         'delete_testcasebugsystem',
     )
     for codename in perms_codename:
-        permission_model.objects.get(codename=codename).delete()
+        permission_model.objects.filter(codename=codename).delete()
 
 
 class Migration(migrations.Migration):
