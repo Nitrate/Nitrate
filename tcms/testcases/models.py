@@ -721,69 +721,6 @@ class TestCaseTag(models.Model):
         db_table = u'test_case_tags'
 
 
-class TestCaseBugSystem(TCMSActionModel):
-    name = models.CharField(max_length=255, unique=True)
-    description = models.TextField(blank=True)
-    url_reg_exp = models.CharField(max_length=8192)
-    validate_reg_exp = models.CharField(max_length=128)
-
-    class Meta:
-        db_table = u'test_case_bug_systems'
-
-    def __str__(self):
-        return self.name
-
-    @classmethod
-    def get_by_id(cls, system_id):
-        return cls.objects.get(pk=system_id)
-
-
-class TestCaseBug(TCMSActionModel):
-    bug_id = models.CharField(max_length=25)
-    case_run = models.ForeignKey('testruns.TestCaseRun', default=None,
-                                 blank=True, null=True,
-                                 related_name='case_run_bug',
-                                 on_delete=models.CASCADE)
-    case = models.ForeignKey(TestCase,
-                             related_name='case_bug',
-                             on_delete=models.CASCADE)
-    bug_system = models.ForeignKey(TestCaseBugSystem,
-                                   default=1,
-                                   on_delete=models.CASCADE)
-    summary = models.CharField(max_length=255, blank=True, null=True)
-    description = models.TextField(blank=True, null=True)
-
-    class Meta:
-        db_table = u'test_case_bugs'
-        unique_together = (('bug_id', 'case_run', 'case'),
-                           ('bug_id', 'case_run'))
-
-    def unique_error_message(self, model_class, unique_check):
-        """Specific to invalid bug id"""
-        bug_id_uniques = (('bug_id', 'case_run', 'case'),
-                          ('bug_id', 'case_run'))
-        if unique_check in bug_id_uniques:
-            return 'Bug %d exists in run %d already.' % (self.bug_id, self.case_run.pk)
-        else:
-            return super(TestCaseBug, self).unique_error_message(model_class, unique_check)
-
-    def __str__(self):
-        return str(self.bug_id)
-
-    def get_name(self):
-        if self.summary:
-            return self.summary
-
-        return self.bug_id
-
-    def get_absolute_url(self):
-        # Upward compatibility code
-        return self.get_full_url()
-
-    def get_full_url(self):
-        return self.bug_system.url_reg_exp % self.bug_id
-
-
 class Contact(TCMSContentTypeBaseModel):
     """A Contact that can be added into Email settings' CC list"""
 
@@ -913,5 +850,4 @@ if register_model:
     register_model(TestCase)
     register_model(TestCaseText)
     register_model(TestCasePlan)
-    register_model(TestCaseBug)
     register_model(TestCaseComponent)
