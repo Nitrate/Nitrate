@@ -349,15 +349,15 @@ class TestCaseRunAttachIssue(XmlrpcAPIBaseTest):
             testcaserun.attach_issue, self.admin_request, value)
 
     def test_attach_issue_with_chinese(self):
-        issue_summary = '你好，中国'
-        issue_description = '中国是一个具有悠久历史的文明古国'
+        issue_summary = u'你好，中国'
+        issue_description = u'中国是一个具有悠久历史的文明古国'
 
         bug = testcaserun.attach_issue(self.admin_request, {
             "case_run": [self.case_run.pk],
             "issue_key": '12',
             "tracker": self.tracker.pk,
-            "summary": "你好，中国",
-            "description": "中国是一个具有悠久历史的文明古国"
+            "summary": issue_summary,
+            "description": issue_description,
         })
         self.assertIsNone(bug)
 
