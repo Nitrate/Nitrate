@@ -278,10 +278,6 @@ PLAN_DELELE_EMAIL_TEMPLATE = 'mail/delete_plan.txt'
 CASE_EMAIL_TEMPLATE = 'mail/edit_case.txt'
 CASE_DELETE_EMAIL_TEMPLATE = 'mail/delete_case.txt'
 
-# TCMS Bug System settings
-# Set default bug system to bugzilla
-DEFAULT_BUG_SYSTEM_ID = 1
-
 # Maximum upload file size, default set to 5MB.
 # 2.5MB - 2621440
 # 5MB - 5242880
