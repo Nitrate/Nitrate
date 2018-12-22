@@ -41,9 +41,8 @@ DATABASE_ROUTERS = ['tcms.core.utils.tcms_router.RWRouter']
 # Kerberos realm
 #KRB5_REALM = 'EXAMPLE.COM'
 
-# Bugzilla integration setttings
-# Config following settings if your want to integrate with bugzilla
-BUGZILLA3_RPC_SERVER = ''
+# User authentication by Bugzilla settings
+# BUGZILLA_XMLRPC_URL = 'https://bugzilla.example.com/xmlrpc.cgi'
 
 # JIRA integration setttings
 # Config following settings if your want to integrate with JIRA

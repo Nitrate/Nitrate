@@ -321,9 +321,8 @@ SET_ADMIN_AS_SUPERUSER = False
 #
 # Authentication backend settings
 #
-# Bugzilla author xmlrpc url
 # Required by bugzilla authentication backend
-BUGZILLA3_RPC_SERVER = ''
+# BUGZILLA_XMLRPC_URL = 'https://bugzilla.example.com/xmlrpc.cgi'
 
 # JIRA URL
 JIRA_URL = ''

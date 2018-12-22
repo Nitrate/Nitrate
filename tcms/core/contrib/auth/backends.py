@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from six.moves import xmlrpc_client
+import logging
 
 from django.conf import settings
 from django.core.validators import validate_email
@@ -10,6 +10,8 @@ from django.contrib.auth.backends import ModelBackend, RemoteUserBackend
 
 # from tcms
 from tcms.core.contrib.auth import initiate_user_with_default_setups
+
+logger = logging.getLogger(__name__)
 
 
 class DBModelBackend(ModelBackend):
@@ -59,27 +61,34 @@ class BugzillaBackend(ModelBackend):
     can_register = False
     can_logout = True
 
-    # Disable for python 2.4 compatible
-    # def __init__(self):
-    # super(KerberosBackend, self).__init__()
-    #    for var in ('BUGZILLA3_RPC_SERVER', ):
-    #        if not hasattr(settings, var):
-    #            raise ImproperlyConfigured(
-    #                "Variable '%s' not set in settings." % var
-    #            )
-
     def authenticate(self, username=None, password=None):
-        server = xmlrpc_client.ServerProxy(settings.BUGZILLA3_RPC_SERVER)
-
         try:
             validate_email(username)
         except ValidationError:
             return None
+
         else:
-            try:
-                server.bugzilla.login(username, password)
-            except xmlrpc_client.Fault:
+            import bugzilla
+
+            xmlrpc_url = getattr(settings, 'BUGZILLA_XMLRPC_URL', None)
+            if not xmlrpc_url:
+                logger.error('Bugzilla XMLRPC URL is not set in settings module. '
+                             'Please enable and set a workable URL to config '
+                             'BUGZILLA_XMLRPC_URL.')
                 return None
+
+            bz = bugzilla.Bugzilla(xmlrpc_url)
+
+            try:
+                bz.login(user=username, password=password)
+            except bugzilla.transport.BugzillaError as e:
+                logger.warning('User login via Bugzilla failed. Reason: %s', str(e))
+                return None
+
+            # Login Bugzilla with username and password is just for checking
+            # the validation. Hence, logout immediately to avoid keeping the
+            # logged in status in Nitrate server.
+            bz.logout()
 
             try:
                 user = User.objects.get(email=username)
