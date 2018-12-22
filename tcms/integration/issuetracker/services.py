@@ -117,8 +117,8 @@ class IssueTrackerService(object):
         :param str description: optional description of this issue.
         :param bool add_case_to_issue: whether to link case to issue tracker's
             external tracker. Defaults to not link test case to the new issue,
-            however if it is required, :meth:`add_external_tracker
-            <tcms.integration.issuetracker.services.IssueTrackerService.add_external_tracker>`
+            however if it is required, :meth:`link_external_tracker
+            <tcms.integration.issuetracker.services.IssueTrackerService.link_external_tracker>`
             has to be called explicitly.
         :return: the newly created issue.
         :rtype: :class:`Issue <tcms.integration.issuetracker.models.Issue>`
@@ -133,7 +133,7 @@ class IssueTrackerService(object):
         issue.full_clean()
         issue.save()
         if self.tracker_model.allow_add_case_to_issue and add_case_to_issue:
-            self.add_external_tracker(issue)
+            self.link_external_tracker(issue)
         return issue
 
     def format_issue_report_content(self, build_name, case_text):
@@ -373,7 +373,7 @@ class RHBugzilla(IssueTrackerService):
 
     def link_external_tracker(self, issue):
         """Link case to issue's external tracker in remote Bugzilla service"""
-        bugzilla_external_track.delay(self.tracker_model.api_url, issue)
+        bugzilla_external_track.delay(self.tracker_model, issue)
 
 
 class JIRA(IssueTrackerService):

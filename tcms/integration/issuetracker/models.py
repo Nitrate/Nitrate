@@ -234,6 +234,39 @@ class IssueTracker(TCMSActionModel):
         return cls.objects.filter(
             products__in=case.plan.values('product'))
 
+    @property
+    def credential(self):
+        if self.credential_type == CredentialTypes.NoNeed.name:
+            return {}
+        elif self.credential_type == CredentialTypes.UserPwd.name:
+            cred = UserPwdCredential.objects.filter(issue_tracker=self).first()
+            if cred is None:
+                raise ValueError(
+                    'Username/password credential is not set for issue tracker {}.'
+                    .format(self.name))
+            else:
+                if cred.secret_file:
+                    content = cred.read_secret_file(cred.secret_file)
+                    return {
+                        'username': content.get('issuetracker', 'username'),
+                        'password': content.get('issuetracker', 'password'),
+                    }
+                else:
+                    return {
+                        'username': cred.username, 'password': cred.password,
+                    }
+        elif self.credential_type == CredentialTypes.Token.name:
+            cred = TokenCredential.objects.filter(issue_tracker=self).first()
+            if cred is None:
+                raise ValueError('Token credential is not set for issue tracker {}.'
+                                 .format(self.name))
+            else:
+                if cred.secret_file:
+                    content = cred.read_secret_file(cred.secret_file)
+                    return {'token': content.get('issuetracker', 'token')}
+                else:
+                    return {'token': cred.token}
+
 
 class Credential(TCMSActionModel):
     """Base class providing general functions for credentials"""
@@ -271,23 +304,31 @@ class Credential(TCMSActionModel):
             })
 
         config = self.read_secret_file(filename)
-        if not config.has_section('koji'):
+        config_section = 'issuetracker'
+        if not config.has_section(config_section):
             raise ValidationError({
-                'secret_file': 'Secret file does not have section "koji".'
+                'secret_file': 'Secret file does not have section "issuetracker".'
             })
-        if not config.has_option('koji', 'token'):
-            raise ValidationError({
-                'secret_file': 'No token is set in secret file.'
-            })
-        if config.has_option('koji', 'until'):
-            expiration_date = parse_token_expiration_date(
-                config.get('koji', 'until'))
-            today = datetime.utcnow()
-            if expiration_date < today:
+        if isinstance(self, TokenCredential):
+            if not config.has_option(config_section, 'token'):
                 raise ValidationError({
-                    'secret_file': 'Is token expired? The expiration date is '
-                                   'older than today.'
+                    'secret_file': 'Token is not set in secret file.'
                 })
+            if config.has_option(config_section, 'until'):
+                expiration_date = parse_token_expiration_date(
+                    config.get(config_section, 'until'))
+                today = datetime.utcnow()
+                if expiration_date < today:
+                    raise ValidationError({
+                        'secret_file': 'Is token expired? The expiration date is '
+                                       'older than today.'
+                    })
+        if (isinstance(self, UserPwdCredential) and
+                not (config.has_option('issuetracker', 'username') and
+                     config.has_option('issuetracker', 'password'))):
+            raise ValidationError({
+                'secret_file': 'Neither Username nor password is set in secrete file.'
+            })
 
     def clean(self):
         super(Credential, self).clean()

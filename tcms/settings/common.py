@@ -324,13 +324,9 @@ SET_ADMIN_AS_SUPERUSER = False
 # Bugzilla author xmlrpc url
 # Required by bugzilla authentication backend
 BUGZILLA3_RPC_SERVER = ''
-BUGZILLA_URL = ''
 
 # JIRA URL
 JIRA_URL = ''
-
-# Turn on/off bugzilla external tracker
-BUGZILLA_EXTERNAL_TRACKER = False
 
 # Turn on/off listening signals sent by models.
 LISTENING_MODEL_SIGNAL = True

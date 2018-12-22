@@ -44,9 +44,6 @@ DATABASE_ROUTERS = ['tcms.core.utils.tcms_router.RWRouter']
 # Bugzilla integration setttings
 # Config following settings if your want to integrate with bugzilla
 BUGZILLA3_RPC_SERVER = ''
-BUGZILLA_URL = ''
-BUGZILLA_USER = ''
-BUGZILLA_PASSWORD = ''
 
 # JIRA integration setttings
 # Config following settings if your want to integrate with JIRA
