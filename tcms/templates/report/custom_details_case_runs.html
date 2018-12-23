@@ -6,7 +6,7 @@
 		<th align="left" class="sortcol">Summary</th>
 		<th align="left" class="sortcol" width="150">Category</th>
 		<th align="left" class="sortcol" width="120">Tester</th>
-		<th align="left" class="sortcol" width="120">Bugs</th>
+		<th align="left" class="sortcol" width="120">Issues</th>
 		<th align="left" class="sortcol" width="200">Lastest Execute Time</th>
 	</tr>
 	{% for test_case_run, bugs, comments in case_runs %}
@@ -39,7 +39,7 @@
 
 	{% if test_case_run.bug.count %}
 	<tr>
-		<td colspan="7">Bugs:</td>
+		<td colspan="7">Issues:</td>
 	</tr>
 	{% endif %}
 	{% for bug in test_case_run.bug.all %}

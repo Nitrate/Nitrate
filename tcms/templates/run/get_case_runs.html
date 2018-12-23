@@ -84,9 +84,9 @@
 		</div>
 		<div class="rightlistinfo">
 			<div class="listinfo">
-				<span class="title"><label for="id_bug">Bug&nbsp;:</label></span>
-				<input id="id_bug" type="text" name="case_run_bug__bug_id__in" value="{{ REQUEST_CONTENTS.case_run_bug__bug_id__in }}" />
-				<span class='grey'>You can type multiple bugs by comma.</span>
+				<span class="title"><label for="id_issue">Issue&nbsp;:</label></span>
+				<input id="id_issue" type="text" name="issues__issue_key__in" value="{{ REQUEST_CONTENTS.issues__issue_key__in }}" />
+				<span class='grey'>You can type multiple issue keys separated by comma.</span>
 			</div>
 			<div class="listinfo">
 				<span class="title"><label for="id_case_run_status">Status&nbsp;:</label></span>
@@ -162,7 +162,7 @@
 		</select>
 		{% for tracker in issue_trackers %}
 		<div id="issue-tracker-{{ tracker.code_name }}" style="{% if forloop.counter == 1 %}line-height:30px;{% else %}display:none;{% endif %}">
-			<div class="bug_id">Issue ID</div>
+			<div>Issue ID</div>
 			<input type="text" name="issue_key" />
 			{% if tracker.allow_add_case_to_issue %}
 			</br>

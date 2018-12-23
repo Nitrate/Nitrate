@@ -107,8 +107,8 @@ def attach_issue(request, values):
         * case_run: (int) **Required** ID of Case
         * tracker: (int) **Required** ID of issue tracker that issue should
           belong to.
-        * summary: (str) optional Bug summary
-        * description: (str) optional Bug description
+        * summary: (str) optional issue's summary
+        * description: (str) optional issue' description
 
     :return: a list which is empty on success or a list of mappings with
         failure codes if a failure occured.

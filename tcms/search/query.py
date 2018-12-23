@@ -30,7 +30,7 @@ class SmartDjangoQuery(object):
             'pl_active', 'pl_created_since', 'pl_created_before', 'pl_tags'),
         TestCase.__name__: (
             'cs_id', 'cs_authors', 'cs_tester', 'cs_product', 'cs_component',
-            'cs_tags', 'cs_bugs', 'cs_proposed', 'cs_priority',
+            'cs_tags', 'cs_issues', 'cs_proposed', 'cs_priority',
             'cs_created_since', 'cs_status', 'cs_auto', 'cs_created_before',
             'cs_category', 'cs_summary', 'cs_script'),
         TestRun.__name__: (
@@ -63,8 +63,8 @@ class SmartDjangoQuery(object):
             'cs_tester': 'default_tester__username__in',
             'cs_tags': 'tag__name__in',
             'cs_tags_distinct': True,
-            'cs_bugs': 'case_bug__bug_id__in',
-            'cs_bugs_distinct': True,
+            'cs_issues': 'issues__issue_key__in',
+            'cs_issues_distinct': True,
             'cs_status': 'case_status__in',
             'cs_auto': 'is_automated',
             'cs_proposed': 'is_automated_proposed',

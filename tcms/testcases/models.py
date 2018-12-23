@@ -304,8 +304,8 @@ class TestCase(TCMSActionModel):
         if query.get('component'):
             q = q.filter(component=query['component'])
 
-        if query.get('bug_id'):
-            q = q.filter(case_bug__bug_id__in=query['bug_id'])
+        if query.get('issue_key'):
+            q = q.filter(issues__issue_key__in=query['issue_key'])
 
         if query.get('is_automated'):
             q = q.filter(is_automated=query['is_automated'])
@@ -492,13 +492,9 @@ class TestCase(TCMSActionModel):
         return format_timedelta(self.estimated_time)
 
     def get_issues(self):
-        return (
-            Issue.objects.filter(case__pk=self.pk)
-            .select_related('tracker')
-            .order_by('pk')
-        )
-
-    get_bugs = get_issues
+        return (Issue.objects.filter(case__pk=self.pk)
+                             .select_related('tracker')
+                             .order_by('pk'))
 
     def get_components(self):
         return self.component.all()

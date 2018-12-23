@@ -6,14 +6,14 @@ from django import forms
 
 from tcms.management.models import Product, TestBuild, Component, Version
 from tcms.search.utils import cached_entities
-from tcms.testcases.forms import BugField
+from tcms.testcases.forms import IssueKeyField
 from tcms.testcases.models import TestCaseCategory
 from tcms.testplans.models import TestPlanType
 
 # template-functions creating form field with required = False
 LooseCF = partial(forms.CharField, required=False, max_length=200)
 LooseIF = partial(forms.IntegerField, required=False)
-LooseBugF = partial(BugField, required=False, max_length=200)
+LooseIssueF = partial(IssueKeyField, required=False, max_length=200)
 LooseDF = partial(forms.DateField, required=False)
 LooseBF = partial(forms.BooleanField, required=False)
 LooseMF = partial(forms.MultipleChoiceField, required=False, choices=())
@@ -104,7 +104,7 @@ class CaseForm(forms.Form):
     cs_authors = LooseCF()
     cs_tester = LooseCF()
     cs_tags = LooseCF()
-    cs_bugs = LooseBugF()
+    cs_issues = LooseIssueF()
     cs_status = LooseMF()
     cs_priority = LooseMF()
     cs_auto = LooseCF()
@@ -129,8 +129,8 @@ class CaseForm(forms.Form):
     def clean_cs_authors(self):
         return get_choice(self.cleaned_data['cs_authors'])
 
-    def clean_cs_bugs(self):
-        return get_choice(self.cleaned_data['cs_bugs'], int)
+    def clean_cs_issues(self):
+        return get_choice(self.cleaned_data['cs_issues'], int)
 
     def clean_cs_tags(self):
         return get_choice(self.cleaned_data['cs_tags'])

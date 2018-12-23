@@ -123,10 +123,6 @@ var default_messages = {
     'last_case_run': 'It is the last case run',
     'bookmark_added': 'Bookmark added.',
     'no_run_selected': 'No run selected.',
-    'invalid_bug_id': 'Please input a valid bug id which is less equal 7 numberes, e.g. 1001234',
-    'invalid_jira_id': 'Please input a valid JIRA id, e.g. TCMS-32',
-    'invalid_issue_id': 'Please input a valid Bugzilla/JIRA id.',
-    'no_bugs_specified': 'Please specify bug ID',
     'no_plan_specified': 'Please specify one plan at least.'
   },
   'confirm': {
@@ -182,7 +178,6 @@ var default_messages = {
       case_change_status: '/cases/changestatus/',
       case_details: '/case/$id/',
       case_plan: '/case/$id/plan/',
-      case_run_bug: '/caserun/$id/bug/',
       cases_automated: '/cases/automated/',
       cases_category: '/cases/category/',
       cases_component: '/cases/component/',

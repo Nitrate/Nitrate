@@ -82,15 +82,14 @@ class TestTCR2FileToExportToXML(BaseCaseRun):
             case_run_id = int(case_run_elem.get('case_run_id'))
 
             if case_run_id == self.case_run_1.pk:
-                bugs_elems = case_run_elem.find('issues').findall('issue')
-                self.assertEqual(2, len(bugs_elems))
-                bug_ids = [elem.get('key') for elem in bugs_elems]
-                bug_ids.sort()
-                self.assertEqual(['1000', '2000'], bug_ids)
+                issues_elems = case_run_elem.find('issues').findall('issue')
+                self.assertEqual(2, len(issues_elems))
+                issue_keys = sorted(elem.get('key') for elem in issues_elems)
+                self.assertEqual(['1000', '2000'], issue_keys)
 
             if case_run_id == self.case_run_2.pk:
-                bugs_elems = case_run_elem.find('issues').findall('issue')
-                self.assertEqual(0, len(bugs_elems))
+                issues_elems = case_run_elem.find('issues').findall('issue')
+                self.assertEqual(0, len(issues_elems))
 
     def assert_case_run_links(
             self, case_run_id, log_links, expected_links_count):

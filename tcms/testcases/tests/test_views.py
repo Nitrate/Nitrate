@@ -672,7 +672,7 @@ class TestAJAXSearchCases(BasePlanCase):
             'is_automated': '',
             'category': '',
             'component': '',
-            'bug_id': '',
+            'issue_key': '',
             'tag__name__in': '',
             'a': 'search',
         }

@@ -230,8 +230,8 @@ def attach_issue(request, values):
         * case: (int) **Required**. Case ID.
         * issue_key: (str) **Required**. issue key.
         * tracker: (int) **Required**. issue tracker ID.
-        * summary: (str) optional Bug summary.
-        * description: (str) optional bug description.
+        * summary: (str) optional issue's summary.
+        * description: (str) optional issue's description.
 
     :return: a list which is empty on success or a list of mappings with
         failure codes if a failure occured.

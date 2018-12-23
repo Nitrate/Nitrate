@@ -21,6 +21,6 @@ if settings.ENABLE_QPID:
         dispatch_uid="tcms.testruns.signals.testrun_progress_handler",
     )
 
-    # Bug add/remove listen for qpid
+    # Issue add/remove listen for qpid
     post_save.connect(issue_added_handler, Issue)
     post_delete.connect(issue_removed_handler, Issue)

@@ -40,18 +40,18 @@
 					<li class="grey">No tag found</li>
 					{% endfor %}
 				</ul>
-				<h4><span class="title strong">bug:</span></h4>
+				<h4><span class="title strong">Issue:</span></h4>
 				<ul class="ul-no-format">
-					{% for bug in test_case.get_bugs %}
+					{% for issue in test_case.get_issues %}
 					<li>
-						<a href="{{ bug.get_absolute_url }}">{{ bug }}</a>
-						{% if bug.case_run_id %}
+						<a href="{{ issue.get_absolute_url }}">{{ issue.issue_key }}</a>
+						{% if issue.case_run_id %}
 						<span class="grey"> - From Run</span>
-						<a href="{% url "run-get" bug.case_run.run_id %}">{{ bug.case_run.run_id }}</a>
+						<a href="{% url "run-get" issue.case_run.run_id %}">{{ issue.case_run.run_id }}</a>
 						{% endif %}
 					</li>
 					{% empty %}
-					<li class="grey">No bug found</li>
+					<li class="grey">No issue found</li>
 					{% endfor %}
 				</ul>
 			</td>

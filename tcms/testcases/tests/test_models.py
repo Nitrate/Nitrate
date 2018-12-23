@@ -63,7 +63,7 @@ class TestCaseRemoveIssue(BasePlanCase):
     def tearDown(self):
         self.case.issues.all().delete()
 
-    def test_remove_case_bug(self):
+    def test_remove_case_issue(self):
         self.case.remove_issue(self.issue_key_1)
 
         bug_found = self.case.issues.filter(
@@ -74,56 +74,31 @@ class TestCaseRemoveIssue(BasePlanCase):
             issue_key=self.issue_key_2).exists()
         self.assertTrue(
             bug_found,
-            'Bug {} does not exist. It should not be deleted.'.format(
-                self.issue_key_2))
+            'Issue key {} does not exist. It should not be deleted.'
+            .format(self.issue_key_2))
 
-    def test_case_bug_not_removed_by_passing_case_run(self):
+    def test_case_issue_not_removed_by_passing_case_run(self):
         self.case.remove_issue(self.issue_key_1, case_run=self.case_run.pk)
+        self.assertTrue(self.case.issues.filter(issue_key=self.issue_key_1)
+                                        .exists())
+        self.assertTrue(self.case.issues.filter(issue_key=self.issue_key_2)
+                                        .exists())
 
-        bug_found = self.case.issues.filter(
-            issue_key=self.issue_key_1).exists()
-        self.assertTrue(
-            bug_found,
-            'Bug {} does not exist. It should not be deleted.'.format(
-                self.issue_key_1))
-
-        bug_found = self.case.issues.filter(
-            issue_key=self.issue_key_2).exists()
-        self.assertTrue(
-            bug_found,
-            'Bug {} does not exist. It should not be deleted.'.format(
-                self.issue_key_2))
-
-    def test_remove_case_run_bug(self):
+    def test_remove_case_run_issue(self):
         self.case.remove_issue(self.issue_key_2, case_run=self.case_run.pk)
 
-        bug_found = self.case.issues.filter(
-            issue_key=self.issue_key_2).exists()
-        self.assertFalse(bug_found)
+        self.assertFalse(self.case.issues.filter(issue_key=self.issue_key_2)
+                                         .exists())
+        self.assertTrue(self.case.issues.filter(issue_key=self.issue_key_1)
+                                        .exists())
 
-        bug_found = self.case.issues.filter(
-            issue_key=self.issue_key_1).exists()
-        self.assertTrue(
-            bug_found,
-            'Bug {} does not exist. It should not be deleted.'.format(
-                self.issue_key_1))
-
-    def test_case_run_bug_not_removed_by_missing_case_run(self):
+    def test_case_run_issue_not_removed_by_missing_case_run(self):
         self.case.remove_issue(self.issue_key_2)
 
-        bug_found = self.case.issues.filter(
-            issue_key=self.issue_key_1).exists()
-        self.assertTrue(
-            bug_found,
-            'Bug {} does not exist. It should not be deleted.'.format(
-                self.issue_key_1))
-
-        bug_found = self.case.issues.filter(
-            issue_key=self.issue_key_2).exists()
-        self.assertTrue(
-            bug_found,
-            'Bug {} does not exist. It should not be deleted.'.format(
-                self.issue_key_2))
+        self.assertTrue(self.case.issues.filter(issue_key=self.issue_key_1)
+                                        .exists())
+        self.assertTrue(self.case.issues.filter(issue_key=self.issue_key_2)
+                                        .exists())
 
 
 class TestCaseRemoveComponent(BasePlanCase):

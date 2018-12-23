@@ -31,7 +31,7 @@ class TCR2File(object):
     HEADERS = ("Case Run ID", "Case ID",
                "Category", "Status", "Summary",
                "script", "Automated", "Log Link",
-               "Bug IDs")
+               "Issue Keys")
 
     def __init__(self, tcrs):
         self.root = self.ROOT

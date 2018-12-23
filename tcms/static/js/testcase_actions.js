@@ -776,9 +776,6 @@ function addCaseIssue(form) {
       return false;
     }
 
-    if (callback) {
-      callback();
-    }
     jQ('#case_issues_count').text(jQ('table#issues').attr('count'));
   };
 
@@ -826,7 +823,7 @@ function removeCaseIssue(issue_key, case_id, case_run_id) {
       addCaseIssue(jQ('#id_case_issue_form')[0]);
     });
 
-    jQ('#case_issue_count').text(jQ('table#issues').attr('count'));
+    jQ('#case_issues_count').text(jQ('table#issues').attr('count'));
   };
 
   jQ.ajax({
@@ -834,7 +831,7 @@ function removeCaseIssue(issue_key, case_id, case_run_id) {
     'type': 'GET',
     'data': parameteres,
     'success': function (data, textStatus, jqXHR) {
-      jQ('#issues').html(data);
+      jQ('#issues').html(data.html);
     },
     'complete': function (jqXHR, textStatus) {
       if (textStatus !== 'error') {

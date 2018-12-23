@@ -15,10 +15,10 @@ class TestRunGetIssuesCount(BaseCaseRun):
                                             plan=cls.plan,
                                             manager=cls.tester,
                                             default_tester=cls.tester)
-        cls.test_run_no_bugs = TestRunFactory(product_version=cls.version,
-                                              plan=cls.plan,
-                                              manager=cls.tester,
-                                              default_tester=cls.tester)
+        cls.test_run_no_issues = TestRunFactory(product_version=cls.version,
+                                                plan=cls.plan,
+                                                manager=cls.tester,
+                                                default_tester=cls.tester)
 
         cls.bz_tracker = cls.create_bz_tracker()
 
@@ -28,7 +28,7 @@ class TestRunGetIssuesCount(BaseCaseRun):
 
     def test_get_issues_count_if_no_issue_added(self):
         self.assertEqual(0, self.empty_test_run.get_issues_count())
-        self.assertEqual(0, self.test_run_no_bugs.get_issues_count())
+        self.assertEqual(0, self.test_run_no_issues.get_issues_count())
 
     def test_get_issues_count(self):
         self.assertEqual(3, self.test_run.get_issues_count())

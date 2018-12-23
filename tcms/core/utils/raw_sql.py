@@ -16,12 +16,12 @@ class RawSQL:
         FROM test_plans AS ch_plans\
         WHERE ch_plans.parent_id = test_plans.plan_id'
 
-    num_case_bugs = (
+    num_case_issues = (
         'SELECT COUNT(*) FROM issue_tracker_issues '
         'WHERE issue_tracker_issues.case_id = test_cases.case_id'
     )
 
-    num_case_run_bugs = (
+    num_case_run_issues = (
         'SELECT COUNT(*) FROM issue_tracker_issues '
         'WHERE issue_tracker_issues.case_run_id = test_case_runs.case_run_id'
     )

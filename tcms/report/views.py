@@ -430,13 +430,13 @@ class CustomDetailReport(CustomReport):
     def read_case_runs(self, build_ids, status_ids):
         """Generator for reading case runs and related objects"""
         case_runs = self._data.get_case_runs(build_ids, status_ids)
-        bugs = self._data.get_case_runs_bugs(build_ids, status_ids)
+        issues = self._data.get_case_runs_issues(build_ids, status_ids)
         comments = self._data.get_case_runs_comments(build_ids, status_ids)
 
         for case_run in case_runs.iterator():
-            related_bugs = bugs.get(case_run.pk, ())
+            related_issues = issues.get(case_run.pk, ())
             related_comments = comments.get(case_run.pk, ())
-            yield case_run, related_bugs, related_comments
+            yield case_run, related_issues, related_comments
 
     def _report_data_context(self):
         data = {}

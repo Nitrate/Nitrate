@@ -89,7 +89,7 @@ function showTheNumberOfCaseRunIssues(newIssuesCount, runId) {
     //       the run statistics section with an AJAX call to server-side API.
     //       This could be also a good point for creating a reusable run
     //       statistics API for general use.
-    var runReportUrl = '/run/' + runId + '/report/#buglist';
+    var runReportUrl = '/run/' + runId + '/report/#issues';
     jQ('div#run-statistics')
       .find('span#total_run_issues_count')
       .html('<a title="Show All Issues" href=' + runReportUrl + '>Issues [' + newIssuesCount + ']</a>');
@@ -98,12 +98,12 @@ function showTheNumberOfCaseRunIssues(newIssuesCount, runId) {
 
 
 function updateIssuesCountInCaseRunRow(caseRunRow, caseRunIssuesCount) {
-  var caseRunIssuesCountSpan = jQ(caseRunRow).find('span[id$="_case_bug_count"]');
+  var caseRunIssuesCountSpan = jQ(caseRunRow).find('span[id$="_case_issues_count"]');
   caseRunIssuesCountSpan.text(caseRunIssuesCount);
   if (caseRunIssuesCount > 0) {
-    caseRunIssuesCountSpan.addClass('have_bug');
+    caseRunIssuesCountSpan.addClass('have_issue');
   } else {
-    caseRunIssuesCountSpan.removeClass('have_bug');
+    caseRunIssuesCountSpan.removeClass('have_issue');
   }
 }
 

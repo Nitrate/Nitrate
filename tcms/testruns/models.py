@@ -620,12 +620,8 @@ class TestCaseRun(TCMSActionModel):
     def get_issues(self):
         return Issue.objects.filter(case_run=self)
 
-    get_bugs = get_issues
-
     def get_issues_count(self):
         return self.get_issues().values('pk').count()
-
-    get_bugs_count = get_issues_count
 
     def get_text_versions(self):
         return TestCaseText.objects.filter(

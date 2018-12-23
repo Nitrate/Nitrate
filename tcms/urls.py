@@ -34,15 +34,8 @@ urlpatterns = [
 
     url(r'^caseruns/$', testruns_views.caseruns),
 
-    # url(r'^caserun/(?P<case_run_id>\d+)/issue/$',
-        # testruns_ajax.manage_case_run_issues,
-        # name='caserun-issue'),
-    # url(r'^caserun/update-bugs-for-many/',
-        # tcms_core_ajax.update_bugs_to_caseruns),
-
     url(r'^caserun/comment-many/', tcms_core_ajax.comment_case_runs,
         name='caserun-comment-caseruns'),
-
 
     url(r'^accounts/', include('tcms.profiles.urls')),
     url(r'^linkref/', include('tcms.core.contrib.linkreference.urls')),

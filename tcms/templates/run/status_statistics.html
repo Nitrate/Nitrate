@@ -28,7 +28,7 @@
 		{% ifequal test_case_run_issues_count 0 %}
 			<span id="total_run_issues_count">No Issues</span>
 		{% else %}
-			<span id="total_run_issues_count"><a href="{% url "run-report" test_run.run_id %}#buglist" title="Show All Issues">Issues [{{ test_case_run_issues_count }}]</a></span>
+			<span id="total_run_issues_count"><a href="{% url "run-report" test_run.run_id %}#issues" title="Show All Issues">Issues [{{ test_case_run_issues_count }}]</a></span>
 		{% endifequal %}
 		</li>
 	</ul>

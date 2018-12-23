@@ -59,7 +59,7 @@
 			<td class="expandable">{{ test_case_run.case.get_is_automated_status }}</td>
 			<td class="expandable">{{ test_case_run.case.category }}</td>
 			<td class="expandable">{{ priority_value }}</td>
-			<td class="expandable"><span id="{{ test_case_run.pk }}_case_bug_count" {% if issues_count %}class="have_bug"{% endif %}>{{ issues_count }}</span></td>
+			<td class="expandable"><span id="{{ test_case_run.pk }}_case_issues_count" {% if issues_count %}class="have_issue"{% endif %}>{{ issues_count }}</span></td>
 			<td class="expandable center">
 				<img border="0" alt="" class="icon_status btn_{{ status_name|lower }}" />
 			</td>

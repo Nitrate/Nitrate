@@ -2,6 +2,8 @@
 
 from __future__ import absolute_import
 
+import re
+
 from django import forms
 from django.core.validators import MaxLengthValidator
 
@@ -11,10 +13,12 @@ from .fields import MultipleEmailField
 from .models import AUTOMATED_CHOICES as FULL_AUTOMATED_CHOICES
 from .models import TestCase, TestCaseCategory, TestCaseStatus
 from tcms.core.forms import UserField, DurationField, StripURLField
+from tcms.core.utils import string_to_list
 from tcms.integration.issuetracker.models import IssueTracker
 from tcms.management.models import Priority, Product, Component, TestTag
 from tcms.testplans.models import TestPlan
 from tcms.testruns.models import TestCaseRun
+
 
 AUTOMATED_CHOICES = (
     (0, 'Manual'),
@@ -35,26 +39,23 @@ ITEMS_PER_PAGE_CHOICES = (
 )
 
 
-class BugField(forms.CharField):
+class IssueKeyField(forms.CharField):
     """
     Customizing forms CharFiled validation.
-    Bug ID seperated using a delimiter such as comma.
+    Issue key could be seperated by comma.
     """
 
     def validate(self, value):
-        from tcms.core.utils import string_to_list
-
-        super(BugField, self).validate(value)
-        error = 'Enter a valid Bug ID.'
-        bug_ids = string_to_list(value)
-
-        for bug_id in bug_ids:
-            try:
-                bug_id = int(bug_id)
-            except ValueError as error:
-                raise forms.ValidationError(error)
-            if abs(bug_id) > 8388607:
-                raise forms.ValidationError(error)
+        super(IssueKeyField, self).validate(value)
+        issue_key_regex = [
+            re.compile(regex) for regex in
+            IssueTracker.objects.values_list('validate_regex', flat=True)
+        ]
+        for issue_key in string_to_list(value):
+            if not any(regex.match(issue_key) is not None
+                       for regex in issue_key_regex):
+                raise forms.ValidationError(
+                    '{} is not a valid issue key of configured issue trackers.')
 
 
 # =========== New Case ModelForm ==============
@@ -385,7 +386,7 @@ class BaseCaseSearchForm(forms.Form):
         queryset=Component.objects.none(),
         required=False
     )
-    bug_id = BugField(label="Bug ID", required=False)
+    issue_key = IssueKeyField(label="Issue Key", required=False)
     is_automated = forms.ChoiceField(
         choices=AUTOMATED_SERCH_CHOICES,
         required=False,
@@ -396,19 +397,6 @@ class BaseCaseSearchForm(forms.Form):
     items_per_page = forms.ChoiceField(label='Items per page',
                                        required=False,
                                        choices=ITEMS_PER_PAGE_CHOICES)
-
-    def clean_bug_id(self):
-        from tcms.core.utils import string_to_list
-
-        data = self.cleaned_data['bug_id']
-        data = string_to_list(data)
-        for d in data:
-            try:
-                int(d)
-            except ValueError as error:
-                raise forms.ValidationError(error)
-
-        return data
 
     def clean_tag__name__in(self):
         return TestTag.string_to_list(self.cleaned_data['tag__name__in'])

@@ -338,7 +338,7 @@ class TestCaseRunAttachIssue(XmlrpcAPIBaseTest):
             BAD_REQUEST,
             testcaserun.attach_issue, self.admin_request, value)
 
-    def test_attach_issue_with_non_existing_bug_system(self):
+    def test_attach_issue_with_non_existing_issue_tracker(self):
         value = {
             "case_run": [self.case_run.pk],
             "issue_key": '2',
@@ -484,9 +484,9 @@ class TestCaseRunDetachIssue(XmlrpcAPIBaseTest):
     def test_detach_issue_with_no_args(self):
         bad_args = (None, [], {}, ())
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.detach_bug,
+            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.detach_issue,
                                          self.admin_request, arg, '12345')
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.detach_bug,
+            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.detach_issue,
                                          self.admin_request, self.case_run.pk, arg)
 
     def test_detach_issue_with_non_exist_id(self):
@@ -498,12 +498,12 @@ class TestCaseRunDetachIssue(XmlrpcAPIBaseTest):
     def test_detach_issue_with_non_exist_bug(self):
         original_links_count = self.case_run.case.issues.count()
         nonexisting_bug = '{0}111'.format(self.bz_bug)
-        testcaserun.detach_bug(self.admin_request, self.case_run.pk, nonexisting_bug)
+        testcaserun.detach_issue(self.admin_request, self.case_run.pk, nonexisting_bug)
         self.assertEqual(original_links_count, self.case_run.case.issues.count())
 
     @unittest.skip('Refer to #148.')
     def test_detach_issue(self):
-        testcaserun.detach_bug(self.admin_request, self.case_run.pk, self.bz_bug)
+        testcaserun.detach_issue(self.admin_request, self.case_run.pk, self.bz_bug)
         self.assertFalse(
             self.case_run.case.issues.filter(issue_key=self.bz_bug).exists())
 
@@ -511,12 +511,12 @@ class TestCaseRunDetachIssue(XmlrpcAPIBaseTest):
     def test_detach_issue_with_illegal_args(self):
         bad_args = ("AAAA", ['A', 'B', 'C'], dict(A=1, B=2), True, False, (1, 2, 3, 4), -100)
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.detach_bug,
+            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.detach_issue,
                                          self.admin_request, arg, self.bz_bug)
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.detach_bug,
+            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.detach_issue,
                                          self.admin_request, self.case_run.pk, arg)
 
-    def test_detach_bug_with_no_perm(self):
+    def test_detach_issue_with_no_perm(self):
         self.assertRaisesXmlrpcFault(
             FORBIDDEN, testcaserun.detach_issue,
             self.staff_request, self.case_run.pk, self.bz_bug)

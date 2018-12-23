@@ -6,6 +6,7 @@ import datetime
 import itertools
 import json
 import logging
+import operator
 
 from django import forms as djforms
 from django.conf import settings
@@ -125,9 +126,9 @@ def update_case_email_settings(tc, n_form):
     tc.emailing.update_cc_list(valid_emails)
 
 
-def group_case_bugs(issues):
-    """Group bugs using bug_id."""
-    issues = itertools.groupby(issues, lambda b: b.issue_key)
+def group_case_issues(issues):
+    """Group issues by issue key."""
+    issues = itertools.groupby(issues, operator.attrgetter('issue_key'))
     return [(pk, list(_issues)) for pk, _issues in issues]
 
 
@@ -704,7 +705,7 @@ def ajax_search(request, template_name='case/common/json_cases.txt'):
         'default_tester__id',
         'default_tester__username'
     )
-    tcs = tcs.extra(select={'num_bug': RawSQL.num_case_bugs, })
+    tcs = tcs.extra(select={'num_issue': RawSQL.num_case_issues, })
 
     # columnIndexNameMap is required for correct sorting behavior, 5 should be
     # product, but we use run.build.product
@@ -928,7 +929,7 @@ class TestCaseCaseRunDetailPanelView(TemplateView,
 
         caserun_status = TestCaseRunStatus.objects.values('pk', 'name')
         caserun_status = caserun_status.order_by('sortkey')
-        issues = group_case_bugs(case_run.case.get_issues().order_by('issue_key'))
+        issues = group_case_issues(case_run.case.get_issues().order_by('issue_key'))
 
         data.update({
             'test_case': case,
@@ -982,7 +983,7 @@ def get(request, case_id, template_name='case/get.html'):
         'assignee', 'case__category',
         'case__priority', 'case_run_status').all()
     tcrs = tcrs.extra(select={
-        'num_bug': RawSQL.num_case_run_bugs,
+        'num_issue': RawSQL.num_case_run_issues,
     }).order_by('run__plan')
     runs_ordered_by_plan = itertools.groupby(tcrs, lambda t: t.run.plan)
     # FIXME: Just don't know why Django template does not evaluate a generator,
