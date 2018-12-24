@@ -620,8 +620,7 @@ def get_issues(request, case_ids):
         string containing comma separated IDs, or a list of int each of them is
         a case ID.
     :type case_ids: int, str or list
-    :return: list of mappings of :class:`Issue
-        <tcms.integration.issuetracker.models.Issue>`.
+    :return: list of mappings of :class:`Issue`.
     :rtype: list[dict]
 
     Example::

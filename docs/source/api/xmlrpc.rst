@@ -1,7 +1,7 @@
-.. _xmlrpc_api:
+.. _api_xmlrpc:
 
-XMLRPC API
-==========
+XMLRPC
+======
 
 
 .. toctree::

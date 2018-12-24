@@ -46,7 +46,14 @@ class CredentialTypes(enum.Enum):
 
 @python_2_unicode_compatible
 class IssueTrackerProduct(TCMSActionModel):
-    """Store issue tracker product"""
+    """Representing a specific issue tracker product
+
+    In real world, there are lots of issue tracker products, e.g. Bugzilla,
+    JIRA, GitHub, GitLab, etc. This model represents one of them before adding
+    an issue tracker to model :class:`IssueTracker`, which could represent a
+    specific deployed instance, for example, the KDE Bugzilla and the GNOME
+    Bugzilla.
+    """
 
     name = models.CharField(
         max_length=30,
@@ -67,7 +74,11 @@ class IssueTrackerProduct(TCMSActionModel):
 
 @python_2_unicode_compatible
 class ProductIssueTrackerRelationship(TCMSActionModel):
-    """Many-to-many relationship between Product and IssueTracker"""
+    """Many-to-many relationship between Product and IssueTracker
+
+    Before adding issues to case or case run, an issue tracker must be
+    associated with a product added to Nitrate.
+    """
 
     product = models.ForeignKey('management.Product')
     issue_tracker = models.ForeignKey('issuetracker.IssueTracker')
@@ -103,7 +114,7 @@ class ProductIssueTrackerRelationship(TCMSActionModel):
 
 @python_2_unicode_compatible
 class IssueTracker(TCMSActionModel):
-    """Issue tracker model"""
+    """Represent a deployed issue tracker instance"""
 
     enabled = models.BooleanField(
         default=True,
@@ -222,20 +233,43 @@ class IssueTracker(TCMSActionModel):
         return self.name
 
     def get_absolute_url(self):
+        """Get URL linking to this issue tracker
+
+        :return: the URL.
+        :rtype: str
+        """
         return self.service_url
 
     @property
     def code_name(self):
+        """Return a useful issue tracker name for programmatic purpose
+
+        Several characters are replaced. Space in name is replaced with
+        underscore.
+
+        :return: a formatted name.
+        :rtype: str
+        """
         return self.name.replace(' ', '_')
 
     @classmethod
     def get_by_case(cls, case):
-        """Find out issue trackers for a case"""
+        """Find out issue trackers for a case
+
+        :return: a queryset of matched issue trackers
+        :rtype: QuerySet
+        """
         return cls.objects.filter(
             products__in=case.plan.values('product'))
 
     @property
     def credential(self):
+        """Get login credential
+
+        The returned credential could contain different login credential data
+        which depends on what credential type is configured for this issue
+        tracker, and how corresponding credential is created.
+        """
         if self.credential_type == CredentialTypes.NoNeed.name:
             return {}
         elif self.credential_type == CredentialTypes.UserPwd.name:
@@ -288,6 +322,12 @@ class Credential(TCMSActionModel):
         return config
 
     def check_secret_file(self, filename):
+        """Check if secret file is valid for reading credential
+
+        :param str filename: the file name of secret file.
+        :raises ValidationError: if cannot read credential from specified
+            secret file.
+        """
         if not os.access(filename, os.F_OK):
             raise ValidationError({
                 'secret_file': 'Secret file {} does not exist.'
@@ -331,6 +371,11 @@ class Credential(TCMSActionModel):
             })
 
     def clean(self):
+        """General validation for a concrete credential model
+
+        Each concrete credential model derived from :class:`Credential` should
+        call parent's ``clean`` before other validation steps.
+        """
         super(Credential, self).clean()
 
         cred_type = self.issue_tracker.credential_type
@@ -392,6 +437,7 @@ class UserPwdCredential(Credential):
         db_table = 'issue_tracker_user_pwd_credential'
 
     def clean(self):
+        """Validate username/password credential"""
         super(UserPwdCredential, self).clean()
 
         if not self.secret_file and not self.username and not self.password:
@@ -443,6 +489,7 @@ class TokenCredential(Credential):
         db_table = 'issue_tracker_token_credential'
 
     def clean(self):
+        """Validate token credential"""
         super(TokenCredential, self).clean()
 
         if not self.secret_file and not self.token:
@@ -465,7 +512,12 @@ class TokenCredential(Credential):
 
 @python_2_unicode_compatible
 class Issue(TCMSActionModel):
-    """General issue in defined issue tracker"""
+    """This is the issue which could be added to case or case run
+
+    The meaning of issue in issue tracker represents a general concept. In
+    different concrete issue tracker products, it has different name to call,
+    e.g. bug in Bugzilla and issue in JIRA and GitHub.
+    """
 
     issue_key = models.CharField(
         max_length=50,
@@ -527,6 +579,7 @@ class Issue(TCMSActionModel):
             issue_key=self.issue_key)
 
     def clean(self):
+        """Validate issue"""
         super(Issue, self).clean()
 
         issue_key_re = re.compile(self.tracker.validate_regex)
@@ -544,6 +597,9 @@ class Issue(TCMSActionModel):
         :param case_run_ids: list of test case run IDs to just return subtotal
             for them.
         :type case_run_ids: list[int]
+        :return: a mapping from case run id to the number of issues belong to
+            that case run.
+        :rtype: dict
         """
         if case_run_ids is not None:
             assert isinstance(case_run_ids, list)

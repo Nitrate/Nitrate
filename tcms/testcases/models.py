@@ -347,22 +347,21 @@ class TestCase(TCMSActionModel):
 
         :param str issue_key: issue key to add.
         :param issue_tracker: to which the issue is added.
-        :type issue_tracker:
-            :class:`IssueTracker <tcms.integration.issuetracker.models.IssueTracker>`
+        :type issue_tracker: :class:`IssueTracker`
         :param str summary: issue's summary. It's optional.
         :param str description: a longer description for the issue. It's
             optional.
         :param case_run: If specified, that means issue is added to a test case
             run and also associated with this case. If omitted, it just means
             issue is added to this case only.
-        :type case_run: :class:`TestCaseRun <tcms.testruns.models.TestCaseRun>`
+        :type case_run: :class:`TestCaseRun`
         :param bool link_external_tracker: whether to add the issue to issue
             tracker's external tracker just after issue is added. Default to
             not to do that.
         :return: newly created issue. If issue already exists (checking the
             existence of issue key), nothing changes and just return
             immediately with None.
-        :rtype: :class:`Issue <tcms.integration.issuetracker.models.Issue>`
+        :rtype: :class:`Issue`
         :raises ValueError: if passed case run is not associated with this case.
 
         .. versionchanged:: 4.2
@@ -586,8 +585,7 @@ class TestCase(TCMSActionModel):
         :param str issue_key: Issue key to be removed.
         :param case_run: object of TestCaseRun or an integer representing a
             test case run pk. If omitted, only remove issue key from this case.
-        :type case_run: :class:`TestCaseRun <tcms.testruns.models.TestCaseRun>`
-            or int
+        :type case_run: :class:`TestCaseRun` or int
         :return: True if issue is removed, otherwise False is returned.
         :rtype: bool
         :raises TypeError: if type of argument ``case_run`` is not recognized.

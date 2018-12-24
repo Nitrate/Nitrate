@@ -26,7 +26,7 @@ Contents
    contribution
    faq
    bug_reporting
-   api/xmlrpc/index
+   api
    releases/index
    contact
    authors

@@ -1,7 +1,7 @@
-.. _tutorial:
+.. _guide:
 
-Tutorial
-========
+User Guide
+==========
 
 .. toctree::
    :maxdepth: 3
@@ -15,4 +15,5 @@ Tutorial
    guide/admin.rst
    guide/usecase.rst
    guide/db.rst
+   guide/issuetracker.rst
    guide/appendix.rst

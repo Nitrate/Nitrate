@@ -19,7 +19,7 @@ def find_service(issue_tracker):
     initialized object.
 
     :param issue_tracker: find corresponding service of this issue tracker.
-    :type issue_tracker: :class:`IssueTracker <tcms.integration.issuetracker.models.IssueTracker>`
+    :type issue_tracker: :class:`IssueTracker`
     :return: instance of service class.
     :rtype: a concrete class of :class:`IssueTrackerService`
     :raises ValueError: if missing issue tracker's ``class_path`` to find
@@ -117,9 +117,8 @@ class IssueTrackerService(object):
         :param str description: optional description of this issue.
         :param bool add_case_to_issue: whether to link case to issue tracker's
             external tracker. Defaults to not link test case to the new issue,
-            however if it is required, :meth:`link_external_tracker
-            <tcms.integration.issuetracker.services.IssueTrackerService.link_external_tracker>`
-            has to be called explicitly.
+            however if it is required, :meth:`link_external_tracker` has to be
+            called explicitly.
         :return: the newly created issue.
         :rtype: :class:`Issue <tcms.integration.issuetracker.models.Issue>`
         :raises ValidationError: if fail to validate the new issue.
@@ -202,7 +201,7 @@ class IssueTrackerService(object):
 
         :param case_run: a test case run from which to get required information
             for supported issue report URL arguments.
-        :type case_run: :class:`TestCaseRun <tcms.testruns.models.TestCaseRun>`
+        :type case_run: :class:`TestCaseRun`
         :return: a mapping whose key is argument name and value is the argument
             value. It is not necessary to consider URL encode here.
         :rtype: dict[str, str]

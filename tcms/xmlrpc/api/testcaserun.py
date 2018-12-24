@@ -344,8 +344,7 @@ def get_issues(request, case_run_id):
     """Get the list of issues that are associated with this test case run
 
     :param int case_run_id: case run ID.
-    :return: a list of mappings of :class:`Issue
-        <tcms.integration.issuetracker.models.Issue>`.
+    :return: a list of mappings of :class:`Issue`.
     :rytpe: list[dict]
 
     Example::

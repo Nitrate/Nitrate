@@ -595,11 +595,20 @@ class TestCaseRun(TCMSActionModel):
         return scence_templates.get(field)
 
     def add_issue(self, issue_key, issue_tracker,
-                  summary=None, description=None, bz_external_track=False):
-        """Add issue to this case run
+                  summary=None, description=None, link_external_tracker=False):
+        """Add an issue to this case run
 
-        Every argument has same meaning of argument of
-        :meth:`TestCase.add_issue <tcms.testcases.models.TestCase.add_issue>`.
+        Every argument has same meaning of argument of :meth:`TestCase.add_issue`.
+
+        :param str issue_key: issue key to add.
+        :param issue_tracker: issue tracker the issue key should belong to.
+        :type issue_tracker: :class:`IssueTracker`
+        :param str summary: issue's summary.
+        :param str description: issue's description.
+        :param bool link_external_tracker: whether to add case to issue's
+            external tracker in remote issue tracker.
+        :return: the newly added issue.
+        :rtype: :class:`Issue`
         """
         return self.case.add_issue(
             issue_key=issue_key,
@@ -607,20 +616,32 @@ class TestCaseRun(TCMSActionModel):
             summary=summary,
             description=description,
             case_run=self,
-            link_external_tracker=bz_external_track,
+            link_external_tracker=link_external_tracker,
         )
 
     def remove_issue(self, issue_key):
-        """Remove issue from this case run"""
+        """Remove issue from this case run
+
+        :param str issue_key: issue key to remove.
+        """
         self.case.remove_issue(issue_key, case_run=self)
 
     def is_finished(self):
         return self.case_run_status.is_finished()
 
     def get_issues(self):
+        """Get issues added to this case run
+
+        :return: a queryset of the issues.
+        """
         return Issue.objects.filter(case_run=self)
 
     def get_issues_count(self):
+        """Return the number of issues added to this case run
+
+        :return: the number of issues.
+        :rtype: int
+        """
         return self.get_issues().values('pk').count()
 
     def get_text_versions(self):
