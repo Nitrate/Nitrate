@@ -1,4 +1,4 @@
-.. _deployment:
+.. _install_in_rhel:
 
 Installing nitrate on RHEL6 with Apache and MySQL
 =================================================
@@ -92,7 +92,7 @@ Like on RHEL6.3, the root path is located in::
 As we plan to deploy an example server for nitrate, we can use product.py as the
 default settings. After backed up the product.py, please modify
 settings based on your custom configurations in settings/product.py.
-For more information see :doc:`configuration`!
+For more information see :ref:`configuration`!
 
 
 Use cache (Optional)
@@ -163,7 +163,7 @@ To build a production server with Apache, just copy apache conf to
 
 I presume that the conf file is named nitrate-httpd.conf.
 
-.. literalinclude:: ../../contrib/conf/nitrate-httpd.conf
+.. literalinclude:: ../../../contrib/conf/nitrate-httpd.conf
    :language: bash
 
 Change any configuration to fit your deployment environment.

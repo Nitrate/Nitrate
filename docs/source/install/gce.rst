@@ -1,9 +1,11 @@
+.. _install_gce:
+
 Installing Nitrate with Docker and Google Cloud Engine
 ======================================================
 
 It is possible to host Nitrate on Google Cloud Engine as a Docker image.
 The image is configured to use Gunicorn as the backend server. To read
-more about Nitrate and Gunicorn see :doc:`installing_gunicorn`.
+more about Nitrate and Gunicorn see :ref:`install_gunicorn`.
 
 .. warning::
 
@@ -32,7 +34,7 @@ Then inside your application directory create the following files.
     # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     # See the License for the specific language governing permissions and
     # limitations under the License.
-    
+
     # This file specifies your Python application's runtime configuration.
     # See https://cloud.google.com/appengine/docs/managed-vms/config for details.
     runtime: custom
@@ -54,7 +56,7 @@ Use the following ``Dockerfile`` to build your image::
     # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     # See the License for the specific language governing permissions and
     # limitations under the License
-    
+
     # The Google App Engine python runtime is Debian Jessie with Python installed
     # and various os-level packages to allow installation of popular Python
     # libraries. The source is on github at:
@@ -146,7 +148,7 @@ because they need access to ``mynitrate/settings.py``::
     $ kubectl get pods
     NAME            READY     STATUS    RESTARTS   AGE
     nitrate-d2u6p   1/1       Running   0          18h
-    
+
     $ kubectl exec nitrate-d2u6p -i -t -- bash -il
     root@nitrate-d2u6p:/home/vmagent/app# source /env/bin/activate
     (env)root@nitrate-d2u6p:/home/vmagent/app# PYTHONPATH=. django-admin migrate --settings mynitrate.settings
@@ -172,4 +174,3 @@ How To Configure
 
 All configuration needs to go into ``mynitrate/settings.py`` **BEFORE** you build the
 Docker image and push it to GCE.
-

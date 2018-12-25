@@ -1,3 +1,5 @@
+.. _install_gunicorn:
+
 Installing Nitrate with Gunicorn
 ================================
 
@@ -39,25 +41,25 @@ The ``mynitrate/`` directory needs to contain the following files::
 ``mynitrate/wsgi.py``::
 
     import os
-    
+
     from django.core.wsgi import get_wsgi_application
-    
+
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mynitrate.settings")
-    
+
     application = get_wsgi_application()
 
 
 ``mynitrate/settings.py``::
 
     from tcms.settings.product import *
-    
-    
+
+
     # SECURITY WARNING: keep the secret key used in production secret!
     SECRET_KEY = 'top-secret'
-    
+
     # SECURITY WARNING: don't run with debug turned on in production!
     DEBUG = False
-    
+
     # Database settings
     DATABASES = {
         'default': {
@@ -89,12 +91,12 @@ and add the following configuration to `mynitrate/settings.py`::
     INSTALLED_APPS += (
         's3_folder_storage',
     )
-    
+
     # static files storage
     AWS_S3_ACCESS_KEY_ID = "changeMe"
     AWS_S3_SECRET_ACCESS_KEY = "changeMe"
     AWS_STORAGE_BUCKET_NAME = "changeMe"
-    
+
     STATICFILES_STORAGE = 's3_folder_storage.s3.StaticStorage'
     STATIC_S3_PATH = "static"
     STATIC_URL = '//s3.amazonaws.com/%s/%s/' % (AWS_STORAGE_BUCKET_NAME, STATIC_S3_PATH)
@@ -107,7 +109,7 @@ and add the following configuration to `mynitrate/settings.py`::
 
         import os
         from s3_folder_storage.s3 import StaticStorage
-        
+
         os.environ['S3_USE_SIGV4'] = 'True'
         class SigV4Storage(StaticStorage):
             @property
@@ -138,10 +140,10 @@ Once your local Nitrate instance has been configured then create the database::
 Then create the first user account on your Nitrate instance::
 
     (myNitrate)$ PYTHONPATH=. django-admin createsuperuser --settings mynitrate.settings
-    Username (leave blank to use 'atodorov'): 
+    Username (leave blank to use 'atodorov'):
     Email address: atodorov@MrSenko.com
-    Password: 
-    Password (again): 
+    Password:
+    Password (again):
     Superuser created successfully.
 
 Afterwards start Gunicorn::

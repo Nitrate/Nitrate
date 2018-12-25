@@ -17,12 +17,9 @@ Contents
    about
    set_dev_env
    set_dev_env_with_vagrant
-   installing_in_rhel
-   installing_in_virtualenv
-   installing_gunicorn
-   installing_gce
+   install/index
    configuration
-   tutorial
+   guide
    contribution
    faq
    bug_reporting

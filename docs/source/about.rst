@@ -14,4 +14,4 @@ Key features
 A brief history
 ---------------
 
-.. todo::
+.. TODO

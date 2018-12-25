@@ -1,3 +1,5 @@
+.. _install_in_virtualenv:
+
 Installing Nitrate with Apache (virtualenv) and MySQL
 =====================================================
 
@@ -36,7 +38,7 @@ Install Nitrate from source code
 --------------------------------
 
 First install RPM packages which are needed to compile some of the Python
-dependencies. See :doc:`set_dev_env` for more information. Then::
+dependencies. See :ref:`setup_devenv` for more information. Then::
 
     (venv)# cd /home/<username>/
     (venv)# git clone https://github.com/Nitrate/Nitrate.git
@@ -119,7 +121,7 @@ Verify that your configuration works by::
 .. note::
 
     For more information about Nitrate configuration see
-    :doc:`configuration`!
+    :ref:`configuration`!
 
 Create upload directory
 -----------------------
@@ -163,5 +165,5 @@ Apache and mod_wsgi can be configured in many ways. Another example of
 Apache configuration for Nitrate is shown below. You will very likely
 have to adjust it based on your particular environment.
 
-.. literalinclude:: ../../contrib/conf/nitrate-httpd.conf
+.. literalinclude:: ../../../contrib/conf/nitrate-httpd.conf
    :language: bash

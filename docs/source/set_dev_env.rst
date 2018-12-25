@@ -1,3 +1,5 @@
+.. _setup_devenv:
+
 Setting up a development environment on Fedora
 ==============================================
 
@@ -17,12 +19,12 @@ Install database and devel packages which are required to compile some of the
 Python dependencies::
 
     sudo dnf install gcc python-devel mariadb mariadb-devel mariadb-server \
-        krb5-devel libxml2-devel libxslt-devel 
+        krb5-devel libxml2-devel libxslt-devel
 
 Start the db server::
 
     sudo systemctl start mariadb
-  
+
 Create a virtual environment::
 
     virtualenv ~/virtualenvs/nitrate
@@ -32,7 +34,7 @@ Install dependencies::
     . ~/virtualenvs/nitrate/bin/activate
     pip install -r requirements/devel.txt
 
-.. note:: 
+.. note::
 
     ``devel.txt`` has the link to ``base.txt`` which includes required Python
     packages for running Nitrate.

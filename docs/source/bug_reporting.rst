@@ -1,3 +1,5 @@
+.. _bug_report:
+
 Report an Issue
 ===============
 

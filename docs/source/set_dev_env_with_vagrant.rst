@@ -1,3 +1,5 @@
+.. _setup_devenv_vagrant:
+
 Setup development environment with Vagrant
 ==========================================
 
@@ -10,7 +12,7 @@ development environment, copy it to project root directory and name it
 After ``vagrant`` succeeds to run the virtual machine, you will get a complete
 environment to develop Nitrate,
 
-* a Python virtual environment creatd at ``$HOME/nitrate-env/`` with all
+* a Python virtual environment created at ``$HOME/nitrate-env/`` with all
   necessary dependencies installed.
 
 * a superuser is created by default with username ``admin`` and password
@@ -35,6 +37,6 @@ environment to develop Nitrate,
 
     ./manage.py runserver 0.0.0.0:8000
 
-visit http://127.0.0.1:8087 with your favourite web browser.
+visit http://127.0.0.1:8087 with your favorite web browser.
 
 Happy hacking.
