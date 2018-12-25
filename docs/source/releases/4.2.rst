@@ -1,0 +1,131 @@
+.. _4.2:
+
+4.2
+===
+
+*Dec 25, 2018*
+
+Highlighted
+-----------
+
+Issue tracker is rewritten thoroughly. With new issue tracker, it is doable to
+add, disable and remove issue tracker for specific products dynamically without
+the need to change source code. It is also extensible by writing your own issue
+tracker service class to work with specific issue tracker instance. Refer to
+:ref:`issuetracker`.
+
+Migration
+---------
+
+This version has database migrations. Run::
+
+    django-admin --settings=tcms.settings.produce migrate
+
+Change Log
+----------
+
+- Write docs for issue tracker and related code (Chenxiong Qi)
+- Massive clean old bug system related code (Chenxiong Qi)
+- Remove source files of old bug trackers (Chenxiong Qi)
+- Use python-bugzilla instead of the Python xmlrpc API - `#151`_ (Chenxiong Qi)
+- Get issuetracker credential (Chenxiong Qi)
+- Remove old bug system option from settings (Chenxiong Qi)
+- Remove unused extensions from docs config (Chenxiong Qi)
+- Fix unicode string in test_testcaserun.py for py2.7 (Chenxiong Qi)
+- Fix issuetracker migration and old model name in raw SQL (Chenxiong Qi)
+- Remove model TestCaseBug and TestCaseBugSystem (Chenxiong Qi)
+- Use issuetracker permissions instead (Chenxiong Qi)
+- Remove unused code to calculate issues for test cases (Chenxiong Qi)
+- Cleanup link external tracker method (Chenxiong Qi)
+- Sort coverage report by cover rate (Chenxiong Qi)
+- Fix flake8 errors (Chenxiong Qi)
+- Add missing requirement enum34 for py2.7 (Chenxiong Qi)
+- Old errata app uses new issue tracker app (Chenxiong Qi)
+- Issues could be added and removed from top menu in run page (Chenxiong Qi)
+- Fix return value doc of XMLRPC function get_issues (Chenxiong Qi)
+- App testruns now uses new app issuetracker (Chenxiong Qi)
+- Add missing issuetracker migration (Chenxiong Qi)
+- Fix flake8 errors in issuetracker (Chenxiong Qi)
+- XMLRPC now uses new issue tracker (Chenxiong Qi)
+- Refactor form for adding an issue (Chenxiong Qi)
+- Move assertValidationError to HelperAssertion (Chenxiong Qi)
+- Issue management from webpage works with new issue tracker (Chenxiong Qi)
+- Rewrite issue tracker (Chenxiong Qi)
+- Refresh requirements after upgrading django-tinymce (Chenxiong Qi)
+- Upgrade django-tinymce to 2.7.0 - `#335`_ (Chenxiong Qi)
+- Pass on_delete to ForeignKey explicitly (Chenxiong Qi)
+- Use settings.MIDDLEWARE (Chenxiong Qi)
+- Remove deprecated calls to user.is_authenticated() (Chenxiong Qi)
+- Remove deprecation warnings for test assertion methods (Chenxiong Qi)
+- Fix flake8 errors and ignore W504 (Chenxiong Qi)
+- Update README for use of vagrant machine (Chenxiong Qi)
+- Massiv rewrite ansible playbook for devenv (Chenxiong Qi)
+- Add dep graphviz-devel to Vagrantfile (Chenxiong Qi)
+- Update frozen requirements (Chenxiong Qi)
+- Add django-extensions for generating db diagram (Chenxiong Qi)
+- Remove Piwik - `#323`_ (Chenxiong Qi)
+- Update set_dev_env.rst (northlomax)
+- Remove memoized decorator (Chenxiong Qi)
+- Fix a filter call while collecting recipients - `#316`_ (Chenxiong Qi)
+- Add missing test in 93ee243 (Chenxiong Qi)
+- Fix some calls to function map - `#313`_ (Chenxiong Qi)
+- Refactor object change log structure and the display - `#11`_ (Chenxiong Qi)
+- Drop django-preserialize - `#311`_ (Chenxiong Qi)
+- Generate coverage HTML report as well (Chenxiong Qi)
+- Ignore directory .env and .pytest_cache (Chenxiong Qi)
+- Make flake8 not check .env (Chenxiong Qi)
+- Reduce duplicate code of importing test cases - `#280`_ (Chenxiong Qi)
+- Rename some TestPlan signals' handler names (Chenxiong Qi)
+- Create email settings for new TestPlan - `#181`_ (atodorov)
+- Add test for #181, fails only on MySQL (atodorov)
+- Name Nitrate (Chenxiong Qi)
+- Do not allow adding duplicate components to a case - `#281`_ (Chenxiong Qi)
+- Fix "Update versions failed" when create a plan from am empty db - `#287`_ (Chenxiong Qi)
+- Add missing migration for using custom NitrateBooleanField (Chenxiong Qi)
+- Fix: Tree view shows spinner and never loads (`#290`_) (Chenxiong Qi)
+- Redefine Json bad request and server error response (Chenxiong Qi)
+- Remove unused class AjaxResponseMixin (Chenxiong Qi)
+- Replace custom HttpJSONResponse with JsonResponse - `#282`_ (Chenxiong Qi)
+- Remove some unnessesary single raise statements - `#288`_ (Chenxiong Qi)
+- Rewrite UrlMixin (Chenxiong Qi)
+- Fix wrong method calls in report data module (Chenxiong Qi)
+- Fix wrong six.moves.imap in custom report (Chenxiong Qi)
+- Fix MANIFEST.in to include missing files (Chenxiong Qi)
+- Add readthedocs doc badge (Chenxiong Qi)
+- Fix docs build in readthedocs (Chenxiong Qi)
+- Specify to use Python 3 for readthedocs (Chenxiong Qi)
+- Change settings to test for building docs (Chenxiong Qi)
+- Run testenv docs in Travis CI (Chenxiong Qi)
+- Add readthedocs config file (Chenxiong Qi)
+- Create virtualenv in Python 3 in Vagrant dev machine (Chenxiong Qi)
+- Add testenv docs to test building documentation (Chenxiong Qi)
+- Restructure list of dependencies (Chenxiong Qi)
+- Rewrite XMLRPC API in order to publish - `#275`_ (Chenxiong Qi)
+- Publish XMLRPC API documentation - `#276`_ (Chenxiong Qi)
+- Replace old kobo user_passes_test with django permission_required (Chenxiong Qi)
+- Install sphinx theme sphinx_rtd_theme explicitly (Chenxiong Qi)
+- Show correct project name Nitrate in documentation (Chenxiong Qi)
+- Remove ChangeLog from docs (Chenxiong Qi)
+- Do not use numbered items in docs (Chenxiong Qi)
+- Add release notes for 4.1 (Chenxiong Qi)
+- Update docs (Chenxiong Qi)
+- Update MOTD_LOGIN setting (Mr. Senko)
+- Skip 100% covered files in coverage report (Chenxiong Qi)
+- Use custom BooleanField for TestBuild.is_active (Chenxiong Qi)
+
+.. _#11: https://github.com/Nitrate/Nitrate/issues/11/
+.. _#151: https://github.com/Nitrate/Nitrate/issues/151/
+.. _#181: https://github.com/Nitrate/Nitrate/issues/181/
+.. _#275: https://github.com/Nitrate/Nitrate/issues/275/
+.. _#276: https://github.com/Nitrate/Nitrate/issues/276/
+.. _#280: https://github.com/Nitrate/Nitrate/issues/280/
+.. _#281: https://github.com/Nitrate/Nitrate/issues/281/
+.. _#282: https://github.com/Nitrate/Nitrate/issues/282/
+.. _#287: https://github.com/Nitrate/Nitrate/issues/287/
+.. _#288: https://github.com/Nitrate/Nitrate/issues/288/
+.. _#290: https://github.com/Nitrate/Nitrate/issues/290/
+.. _#311: https://github.com/Nitrate/Nitrate/issues/311/
+.. _#313: https://github.com/Nitrate/Nitrate/issues/313/
+.. _#316: https://github.com/Nitrate/Nitrate/issues/316/
+.. _#323: https://github.com/Nitrate/Nitrate/issues/323/
+.. _#335: https://github.com/Nitrate/Nitrate/issues/335/
