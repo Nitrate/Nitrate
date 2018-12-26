@@ -1,13 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import re
 import six
-
-numeric_re = re.compile(r'^\d+$')
-
-
-def is_int(s):
-    return numeric_re.match(s) is not None
 
 
 def string_to_list(strs, spliter=','):

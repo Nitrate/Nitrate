@@ -18,7 +18,6 @@ from django_comments.models import Comment
 from tcms.core.contrib.linkreference.models import LinkReference
 from tcms.core.models.fields import DurationField
 from tcms.core.models import TCMSActionModel
-from tcms.core.utils import is_int
 from tcms.core.utils.tcms_router import connection
 from tcms.core.utils.timedeltaformat import format_timedelta
 from tcms.testcases.models import TestCaseText, NoneText
@@ -96,7 +95,7 @@ class TestRun(TCMSActionModel):
             'summary': lambda value: Q(summary__icontains=value),
             'product': lambda value: Q(build__product=value),
             'product_version': lambda value: Q(product_version=value),
-            'plan': lambda value: Q(plan__plan_id=int(value)) if is_int(value) else Q(plan__name__icontains=value),
+            'plan': lambda value: Q(plan__plan_id=int(value)) if value.isdigit() else Q(plan__name__icontains=value),
             'build': lambda value: Q(build=value),
             'env_group': lambda value: Q(plan__env_group=value),
             'people_id': lambda value: Q(manager__id=value) | Q(default_tester__id=value),
