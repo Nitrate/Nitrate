@@ -6,7 +6,8 @@ import datetime
 import itertools
 import json
 import logging
-import operator
+
+from operator import itemgetter, attrgetter
 
 from django import forms as djforms
 from django.conf import settings
@@ -128,7 +129,7 @@ def update_case_email_settings(tc, n_form):
 
 def group_case_issues(issues):
     """Group issues by issue key."""
-    issues = itertools.groupby(issues, operator.attrgetter('issue_key'))
+    issues = itertools.groupby(issues, attrgetter('issue_key'))
     return [(pk, list(_issues)) for pk, _issues in issues]
 
 
@@ -537,7 +538,7 @@ def get_tags_from_cases(case_ids, plan_id=None):
 
         rows = SQLExecution(sql).rows
 
-    return sorted(rows, key=lambda tag: tag['tag_name'])
+    return sorted(rows, key=itemgetter('tag_name'))
 
 
 def all(request, template_name="case/all.html"):
@@ -985,7 +986,7 @@ def get(request, case_id, template_name='case/get.html'):
     tcrs = tcrs.extra(select={
         'num_issue': RawSQL.num_case_run_issues,
     }).order_by('run__plan')
-    runs_ordered_by_plan = itertools.groupby(tcrs, lambda t: t.run.plan)
+    runs_ordered_by_plan = itertools.groupby(tcrs, attrgetter('run.plan'))
     # FIXME: Just don't know why Django template does not evaluate a generator,
     # and had to evaluate the groupby generator manually like below.
     runs_ordered_by_plan = [(k, list(v)) for k, v in runs_ordered_by_plan]

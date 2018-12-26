@@ -5,6 +5,7 @@ import itertools
 import json
 import six
 
+from operator import add, itemgetter
 from six.moves import urllib
 
 from django.utils.decorators import method_decorator
@@ -516,7 +517,7 @@ def choose_run(request, plan_id, template_name='plan/choose_testrun.html'):
                     testrun.add_case_run(case=testcase)
 
             estimated_time = six.moves.reduce(
-                lambda x, y: x + y,
+                add,
                 [nc.estimated_time for nc in to_be_added_cases])
             testrun.estimated_time = testrun.estimated_time + estimated_time
             testrun.save()
@@ -1051,7 +1052,7 @@ def printable(request, template_name='plan/printable.html'):
         params_sql = ','.join(itertools.repeat('%s', repeat))
         sql = sqls.TP_PRINTABLE_CASE_TEXTS % (params_sql, params_sql)
         result_set = SQLExecution(sql, plan_pks * 2)
-        group_data = itertools.groupby(result_set.rows, lambda data: data['plan_id'])
+        group_data = itertools.groupby(result_set.rows, itemgetter('plan_id'))
         cases_dict = dict((key, list(values)) for key, values in group_data)
         for tp in tps:
             tp.result_set = cases_dict.get(tp.plan_id, None)

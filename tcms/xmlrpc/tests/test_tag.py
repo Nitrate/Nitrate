@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import operator
+
 from six.moves.http_client import BAD_REQUEST
 
 from tcms.xmlrpc.api import tag
@@ -36,7 +38,7 @@ class TestTag(XmlrpcAPIBaseTest):
         self.assertIsNotNone(test_tag)
         self.assertEqual(3, len(test_tag))
 
-        test_tag = sorted(test_tag, key=lambda item: item['id'])
+        test_tag = sorted(test_tag, key=operator.itemgetter('id'))
         self.assertEqual(test_tag[0]['id'], self.tag_db.pk)
         self.assertEqual(test_tag[0]['name'], 'db')
         self.assertEqual(test_tag[1]['id'], self.tag_fedora.pk)
@@ -49,7 +51,7 @@ class TestTag(XmlrpcAPIBaseTest):
         self.assertIsNotNone(test_tag)
         self.assertEqual(3, len(test_tag))
 
-        test_tag = sorted(test_tag, key=lambda item: item['id'])
+        test_tag = sorted(test_tag, key=operator.itemgetter('id'))
         self.assertEqual(test_tag[0]['id'], self.tag_db.pk)
         self.assertEqual(test_tag[0]['name'], 'db')
         self.assertEqual(test_tag[1]['id'], self.tag_fedora.pk)

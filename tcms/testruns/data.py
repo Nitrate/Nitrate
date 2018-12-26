@@ -4,6 +4,7 @@ import six
 
 from collections import namedtuple
 from itertools import groupby
+from operator import itemgetter
 
 from django.conf import settings
 from django.db.models import Count, F
@@ -131,7 +132,7 @@ class TestCaseRunDataMixin(object):
 
         return dict([
             (case_run_id, list(comments)) for case_run_id, comments in
-            groupby(qs, lambda comment: comment['case_run_id'])
+            groupby(qs, itemgetter('case_run_id'))
         ])
 
     def get_summary_stats(self, case_runs):

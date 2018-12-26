@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import operator
 import six
 
 from datetime import datetime
@@ -279,7 +280,7 @@ class QuerySetBasedXMLRPCSerializer(XMLRPCSerializer):
         """
         qs = self.queryset.values('pk', field_name).order_by('pk')
         return dict((pk, tuple(values)) for pk, values in
-                    groupby(qs.iterator(), lambda item: item['pk']))
+                    groupby(qs.iterator(), operator.itemgetter('pk')))
 
     def _query_m2m_fields(self):
         m2m_fields = self._get_m2m_fields()

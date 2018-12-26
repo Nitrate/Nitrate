@@ -4,6 +4,7 @@ import datetime
 import itertools
 import json
 import logging
+import operator
 import six
 import time
 
@@ -206,7 +207,7 @@ def new(request, template_name='run/new.html'):
 
     else:
         estimated_time = six.moves.reduce(
-            lambda x, y: x + y,
+            operator.add,
             (tc.estimated_time for tc in tcs_values))
         form = NewRunForm(initial={
             'summary': 'Test run for %s on %s' % (
@@ -508,7 +509,7 @@ def ajax_search(request, template_name='run/common/json_runs.txt'):
         completed_subtotal = dict((
             (run_id, sum((item['count'] for item in stats_rows)))
             for run_id, stats_rows
-            in itertools.groupby(qs.iterator(), key=lambda row: row['run'])))
+            in itertools.groupby(qs.iterator(), key=itemgetter('run'))))
 
         qs = TestCaseRun.objects.filter(
             run__in=run_ids
@@ -863,7 +864,7 @@ def new_run_with_caseruns(request, run_id, template_name='run/clone.html'):
             info='At least one case is required by a run',
             next=request.META.get('HTTP_REFERER', '/')))
     estimated_time = six.moves.reduce(
-        lambda x, y: x + y,
+        operator.add,
         [tcr.case.estimated_time for tcr in tcrs])
 
     if not request.POST.get('submit'):
@@ -1164,7 +1165,7 @@ class AddCasesToRunView(View):
         ncs = tcs.filter(case_id__in=ncs_id)
 
         estimated_time = six.moves.reduce(
-            lambda x, y: x + y,
+            operator.add,
             (nc.estimated_time for nc in ncs))
         tr.estimated_time = tr.estimated_time + estimated_time
         tr.save(update_fields=['estimated_time'])

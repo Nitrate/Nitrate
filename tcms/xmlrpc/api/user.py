@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from operator import methodcaller
+
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import PermissionDenied
 from kobo.django.xmlrpc.decorators import user_passes_test
@@ -152,7 +154,7 @@ def update(request, values=None, id=None):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(lambda u: u.has_perm('auth.change_user'))
+@user_passes_test(methodcaller('has_perm', 'auth.change_user'))
 def join(request, username, groupname):
     """Add user to a group specified by name.
 

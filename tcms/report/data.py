@@ -6,6 +6,8 @@ from collections import defaultdict
 from collections import namedtuple
 from itertools import chain
 from itertools import groupby
+from operator import attrgetter
+from operator import itemgetter
 
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
@@ -428,14 +430,14 @@ class CustomDetailsReportData(CustomReportData):
         rows = SQLExecution(sqls.custom_details_case_runs_comments,
                             (ct.pk, build_ids, status_ids)).rows
         return dict((case_run_id, list(comments)) for case_run_id, comments in
-                    groupby(rows, key=lambda row: row['case_run_id']))
+                    groupby(rows, key=itemgetter('case_run_id')))
 
 
 class TestingReportBaseData(object):
     """Base data of various testing report"""
 
     report_criteria = {
-        'r_product': ('test_builds.product_id = %s', lambda obj: obj.pk),
+        'r_product': ('test_builds.product_id = %s', attrgetter('pk')),
         'r_build': ('test_runs.build_id IN %s', models_to_pks),
         'r_created_since': ('test_runs.start_date >= %s', do_nothing),
         'r_created_before': ('test_runs.start_date <= %s', do_nothing),
@@ -542,7 +544,7 @@ class TestingReportByCaseRunTesterData(TestingReportBaseData):
 
         def walk_status_matrix_rows():
             tested_by_ids = sorted(status_matrix.iteritems(),
-                                   key=lambda item: item[0])
+                                   key=itemgetter(0))
             for tested_by_id, status_subtotal in tested_by_ids:
                 tested_by_username = tested_by_usernames.get(tested_by_id,
                                                              'None')
@@ -588,12 +590,11 @@ class TestingReportByCaseRunTesterData(TestingReportBaseData):
         def walk_status_matrix_rows():
             """For rendering template, walk through status matrix row by row"""
             prev_build = None
-            builds = sorted(six.iteritems(status_matrix),
-                            key=lambda item: item[0])
+            builds = sorted(six.iteritems(status_matrix), key=itemgetter(0))
             for build_id, tested_by_ids in builds:
                 build_rowspan = len(tested_by_ids)
                 tested_by_ids = sorted(six.iteritems(tested_by_ids),
-                                       key=lambda item: item[0])
+                                       key=itemgetter(0))
                 for tested_by_id, status_subtotal in tested_by_ids:
                     if build_id not in runs_subtotal:
                         runs_count = 0
@@ -694,7 +695,7 @@ class TestingReportByCasePriorityData(TestingReportBaseData):
         def walk_status_matrix_rows():
             prev_build_id = None
             ordered_builds = sorted(status_matrix.iteritems(),
-                                    key=lambda item: item[0])
+                                    key=itemgetter(0))
             for build_id, priorities in ordered_builds:
                 build_rowspan = len(priorities)
                 ordered_priorities = sorted(priorities.iteritems(),
@@ -752,7 +753,7 @@ class TestingReportByPlanTagsData(TestingReportBaseData):
 
         def walk_status_matrix_rows():
             ordered_tags = sorted(status_matrix.iteritems(),
-                                  key=lambda item: item[0])
+                                  key=itemgetter(0))
             for tag_id, status_subtotal in ordered_tags:
                 yield tags_names.get(tag_id, ''), \
                     plans_subtotal.get(tag_id, 0), \
@@ -823,7 +824,7 @@ class TestingReportByPlanTagsDetailData(TestingReportByPlanTagsData):
         def walk_status_matrix():
             status_matrix.leaf_values_count(value_in_row=True)
             ordered_builds = sorted(status_matrix.iteritems(),
-                                    key=lambda item: item[0])
+                                    key=itemgetter(0))
             for tag_id, builds in ordered_builds:
                 # Data on top of each status matrix under each tag
                 yield tags_names.get(tag_id, 'untagged'), \
