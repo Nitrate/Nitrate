@@ -484,7 +484,7 @@ def get_test_cases(request, run_id):
 
     qs = TestCaseRun.objects.filter(run_id=run_id).values(
         'case', 'pk', 'case_run_status__name')
-    extra_info = dict(((row['case'], row) for row in qs.iterator()))
+    extra_info = {row['case']: row for row in qs.iterator()}
 
     for case in tcs_serializer:
         info = extra_info[case['case_id']]

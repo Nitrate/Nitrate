@@ -51,32 +51,32 @@ class TestGet(test.TestCase):
         )
 
     def test_get(self):
-        expected_run = dict(
-            run_id=self.test_run.pk,
-            errata_id=None,
-            summary=self.test_run.summary,
-            plan_text_version=1,
-            start_date=datetime_to_str(self.test_run.start_date),
-            stop_date=None,
-            notes=self.test_run.notes,
-            estimated_time='00:00:00',
-            environment_id=0,
+        expected_run = {
+            'run_id': self.test_run.pk,
+            'errata_id': None,
+            'summary': self.test_run.summary,
+            'plan_text_version': 1,
+            'start_date': datetime_to_str(self.test_run.start_date),
+            'stop_date': None,
+            'notes': self.test_run.notes,
+            'estimated_time': '00:00:00',
+            'environment_id': 0,
 
-            plan_id=self.plan.pk,
-            plan=self.plan.name,
-            build_id=self.build.pk,
-            build=self.build.name,
-            manager_id=self.plan_manager.pk,
-            manager=self.plan_manager.username,
-            product_version_id=self.version.pk,
-            product_version=self.version.value,
-            default_tester_id=self.plan_default_tester.pk,
-            default_tester=self.plan_default_tester.username,
-            env_value=[],
-            tag=['automation', 'fedora'],
-            cc=[],
-            auto_update_run_status=False,
-        )
+            'plan_id': self.plan.pk,
+            'plan': self.plan.name,
+            'build_id': self.build.pk,
+            'build': self.build.name,
+            'manager_id': self.plan_manager.pk,
+            'manager': self.plan_manager.username,
+            'product_version_id': self.version.pk,
+            'product_version': self.version.value,
+            'default_tester_id': self.plan_default_tester.pk,
+            'default_tester': self.plan_default_tester.username,
+            'env_value': [],
+            'tag': ['automation', 'fedora'],
+            'cc': [],
+            'auto_update_run_status': False,
+        }
 
         run = testrun_api.get(self.http_req, self.test_run.pk)
         run['tag'].sort()

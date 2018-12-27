@@ -291,10 +291,13 @@ def get_testcaseplan_sortkey_pk_for_testcases(plan, tc_ids):
     if plan is not None:
         qs = qs.filter(plan__pk=plan.pk)
     qs = qs.values('pk', 'sortkey', 'case')
-    return dict([(item['case'], {
-        'testcaseplan_pk': item['pk'],
-        'sortkey': item['sortkey']
-    }) for item in qs])
+    return {
+        item['case']: {
+            'testcaseplan_pk': item['pk'],
+            'sortkey': item['sortkey']
+        }
+        for item in qs
+    }
 
 
 def calculate_for_testcases(plan, testcases):

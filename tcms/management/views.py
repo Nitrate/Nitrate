@@ -118,8 +118,9 @@ def environment_groups(request, template_name='environment/groups.html'):
     qs = TCMSEnvGroupPropertyMap.objects.filter(group__in=env_groups)
     qs = qs.values('group__pk', 'property__name')
     qs = qs.order_by('group__pk', 'property__name').iterator()
-    properties = dict([(key, list(value)) for key, value in
-                       groupby(qs, itemgetter('group__pk'))])
+    properties = {
+        key: list(value) for key, value in groupby(qs, itemgetter('group__pk'))
+    }
 
     # Get logs for each group
     env_group_ct = ContentType.objects.get_for_model(TCMSEnvGroup)
@@ -130,8 +131,10 @@ def environment_groups(request, template_name='environment/groups.html'):
     qs = qs.order_by('object_pk').iterator()
     # we have to convert object_pk to an integer due to it's a string stored in
     # database.
-    logs = dict([(int(key), list(value)) for key, value in
-                 groupby(qs, itemgetter('object_pk'))])
+    logs = {
+        int(key): list(value) for key, value in
+        groupby(qs, itemgetter('object_pk'))
+    }
 
     env_groups = env_groups.select_related('modified_by', 'manager').iterator()
 

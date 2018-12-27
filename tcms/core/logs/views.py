@@ -42,14 +42,14 @@ class TCMSLog(object):
         return TCMSLogModel
 
     def get_log_create_data(self):
-        return dict(
-            content_object=self.model,
-            site_id=settings.SITE_ID,
-            who=self.who,
-            field=self.field,
-            original_value=self.original_value,
-            new_value=self.new_value,
-        )
+        return {
+            'content_object': self.model,
+            'site_id': settings.SITE_ID,
+            'who': self.who,
+            'field': self.field,
+            'original_value': self.original_value,
+            'new_value': self.new_value,
+        }
 
     def make(self, who, new_value, field='', original_value=''):
         """Create new log"""

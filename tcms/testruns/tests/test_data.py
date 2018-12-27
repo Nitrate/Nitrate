@@ -27,8 +27,7 @@ class TestGetCaseRunsStatsByStatusFromEmptyTestRun(BasePlanCase):
         data = stats_caseruns_status(self.empty_test_run.pk,
                                      self.case_run_statuss)
 
-        subtotal = dict((status.pk, [0, status])
-                        for status in self.case_run_statuss)
+        subtotal = {status.pk: [0, status] for status in self.case_run_statuss}
 
         self.assertEqual(subtotal, data.StatusSubtotal)
         self.assertEqual(0, data.CaseRunsTotalCount)
@@ -63,8 +62,7 @@ class TestGetCaseRunsStatsByStatus(BasePlanCase):
     def test_get_stats(self):
         data = stats_caseruns_status(self.test_run.pk, self.case_run_statuss)
 
-        subtotal = dict((status.pk, [0, status])
-                        for status in self.case_run_statuss)
+        subtotal = {status.pk: [0, status] for status in self.case_run_statuss}
         subtotal[self.case_run_status_idle.pk][0] = 1
         subtotal[self.case_run_status_failed.pk][0] = 2
         subtotal[self.case_run_status_waived.pk][0] = 3

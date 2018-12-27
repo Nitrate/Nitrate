@@ -38,8 +38,9 @@ def stats_caseruns_status(run_id, case_run_statuss):
         'case_run_status'
     ).annotate(status_count=Count('case_run_status'))
 
-    caserun_statuss_subtotal = dict((status.pk, [0, status])
-                                    for status in case_run_statuss)
+    caserun_statuss_subtotal = {
+        status.pk: [0, status] for status in case_run_statuss
+    }
 
     for row in rows:
         status_pk = row['case_run_status']
@@ -130,10 +131,10 @@ class TestCaseRunDataMixin(object):
             'user_name',
         ).order_by('pk')
 
-        return dict([
-            (case_run_id, list(comments)) for case_run_id, comments in
+        return {
+            case_run_id: list(comments) for case_run_id, comments in
             groupby(qs, itemgetter('case_run_id'))
-        ])
+        }
 
     def get_summary_stats(self, case_runs):
         """Get summary statistics from case runs

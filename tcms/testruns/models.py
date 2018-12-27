@@ -371,7 +371,7 @@ class TestCaseRunStatus(TCMSActionModel):
     @classmethod
     def get_names_ids(cls):
         '''Get all status names in reverse mapping between name and id'''
-        return dict((name, _id) for _id, name in six.iteritems(cls.get_names()))
+        return {name: _id for _id, name in six.iteritems(cls.get_names())}
 
     def is_finished(self):
         if self.name in ['PASSED', 'FAILED', 'ERROR', 'WAIVED']:

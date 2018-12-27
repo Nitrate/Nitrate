@@ -429,8 +429,10 @@ class CustomDetailsReportData(CustomReportData):
         ct = ContentType.objects.get_for_model(TestCaseRun)
         rows = SQLExecution(sqls.custom_details_case_runs_comments,
                             (ct.pk, build_ids, status_ids)).rows
-        return dict((case_run_id, list(comments)) for case_run_id, comments in
-                    groupby(rows, key=itemgetter('case_run_id')))
+        return {
+            case_run_id: list(comments) for case_run_id, comments in
+            groupby(rows, key=itemgetter('case_run_id'))
+        }
 
 
 class TestingReportBaseData(object):
@@ -447,12 +449,18 @@ class TestingReportBaseData(object):
     # ## Helper methods ###
 
     def get_build_names(self, build_ids):
-        return dict(TestBuild.objects.filter(
-            pk__in=build_ids).values_list('pk', 'name').iterator())
+        return dict(
+            TestBuild.objects.filter(pk__in=build_ids)
+                             .values_list('pk', 'name')
+                             .iterator()
+        )
 
     def get_usernames(self, user_ids):
-        return dict(User.objects.filter(
-            id__in=user_ids).values_list('id', 'username').iterator())
+        return dict(
+            User.objects.filter(id__in=user_ids)
+                        .values_list('id', 'username')
+                        .iterator()
+        )
 
     # ## SQL preparation ###
 
@@ -797,8 +805,11 @@ class TestingReportByPlanTagsData(TestingReportBaseData):
         """Get tags names from status matrix"""
         from tcms.management.models import TestTag
 
-        names = dict(TestTag.objects.filter(
-            pk__in=tag_ids).values_list('pk', 'name').iterator())
+        names = dict(
+            TestTag.objects.filter(pk__in=tag_ids)
+                           .values_list('pk', 'name')
+                           .iterator()
+        )
         # The existence of None tells us the fact that there are plans without
         # any tag. So, name it untagged.
         if None in tag_ids:

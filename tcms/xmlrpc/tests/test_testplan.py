@@ -398,30 +398,30 @@ class TestGet(test.TestCase):
 
     def test_get(self):
         self.maxDiff = None
-        expected_plan = dict(
-            plan_id=self.plan.pk,
-            name=self.plan.name,
-            create_date=datetime_to_str(self.plan.create_date),
-            is_active=True,
-            extra_link=None,
-            product_version_id=self.version.pk,
-            product_version=self.version.value,
-            default_product_version=self.version.value,
-            owner_id=self.author.pk,
-            owner=self.author.username,
-            author_id=self.author.pk,
-            author=self.author.username,
-            product_id=self.product.pk,
-            product=self.product.name,
-            type_id=self.type.pk,
-            type=self.type.name,
-            parent_id=None,
-            parent=None,
-            attachment=[],
-            component=[],
-            env_group=[],
-            tag=['centos', 'fedora']
-        )
+        expected_plan = {
+            'plan_id': self.plan.pk,
+            'name': self.plan.name,
+            'create_date': datetime_to_str(self.plan.create_date),
+            'is_active': True,
+            'extra_link': None,
+            'product_version_id': self.version.pk,
+            'product_version': self.version.value,
+            'default_product_version': self.version.value,
+            'owner_id': self.author.pk,
+            'owner': self.author.username,
+            'author_id': self.author.pk,
+            'author': self.author.username,
+            'product_id': self.product.pk,
+            'product': self.product.name,
+            'type_id': self.type.pk,
+            'type': self.type.name,
+            'parent_id': None,
+            'parent': None,
+            'attachment': [],
+            'component': [],
+            'env_group': [],
+            'tag': ['centos', 'fedora']
+        }
 
         plan = XmlrpcTestPlan.get(self.http_req, self.plan.pk)
         plan['tag'].sort()

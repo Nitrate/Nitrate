@@ -329,15 +329,16 @@ def run_queryset_from_querystring(querystring):
     if "page_size" in filter_keywords:
         filter_keywords.pop('page_size')
 
-    filter_keywords = dict(
-        (str(k), v) for (k, v) in six.iteritems(filter_keywords) if v.strip())
+    filter_keywords = {
+        str(k): v for k, v in six.iteritems(filter_keywords) if v.strip()
+    }
 
     trs = TestRun.objects.filter(**filter_keywords)
     return trs
 
 
 def magic_convert(queryset, key_name, value_name):
-    return dict(((row[key_name], row[value_name]) for row in queryset))
+    return {row[key_name]: row[value_name] for row in queryset}
 
 
 def load_runs_of_one_plan(request, plan_id,
@@ -377,8 +378,10 @@ def load_runs_of_one_plan(request, plan_id,
         searched_runs = response_data['querySet']
 
         # Get associated statistics data
-        run_filters = dict(('run__{0}'.format(key), value)
-                           for key, value in six.iteritems(form.cleaned_data))
+        run_filters = {
+            'run__{0}'.format(key): value for key, value in
+            six.iteritems(form.cleaned_data)
+        }
 
         qs = TestCaseRun.objects.filter(
             case_run_status=TestCaseRunStatus.id_failed(),
@@ -506,10 +509,11 @@ def ajax_search(request, template_name='run/common/json_runs.txt'):
         ).annotate(
             count=Count('pk')
         ).order_by('run', 'case_run_status')
-        completed_subtotal = dict((
-            (run_id, sum((item['count'] for item in stats_rows)))
+        completed_subtotal = {
+            run_id: sum((item['count'] for item in stats_rows))
             for run_id, stats_rows
-            in itertools.groupby(qs.iterator(), key=itemgetter('run'))))
+            in itertools.groupby(qs.iterator(), key=itemgetter('run'))
+        }
 
         qs = TestCaseRun.objects.filter(
             run__in=run_ids
@@ -581,8 +585,7 @@ def open_run_get_comments_subtotal(case_run_ids):
                                 is_removed=False)
     qs = qs.values('object_pk').annotate(comment_count=Count('pk'))
     qs = qs.order_by('object_pk').iterator()
-    result = ((int(row['object_pk']), row['comment_count']) for row in qs)
-    return dict(result)
+    return {int(row['object_pk']): row['comment_count'] for row in qs}
 
 
 def open_run_get_users(case_runs):
@@ -1174,8 +1177,7 @@ class AddCasesToRunView(View):
             case_pks = (case.pk for case in ncs)
             qs = TestCasePlan.objects.filter(
                 plan=tp, case__in=case_pks).values('case', 'sortkey')
-            sortkeys_in_plan = dict((row['case'], row['sortkey'])
-                                    for row in qs.iterator())
+            sortkeys_in_plan = {row['case']: row['sortkey'] for row in qs.iterator()}
             for nc in ncs:
                 sortkey = sortkeys_in_plan.get(nc.pk, 0)
                 tr.add_case_run(case=nc, sortkey=sortkey)

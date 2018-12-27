@@ -309,7 +309,7 @@ def get_number_of_plans_cases(plan_ids):
     qs = TestCasePlan.objects.filter(plan__in=plan_ids)
     qs = qs.values('plan').annotate(
         total_count=Count('pk')).order_by('-plan')
-    return dict([(item['plan'], item['total_count']) for item in qs])
+    return {item['plan']: item['total_count'] for item in qs}
 
 
 def get_number_of_plans_runs(plan_ids):
@@ -325,7 +325,7 @@ def get_number_of_plans_runs(plan_ids):
     qs = TestRun.objects.filter(plan__in=plan_ids)
     qs = qs.values('plan').annotate(
         total_count=Count('pk')).order_by('-plan')
-    return dict([(item['plan'], item['total_count']) for item in qs])
+    return {item['plan']: item['total_count'] for item in qs}
 
 
 def get_number_of_children_plans(plan_ids):
@@ -341,7 +341,7 @@ def get_number_of_children_plans(plan_ids):
     qs = TestPlan.objects.filter(parent__in=plan_ids)
     qs = qs.values('parent').annotate(
         total_count=Count('parent')).order_by('-parent')
-    return dict([(item['parent'], item['total_count']) for item in qs])
+    return {item['parent']: item['total_count'] for item in qs}
 
 
 def calculate_stats_for_testplans(plans):
@@ -676,23 +676,23 @@ def clone(request, template_name='plan/clone.html'):
 
                 new_name = len(tps) == 1 and clone_options['name'] or None
 
-                clone_params = dict(
+                clone_params = {
                     # Cloned plan properties
-                    new_name=new_name,
-                    product=clone_options['product'],
-                    version=clone_options['product_version'],
-                    set_parent=clone_options['set_parent'],
+                    'new_name': new_name,
+                    'product': clone_options['product'],
+                    'version': clone_options['product_version'],
+                    'set_parent': clone_options['set_parent'],
 
                     # Related data
-                    copy_texts=clone_options['copy_texts'],
-                    copy_attachments=clone_options['copy_attachements'],
-                    copy_environment_group=clone_options['copy_environment_group'],
+                    'copy_texts': clone_options['copy_texts'],
+                    'copy_attachments': clone_options['copy_attachements'],
+                    'copy_environment_group': clone_options['copy_environment_group'],
 
                     # Link or copy cases
-                    link_cases=clone_options['link_testcases'],
-                    copy_cases=clone_options['copy_testcases'],
-                    default_component_initial_owner=request.user,
-                )
+                    'link_cases': clone_options['link_testcases'],
+                    'copy_cases': clone_options['copy_testcases'],
+                    'default_component_initial_owner': request.user,
+                }
 
                 assign_me_as_plan_author = not clone_options['keep_orignal_author']
                 if assign_me_as_plan_author:
@@ -1053,7 +1053,7 @@ def printable(request, template_name='plan/printable.html'):
         sql = sqls.TP_PRINTABLE_CASE_TEXTS % (params_sql, params_sql)
         result_set = SQLExecution(sql, plan_pks * 2)
         group_data = itertools.groupby(result_set.rows, itemgetter('plan_id'))
-        cases_dict = dict((key, list(values)) for key, values in group_data)
+        cases_dict = {key: list(values) for key, values in group_data}
         for tp in tps:
             tp.result_set = cases_dict.get(tp.plan_id, None)
             yield tp

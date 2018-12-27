@@ -17,4 +17,4 @@ def create_group_by_dict(sql, params, key_func):
     """
     result_set = SQLExecution(sql, params)
     group_data = itertools.groupby(result_set.rows, key_func)
-    return dict((key, [v for v in values]) for key, values in group_data)
+    return {key: [v for v in values] for key, values in group_data}

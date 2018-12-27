@@ -293,23 +293,23 @@ class TestCreate(BasePlanCase):
         cls.tag_python = TestTagFactory(name='python')
 
     def test_create(self):
-        values = dict(
-            summary='Test new case: {}'.format(self.__class__.__name__),
-            is_automated=True,
-            is_automated_proposed=True,
-            script='',
-            arguments='',
-            extra_link='https://localhost/case-2',
-            requirement='',
-            alias='alias',
-            estimated_time=0,
-            case_status=TestCaseStatus.objects.get(name='CONFIRMED'),
-            category=TestCaseCategory.objects.all()[0],
-            priority=Priority.objects.all()[0],
-            default_tester=self.tester,
-            notes='',
-            tag=[self.tag_fedora, self.tag_python]
-        )
+        values = {
+            'summary': 'Test new case: {}'.format(self.__class__.__name__),
+            'is_automated': True,
+            'is_automated_proposed': True,
+            'script': '',
+            'arguments': '',
+            'extra_link': 'https://localhost/case-2',
+            'requirement': '',
+            'alias': 'alias',
+            'estimated_time': 0,
+            'case_status': TestCaseStatus.objects.get(name='CONFIRMED'),
+            'category': TestCaseCategory.objects.all()[0],
+            'priority': Priority.objects.all()[0],
+            'default_tester': self.tester,
+            'notes': '',
+            'tag': [self.tag_fedora, self.tag_python]
+        }
         case = TestCase.create(self.tester, values=values)
 
         new_case = TestCase.objects.get(summary=values['summary'])
