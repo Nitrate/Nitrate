@@ -18,7 +18,7 @@ install_requires = [
     'PyMySQL == 0.7.11',
     'beautifulsoup4 >= 4.1.1',
     'celery == 4.1.0',
-    'django >= 1.10,<2.0',
+    'django >= 1.11,<2.0',
     'django-contrib-comments == 1.8.0',
     'django-tinymce == 2.7.0',
     'django-uuslug == 1.1.8',
@@ -86,7 +86,6 @@ setup(
     include_package_data=True,
     classifiers=[
         'Framework :: Django',
-        'Framework :: Django :: 1.10',
         'Framework :: Django :: 1.11',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)',
