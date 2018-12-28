@@ -291,7 +291,8 @@ class QuerySetBasedXMLRPCSerializer(XMLRPCSerializer):
             for field_name in m2m_fields
         }
 
-    def _get_single_field_related_object_pks(self, m2m_field_query, model_pk, field_name):
+    def _get_single_field_related_object_pks(
+            self, m2m_field_query, model_pk, field_name):
         return [item[field_name] for item in m2m_field_query[model_pk]
                 if item[field_name]]
 
@@ -301,7 +302,7 @@ class QuerySetBasedXMLRPCSerializer(XMLRPCSerializer):
         Any object pk with value 0 or None values will be excluded in the final
         list.
 
-        :param dict m2m_field_query: the result returned from _query_m2m_fields
+        :param dict m2m_fields_query: the result returned from _query_m2m_fields
         :param model_pk: whose object's related object pks will be retrieved
         :type model_pk: int or long
         :param str field_name: field name of the related object

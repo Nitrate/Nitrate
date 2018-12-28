@@ -9,7 +9,7 @@ import logging
 
 from operator import itemgetter, attrgetter
 
-from django import forms as djforms
+from django_comments.models import Comment
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
 from django.contrib.contenttypes.models import ContentType
@@ -19,15 +19,15 @@ from django.core.urlresolvers import reverse
 from django.db.models import Count
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.http import JsonResponse
+from django import forms as djforms
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import get_template
 from django.template.loader import render_to_string
+from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
 from django.views.generic.base import TemplateView, View
-from django.utils.decorators import method_decorator
-
-from django_comments.models import Comment
+from six.moves import map
 
 from tcms.core import forms
 from tcms.core.db import SQLExecution
@@ -825,10 +825,10 @@ class TestCaseCaseRunListPaneView(TemplateView):
                                     site_id=settings.SITE_ID,
                                     is_removed=False)
         qs = qs.values('object_pk').annotate(comment_count=Count('pk'))
-        result = {}
-        for item in qs.iterator():
-            result[int(item['object_pk'])] = item['comment_count']
-        return result
+        return {
+            int(item['object_pk']): item['comment_count']
+            for item in qs.iterator()
+        }
 
     def get_context_data(self, **kwargs):
         this_cls = TestCaseCaseRunListPaneView
@@ -838,7 +838,7 @@ class TestCaseCaseRunListPaneView(TemplateView):
 
         # Get the number of each caserun's comments, and put the count into
         # comments query result.
-        caserun_ids = [item['pk'] for item in case_runs]
+        caserun_ids = list(map(itemgetter('pk'), case_runs))
         comments_count = self.get_comments_count(caserun_ids)
         for case_run in case_runs:
             case_run['comments_count'] = comments_count.get(case_run['pk'], 0)

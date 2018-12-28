@@ -2,15 +2,14 @@
 
 import unittest
 
+from operator import itemgetter
+
+from django.test import TestCase
 from six.moves.http_client import BAD_REQUEST
 from six.moves.http_client import NOT_FOUND
 from six.moves.http_client import FORBIDDEN
 from six.moves.http_client import NOT_IMPLEMENTED
-
-from django.test import TestCase
-
-from tcms.xmlrpc.api import product
-from tcms.xmlrpc.tests.utils import make_http_request
+from six.moves import map
 
 from tcms.tests.factories import ComponentFactory
 from tcms.tests.factories import ProductFactory
@@ -22,6 +21,8 @@ from tcms.tests.factories import TestRunFactory
 from tcms.tests.factories import TestTagFactory
 from tcms.tests.factories import UserFactory
 from tcms.tests.factories import VersionFactory
+from tcms.xmlrpc.api import product
+from tcms.xmlrpc.tests.utils import make_http_request
 from tcms.xmlrpc.tests.utils import XmlrpcAPIBaseTest
 
 
@@ -699,15 +700,13 @@ class TestGetVersions(XmlrpcAPIBaseTest):
     def test_get_versions_with_id(self):
         prod = product.get_versions(None, self.product.pk)
         self.assertIsNotNone(prod)
-        versions = [item['value'] for item in prod]
-        versions.sort()
+        versions = sorted(map(itemgetter('value'), prod))
         self.assertEqual(self.versions + ['unspecified'], versions)
 
     def test_get_versions_with_name(self):
         prod = product.get_versions(None, self.product_name)
         self.assertIsNotNone(prod)
-        versions = [item['value'] for item in prod]
-        versions.sort()
+        versions = sorted(map(itemgetter('value'), prod))
         self.assertEqual(self.versions + ['unspecified'], versions)
 
     def test_get_version_with_no_args(self):
