@@ -13,7 +13,7 @@ def bugzilla_external_track(issue_tracker, issue):
         cred = issue_tracker.credential
         bz = bugzilla.Bugzilla(issue_tracker.api_url,
                                user=cred['username'],
-                               password=['password'])
+                               password=cred['password'])
         bz.add_external_tracker(
             int(issue.issue_key), issue.case.pk,
 
