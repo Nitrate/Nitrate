@@ -2,7 +2,7 @@
 
 from __future__ import absolute_import
 
-from .common import *
+from tcms.settings.common import *
 
 # Debug settings
 DEBUG = True

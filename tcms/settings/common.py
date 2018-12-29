@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import django.conf.global_settings as DEFAULT_SETTINGS
 import os.path
 
 NITRATE_VERSION = '4.2'
@@ -304,15 +303,15 @@ PLAN_RUNS_PAGE_SIZE = 20
 
 # The URLS will be list in footer
 # Example:
-#FOOTER_LINKS = (
+# FOOTER_LINKS = (
 #   ('mailto:nitrate-dev-list@example.com', 'Contact Us'),
 #   ('mailto:nitrate-admin@example.com', 'Request Permission'),
 #   ('http://foo.com', 'foo')
-#)
+# )
 FOOTER_LINKS = ()
 
-# Attachement file download path
-# it could be spcified to a different out of MEDIA_URL
+# Attachment file download path
+# it could be specified to a different out of MEDIA_URL
 # FILE_UPLOAD_DIR = path.join(MEDIA_DIR, 'uploads').replace('\\','/'),
 FILE_UPLOAD_DIR = '/var/nitrate/uploads'
 

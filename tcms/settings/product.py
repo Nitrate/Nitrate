@@ -1,6 +1,6 @@
 # Django settings for product env.
 
-from common import *
+from tcms.settings.common import *  # noqa
 
 # Debug settings
 DEBUG = False
@@ -27,19 +27,19 @@ DATABASES = {
 }
 
 # add RemoteUserMiddleWare if kerberos authentication is enabled
-MIDDLEWARE_CLASSES += (
-#    'django.contrib.auth.middleware.RemoteUserMiddleware',
+MIDDLEWARE += (
+   # 'django.contrib.auth.middleware.RemoteUserMiddleware',
 )
 
 # Remote kerberos authentication backends
-#AUTHENTICATION_BACKENDS = (
+# AUTHENTICATION_BACKENDS = (
 #    'tcms.core.contrib.auth.backends.ModAuthKerbBackend',
-#)
+# )
 
 DATABASE_ROUTERS = ['tcms.core.utils.tcms_router.RWRouter']
 
 # Kerberos realm
-#KRB5_REALM = 'EXAMPLE.COM'
+# KRB5_REALM = 'EXAMPLE.COM'
 
 # User authentication by Bugzilla settings
 # BUGZILLA_XMLRPC_URL = 'https://bugzilla.example.com/xmlrpc.cgi'
@@ -54,7 +54,7 @@ EMAIL_FROM = 'noreply@example.com'
 
 # Site-specific messages
 
-# First run - to detemine need port user or not.
+# First run - to determine if it needs to prompt user or not.
 FIRST_RUN = False
 
 # You can add a help link on the footer of home page as following format:
