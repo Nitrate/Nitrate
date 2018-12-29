@@ -27,7 +27,7 @@ tcms/toys.py
 cover-report/
 htmlcov/
 .cache/
-install/
+./install/
 uploads/
 Vagrantfile
 *.retry
