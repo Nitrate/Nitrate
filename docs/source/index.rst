@@ -21,7 +21,6 @@ Contents
    configuration
    guide
    contribution
-   faq
    bug_reporting
    api
    releases/index
