@@ -216,21 +216,6 @@ class TestGetPlainText(BasePlanCase):
         self.assertEqual('breakdown', plain_text.breakdown)
 
 
-class FakeThread(object):
-    """Fake Thread to mock threading.Thread"""
-
-    def __init__(self, target=None, args=(), kwargs={}):
-        self.target = target
-        self.args = args
-        self.kwargs = kwargs
-
-    def setDaemon(self, value):
-        """Do nothing"""
-
-    def start(self):
-        self.target(*self.args, **self.kwargs)
-
-
 class TestSendMailOnCaseIsUpdated(BasePlanCase):
     """Test send mail on case post_save signal is triggered"""
 
@@ -260,7 +245,6 @@ class TestSendMailOnCaseIsUpdated(BasePlanCase):
         # explicitly here aims to mock that behavior.
         cls.case.current_user = cls.case_editor
 
-    @patch('tcms.core.utils.mailto.threading.Thread', new=FakeThread)
     def test_send_mail_to_case_author(self):
         self.case.summary = 'New summary for running test'
         self.case.save()

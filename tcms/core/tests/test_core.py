@@ -2,6 +2,7 @@
 
 import unittest
 from mock import patch
+from mock import Mock
 
 from django import test
 from django.conf import settings
@@ -11,6 +12,8 @@ from tcms.core import responses
 from tcms.core.db import GroupByResult
 from tcms.core.utils import string_to_list
 from tcms.tests.factories import TestPlanFactory
+from tcms.core.task import AsyncTask
+from tcms.core.task import Task
 
 
 class TestUtilsFunctions(unittest.TestCase):
@@ -264,3 +267,39 @@ class TestUrlMixin(test.TestCase):
         expected_url = 'https://localhost/{}'.format(
             self.plan.get_absolute_url())
         self.assertEqual(expected_url, url)
+
+
+class TestAsyncTask(unittest.TestCase):
+    """Test async task class Task"""
+
+    def test_disabled(self):
+        with patch.object(settings, 'ASYNC_TASK', new=AsyncTask.DISABLED.value):
+            func = Mock()
+            task = Task(func)
+            task(1, a=2)
+            func.assert_called_once_with(1, a=2)
+
+    @patch('threading.Thread')
+    def test_uses_threading(self, Thread):
+        with patch.object(settings, 'ASYNC_TASK', new=AsyncTask.THREADING.value):
+            func = Mock()
+            task = Task(func)
+            task(1, a=2)
+            func.assert_not_called()
+
+            Thread.assert_called_once_with(target=func, args=(1,), kwargs={'a': 2})
+            thread = Thread.return_value
+            self.assertTrue(thread.daemon)
+            thread.start.assert_called_once()
+
+    @patch('celery.shared_task')
+    def test_uses_celery(self, shared_task):
+        with patch.object(settings, 'ASYNC_TASK', new=AsyncTask.CELERY.value):
+            func = Mock()
+            task = Task(func)
+            task(1, a=2)
+            func.assert_not_called()
+
+            shared_task.assert_called_once_with(func)
+            self.assertEqual(shared_task.return_value, task.target)
+            shared_task.return_value.delay.assert_called_once_with(1, a=2)

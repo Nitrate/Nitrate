@@ -3,10 +3,10 @@
 import bugzilla
 import warnings
 
-from celery import shared_task
+from tcms.core.task import Task
 
 
-@shared_task
+@Task
 def bugzilla_external_track(issue_tracker, issue):
     """Link issue to bug external tracker"""
     try:

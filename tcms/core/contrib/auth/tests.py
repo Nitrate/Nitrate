@@ -97,21 +97,6 @@ class TestLogout(TestCase):
         self.assertRedirects(response, next_url)
 
 
-class MockThread(object):
-    """Mocking threading.Thread that does not run target in thread"""
-
-    def __init__(self, target, args=None, kwargs=None):
-        self.target = target
-        self.args = args or ()
-        self.kwargs = kwargs or {}
-
-    def setDaemon(self, is_daemon):
-        """Do nothing for setting daemon"""
-
-    def start(self):
-        self.target(*self.args, **self.kwargs)
-
-
 class TestRegistration(TestCase):
 
     def setUp(self):
@@ -125,8 +110,6 @@ class TestRegistration(TestCase):
             '<input value="Register" class="loginbutton sprites" type="submit">',
             html=True)
 
-    @patch('tcms.core.contrib.auth.views.settings.ENABLE_ASYNC_EMAIL', new=False)
-    @patch('tcms.core.utils.mailto.threading.Thread', new=MockThread)
     @patch('tcms.core.contrib.auth.models.sha1')
     def assert_user_registration(self, username, sha1):
         sha1.return_value.hexdigest.return_value = self.fake_activate_key

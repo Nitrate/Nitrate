@@ -433,10 +433,7 @@ def update(request):
             from tcms.core.utils.mailto import mailto
 
             mail_context['context']['user'] = request.user
-            try:
-                mailto(**mail_context)
-            except Exception:
-                pass
+            mailto(**mail_context)
 
     # Special hacking for updating test case run status
     if ctype == 'testruns.testcaserun' and field == 'case_run_status':
@@ -531,10 +528,7 @@ def update_case_run_status(request):
         )
         if mail_context:
             mail_context['context']['user'] = request.user
-            try:
-                mailto(**mail_context)
-            except Exception:
-                pass
+            mailto(**mail_context)
 
     # Special hacking for updating test case run status
     if ctype == 'testruns.testcaserun' and field == 'case_run_status':
@@ -635,10 +629,7 @@ class TestCaseUpdateActions(ModelUpdateActions):
             from tcms.core.utils.mailto import mailto
 
             mail_context['context']['user'] = self.request.user
-            try:
-                mailto(**mail_context)
-            except Exception:
-                pass
+            mailto(**mail_context)
 
     def _update_priority(self):
         exists = Priority.objects.filter(pk=self.new_value).exists()

@@ -4,7 +4,7 @@ import six
 
 from django.conf import settings
 
-from tcms.core.utils.mailto import send_email_using_threading
+from tcms.core.utils.mailto import mailto
 
 
 def email_case_update(case):
@@ -18,7 +18,7 @@ def email_case_update(case):
         'test_case': case, 'test_case_text': txt,
     }
     template = settings.CASE_EMAIL_TEMPLATE
-    send_email_using_threading(template, subject, recipients, context, cc=cc)
+    mailto(template, subject, recipients, context, cc=cc)
 
 
 def email_case_deletion(case):
@@ -31,7 +31,7 @@ def email_case_deletion(case):
         'case': case,
     }
     template = settings.CASE_EMAIL_TEMPLATE
-    send_email_using_threading(template, subject, recipients, context, cc=cc)
+    mailto(template, subject, recipients, context, cc=cc)
 
 
 def get_case_notification_recipients(case):

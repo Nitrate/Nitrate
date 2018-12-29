@@ -17,7 +17,6 @@ def get_long_description():
 install_requires = [
     'PyMySQL == 0.7.11',
     'beautifulsoup4 >= 4.1.1',
-    'celery == 4.1.0',
     'django >= 1.11,<2.0',
     'django-contrib-comments == 1.8.0',
     'django-tinymce == 2.7.0',
@@ -65,6 +64,11 @@ extras_require = {
         'django-extensions',
         'pygraphviz',
         'future-breakpoint',
+    ],
+
+    # Required packages required to run async tasks
+    'async': [
+        'celery == 4.1.0',
     ]
 }
 

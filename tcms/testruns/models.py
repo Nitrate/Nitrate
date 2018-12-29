@@ -236,7 +236,7 @@ class TestRun(TCMSActionModel):
         from tcms.core.utils.mailto import mailto
 
         to = self.get_notify_addrs()
-        mailto(template, subject, to, context, request)
+        mailto(template, subject, to, context, request=request)
 
     def get_issues_count(self):
         """
@@ -586,7 +586,7 @@ class TestCaseRun(TCMSActionModel):
             'assignee': {
                 'template_name': 'mail/change_case_run_assignee.txt',
                 'subject': 'Assignee of run %s has been changed' % tr.run_id,
-                'to_mail': tr.get_notify_addrs(),
+                'recipients': tr.get_notify_addrs(),
                 'context': {'test_run': tr, 'test_case_runs': tcrs},
             }
         }

@@ -33,7 +33,6 @@ DEBUG_TOOLBAR_CONFIG = {
     'INTERCEPT_REDIRECTS': False
 }
 
-# For local development
-ENABLE_ASYNC_EMAIL = False
-
 FILE_UPLOAD_DIR = os.path.join(TCMS_ROOT_PATH, '..', 'uploads')
+
+ASYNC_TASK = 'DISABLED'

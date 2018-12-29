@@ -33,16 +33,16 @@ class TestSendEmailOnPlanUpdated(test.TestCase):
     def tearDown(self):
         _disconnect_signals()
 
-    @patch('tcms.testplans.helpers.email.send_email_using_threading')
-    def test_send_email(self, send_email_using_threading):
+    @patch('tcms.testplans.helpers.email.mailto')
+    def test_send_email(self, mailto):
         self.plan.name = 'Update to send email ...'
         self.plan.save()
 
-        send_email_using_threading.assert_called_once_with(
+        mailto.assert_called_once_with(
             settings.PLAN_EMAIL_TEMPLATE,
             'TestPlan {} has been updated.'.format(self.plan.pk),
             ['owner@example.com'],
-            {'plan': self.plan})
+            context={'plan': self.plan})
 
 
 class TestSendEmailOnPlanDeleted(test.TestCase):
@@ -64,16 +64,16 @@ class TestSendEmailOnPlanDeleted(test.TestCase):
     def tearDown(self):
         _disconnect_signals()
 
-    @patch('tcms.testplans.helpers.email.send_email_using_threading')
-    def test_send_email(self, send_email_using_threading):
+    @patch('tcms.testplans.helpers.email.mailto')
+    def test_send_email(self, mailto):
         plan_id = self.plan.pk
         self.plan.delete()
 
-        send_email_using_threading.assert_called_once_with(
+        mailto.assert_called_once_with(
             settings.PLAN_DELELE_EMAIL_TEMPLATE,
             'TestPlan {} has been deleted.'.format(plan_id),
             ['owner@example.com'],
-            {'plan': self.plan})
+            context={'plan': self.plan})
 
 
 class TestGetPlanNotificationRecipients(test.TestCase):

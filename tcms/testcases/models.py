@@ -335,7 +335,7 @@ class TestCase(TCMSActionModel):
             'reviewer': {
                 'template_name': 'mail/change_case_reviewer.txt',
                 'subject': 'You have been speicific to be the reviewer of cases',
-                'to_mail': list(set(tcs.values_list('reviewer__email', flat=True))),
+                'recipients': list(set(tcs.values_list('reviewer__email', flat=True))),
                 'context': {'test_cases': tcs},
             }
         }
@@ -579,7 +579,7 @@ class TestCase(TCMSActionModel):
             to = self.author.email
 
         to = list(set(to))
-        mailto(template, subject, to, context, request)
+        mailto(template, subject, to, context, request=request)
 
     def remove_issue(self, issue_key, case_run=None):
         """Remove issue from this case or case run together
