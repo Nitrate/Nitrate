@@ -17,19 +17,17 @@ class AsyncTask(enum.Enum):
 if settings.ASYNC_TASK not in [item.value for item in AsyncTask]:
     raise ValueError('Unknown async task type {}'.format(settings.ASYNC_TASK))
 
-if settings.ASYNC_TASK == AsyncTask.DISABLED.value:
-    try:
-        import celery
-    except ImportError:
-        raise ImportError('Async task is enabled and set to use celery, '
-                          'but it is not installed.')
-
 
 class Task(object):
     """"""
 
     def __init__(self, target):
         if settings.ASYNC_TASK == AsyncTask.CELERY.value:
+            try:
+                import celery
+            except ImportError:
+                raise ImportError('Async task is enabled and set to use celery,'
+                                  ' but it is not installed.')
             self.target = celery.shared_task(target)
         else:
             self.target = target
