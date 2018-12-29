@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import sys
 import unittest
 from mock import patch
 from mock import Mock
@@ -14,6 +15,8 @@ from tcms.core.utils import string_to_list
 from tcms.tests.factories import TestPlanFactory
 from tcms.core.task import AsyncTask
 from tcms.core.task import Task
+
+PY37 = sys.version_info[:2] == (3, 7)
 
 
 class TestUtilsFunctions(unittest.TestCase):
@@ -292,6 +295,8 @@ class TestAsyncTask(unittest.TestCase):
             self.assertTrue(thread.daemon)
             thread.start.assert_called_once()
 
+    @unittest.skipIf(PY37, 'Celery<4.3 does not work with Python 3.7. '
+                           'Waiting for 4.3 to be released.')
     @patch('celery.shared_task')
     def test_uses_celery(self, shared_task):
         with patch.object(settings, 'ASYNC_TASK', new=AsyncTask.CELERY.value):
