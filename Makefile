@@ -58,13 +58,16 @@ ifeq ($(DOCKER_ORG),)
   DOCKER_ORG='nitrate'
 endif
 
-NITRATE_VERSION=$(shell cat tcms/__init__.py | grep __version__ | cut -f2 -d"'")
+NITRATE_VERSION=$(shell cat VERSION.txt | tr -d '\n')
 
-docker-image:
-	docker build -t $(DOCKER_ORG)/nitrate:$(NITRATE_VERSION) .
+release-image:
+	@docker build \
+		-t $(DOCKER_ORG)/nitrate:$(NITRATE_VERSION) \
+		-f Dockerfile-venv \
+		--build-arg VERSION=$(NITRATE_VERSION) .
 
-docker-run: docker-image
-	docker compose up
+dev-image:
+	@docker build -t nitrate:dev -f Dockerfile-dev .
 
 
 .PHONY: help

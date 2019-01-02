@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 import os.path
 
 NITRATE_VERSION = '4.2'
@@ -15,8 +16,15 @@ TCMS_ROOT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..').r
 
 MANAGERS = ADMINS
 
+env = os.environ
+DB_ENGINE = env.get('NITRATE_DB_ENGINE', 'mysql')
+
+SUPPORTED_DB_ENGINES = {
+    'mysql': 'django.db.backends.mysql',
+    'sqlite': 'django.db.backends.sqlite3',
+}
+
 DATABASES = {
-    # Master DB for writing
     'default': {
         'ENGINE': 'django.db.backends.',
         'NAME': '',
@@ -25,24 +33,26 @@ DATABASES = {
         'HOST': '',
         'PORT': '',
     },
+
+    # Enable these settings for slave databases
     # First slave DB for reading
-    'slave_1': {
-        'ENGINE': 'django.db.backends.',
-        'NAME': '',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': '',
-    },
+    # 'slave_1': {
+    #     'ENGINE': 'django.db.backends.',
+    #     'NAME': '',
+    #     'USER': '',
+    #     'PASSWORD': '',
+    #     'HOST': '',
+    #     'PORT': '',
+    # },
     # Second slave DB for reporting, optional
-    'slave_report': {
-        'ENGINE': 'django.db.backends.',
-        'NAME': '',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': '',
-    }
+    # 'slave_report': {
+    #     'ENGINE': 'django.db.backends.',
+    #     'NAME': '',
+    #     'USER': '',
+    #     'PASSWORD': '',
+    #     'HOST': '',
+    #     'PORT': '',
+    # }
 }
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False

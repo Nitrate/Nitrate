@@ -1,33 +1,44 @@
-version: '2'
+version: "2"
+
+# Please note that, this docker-compose is only for test prod docker image.
+# If you would like to launch nitrate for development purpose, please use
+# `docker-compose-dev.yml`.
 
 services:
-    db:
-        image: centos/mariadb
-        volumes:
-            - nitrate_db_data:/var/lib/mysql
-        restart: always
-        environment:
-            MYSQL_ROOT_PASSWORD: nitrate-1s-aw3s0m3
-            MYSQL_DATABASE: nitrate
-            MYSQL_USER: nitrate
-            MYSQL_PASSWORD: nitrate
+  db:
+    image: "mariadb"
+    volumes:
+    - "nitrate_db_data:/var/lib/mysql"
+    restart: always
+    environment:
+    - MYSQL_ALLOW_EMPTY_PASSWORD=yes
 
-    web:
-        depends_on:
-            - db
-        restart: always
-        image: nitrate/nitrate:3.8.18
-        ports:
-            - 80
-        volumes:
-            - nitrate_uploads:/var/nitrate/uploads
-        environment:
-            NITRATE_DB_HOST: db
-            NITRATE_DB_PORT: 3306
-            NITRATE_DB_NAME: nitrate
-            NITRATE_DB_USER: nitrate
-            NITRATE_DB_PASSWORD: nitrate
+  web:
+    depends_on:
+    - db
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile-venv
+    image: nitrate:4.2
+    ports:
+    - "8001:80"
+    volumes:
+    - "nitrate_uploads:/code/uploads"
+    - "nitrate_httpd_logs:/var/log/httpd"
+
+    # Uncomment out these lines after 4.3 release
+#    environment:
+#      NITRATE_DB_ENGINE: mysql
+#      NITRATE_DB_HOST: db
+#      NITRATE_DB_PORT: 3306
+#      NITRATE_DB_NAME: nitrate
+#      NITRATE_DB_USER: root
+#      NITRATE_DB_PASSWORD:
+
+# Run `docker inspect web` to see volume directory on host.
 
 volumes:
-    nitrate_db_data:
-    nitrate_uploads:
+  nitrate_db_data:
+  nitrate_uploads:
+  nitrate_httpd_logs:

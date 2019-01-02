@@ -1,0 +1,34 @@
+version: '2'
+
+services:
+  db:
+    image: 'mariadb'
+    environment:
+    - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+    volumes:
+    - "nitrate_db_data:/var/lib/mysql"
+    restart: always
+
+  web:
+    depends_on:
+    - db
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
+    image: nitrate:dev
+    ports:
+    - '8000:8000'
+    volumes:
+    - "nitrate_uploads:/var/nitrate/uploads"
+    environment:
+      NITRATE_DB_ENGINE: mysql
+      NITRATE_DB_HOST: db
+      NITRATE_DB_PORT: 3306
+      NITRATE_DB_NAME: nitrate
+      NITRATE_DB_USER: root
+      NITRATE_DB_PASSWORD:
+
+volumes:
+  nitrate_db_data:
+  nitrate_uploads:

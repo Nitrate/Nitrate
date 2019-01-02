@@ -1,7 +1,5 @@
 # Django settings for product env.
 
-import os
-
 from tcms.settings.common import *  # noqa
 
 # Debug settings
@@ -11,44 +9,41 @@ TEMPLATE_DEBUG = DEBUG
 # Database settings
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('NITRATE_DB_NAME', 'nitrate'),
-        'USER': os.environ.get('NITRATE_DB_USER', 'nitrate'),
-        'PASSWORD': os.environ.get('NITRATE_DB_PASSWORD', 'nitrate'),
-        'HOST': os.environ.get('NITRATE_DB_HOST', ''),
-        'PORT': os.environ.get('NITRATE_DB_PORT', ''),
+        'ENGINE': SUPPORTED_DB_ENGINES[DB_ENGINE],
+        'NAME': env.get('NITRATE_DB_NAME', 'nitrate'),
+        'USER': env.get('NITRATE_DB_USER', 'nitrate'),
+        'PASSWORD': env.get('NITRATE_DB_PASSWORD', 'nitrate'),
+        'HOST': env.get('NITRATE_DB_HOST', ''),
+        'PORT': env.get('NITRATE_DB_PORT', ''),
     },
     'slave_1': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('NITRATE_DB_NAME', 'nitrate'),
-        'USER': os.environ.get('NITRATE_DB_USER', 'nitrate'),
-        'PASSWORD': os.environ.get('NITRATE_DB_PASSWORD', 'nitrate'),
-        'HOST': os.environ.get('NITRATE_DB_HOST', ''),
-        'PORT': os.environ.get('NITRATE_DB_PORT', ''),
+        'ENGINE': SUPPORTED_DB_ENGINES[DB_ENGINE],
+        'NAME': env.get('NITRATE_SLAVE_DB_NAME', 'nitrate'),
+        'USER': env.get('NITRATE_SLAVE_DB_USER', 'nitrate'),
+        'PASSWORD': env.get('NITRATE_SLAVE_DB_PASSWORD', 'nitrate'),
+        'HOST': env.get('NITRATE_SLAVE_DB_HOST', ''),
+        'PORT': env.get('NITRATE_SLAVE_DB_PORT', ''),
     },
 }
 
-# add RemoteUserMiddleWare if kerberos authentication is enabled
-MIDDLEWARE += (
-   # 'django.contrib.auth.middleware.RemoteUserMiddleware',
-)
+# For Kerberos authentication, uncomment out RemoteUserMiddleware.
+# MIDDLEWARE += (
+#    'django.contrib.auth.middleware.RemoteUserMiddleware',
+# )
 
 # Remote kerberos authentication backends
 # AUTHENTICATION_BACKENDS = (
 #    'tcms.core.contrib.auth.backends.ModAuthKerbBackend',
 # )
 
-DATABASE_ROUTERS = ['tcms.core.utils.tcms_router.RWRouter']
+# To enable database routers for read/write separation.
+# DATABASE_ROUTERS = ['tcms.core.utils.tcms_router.RWRouter']
 
 # Kerberos realm
 # KRB5_REALM = 'EXAMPLE.COM'
 
 # User authentication by Bugzilla settings
 # BUGZILLA_XMLRPC_URL = 'https://bugzilla.example.com/xmlrpc.cgi'
-
-# JIRA integration setttings
-# Config following settings if your want to integrate with JIRA
-JIRA_URL = ''
 
 # Set the default send mail address
 EMAIL_HOST = 'smtp.example.com'
@@ -62,7 +57,7 @@ FIRST_RUN = False
 # You can add a help link on the footer of home page as following format:
 # ('http://foo.com', 'foo')
 FOOTER_LINKS = (
- ('/xmlrpc/', 'XML-RPC service'),
+    ('https://nitrate.readthedocs.io/en/latest/api/xmlrpc.html', 'XML-RPC Service'),
 )
 
 # added for nitrate3.4 compatibility
@@ -75,6 +70,6 @@ ADMINS = (
 )
 
 # user guide URL
-USER_GUIDE_URL = ""
+USER_GUIDE_URL = 'https://nitrate.readthedocs.io/en/latest/guide.html'
 
 DEFAULT_PAGE_SIZE = 100

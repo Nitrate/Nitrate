@@ -7,16 +7,15 @@ from tcms.settings.common import *
 # Debug settings
 DEBUG = True
 
-# Database settings
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'nitrate',
-        'USER': 'root',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': '',
-    }
+        'ENGINE': SUPPORTED_DB_ENGINES[DB_ENGINE],
+        'NAME': env.get('NITRATE_DB_NAME', 'nitrate'),
+        'USER': env.get('NITRATE_DB_USER', 'root'),
+        'PASSWORD': env.get('NITRATE_DB_PASSWORD', ''),
+        'HOST': env.get('NITRATE_DB_HOST', ''),
+        'PORT': env.get('NITRATE_DB_PORT', ''),
+    },
 }
 
 # django-debug-toolbar settings

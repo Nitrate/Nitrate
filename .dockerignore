@@ -1,0 +1,10 @@
+*.egg-info/
+.env/
+.git/
+.pytest_cache/
+.tox/
+.vagrant/
+build/
+dist/
+docs/
+htmlcov/
