@@ -1,15 +1,26 @@
 language: python
 dist: xenial
-python:
-  - "2.7"
-  - "3.6"
-  - "3.7"
+services:
+- docker
+matrix:
+  include:
+  - python: "2.7"
+    env: DJANGO_REL="django>=1.11,<2.0"
+  - python: "3.6"
+    env: DJANGO_REL="django>=1.11,<2.0" NITRATE_DB=mysql
+  - python: "3.6"
+    env: DJANGO_REL="django>=1.11,<2.0" NITRATE_DB=mariadb
+  - python: "3.7"
+    env: DJANGO_REL="django>=1.11,<2.0"
 before_install:
-  - pip install coveralls
-install: pip install tox-travis
-script: tox
+- docker pull mysql:5.7
+- docker pull mariadb:10.2.21
+- docker pull registry.fedoraproject.org/fedora:29
+install: pip install coveralls
+script:
+- contrib/travis-ci/runtests.sh "$(python --version 2>&1)" "$DJANGO_REL" $NITRATE_DB
 after_success:
-  - coveralls
+- coveralls
 notifications:
   email:
     on_failure: change

@@ -1,14 +1,21 @@
 from tcms.settings.common import *
 
+# Test uses sqlite as the default database backend.
+
+DB_ENGINE = env.get('NITRATE_DB_ENGINE', 'sqlite')
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': '',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': '',
-    }
+        'ENGINE': SUPPORTED_DB_ENGINES[DB_ENGINE],
+        'NAME': env.get('NITRATE_DB_NAME', 'file::memory:'),
+        'USER': env.get('NITRATE_DB_USER', ''),
+        'PASSWORD': env.get('NITRATE_DB_PASSWORD', ''),
+        'HOST': env.get('NITRATE_DB_HOST', ''),
+        'PORT': env.get('NITRATE_DB_PORT', ''),
+        'TEST': {
+            'CHARSET': 'utf8mb4',
+        }
+    },
 }
 
 ASYNC_TASK = 'DISABLED'
