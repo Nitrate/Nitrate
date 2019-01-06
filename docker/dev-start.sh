@@ -15,6 +15,7 @@ cd /code
 
 if python manage.py showmigrations | grep "\[ \]" >/dev/null; then
     python manage.py migrate
+    python contrib/scripts/default-permissions.py
 fi
 
 python manage.py shell -c "

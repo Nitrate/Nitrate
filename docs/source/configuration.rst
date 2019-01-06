@@ -1,13 +1,29 @@
 .. _configuration:
 
-Configuration Settings
-======================
+Configuration
+=============
+
+Default Permissions
+-------------------
+
+There are three groups created after ``migrate``, which are ``Tester``,
+``System Admin`` and ``Administrator``. Nitrate provides a script to set
+permissions for these default groups in order to be ready-for-use out of
+box. Run script, for example with production settings module:
+
+.. code-block:: bash
+
+    export DJANGO_SETTINGS_MODULE=tcms.settings.product
+    python /path/to/nitrate/contrib/scripts/default-permissions.py
+
+Settings
+--------
 
 Asynchronous Task
------------------
+~~~~~~~~~~~~~~~~~
 
 ASYNC_TASK
-~~~~~~~~~~
+^^^^^^^^^^
 
 By default, Nitrate runs registered tasks in a synchronous way. It would be
 good for development, running tests, or even in a deployed server at most
@@ -25,7 +41,7 @@ There are three choices for ``ASYNC_TASK``:
   separately.
 
 Celery settings
----------------
+^^^^^^^^^^^^^^^
 
 Nitrate has a group of Celery settings in ``common`` settings module. Each of
 them could be changed according to requirement of concrete environment. Any

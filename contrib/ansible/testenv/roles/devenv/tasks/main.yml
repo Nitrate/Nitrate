@@ -21,6 +21,11 @@
     app_path: '{{ code_dir }}'
     virtualenv: '{{ venv_dir }}'
 
+- name: Set permissions to default groups
+  shell: |
+    export DJANGO_SETTINGS_MODULE=tcms.settings.devel
+    {{ venv_dir }}/bin/python {{ code_dir }}/contrib/scripts/default-permissions.py
+
 - name: Find out if superuser admin exists
   shell: |
     cd {{ code_dir }}
