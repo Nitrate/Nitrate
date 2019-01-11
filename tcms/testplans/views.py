@@ -174,19 +174,19 @@ def delete(request, plan_id):
                     'tcms.testplans.views.all')
             )
         except Exception:
-            return HttpResponse(Prompt.render(
+            return Prompt.render(
                 request=request,
                 info_type=Prompt.Info,
                 info='Delete failed.',
                 next='javascript:window.history.go(-1)',
-            ))
+            )
     else:
-        return HttpResponse(Prompt.render(
+        return Prompt.render(
             request=request,
             info_type=Prompt.Info,
             info='Nothing yet.',
             next='javascript:window.history.go(-1)',
-        ))
+        )
 
 
 @require_GET
@@ -499,12 +499,12 @@ def choose_run(request, plan_id, template_name='plan/choose_testrun.html'):
 
         # cases and runs are required in this process
         if not len(choosed_testrun_ids) or not len(to_be_added_cases):
-            return HttpResponse(Prompt.render(
+            return Prompt.render(
                 request=request,
                 info_type=Prompt.Info,
                 info='At least one test run and one case is required to add cases to runs.',
                 next=reverse('plan-get', args=[plan_id]),
-            ))
+            )
 
         # Adding cases to runs by recursion
         for tr_id in choosed_testrun_ids:
@@ -646,22 +646,22 @@ def clone(request, template_name='plan/clone.html'):
 
     req_data = request.GET or request.POST
     if 'plan' not in req_data:
-        return HttpResponse(Prompt.render(
+        return Prompt.render(
             request=request,
             info_type=Prompt.Info,
             info='At least one plan is required by clone function.',
             next='javascript:window.history.go(-1)',
-        ))
+        )
 
     tps = TestPlan.objects.filter(pk__in=req_data.getlist('plan'))
 
     if not tps:
-        return HttpResponse(Prompt.render(
+        return Prompt.render(
             request=request,
             info_type=Prompt.Info,
             info='The plan you specify does not exist in database.',
             next='javascript:window.history.go(-1)',
-        ))
+        )
 
     # Clone the plan if the form is submitted
     if request.method == "POST":
@@ -917,12 +917,12 @@ class ImportCasesView(View):
             return HttpResponseRedirect(
                 reverse('plan-get', args=[plan_id]) + '#testcases')
         else:
-            return HttpResponse(Prompt.render(
+            return Prompt.render(
                 request=request,
                 info_type=Prompt.Alert,
                 info=xml_form.errors,
                 next=reverse('plan-get', args=[plan_id]) + '#testcases'
-            ))
+            )
 
 
 class DeleteCasesView(View):
@@ -1040,10 +1040,10 @@ def printable(request, template_name='plan/printable.html'):
     plan_pks = request.GET.getlist('plan')
 
     if not plan_pks:
-        return HttpResponse(Prompt.render(
+        return Prompt.render(
             request=request,
             info_type=Prompt.Info,
-            info='At least one target is required.'))
+            info='At least one target is required.')
 
     tps = TestPlan.objects.filter(pk__in=plan_pks).only('pk', 'name')
 
@@ -1070,10 +1070,10 @@ def export(request, template_name='plan/export.xml'):
     """Export the plan"""
     plan_pks = request.GET.getlist('plan')
     if not plan_pks:
-        return HttpResponse(Prompt.render(
+        return Prompt.render(
             request=request,
             info_type=Prompt.Info,
-            info='At least one target is required.'))
+            info='At least one target is required.')
     timestamp = datetime.datetime.now()
     timestamp_str = '%02i-%02i-%02i' % (timestamp.year, timestamp.month, timestamp.day)
 

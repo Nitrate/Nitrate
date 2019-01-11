@@ -78,12 +78,12 @@ def new(request, template_name='run/new.html'):
     plan_id = request.POST.get('from_plan')
     # Case is required by a test run
     if not request.POST.get('case'):
-        return HttpResponse(Prompt.render(
+        return Prompt.render(
             request=request,
             info_type=Prompt.Info,
             info='At least one case is required by a run.',
             next=reverse('plan-get', args=[plan_id]),
-        ))
+        )
 
     # Ready to write cases to test plan
     confirm_status = TestCaseStatus.get_CONFIRMED()
@@ -251,12 +251,12 @@ def delete(request, run_id):
         raise Http404
 
     if not tr.belong_to(request.user):
-        return HttpResponse(Prompt.render(
+        return Prompt.render(
             request=request,
             info_type=Prompt.Info,
             info="Permission denied - The run is not belong to you.",
             next='javascript:window.history.go(-1)'
-        ))
+        )
 
     if request.GET.get('sure', 'no') == 'no':
         return HttpResponse("<script>\n \
@@ -273,19 +273,19 @@ def delete(request, run_id):
             tr.delete()
             return HttpResponseRedirect(reverse('plan-get', args=[plan_id]))
         except Exception:
-            return HttpResponse(Prompt.render(
+            return Prompt.render(
                 request=request,
                 info_type=Prompt.Info,
                 info="Delete failed.",
                 next='javascript:window.history.go(-1)'
-            ))
+            )
     else:
-        return HttpResponse(Prompt.render(
+        return Prompt.render(
             request=request,
             info_type=Prompt.Info,
             info="Nothing yet",
             next='javascript:window.history.go(-1)'
-        ))
+        )
 
 
 @require_GET
@@ -861,11 +861,11 @@ def new_run_with_caseruns(request, run_id, template_name='run/clone.html'):
         tcrs = []
 
     if not tcrs:
-        return HttpResponse(Prompt.render(
+        return Prompt.render(
             request=request,
             info_type=Prompt.Info,
             info='At least one case is required by a run',
-            next=request.META.get('HTTP_REFERER', '/')))
+            next=request.META.get('HTTP_REFERER', '/'))
     estimated_time = six.moves.reduce(
         operator.add,
         [tcr.case.estimated_time for tcr in tcrs])
@@ -912,12 +912,12 @@ def clone(request, template_name='run/clone.html'):
         trs = trs.filter(pk__in=req_data.getlist('run'))
 
     if not trs:
-        return HttpResponse(Prompt.render(
+        return Prompt.render(
             request=request,
             info_type=Prompt.Info,
             info='At least one run is required',
             next=request.META.get('HTTP_REFERER', '/')
-        ))
+        )
 
     # Generate the clone run page for one run
     if trs.count() == 1 and not req_data.get('submit'):
@@ -1044,12 +1044,12 @@ def order_case(request, run_id):
     get_object_or_404(TestRun, run_id=run_id)
 
     if 'case_run' not in request.POST:
-        return HttpResponse(Prompt.render(
+        return Prompt.render(
             request=request,
             info_type=Prompt.Info,
             info='At least one case is required by re-oder in run.',
             next=reverse('run-get', args=[run_id]),
-        ))
+        )
 
     case_run_ids = request.POST.getlist('case_run')
     sql = 'UPDATE test_case_runs SET sortkey = %s WHERE test_case_runs.case_run_id = %s'
@@ -1133,22 +1133,22 @@ class AddCasesToRunView(View):
         # Selected cases' ids to add to run
         ncs_id = request.POST.getlist('case')
         if not ncs_id:
-            return HttpResponse(Prompt.render(
+            return Prompt.render(
                 request=request,
                 info_type=Prompt.Info,
                 info='At least one case is required by a run.',
                 next=reverse('add-cases-to-run', args=[run_id, ]),
-            ))
+            )
 
         try:
             ncs_id = [int(item) for item in ncs_id]
         except (ValueError, TypeError):
-            return HttpResponse(Prompt.render(
+            return Prompt.render(
                 request=request,
                 info_type=Prompt.Info,
                 info='At least one case id is invalid.',
                 next=reverse('add-cases-to-run', args=[run_id, ]),
-            ))
+            )
 
         try:
             qs = TestRun.objects.select_related('plan').only('plan__plan_id')
@@ -1280,12 +1280,12 @@ def update_case_run_text(request, run_id):
     info = '<p>%s case run(s) succeed to update, following is the list:</p>\
     <ul>%s</ul>' % (count, updated_tcrs)
 
-    return HttpResponse(Prompt.render(
+    return Prompt.render(
         request=request,
         info_type=Prompt.Info,
         info=info,
         next=reverse('run-get', args=[run_id]),
-    ))
+    )
 
 
 @require_GET
