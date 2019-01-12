@@ -20,6 +20,8 @@ install: pip install coveralls
 script:
 - contrib/travis-ci/runtests.sh "$(python --version 2>&1)" "$DJANGO_REL" $NITRATE_DB
 after_success:
+- sudo chown travis:travis .coverage
+- sed -i -e s@/code@"$(pwd)"@g .coverage
 - coveralls
 notifications:
   email:
