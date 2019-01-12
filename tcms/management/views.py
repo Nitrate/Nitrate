@@ -167,8 +167,6 @@ def environment_group_edit(request, template_name='environment/group_edit.html')
     except TCMSEnvGroup.DoesNotExist:
         raise Http404
 
-    # import pytest; pytest.set_trace()
-
     try:
         de = TCMSEnvGroup.objects.get(name=request.GET.get('name'))
         if environment != de:
@@ -321,7 +319,8 @@ def environment_properties(request, template_name='environment/property.html'):
                     env_property.is_active = int(request.GET['status'])
                     env_property.save()
 
-                property_values = "', '".join(env_properties.values_list('name', flat=True))
+                property_values = "', '".join(sorted(
+                    env_properties.values_list('name', flat=True)))
                 message = "Modify test properties status '%s' successfully." % property_values
 
                 if not env_property.is_active:

@@ -142,8 +142,8 @@ class TestUploadFile(BasePlanCase):
 class TestAbleToDeleteFile(BasePlanCase):
 
     @classmethod
-    def setUpClass(cls):
-        super(TestAbleToDeleteFile, cls).setUpClass()
+    def setUpTestData(cls):
+        super(TestAbleToDeleteFile, cls).setUpTestData()
 
         cls.superuser = UserFactory(username='admin')
         cls.superuser.is_superuser = True
@@ -157,48 +157,47 @@ class TestAbleToDeleteFile(BasePlanCase):
     def setUp(self):
         super(TestAbleToDeleteFile, self).setUp()
 
-        self.fake_file_id = 1
         self.request = RequestFactory()
 
     def test_superuser_can(self):
         request = self.request.get(
-            reverse('delete-file', args=[self.fake_file_id]))
+            reverse('delete-file', args=[self.attachment.pk]))
         request.user = self.superuser
-        self.assertTrue(able_to_delete_attachment(request, self.fake_file_id))
+        self.assertTrue(able_to_delete_attachment(request, self.attachment.pk))
 
     def test_attachment_submitter_can(self):
         request = self.request.get(
-            reverse('delete-file', args=[self.fake_file_id]))
+            reverse('delete-file', args=[self.attachment.pk]))
         request.user = self.attachment.submitter
-        self.assertTrue(able_to_delete_attachment(request, self.fake_file_id))
+        self.assertTrue(able_to_delete_attachment(request, self.attachment.pk))
 
     def test_plan_author_can(self):
         request = self.request.get(
-            reverse('delete-file', args=[self.fake_file_id]),
+            reverse('delete-file', args=[self.attachment.pk]),
             data={'from_plan': self.plan.pk})
         request.user = self.plan.author
-        self.assertTrue(able_to_delete_attachment(request, self.fake_file_id))
+        self.assertTrue(able_to_delete_attachment(request, self.attachment.pk))
 
     def test_plan_owner_can(self):
         request = self.request.get(
-            reverse('delete-file', args=[self.fake_file_id]),
+            reverse('delete-file', args=[self.attachment.pk]),
             data={'from_plan': self.plan.pk})
         request.user = self.plan.owner
-        self.assertTrue(able_to_delete_attachment(request, self.fake_file_id))
+        self.assertTrue(able_to_delete_attachment(request, self.attachment.pk))
 
     def test_case_owner_can(self):
         request = self.request.get(
-            reverse('delete-file', args=[self.fake_file_id]),
+            reverse('delete-file', args=[self.attachment.pk]),
             data={'from_case': self.case_1.pk})
         request.user = self.case_1.author
-        self.assertTrue(able_to_delete_attachment(request, self.fake_file_id))
+        self.assertTrue(able_to_delete_attachment(request, self.attachment.pk))
 
     def test_cannot_delete_by_others(self):
         request = self.request.get(
-            reverse('delete-file', args=[self.fake_file_id]),
+            reverse('delete-file', args=[self.attachment.pk]),
             data={'from_case': self.case_1.pk})
         request.user = self.anyone_else
-        self.assertFalse(able_to_delete_attachment(request, self.fake_file_id))
+        self.assertFalse(able_to_delete_attachment(request, self.attachment.pk))
 
 
 class TestDeleteFileAuthorization(BasePlanCase):

@@ -670,11 +670,11 @@ class TestEnableDisableProperty(TestCase):
     def test_disable_a_property(self):
         self.client.login(username=self.tester.username, password='password')
 
-        response = self.client.get(self.group_properties_url,
-                                   {'action': 'modify',
-                                    'id': [self.property_os.pk,
-                                           self.property_lang.pk],
-                                    'status': 0})
+        response = self.client.get(self.group_properties_url, {
+            'action': 'modify',
+            'id': [self.property_os.pk, self.property_lang.pk],
+            'status': 0
+        })
 
         self.assertContains(
             response,

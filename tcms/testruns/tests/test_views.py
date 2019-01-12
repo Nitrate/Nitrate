@@ -214,7 +214,7 @@ class CloneRunBaseTest(BaseCaseRun):
                 self.test_run.summary),
             html=True)
 
-        for case_run in (self.case_run_1, self.case_run_2):
+        for forloop_counter, case_run in enumerate((self.case_run_1, self.case_run_2), 1):
             self.assertContains(
                 response,
                 '<a href="/case/{0}/">{0}</a>'.format(case_run.case.pk),
@@ -223,7 +223,7 @@ class CloneRunBaseTest(BaseCaseRun):
                 response,
                 '<a id="link_{0}" class="blind_title_link" '
                 'href="javascript:toggleTestCaseContents(\'{0}\')">{1}</a>'.format(
-                    case_run.pk, case_run.case.summary),
+                    forloop_counter, case_run.case.summary),
                 html=True)
 
 
