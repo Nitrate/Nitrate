@@ -6,9 +6,16 @@ def order_targets(target, queryset, queries):
     Designed to work with advance search module.
     Ordering queryset of testplan, testcase, or testrun.
 
-    @target: string, 'plan','run', 'case'
-    @queryset: django queryset
-    @queries: form.cleaned_data
+    Each kind of objects, plan, case and run, are ordered by created date by
+    default if ``order_by`` is missing from argument ``queries``.
+
+    :param str target: what kind of objects to order. Valid choices are
+        ``plan``, ``run`` and ``case``.
+    :param queryset: the queryset of objects to be ordered.
+    :type queryset: QuerySet
+    :param dict queries: the ``Form.cleaned_data``.
+    :return: ordered queryset.
+    :rtype: QuerySet.
     """
     order_options = {
         'plan': {
