@@ -49,18 +49,16 @@ def advance_search(request, tmpl='search/advanced_search.html'):
         errors = fmt_errors(errors)
         return render(request, tmpl, context=locals())
 
-    start = time.time()
+    start_time = time.time()
     results = query(request,
                     plan_form.cleaned_data,
                     run_form.cleaned_data,
                     case_form.cleaned_data,
                     target)
     results = order_targets(target, results, data)
-    end = time.time()
-    timecost = round(end - start, 3)
     queries = fmt_queries(*[f.cleaned_data for f in all_forms])
     queries['Target'] = target
-    return render_results(request, results, timecost, queries)
+    return render_results(request, results, start_time, queries)
 
 
 def query(request, plan_query, run_query, case_query, target, using='orm'):
@@ -128,7 +126,7 @@ def sum_orm_queries(plans, cases, runs, target):
         return cases
 
 
-def render_results(request, results, time_cost, queries,
+def render_results(request, results, start_time, queries,
                    tmpl='search/results.html'):
     """Using a SQL "in" query and PKs as the arguments"""
     klasses = {
@@ -147,13 +145,17 @@ def render_results(request, results, time_cost, queries,
     paginator = Paginator(results, 20)
     page = request.GET.get('page')
     try:
-        this_page = paginator.page(page)
+        # Evaluate queryset in order to calculate query time cost later.
+        this_page = list(paginator.page(page))
     except PageNotAnInteger:
         this_page = paginator.page(1)
 
     page_start = paginator.per_page * (this_page.number - 1) + 1
     page_end = page_start + min(len(this_page.object_list),
                                 paginator.per_page) - 1
+
+    end_time = time.time()
+    time_cost = round(end_time - start_time, 3)
     context_data = {
         'search_target': klasses[request.GET['target']]['result_key'],
         'time_cost': time_cost,
