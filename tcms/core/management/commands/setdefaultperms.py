@@ -1,17 +1,12 @@
 # -*- coding: utf-8 -*-
 
-"""
-Script to set permissions to default groups.
+import logging
 
-Before running this script, please ensure that groups Tester, System Admin, and
-Administrator are created. Ideally, all these three groups are created by
-database migrations.
-
-DJANGO_SETTINGS_MODULE is required to be set in advance.
-"""
-
+from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth.models import Group
 from django.contrib.auth.models import Permission
+
+logger = logging.getLogger(__name__)
 
 # flake8: noqa
 
@@ -134,26 +129,34 @@ DEFAULT_PERMS = {
     }
 }
 
-if __name__ == '__main__':
-    for group, perms_config in DEFAULT_PERMS.items():
-        for model_name, capabilities in perms_config.items():
-            if not isinstance(capabilities, (dict, int)):
-                raise TypeError(
-                    'Permission capabilities {} does not have either type '
-                    'dict or int.'.format(capabilities))
 
-            group = Group.objects.get(name=group)
-            if isinstance(capabilities, dict):
-                for action, is_enabled in capabilities.items():
-                    codename = '{}_{}'.format(action, model_name)
-                    perm = Permission.objects.get(codename=codename)
-                    if is_enabled:
+class Command(BaseCommand):
+    help = (
+        'Set permissions to default groups. Generally, this command should run'
+        ' just after database migration.'
+    )
+
+    def handle(self, *args, **options):
+        for group, perms_config in DEFAULT_PERMS.items():
+            logger.debug('Set permissions to group %s: %r', group, perms_config)
+            for model_name, capabilities in perms_config.items():
+                if not isinstance(capabilities, (dict, int)):
+                    raise TypeError(
+                        'Permission capabilities {} does not have either type '
+                        'dict or int.'.format(capabilities))
+
+                group = Group.objects.get(name=group)
+                if isinstance(capabilities, dict):
+                    for action, is_enabled in capabilities.items():
+                        codename = '{}_{}'.format(action, model_name)
+                        perm = Permission.objects.get(codename=codename)
+                        if is_enabled:
+                            group.permissions.add(perm)
+                        else:
+                            group.permissions.remove(perm)
+                else:
+                    perm = Permission.objects.get(codename=model_name)
+                    if capabilities:
                         group.permissions.add(perm)
                     else:
                         group.permissions.remove(perm)
-            else:
-                perm = Permission.objects.get(codename=model_name)
-                if capabilities:
-                    group.permissions.add(perm)
-                else:
-                    group.permissions.remove(perm)

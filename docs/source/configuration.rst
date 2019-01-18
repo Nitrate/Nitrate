@@ -13,8 +13,10 @@ box. Run script, for example with production settings module:
 
 .. code-block:: bash
 
-    export DJANGO_SETTINGS_MODULE=tcms.settings.product
-    python /path/to/nitrate/contrib/scripts/default-permissions.py
+    python path/to/manage.py --settings=tcms.settings.product setdefaultperms
+
+If running Nitrate during development, just omit ``--settings`` option as
+``tcms.settings.devel`` is already set in ``manage.py``.
 
 Settings
 --------
