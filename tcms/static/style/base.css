@@ -242,7 +242,6 @@ fieldset .required{ clear:left;width:150px; padding-left:10px; font-weight:600; 
 .vCheckboxLabel{ float:none; }
 
 .last_login{ width:100%; }
-.groups select{ float:left; }
 
 #calendarlink1{ vertical-align:middle}
 .calendarbox , .clockbox{ border:1px solid #666; font-size:0.9em; width:200px; font-family:"Trebuchet MS",Sans,Verdana,Arial,sans-serif }
@@ -456,7 +455,8 @@ fieldset .required{ clear:left;width:150px; padding-left:10px; font-weight:600; 
 
 /**********************************multiple select************/
 .last_login{ width:100%;}
-.groups select{ float:left;}
+.user_permissions .selectfilter{height: 300px}
+.permissions .selectfilter{height: 300px}
 
 /*********************************test review *********************/
 .lab-20{ width:20px; float:left; margin-left:10px;line-height:25px;}
