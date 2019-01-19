@@ -53,7 +53,7 @@ case $py_version in
         ;;
 esac
 
-case $nitrate_db in
+case "$nitrate_db" in
     mysql)
         db_engine=mysql
         image=mysql:5.7
@@ -66,7 +66,9 @@ case $nitrate_db in
         db_engine=sqlite
         image=
         ;;
-    # TODO: pgsql
+    postgres)
+        db_engine=pgsql
+        image=postgres:10.6
 esac
 
 script_dir=$(dirname "$(realpath "$0")")
@@ -75,34 +77,50 @@ project_dir=$(realpath "$script_dir/../..")
 # FIXME: how to launch container for pgsql?
 # Test database always has name nitrate, and could be accessible by root
 # without password.
-if [ "$db_engine" != "sqlite" ]; then
-    docker run --rm --name db \
-        --env MYSQL_ALLOW_EMPTY_PASSWORD=yes \
-        --env MYSQL_DATABASE=nitrate \
-        --detach \
-        $image \
-        --character-set-server=utf8mb4 \
-        --collation-server=utf8mb4_unicode_ci
+case "$db_engine" in
+    mysql)
+        docker run --rm --name db \
+            --env MYSQL_ALLOW_EMPTY_PASSWORD=yes \
+            --env MYSQL_DATABASE=nitrate \
+            --detach \
+            "$image" \
+            --character-set-server=utf8mb4 \
+            --collation-server=utf8mb4_unicode_ci
 
-    trap 'docker stop db' EXIT ERR
-fi
-
-# How to start specific db service?
+        docker_run_opts=(--link db:mysql
+                         --env NITRATE_DB_ENGINE="$db_engine"
+                         --env NITRATE_DB_NAME=nitrate
+                         --env NITRATE_DB_HOST=db)
+        trap 'docker stop db' EXIT ERR
+        ;;
+    pgsql)
+        docker run --name db -e POSTGRES_PASSWORD=admin --detach "$image"
+        docker_run_opts=(--link db:postgres
+                         --env NITRATE_DB_ENGINE="$db_engine"
+                         --env NITRATE_DB_HOST=db
+                         --env NITRATE_DB_NAME=nitrate
+                         --env NITRATE_DB_USER=postgres
+                         --env NITRATE_DB_PASSWORD=admin)
+        trap 'docker stop db' EXIT ERR
+        ;;
+    sqlite)
+        # No need to launch a SQLite docker image
+        docker_run_opts=(--env NITRATE_DB_ENGINE="$db_engine"
+                         --env NITRATE_DB_NAME="file::memory:")
+        ;;
+esac
 
 # db is the name of database container
 # All rest database relative environment variables are defaults.
 # Refer to tcms/settings/test.py
-if [ "$db_engine" == "sqlite" ]; then
-    options="--env NITRATE_DB_ENGINE=$db_engine"
-else
-    options="--link db:mysql --env NITRATE_DB_ENGINE=$db_engine --env NITRATE_DB_HOST=db"
-fi
-docker run --rm --name nitrate-testbox $options \
+
+docker run --rm --name nitrate-testbox ${docker_run_opts[@]} \
     -v "$project_dir":/code:Z -i -t registry.fedoraproject.org/fedora:29 \
     /bin/bash -c "
 set -e
 
-dnf install -y gcc redhat-rpm-config make mariadb python36 python3-devel graphviz-devel python3-virtualenv
+dnf install -y gcc redhat-rpm-config make mariadb python36 python3-virtualenv \
+    python3-devel graphviz-devel postgresql-devel
 virtualenv --python=${py_bin} /testenv
 source /testenv/bin/activate
 pip install \"${django_rel}\"

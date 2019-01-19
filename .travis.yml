@@ -10,6 +10,8 @@ matrix:
     env: DJANGO_REL="django>=1.11,<2.0" NITRATE_DB=mysql
   - python: "3.6"
     env: DJANGO_REL="django>=1.11,<2.0" NITRATE_DB=mariadb
+  - python: "3.6"
+    env: DJANGO_REL="django>=1.11,<2.0" NITRATE_DB=postgres
   - python: "3.7"
     env: DJANGO_REL="django>=1.11,<2.0"
 before_install:

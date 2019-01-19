@@ -7,7 +7,7 @@ DB_ENGINE = env.get('NITRATE_DB_ENGINE', 'sqlite')
 DATABASES = {
     'default': {
         'ENGINE': SUPPORTED_DB_ENGINES[DB_ENGINE],
-        'NAME': env.get('NITRATE_DB_NAME', 'file::memory:'),
+        'NAME': env.get('NITRATE_DB_NAME', ''),
         'USER': env.get('NITRATE_DB_USER', ''),
         'PASSWORD': env.get('NITRATE_DB_PASSWORD', ''),
         'HOST': env.get('NITRATE_DB_HOST', ''),
