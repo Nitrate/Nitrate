@@ -28,7 +28,7 @@ class TCMSActionModel(models.Model, UrlMixin):
         """
         Convert the query set for XMLRPC
         """
-        s = XMLRPCSerializer(queryset=cls.objects.filter(**query))
+        s = XMLRPCSerializer(queryset=cls.objects.filter(**query).order_by('pk'))
         return s.serialize_queryset()
 
     def serialize(self):

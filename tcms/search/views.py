@@ -78,6 +78,11 @@ def query(request, plan_query, run_query, case_query, target, using='orm'):
 
 
 def sum_orm_queries(plans, cases, runs, target):
+    """Search target objects together with selected relatives
+
+    :return: a QuerySet object representing queried target objects.
+    :rtype: QuerySet
+    """
     plans = plans.evaluate()
     cases = cases.evaluate()
     runs = runs.evaluate()
@@ -91,11 +96,6 @@ def sum_orm_queries(plans, cases, runs, target):
             runs = runs.filter(case_run__case__in=cases).distinct()
         if plans:
             runs = runs.filter(plan__in=plans).distinct()
-        runs = runs.extra(
-            select={
-                'env_groups': RawSQL.environment_group_for_run,
-            }
-        )
         return runs
     if target == 'plan':
         if not cases and not runs:
@@ -153,6 +153,8 @@ def render_results(request, results, start_time, queries,
     page_start = paginator.per_page * (this_page.number - 1) + 1
     page_end = page_start + min(len(this_page.object_list),
                                 paginator.per_page) - 1
+
+    calculate_associated_data(this_page, queries['Target'])
 
     end_time = time.time()
     time_cost = round(end_time - start_time, 3)
@@ -232,3 +234,17 @@ def fmt_queries(*queries):
                     v = ', '.join(map(str, v))
                 results[k] = v
     return results
+
+
+def calculate_associated_data(queryset, query_target):
+    """Calculate associated data and attach to objects in queryset"""
+
+    # FIXME: Maybe plan and case associated data could be calculated here as well.
+
+    if query_target == 'run':
+        for run in queryset:
+            env_groups = run.plan.env_group.values_list('name', flat=True)
+            if env_groups:
+                run.associated_data = {'env_group': env_groups[0]}
+            else:
+                run.associated_data = {'env_group': None}

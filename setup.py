@@ -48,6 +48,7 @@ extras_require = {
 
     # Necessary packages for running tests
     'tests': [
+        'beautifulsoup4',
         'coverage',
         'factory_boy',
         'flake8',

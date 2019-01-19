@@ -2,9 +2,11 @@
 
 from __future__ import absolute_import
 
+import six
 import unittest
 import xml.etree.ElementTree
 
+from bs4 import BeautifulSoup
 from datetime import datetime
 
 import mock
@@ -846,14 +848,15 @@ class TestCloneCase(BasePlanCase):
 </div>'''.format(self.plan.pk, self.plan.name),
             html=True)
 
-        for loop_counter, case in enumerate([self.case_1, self.case_2]):
-            self.assertContains(
-                response,
-                '<label for="id_case_{0}">'
-                '<input checked="checked" id="id_case_{0}" name="case" '
-                'type="checkbox" value="{1}"> {2}</label>'.format(
-                    loop_counter, case.pk, case.summary),
-                html=True)
+        # The order of cases is important for running tests against PostgreSQL.
+        # Instead of calling assertContains to assert a piece of HTML inside the
+        # response, it is necessary to inspect the response content directly.
+
+        bs = BeautifulSoup(response.content.decode('utf-8'), 'html.parser')
+        case_ids = sorted(six.moves.map(int, [
+            elem.attrs['value'] for elem in bs.find(id='id_case').find_all('input')
+        ]))
+        self.assertEqual([self.case_1.pk, self.case_2.pk], case_ids)
 
     def test_show_clone_page_without_from_plan(self):
         self.login_tester()

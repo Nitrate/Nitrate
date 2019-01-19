@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import operator
+
 from datetime import datetime
 
 from tcms.core.helpers.comments import add_comment
@@ -110,20 +112,23 @@ class TestGetCaseRunsComments(BaseCaseRun):
         data = TestCaseRunDataMixin()
         comments = data.get_caseruns_comments(self.test_run_1.pk)
 
+        comments[self.case_run_4.pk] = sorted(
+            comments[self.case_run_4.pk], key=operator.itemgetter('comment'))
+
         expected_comments = {
             self.case_run_4.pk: [
                 {
                     'case_run_id': self.case_run_4.pk,
                     'user_name': self.tester.username,
                     'submit_date': self.submit_date,
-                    'comment': 'new comment'
+                    'comment': 'make better'
                 },
                 {
                     'case_run_id': self.case_run_4.pk,
                     'user_name': self.tester.username,
                     'submit_date': self.submit_date,
-                    'comment': 'make better'
-                }
+                    'comment': 'new comment'
+                },
             ],
             self.case_run_5.pk: [
                 {

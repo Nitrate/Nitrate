@@ -170,6 +170,9 @@ class DataTableResult(object):
                         for col_name, direction in sorting_columns]
         if order_fields:
             self.queryset = self.queryset.order_by(*order_fields)
+        else:
+            # If no order key is specified, sort by pk by default.
+            self.queryset = self.queryset.order_by('pk')
 
     def _paginate_result(self):
         display_length = min(

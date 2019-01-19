@@ -22,6 +22,7 @@ DB_ENGINE = env.get('NITRATE_DB_ENGINE', 'mysql')
 SUPPORTED_DB_ENGINES = {
     'mysql': 'django.db.backends.mysql',
     'sqlite': 'django.db.backends.sqlite3',
+    'pgsql': 'django.db.backends.postgresql',
 }
 
 DATABASES = {

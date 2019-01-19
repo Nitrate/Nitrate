@@ -96,7 +96,7 @@ class BaseRunForm(forms.Form):
 class NewRunForm(BaseRunForm):
     case = forms.ModelMultipleChoiceField(
         label='Cases',
-        queryset=TestCase.objects.filter(case_status__id=2).all(),
+        queryset=TestCase.objects.filter(case_status__id=2).order_by('pk'),
     )
 
 

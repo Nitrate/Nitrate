@@ -41,11 +41,10 @@ from tcms.integration.issuetracker.models import IssueTracker
 from tcms.integration.issuetracker.services import find_service
 from tcms.core.utils import clean_request
 from tcms.core.utils import DataTableResult
-from tcms.core.utils.raw_sql import RawSQL
 from tcms.core.utils.tcms_router import connection
 from tcms.core.utils.timedeltaformat import format_timedelta
 from tcms.core.views import Prompt
-from tcms.management.models import Priority, TCMSEnvValue, TestTag
+from tcms.management.models import Priority, TCMSEnvValue, TestTag, TCMSEnvGroup
 from tcms.search.forms import RunForm
 from tcms.search.query import SmartDjangoQuery
 from tcms.testcases.models import TestCase
@@ -464,11 +463,6 @@ def ajax_search(request, template_name='run/common/json_runs.txt'):
             'product_version__value'
         )
 
-        # Further optimize by adding caserun attributes:
-        trs = trs.extra(
-            select={'env_groups': RawSQL.environment_group_for_run},
-        )
-
         column_names = [
             '',
             'run_id',
@@ -522,6 +516,11 @@ def ajax_search(request, template_name='run/common/json_runs.txt'):
         )
         cases_subtotal = magic_convert(qs, key_name='run', value_name='cases_count')
 
+        # Relative env groups to runs
+        result = (TCMSEnvGroup.objects.filter(plans__run__in=run_ids)
+                                      .values('plans__run', 'name'))
+        runs_env_groups = {item['plans__run']: item['name'] for item in result}
+
         for run in searched_runs:
             run_id = run.pk
             cases_count = cases_subtotal.get(run_id, 0)
@@ -530,10 +529,14 @@ def ajax_search(request, template_name='run/common/json_runs.txt'):
                 failure_percent = failure_subtotal.get(run_id, 0) * 1.0 / cases_count * 100
             else:
                 completed_percent = failure_percent = 0
-            run.nitrate_stats = {
-                'cases': cases_count,
-                'completed_percent': completed_percent,
-                'failure_percent': failure_percent,
+
+            run.associated_data = {
+                'stats': {
+                    'cases': cases_count,
+                    'completed_percent': completed_percent,
+                    'failure_percent': failure_percent,
+                },
+                'env_group': runs_env_groups.get(run_id),
             }
     else:
         response_data = {
@@ -1200,11 +1203,13 @@ class AddCasesToRunView(View):
         # of this particular TestRun
 
         confirmed_status = TestCaseStatus.objects.get(name='CONFIRMED')
-        confirmed_cases = TestCase.objects.filter(
-            plan=tr.plan, case_status=confirmed_status
-        ).values(
-            'case_id', 'summary', 'create_date',
-            'category__name', 'priority__value', 'author__username')
+        confirmed_cases = (
+            TestCase.objects.filter(plan=tr.plan, case_status=confirmed_status)
+                            .values('case_id', 'summary', 'create_date',
+                                    'category__name', 'priority__value',
+                                    'author__username')
+                            .order_by('pk')
+        )
 
         # also grab a list of all TestCase IDs which are already present in the
         # current TestRun so we can mark them as disabled and not allow them to

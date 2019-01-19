@@ -719,13 +719,18 @@ class TestAJAXSearch(BasePlanCase):
 
         data = json_loads(response.content)
 
+        # Sort for assertion easily
+        data['aaData'] = sorted(
+            data['aaData'],
+            key=lambda item: int(item['DT_RowId'].split('_')[1]))
+
         plans_count = TestPlan.objects.count()
         self.assertEqual(1, data['sEcho'])
         self.assertEqual(plans_count, data['iTotalRecords'])
         self.assertEqual(plans_count, data['iTotalDisplayRecords'])
         self.assertEqual(search_data['iDisplayLength'], len(data['aaData']))
 
-        expected_plans = TestPlan.objects.all()[0:3]
+        expected_plans = TestPlan.objects.order_by('pk')[0:3]
 
         for i, plan in enumerate(expected_plans):
             self.assertEqual(

@@ -12,11 +12,14 @@ DATABASES = {
         'PASSWORD': env.get('NITRATE_DB_PASSWORD', ''),
         'HOST': env.get('NITRATE_DB_HOST', ''),
         'PORT': env.get('NITRATE_DB_PORT', ''),
-        'TEST': {
-            'CHARSET': 'utf8mb4',
-        }
     },
 }
+
+if DB_ENGINE == 'mysql':
+    DATABASES['default']['TEST'] = {'CHARSET': 'utf8mb4'}
+elif DB_ENGINE == 'pgsql':
+    DATABASES['default']['TEST'] = {'CHARSET': 'utf8'}
+
 
 ASYNC_TASK = 'DISABLED'
 LISTENING_MODEL_SIGNAL = False

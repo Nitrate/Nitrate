@@ -1,50 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from itertools import chain
+from bs4 import BeautifulSoup
 from django.urls import reverse
-from six.moves.html_parser import HTMLParser
+from itertools import chain
 
 from tcms.management.models import Priority
 from tcms.tests import BaseCaseRun
-from tcms.tests.factories import TestPlanFactory, ProductFactory, VersionFactory, TestCaseFactory, TestCaseRunFactory
-
-
-class SearchResultTableParser(HTMLParser):
-
-    def __init__(self, table_id, td_idx, func=None):
-        super(SearchResultTableParser, self).__init__()
-        self.table_id = table_id
-        self.td_idx = td_idx
-        self.func = func
-
-        self.in_table = False
-        self.td_cnt = 0
-        self.in_td = False
-        self.collected_data = []
-
-    def handle_starttag(self, tag, attrs):
-        attrs = dict(attrs)
-        lower_tag = tag.lower()
-        if lower_tag == 'table' and attrs.get('id') == self.table_id:
-            self.in_table = True
-        elif lower_tag == 'td':
-            self.td_cnt += 1
-            if self.td_cnt == self.td_idx:
-                self.in_td = True
-
-    def handle_endtag(self, tag):
-        lower_tag = tag.lower()
-        if lower_tag == 'table':
-            self.in_table = False
-        elif lower_tag == 'td':
-            self.in_td = False
-        elif lower_tag == 'tr':
-            self.td_cnt = 0
-
-    def handle_data(self, data):
-        func = self.func if self.func else lambda v: v
-        if self.in_table and self.in_td:
-            self.collected_data.append(func(data.strip()))
+from tcms.tests.factories import TestPlanFactory, ProductFactory, VersionFactory, TestCaseFactory, TestCaseRunFactory, \
+    TCMSEnvGroupFactory, TestRunFactory
 
 
 class TestAdvancedSearch(BaseCaseRun):
@@ -56,11 +19,15 @@ class TestAdvancedSearch(BaseCaseRun):
         cls.cool_product = ProductFactory(name='CoolProduct')
         cls.cool_version = VersionFactory(value='0.1', product=cls.cool_product)
 
+        cls.env_group_db = TCMSEnvGroupFactory(name='db')
+
         cls.plan_02 = TestPlanFactory(
             author=cls.tester,
             owner=cls.tester,
             product=cls.product,
-            product_version=cls.version)
+            product_version=cls.version,
+            env_group=[cls.env_group_db],
+        )
 
         cls.case_001 = TestCaseFactory(
             author=cls.tester,
@@ -123,6 +90,14 @@ class TestAdvancedSearch(BaseCaseRun):
             plan=[cls.plan],
             priority=priority_p3)
 
+        # Test run for asserting env_group column
+        cls.test_run_with_env_group = TestRunFactory(
+            product_version=cls.version,
+            plan=cls.plan_02,
+            build=cls.build,
+            manager=cls.tester,
+            default_tester=cls.tester)
+
         cls.url = reverse('advance_search')
 
     def test_open_advanced_search_page(self):
@@ -143,13 +118,16 @@ class TestAdvancedSearch(BaseCaseRun):
         self.assertNotContains(resp, '<a href="{}">{}</a>'.format(
             self.plan_03.get_absolute_url(), self.plan_03.pk))
 
-        # Summary is in the third column.
-        parser = SearchResultTableParser('testplans_table', 3)
-        parser.feed(resp.content.decode('utf-8'))
+        plan_names = []
+        bs = BeautifulSoup(resp.content.decode('utf-8'), 'html.parser')
+        # Skip first header row
+        for tr in bs.find(id='testplans_table').find_all('tr')[1:]:
+            # The 3rd td contains name
+            plan_names.append(tr.find_all('td')[2].a.text.strip())
 
         self.assertListEqual(
             sorted([self.plan_02.name, self.plan.name], reverse=True),
-            parser.collected_data)
+            plan_names)
 
     def test_basic_search_cases(self):
         resp = self.client.get(self.url, {
@@ -167,14 +145,18 @@ class TestAdvancedSearch(BaseCaseRun):
             self.assertNotContains(resp, '<a href="{}">{}</a>'.format(
                 case.get_absolute_url(), case.pk))
 
-        # Summary is in the third column.
-        parser = SearchResultTableParser('testcases_table', 3, int)
-        parser.feed(resp.content.decode('utf-8'))
+        case_ids = []
+        bs = BeautifulSoup(resp.content.decode('utf-8'), 'html.parser')
+        for tr in bs.find(id='testcases_table').find_all('tr')[1:]:
+            if 'case_content' in tr['class']:
+                # Ignore the hidden row (td), which is used to show case details.
+                continue
+            case_ids.append(int(tr.find_all('td')[2].a.text.strip()))
 
         self.assertListEqual(
             sorted(chain([case.pk for case in self.plan.case.all()],
                          [case.pk for case in self.plan_02.case.all()])),
-            parser.collected_data)
+            case_ids)
 
     def test_basic_search_runs(self):
         resp = self.client.get(self.url, {
@@ -183,17 +165,29 @@ class TestAdvancedSearch(BaseCaseRun):
             'asc': True,
             'target': 'run',
         })
+        bs = BeautifulSoup(resp.content.decode('utf-8'), 'html.parser')
 
         for run in [self.test_run, self.test_run_1]:
             self.assertContains(resp, '<a href="{}">{}</a>'.format(
                 run.get_absolute_url(), run.pk))
 
-        # Summary is in the third column.
-        parser = SearchResultTableParser('testruns_table', 2, int)
-        parser.feed(resp.content.decode('utf-8'))
+        run_ids = []
+        for tr in bs.find(id='testruns_table').find_all('tr')[1:]:
+            run_ids.append(int(tr.find_all('td')[1].a.text.strip()))
 
-        self.assertListEqual([self.test_run.pk, self.test_run_1.pk],
-                             parser.collected_data)
+        expected_run_ids = [
+            self.test_run.pk,
+            self.test_run_1.pk,
+            self.test_run_with_env_group.pk
+        ]
+        self.assertListEqual(expected_run_ids, run_ids)
+
+        # Collect data from env_group (Environment) column
+        env_group_names = []
+        for tr in bs.find(id='testruns_table').find_all('tr')[1:]:
+            env_group_names.append(tr.find_all('td')[8].text.strip())
+
+        self.assertListEqual(['None', 'None', 'db'], env_group_names)
 
     def test_combination_search_runs_and_cases(self):
         """Test search runs whose cases' priority is P2"""

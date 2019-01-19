@@ -65,7 +65,9 @@ class TestPlan(TCMSActionModel):
                                         through='testplans.TestPlanAttachment')
     component = models.ManyToManyField('management.Component',
                                        through='testplans.TestPlanComponent')
-    env_group = models.ManyToManyField('management.TCMSEnvGroup', through='TCMSEnvPlanMap')
+    env_group = models.ManyToManyField('management.TCMSEnvGroup',
+                                       related_name='plans',
+                                       through='TCMSEnvPlanMap')
     tag = models.ManyToManyField('management.TestTag', through='testplans.TestPlanTag')
 
     class Meta:

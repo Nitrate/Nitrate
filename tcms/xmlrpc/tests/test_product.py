@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import operator
 import unittest
 
 from operator import itemgetter
@@ -156,11 +157,12 @@ class TestFilterCategories(TestCase):
         ]
 
     def test_filter_by_product_id(self):
-        cat = product.filter_categories(None, {'product': self.product.pk})
-        self.assertIsNotNone(cat)
-        self.assertEqual(cat[0]['name'], '--default--')
-        self.assertEqual(cat[1]['name'], 'auto')
-        self.assertEqual(cat[2]['name'], 'manual')
+        cats = product.filter_categories(None, {'product': self.product.pk})
+        self.assertIsNotNone(cats)
+        cats = sorted(cats, key=operator.itemgetter('name'))
+        self.assertEqual(cats[0]['name'], '--default--')
+        self.assertEqual(cats[1]['name'], 'auto')
+        self.assertEqual(cats[2]['name'], 'manual')
 
     def test_filter_by_product_name(self):
         cat = product.filter_categories(None, {'name': 'auto'})
@@ -203,7 +205,7 @@ class TestFilterVersions(TestCase):
         versions = product.filter_versions(None, {'product_id': self.product.pk})
         self.assertIsInstance(versions, list)
         versions = [version['value'] for version in versions]
-        self.assertEqual(['0.7', 'unspecified'], versions)
+        self.assertEqual(['unspecified', '0.7'], versions)
 
     def test_filter_by_name(self):
         ver = product.filter_versions(None, {'value': '0.7'})
@@ -312,14 +314,16 @@ class TestGetCategories(XmlrpcAPIBaseTest):
     def test_get_categories_with_product_id(self):
         cats = product.get_categories(None, self.product.pk)
         self.assertIsNotNone(cats)
+        cats = sorted(cats, key=operator.itemgetter('name'))
         self.assertEqual(len(cats), 3)
-        self.assertTrue(cats[0]['name'], '--default--')
-        self.assertTrue(cats[1]['name'], 'auto')
-        self.assertTrue(cats[2]['name'], 'manual')
+        self.assertEqual(cats[0]['name'], '--default--')
+        self.assertEqual(cats[1]['name'], 'auto')
+        self.assertEqual(cats[2]['name'], 'manual')
 
     def test_get_categories_with_product_name(self):
         cats = product.get_categories(None, 'StarCraft')
         self.assertIsNotNone(cats)
+        cats = sorted(cats, key=operator.itemgetter('name'))
         self.assertEqual(len(cats), 3)
         self.assertEqual(cats[0]['name'], '--default--')
         self.assertEqual(cats[1]['name'], 'auto')

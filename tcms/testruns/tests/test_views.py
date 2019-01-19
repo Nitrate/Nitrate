@@ -3,6 +3,8 @@
 import os
 
 from datetime import timedelta
+from operator import attrgetter
+
 from mock import patch
 from six.moves import http_client
 from xml.etree import ElementTree
@@ -22,7 +24,7 @@ from tcms.tests import BaseCaseRun
 from tcms.tests import BasePlanCase
 from tcms.tests import user_should_have_perm
 from tcms.tests import json_loads
-from tcms.tests.factories import ProductFactory
+from tcms.tests.factories import ProductFactory, TCMSEnvGroupFactory
 from tcms.tests.factories import TCMSEnvPropertyFactory
 from tcms.tests.factories import TCMSEnvValueFactory
 from tcms.tests.factories import TestBuildFactory
@@ -189,7 +191,7 @@ class TestCreateNewRun(BasePlanCase):
         self.assertEqual(self.tester, new_run.default_tester)
 
         for case, case_run in zip((self.case_1, self.case_2),
-                                  new_run.case_run.all()):
+                                  new_run.case_run.order_by('pk')):
             self.assertEqual(case, case_run.case)
             self.assertEqual(None, case_run.tested_by)
             self.assertEqual(self.tester, case_run.assignee)
@@ -480,6 +482,8 @@ class TestStartCloneRunFromRunsSearchPage(CloneRunBaseTest):
         """Test only clone the selected one run from runs/clone/"""
         self.client.login(username=self.tester.username, password='password')
 
+        original_runs_count = TestRun.objects.count()
+
         post_data = {
             'run': [run.pk for run in runs_to_clone],
             'product': self.origin_run.plan.product.pk,
@@ -503,7 +507,10 @@ class TestStartCloneRunFromRunsSearchPage(CloneRunBaseTest):
 
         response = self.client.post(self.clone_url, post_data)
 
-        cloned_runs = list(TestRun.objects.all())[-len(runs_to_clone):]
+        self.assertEqual(len(runs_to_clone),
+                         TestRun.objects.count() - original_runs_count)
+
+        cloned_runs = list(TestRun.objects.order_by('pk'))[-len(runs_to_clone):]
 
         if len(cloned_runs) == 1:
             # Finally, redirect to the new cloned test run
@@ -513,7 +520,11 @@ class TestStartCloneRunFromRunsSearchPage(CloneRunBaseTest):
         else:
             self.assertEqual(http_client.FOUND, response.status_code)
 
-        for origin_run, cloned_run in zip(runs_to_clone, cloned_runs):
+        # Currently, runs are not cloned by the order of passed-in runs id. So,
+        # ordering by summary to assert equality.
+        for origin_run, cloned_run in zip(
+                sorted(runs_to_clone, key=attrgetter('summary')),
+                sorted(cloned_runs, key=attrgetter('summary'))):
             self.assert_cloned_run(origin_run, cloned_run,
                                    clone_cc=clone_cc, clone_tag=clone_tag,
                                    use_newest_case_text=update_case_text)
@@ -616,12 +627,15 @@ class TestAJAXSearchRuns(BaseCaseRun):
         cls.version_issuetracker_1_2 = VersionFactory(
             value='1.2', product=cls.product_issuetracker)
 
+        cls.env_group_db = TCMSEnvGroupFactory(name='db')
         cls.plan_issuetracker = TestPlanFactory(
             name='Test issue tracker releases',
             author=cls.tester,
             owner=cls.tester,
             product=cls.product_issuetracker,
-            product_version=cls.version_issuetracker_0_1)
+            product_version=cls.version_issuetracker_0_1,
+            env_group=[cls.env_group_db],
+        )
 
         # Probably need more cases as well in order to create case runs to
         # test statistcis in search result
@@ -699,11 +713,18 @@ class TestAJAXSearchRuns(BaseCaseRun):
                     reverse('run-get', args=[run.pk]), run.summary),
                 row[2])
 
+            # Verify env_groups
+            env_groups = run.plan.env_group.values_list('name', flat=True)
+            if env_groups:
+                self.assertEqual(env_groups[0], row[8])
+            else:
+                self.assertEqual('None', row[8])
+
     def test_search_all_runs(self):
         response = self.client.get(self.search_url)
 
         search_result = json_loads(response.content)
-        self.assert_found_runs(TestRun.objects.all(), search_result)
+        self.assert_found_runs(TestRun.objects.order_by('pk'), search_result)
 
     def test_empty_search_result(self):
         response = self.client.get(self.search_url, {'build': 9999})
@@ -770,7 +791,7 @@ class TestAJAXSearchRuns(BaseCaseRun):
         response = self.client.get(self.search_url, {'plan': ''})
 
         search_result = json_loads(response.content)
-        self.assert_found_runs(TestRun.objects.all(), search_result)
+        self.assert_found_runs(TestRun.objects.order_by('pk'), search_result)
 
     def test_search_by_plan_id(self):
         response = self.client.get(self.search_url, {'plan': self.plan.pk})
@@ -789,14 +810,14 @@ class TestAJAXSearchRuns(BaseCaseRun):
         response = self.client.get(self.search_url, {'people_type': 'people',
                                                      'people': self.tester})
         search_result = json_loads(response.content)
-        self.assert_found_runs(TestRun.objects.all(), search_result)
+        self.assert_found_runs(TestRun.objects.order_by('pk'), search_result)
 
     def test_search_by_manager(self):
         response = self.client.get(self.search_url,
                                    {'people_type': 'manager',
                                     'people': self.tester.username})
         search_result = json_loads(response.content)
-        self.assert_found_runs(TestRun.objects.all(), search_result)
+        self.assert_found_runs(TestRun.objects.order_by('pk'), search_result)
 
     def test_search_by_non_existing_manager(self):
         response = self.client.get(self.search_url,
@@ -824,7 +845,7 @@ class TestAJAXSearchRuns(BaseCaseRun):
     def test_search_running_runs(self):
         response = self.client.get(self.search_url, {'status': 'running'})
         search_result = json_loads(response.content)
-        self.assert_found_runs(TestRun.objects.all(), search_result)
+        self.assert_found_runs(TestRun.objects.order_by('pk'), search_result)
 
     def test_search_finished_runs(self):
         response = self.client.get(self.search_url, {'status': 'finished'})

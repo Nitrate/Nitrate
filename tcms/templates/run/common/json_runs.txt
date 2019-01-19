@@ -17,14 +17,14 @@
 		"{{ run.plan }}",
 		"{{ run.build.product }}",
 		"{{ run.product_version }}",
-		"{{ run.env_groups }}",
+		"{{ run.associated_data.env_group }}",
 		"{{ run.total_num_caseruns }}",
 		{% if run.stop_date %}
 			"<span class='pauselink'>Finished</span>"
 		{% else %}
 			"<span class='runninglink'>Running</span>"
 		{% endif %},
-			"<div style='' class='progress-bar'><div class='progress-inner' style='width: {{ run.nitrate_stats.completed_percent|floatformat:2 }}px;'><div class='progress-failed' style='width: {{ run.nitrate_stats.failed_percent|floatformat:2 }}px;'></div></div><div class='percent'>{{ run.nitrate_stats.completed_percent|floatformat:2 }}%</div></div>"
+			"<div style='' class='progress-bar'><div class='progress-inner' style='width: {{ run.associated_data.stats.completed_percent|floatformat:2 }}px;'><div class='progress-failed' style='width: {{ run.associated_data.stats.failed_percent|floatformat:2 }}px;'></div></div><div class='percent'>{{ run.associated_data.stats.completed_percent|floatformat:2 }}%</div></div>"
 		]{% if not forloop.last %},{% endif %}
 	{% endfor %}
 	]
