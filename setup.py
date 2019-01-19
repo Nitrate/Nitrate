@@ -15,7 +15,6 @@ def get_long_description():
 
 
 install_requires = [
-    'PyMySQL == 0.7.11',
     'beautifulsoup4 >= 4.1.1',
     'django >= 1.11,<2.0',
     'django-contrib-comments == 1.8.0',
@@ -35,6 +34,9 @@ if sys.version_info.major < 3:
     ]
 
 extras_require = {
+    'mysql': ['PyMySQL == 0.7.11'],
+    'pgsql': ['psycopg2 == 2.7.5'],
+
     # Required for tcms.core.contrib.auth.backends.KerberosBackend
     'krbauth': [
         'kerberos == 1.2.5'

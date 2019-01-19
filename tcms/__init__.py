@@ -2,10 +2,16 @@
 
 from __future__ import absolute_import, unicode_literals
 
-import pymysql
 from django.conf import settings
 
-pymysql.install_as_MySQLdb()
+try:
+    import pymysql
+except ImportError:
+    # Database backend is selectable. When another is selected other than
+    # mysql, skip the call in else section.
+    pass
+else:
+    pymysql.install_as_MySQLdb()
 
 if settings.ASYNC_TASK == 'CELERY':
     # This will make sure the app is always imported when

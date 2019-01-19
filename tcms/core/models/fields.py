@@ -2,15 +2,20 @@
 import datetime
 import six
 
-from pymysql.constants import FIELD_TYPE
 from django.core.exceptions import ValidationError
 from django.db.models.fields import IntegerField
 from django.db.models.fields import BooleanField
-from django.db.backends.mysql.base import django_conversions
 
 from tcms.core.forms.fields import DurationField as DurationFormField
 
-django_conversions.update({FIELD_TYPE.TIME: None})
+try:
+    from pymysql.constants import FIELD_TYPE
+except ImportError:
+    # Refer to tcms/__init__.py for details.
+    pass
+else:
+    from django.db.backends.mysql.base import django_conversions
+    django_conversions.update({FIELD_TYPE.TIME: None})
 
 
 class DurationField(IntegerField):

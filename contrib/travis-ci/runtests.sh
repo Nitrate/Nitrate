@@ -92,9 +92,12 @@ case "$db_engine" in
                          --env NITRATE_DB_NAME=nitrate
                          --env NITRATE_DB_HOST=db)
         trap 'docker stop db' EXIT ERR
+
+        install_extra_deps="${install_extra_deps},mysql"
         ;;
     pgsql)
         docker run --name db -e POSTGRES_PASSWORD=admin --detach "$image"
+
         docker_run_opts=(--link db:postgres
                          --env NITRATE_DB_ENGINE="$db_engine"
                          --env NITRATE_DB_HOST=db
@@ -102,6 +105,8 @@ case "$db_engine" in
                          --env NITRATE_DB_USER=postgres
                          --env NITRATE_DB_PASSWORD=admin)
         trap 'docker stop db' EXIT ERR
+
+        install_extra_deps="${install_extra_deps},pgsql"
         ;;
     sqlite)
         # No need to launch a SQLite docker image

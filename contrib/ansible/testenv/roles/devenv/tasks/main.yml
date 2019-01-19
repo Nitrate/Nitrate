@@ -10,7 +10,7 @@
   when: not venv.stat.exists
 
 - name: Install dependencies in virtualenv
-  command: '{{ venv_dir }}/bin/pip install -e .[krbauth,docs,tests,devtools]'
+  command: '{{ venv_dir }}/bin/pip install -e .[mysql,krbauth,docs,tests,devtools]'
   args:
     chdir: '{{ code_dir }}'
   when: not venv.stat.exists
