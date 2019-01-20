@@ -33,16 +33,17 @@ class SQLExecution(object):
     Compatibility: the second item above relies on cursor.rowcount attribute
     described in PEP-0249. Cannot guarantee all database backends supports this
     by following 249 specification. But, at least, MySQLdb and psycopg2 does.
+
+    :param str sql: the SQL query to execute
+    :param params: optional, parameters for the SQL.
+    :type params: list or tuple
+    :param bool with_field_name: whether the generated rows are mappings from
+        field name to value, otherwise a row is just a simple tuple returned
+        from underlying DBAPI ``fetchone``.
     """
 
     def __init__(self, sql, params=None, with_field_name=True):
         """Initialize and execute SQL query
-
-        @param sql: the SQL query to execute
-        @type sql: str
-        @param params: optional, parameters for the SQL
-            tuple
-        @type sql: list or tuple
         """
         self.cursor = connection.reader_cursor
         if params is None:
@@ -91,29 +92,33 @@ class GroupByResult(object):
     """Group By result
 
     This object can be used as a normal dict object with less support of stock
-    dictionary methods. Consumers can do
+    dictionary methods. Consumers can do:
 
-        - get a subtotal associated with a name
-        - get a subtotal's percentage
-        - know whether it's empty. Empty means no data from database of the
-          GROUP BY query
-        - how many subtotals there
+    * get a subtotal associated with a name.
+    * get a subtotal's percentage.
+    * know whether it's empty. Empty means no data from database of the
+      ``GROUP BY`` query.
+    * how many subtotals there.
 
     The main purpose of GroupByResult is to get specific subtotal(s) and the
-    percentage of each of them. Rules to get such values
+    percentage of each of them. Rules to get such values:
 
-        - each subtotal is associated with a name. If name you give does not
-          exist, 0 is returned, otherwise proper value is returned.
-        - percentage of each subtotal has a special name with format of
-          subtotal name plus '_percent'.
+    * each subtotal is associated with a name. If name you give does not exist,
+      0 is returned, otherwise proper value is returned.
+    * percentage of each subtotal has a special name with format of subtotal
+      name plus '_percent'.
 
     Examples:
 
-    Suppose, a GroupByResult object named gbr is {'A': 100, 'B': 200}
+    Suppose, a GroupByResult object named gbr is ``{'A': 100, 'B': 200}``.
 
-    To get subtotal of A, `gbr.A`
+    * To get subtotal of A, ``gbr.A``.
+    * To get percentage of B, ``gbr.B_percent``.
 
-    To get percentage of B, `gbr.B_percent`
+    :param data: subtotal result represented as a mapping whose key is field
+        grouped by and value is the subtotal count, or a iterable of
+        ``(key, value)``.
+    :type data: dict or iterable
     """
 
     def __init__(self, data=None, total_name=None):
@@ -197,10 +202,9 @@ class GroupByResult(object):
     def _get_percent(self, key):
         """Percentage of a subtotal
 
-        @param key: name of subtotal whose percentage will be calculated
-        @type key: str
-        @return: a float number representing the percentage
-        @rtype: float
+        :param str key: name of subtotal whose percentage will be calculated
+        :return: a float number representing the percentage
+        :rtype: float
         """
         total = self._total_result
         subtotal = self[key]
@@ -225,13 +229,11 @@ class GroupByResult(object):
         directly without repeating calculation. Unless, pass True to argument
         refresh.
 
-        @param value_in_row: whether leaf value should be treated as a row, in
-            such way, leaf value will be displayed in one row.
-        @type value_in_row: bool
-        @param refresh: whether force to recalculate
-        @type refresh: bool
-        @return: the total number of leaf values under this level
-        @rtype: int
+        :param bool value_in_row: whether leaf value should be treated as a row,
+            in such way, leaf value will be displayed in one row.
+        :param bool refresh: whether force to recalculate
+        :return: the total number of leaf values under this level
+        :rtype: int
         """
         if refresh:
             necessary_to_count = True
@@ -274,25 +276,22 @@ def get_groupby_result(sql, params,
 
     {'plan': 100, 'case': 50, 'run': 300, 'TOTAL': 450}
 
-    @param sql: the GROUP BY SQL statement
-    @type sql: str
-    @param params: parameters of the GROUP BY SQL statement
-    @type params: list, tuple
-    @param key_name: the GROUP BY field name, that will be the key in result
-        mapping object. Default to groupby_field if not specified
-    @type key_name: str
-    @param key_conv: method call applied to the value of GROUP BY field while
-        constructing the result mapping
-    @type key_conv: callable object
-    @param value_name: the field name of total count. Default to total_count if
-        not specified
-    @param with_rollup: whether WITH ROLLUP is used in GROUP BY. Default to
-        False
-    @type with_rollup: bool
-    @param rollup_name: name associated with ROLLUP field. Default to TOTAL
-    @type rollup_name: str
-    @return: mapping between GROUP BY field and the total count
-    @rtype: dict
+    :param str sql: the GROUP BY SQL statement.
+    :param params: parameters of the GROUP BY SQL statement.
+    :type params: list or tuple
+    :param str key_name: the GROUP BY field name, that will be the key in
+        result mapping object. Default to groupby_field if not specified.
+    :param key_conv: method call applied to the value of GROUP BY field while
+        constructing the result mapping.
+    :type key_conv: callable object
+    :param value_name: the field name of total count. Default to total_count if
+        not specified.
+    :param bool with_rollup: whether ``WITH ROLLUP`` is used in ``GROUP BY`` in
+        a raw SQL. Default to ``False``.
+    :param str rollup_name: name associated with ROLLUP field. Default to
+        ``TOTAL``.
+    :return: mapping between GROUP BY field and the total count.
+    :rtype: dict
     """
     def _key_conv(value):
         if key_conv is not None:

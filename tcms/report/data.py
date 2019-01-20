@@ -293,10 +293,10 @@ class CustomReportData(object):
     def _get_builds(self):
         """Get builds from valid form
 
-        @param form: the form containing valid data
-        @type form: L{CustomSearchForm}
-        @return: queried test builds
-        @rtype: L{QuerySet}
+        :param form: the form containing valid data
+        :type form: :class:`CustomSearchForm`
+        :return: queried test builds
+        :rtype: QuerySet
         """
         sql, params = self._prepare_sql(sqls.custom_builds)
         rows = SQLExecution(sql, params).rows
@@ -399,12 +399,12 @@ class CustomDetailsReportData(CustomReportData):
     def get_case_runs(self, build_ids, status_ids):
         """Get case runs according to builds and status
 
-        @param build_ids: IDs of builds
-        @type build_ids: list or tuple
-        @param status_ids: IDs of case run status
-        @type status_ids: list or tuple
-        @return: queried case runs
-        @rtype: L{QuerySet}
+        :param build_ids: IDs of builds
+        :type build_ids: list or tuple
+        :param status_ids: IDs of case run status
+        :type status_ids: list or tuple
+        :return: queried case runs
+        :rtype: QuerySet
         """
         tcrs = TestCaseRun.objects.filter(run__build__in=build_ids,
                                           case_run_status_id__in=status_ids)
@@ -419,12 +419,12 @@ class CustomDetailsReportData(CustomReportData):
     def get_case_runs_comments(self, build_ids, status_ids):
         """Get case runs' bugs according to builds and status
 
-        @param build_ids: IDs of builds
-        @type build_ids: list or tuple
-        @param status_ids: IDs of case run status
-        @type status_ids: list or tuple
-        @return: mapping between case run ID and its comments
-        @rtype: dict
+        :param build_ids: IDs of builds
+        :type build_ids: list or tuple
+        :param status_ids: IDs of case run status
+        :type status_ids: list or tuple
+        :return: mapping between case run ID and its comments
+        :rtype: dict
         """
         ct = ContentType.objects.get_for_model(TestCaseRun)
         rows = SQLExecution(sqls.custom_details_case_runs_comments,
@@ -487,15 +487,14 @@ class TestingReportBaseData(object):
         The core method to generate report data. Remain for subclass to
         implement
 
-        @param form: the valid form containing report criteria
-        @type form: L{RunForm}
-        @param builds: sequence of TestBuilds, either selected by user or the
+        :param form: the valid form containing report criteria
+        :type form: :class:`RunForm`
+        :param builds: sequence of TestBuilds, either selected by user or the
             all builds of selected product
-        @type builds: list or tuple
-        @param builds_select: whether the builds are selected by user
-        @type builds_selected: bool
-        @return: the report data
-        @rtype: dict
+        :type builds: list or tuple
+        :param bool builds_select: whether the builds are selected by user
+        :return: the report data
+        :rtype: dict
         """
         raise NotImplementedError
 
@@ -573,13 +572,12 @@ class TestingReportByCaseRunTesterData(TestingReportBaseData):
     def _get_report_data_with_builds(self, form, builds):
         """Get report data when user selects one or more builds
 
-        @param form: the valid form containing report criteria
-        @type form: L{RunForm}
-        @param builds: selected builds by user
-        @type builds: list
-        @return: report data containing all necessary data grouped by selected
-            builds and tested_bys
-        @rtype: dict
+        :param form: the valid form containing report criteria.
+        :type form: :class:`RunForm`
+        :param list builds: selected builds by user.
+        :return: report data containing all necessary data grouped by selected
+            builds and tested_bys.
+        :rtype: dict
         """
         plans_count = self.plans_count(form)
         runs_count = self.runs_count(form)
