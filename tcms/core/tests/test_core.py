@@ -160,6 +160,18 @@ class GroupByResultCalculationTest(unittest.TestCase):
         total = self.nested_groupby_result.total
         self.assertEqual(total, self._sample_nested_total())
 
+    def test_percentage(self):
+        result = GroupByResult({
+            'IDLE': 20,
+            'PASSED': 20,
+            'RUNNING': 10,
+        })
+        self.assertEqual(40.0, result.PASSED_percent)
+
+    def test_zero_percentage(self):
+        result = GroupByResult({})
+        self.assertEqual(.0, result.PASSED_percent)
+
 
 class GroupByResultLevelTest(unittest.TestCase):
     def setUp(self):
