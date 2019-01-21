@@ -16,7 +16,6 @@ def get_long_description():
 
 install_requires = [
     'beautifulsoup4 >= 4.1.1',
-    'celery == 4.2.0',
     'django >= 1.11,<3.0',
     'django-contrib-comments == 1.8.0',
     'django-tinymce == 2.7.0',
