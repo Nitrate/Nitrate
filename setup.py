@@ -16,12 +16,12 @@ def get_long_description():
 
 install_requires = [
     'beautifulsoup4 >= 4.1.1',
-    'django >= 1.11,<2.0',
+    'celery == 4.2.0',
+    'django >= 1.11,<3.0',
     'django-contrib-comments == 1.8.0',
     'django-tinymce == 2.7.0',
     'django-uuslug == 1.1.8',
     'html2text',
-    'kobo == 0.7.0',
     'odfpy >= 0.9.6',
     'python-bugzilla',
     'six',
@@ -34,7 +34,7 @@ if sys.version_info.major < 3:
     ]
 
 extras_require = {
-    'mysql': ['PyMySQL == 0.7.11'],
+    'mysql': ['PyMySQL == 0.9.2'],
     'pgsql': ['psycopg2 == 2.7.5'],
 
     # Required for tcms.core.contrib.auth.backends.KerberosBackend
@@ -71,10 +71,13 @@ extras_require = {
 
     # Required packages required to run async tasks
     'async': [
-        'celery == 4.1.0',
+        'celery == 4.2.0',
     ]
 }
 
+dependency_links = [
+    'https://github.com/release-engineering/kobo/tarball/master#egg=kobo',
+]
 
 setup(
     name='Nitrate',
@@ -89,11 +92,14 @@ setup(
     keywords='test case',
     install_requires=install_requires,
     extras_require=extras_require,
+    dependency_links=dependency_links,
     packages=find_packages(),
     include_package_data=True,
     classifiers=[
         'Framework :: Django',
         'Framework :: Django :: 1.11',
+        'Framework :: Django :: 2.0',
+        'Framework :: Django :: 2.1',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)',
         'Programming Language :: Python :: 2',

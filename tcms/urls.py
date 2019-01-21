@@ -14,7 +14,7 @@ from kobo.django.xmlrpc.views import XMLRPCHandlerFactory
 xmlrpc_handler = XMLRPCHandlerFactory('TCMS_XML_RPC')
 
 urlpatterns = [
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', admin.site.urls),
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
     url(r'', include('tcms.core.urls')),

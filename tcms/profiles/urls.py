@@ -18,11 +18,11 @@ urlpatterns = [
     url(r'confirm/(?P<activation_key>[A-Za-z0-9\-]+)/$',
         tcms_auth_views.confirm, name='nitrate-activation-confirm'),
 
-    url(r'login/$', django_auth_views.login, name='nitrate-login'),
-    url(r'changepassword/$', django_auth_views.password_change, name='password_change'),
-    url(r'changepassword/done/$', django_auth_views.password_change_done, name='password_change_done'),
-    url(r'^passwordreset/$', django_auth_views.password_reset, name='password_reset'),
-    url(r'^passwordreset/done/$', django_auth_views.password_reset_done, name='password_reset_done'),
+    url(r'login/$', django_auth_views.LoginView.as_view(), name='nitrate-login'),
+    url(r'changepassword/$', django_auth_views.PasswordChangeView.as_view(), name='password_change'),
+    url(r'changepassword/done/$', django_auth_views.PasswordChangeDoneView.as_view(), name='password_change_done'),
+    url(r'^passwordreset/$', django_auth_views.PasswordResetView.as_view(), name='password_reset'),
+    url(r'^passwordreset/done/$', django_auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
     url(r'^passwordreset/confirm//(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/$',
-        django_auth_views.password_reset_confirm, name='password_reset_confirm'),
+        django_auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
 ]

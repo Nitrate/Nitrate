@@ -2,7 +2,7 @@
 
 from django.conf import settings
 from django.contrib import auth
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_http_methods
