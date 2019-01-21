@@ -26,6 +26,7 @@ install_requires = [
     'python-bugzilla',
     'six',
     'xmltodict',
+    'kobo == 0.9.0'
 ]
 
 if sys.version_info.major < 3:
@@ -75,10 +76,6 @@ extras_require = {
     ]
 }
 
-dependency_links = [
-    'https://github.com/release-engineering/kobo/tarball/master#egg=kobo',
-]
-
 setup(
     name='Nitrate',
     version=pkg_version,
@@ -92,7 +89,6 @@ setup(
     keywords='test case',
     install_requires=install_requires,
     extras_require=extras_require,
-    dependency_links=dependency_links,
     packages=find_packages(),
     include_package_data=True,
     classifiers=[
