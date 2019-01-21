@@ -160,6 +160,29 @@ class GroupByResultCalculationTest(unittest.TestCase):
         total = self.nested_groupby_result.total
         self.assertEqual(total, self._sample_nested_total())
 
+    def test_get_total_after_add_data_based_on_empty_initial_data(self):
+        result = GroupByResult()
+        result['RUNNING'] = 100
+        result['PASSED'] = 100
+        self.assertEqual(200, result.total)
+
+    def test_get_total_after_add_data_based_on_initial_data(self):
+        result = GroupByResult({'FAILED': 20})
+        result['RUNNING'] = 100
+        result['PASSED'] = 100
+        self.assertEqual(220, result.total)
+
+    def test_total_is_updated_after_del_item(self):
+        result = GroupByResult({'FAILED': 20, 'RUNNING': 20, 'PASSED': 10})
+        del result['RUNNING']
+        self.assertEqual(30, result.total)
+
+    def test_total_is_updated_after_del_item_several_times(self):
+        result = GroupByResult({'FAILED': 20, 'RUNNING': 20, 'PASSED': 10})
+        del result['RUNNING']
+        del result['FAILED']
+        self.assertEqual(10, result.total)
+
     def test_percentage(self):
         result = GroupByResult({
             'IDLE': 20,

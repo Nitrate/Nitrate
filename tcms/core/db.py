@@ -137,11 +137,14 @@ class GroupByResult(object):
         return self._data.__getitem__(key)
 
     def __setitem__(self, key, value):
-        # TODO: calculate total immediately would be more efficient
-        return self._data.__setitem__(key, value)
+        r = self._data.__setitem__(key, value)
+        self._update_total_result()
+        return r
 
     def __delitem__(self, key):
-        return self._data.__delitem__(key)
+        r = self._data.__delitem__(key)
+        self._update_total_result()
+        return r
 
     def __len__(self):
         return self._data.__len__()
@@ -170,6 +173,13 @@ class GroupByResult(object):
     def empty(self):
         return len(self._data) == 0
 
+    @property
+    def total(self):
+        return self._total_result
+
+    def _update_total_result(self):
+        self._total_result = self._get_total()
+
     def _get_total(self):
         """Get the total value of this GROUP BY result
 
@@ -196,8 +206,6 @@ class GroupByResult(object):
                     total += subtotal.total
 
         return total
-
-    total = property(_get_total)
 
     def _get_percent(self, key):
         """Percentage of a subtotal
