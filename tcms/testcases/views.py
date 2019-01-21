@@ -8,14 +8,13 @@ import json
 import logging
 
 from operator import itemgetter, attrgetter
+from six.moves import map
 
-from django_comments.models import Comment
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse
 from django.db.models import Count
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.http import JsonResponse
@@ -23,11 +22,12 @@ from django import forms as djforms
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import get_template
 from django.template.loader import render_to_string
-from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
 from django.views.generic.base import TemplateView, View
-from six.moves import map
+from django.urls import reverse
+from django.utils.decorators import method_decorator
+from django_comments.models import Comment
 
 from tcms.core import forms
 from tcms.core.db import SQLExecution
@@ -59,6 +59,7 @@ from tcms.utils import form_errors_to_list
 from tcms.utils import HTTP_BAD_REQUEST
 from tcms.utils import HTTP_FORBIDDEN
 from tcms.utils import HTTP_NOT_FOUND
+
 
 logger = logging.getLogger(__name__)
 

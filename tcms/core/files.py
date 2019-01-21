@@ -7,7 +7,7 @@ from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
 from django.views.decorators.http import require_POST
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.utils.encoding import smart_str
 from django.http import JsonResponse

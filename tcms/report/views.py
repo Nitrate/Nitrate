@@ -5,7 +5,7 @@ from __future__ import absolute_import
 import six
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.http import Http404
 from django.shortcuts import render
 from django.utils.decorators import method_decorator

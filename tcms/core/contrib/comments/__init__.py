@@ -2,7 +2,7 @@
 
 from __future__ import absolute_import
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 
 def get_form():

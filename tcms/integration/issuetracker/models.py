@@ -80,8 +80,8 @@ class ProductIssueTrackerRelationship(TCMSActionModel):
     associated with a product added to Nitrate.
     """
 
-    product = models.ForeignKey('management.Product')
-    issue_tracker = models.ForeignKey('issuetracker.IssueTracker')
+    product = models.ForeignKey('management.Product', on_delete=models.CASCADE)
+    issue_tracker = models.ForeignKey('issuetracker.IssueTracker', on_delete=models.CASCADE)
 
     alias = models.CharField(
         max_length=50,
@@ -547,21 +547,26 @@ class Issue(TCMSActionModel):
     tracker = models.ForeignKey(
         IssueTracker,
         related_name='issues',
-        help_text='Which issue tracker this issue belongs to.')
+        help_text='Which issue tracker this issue belongs to.',
+        on_delete=models.CASCADE
+    )
     case = models.ForeignKey(
         'testcases.TestCase',
         related_name='issues',
         help_text='A test case this issue is associated with.',
         error_messages={
             'required': 'Case is missed.'
-        }
+        },
+        on_delete=models.CASCADE
     )
     case_run = models.ForeignKey(
         'testruns.TestCaseRun',
         null=True,
         blank=True,
         related_name='issues',
-        help_text='A test case run this issue is associated with optionally.')
+        help_text='A test case run this issue is associated with optionally.',
+        on_delete=models.SET_NULL
+    )
 
     def __str__(self):
         return self.issue_key
