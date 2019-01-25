@@ -134,7 +134,10 @@ class GroupByResult(object):
         return self._data.__contains__(item)
 
     def __getitem__(self, key):
-        return self._data.__getitem__(key)
+        # Behave like what collections.defaultdict does. If a key does not exist
+        # yet, just return 0. This is based on the assumption of the value type
+        # within GroupByResult could be integer or a nested GroupByResult.
+        return self._data.__getitem__(key) if key in self._data else 0
 
     def __setitem__(self, key, value):
         r = self._data.__setitem__(key, value)

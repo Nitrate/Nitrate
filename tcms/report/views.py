@@ -351,11 +351,10 @@ class CustomReport(TemplateView):
                 build.case_runs_count = c
 
             context.update({
-                # TODO: replace following three TOTAL key lookup with total
                 # method invocation.
-                'total_runs_count': runs_subtotal.get('TOTAL', 0),
-                'total_plans_count': plans_subtotal.get('TOTAL', 0),
-                'total_count': isautomated_subtotal.get('TOTAL', 0),
+                'total_runs_count': runs_subtotal.total,
+                'total_plans_count': plans_subtotal.total,
+                'total_count': isautomated_subtotal.total,
                 'manual_count': isautomated_subtotal.get(0, 0),
                 'auto_count': isautomated_subtotal.get(1, 0),
                 'both_count': isautomated_subtotal.get(2, 0),
@@ -449,7 +448,7 @@ class CustomDetailReport(CustomReport):
 
             build_ids = [build.pk for build in data['builds']]
             # TODO: remove this after upgrading MySQL-python to 1.2.5
-            build_ids = workaround_single_value_for_in_clause(build_ids)
+            build_ids = tuple(workaround_single_value_for_in_clause(build_ids))
 
             status_matrix = self.walk_matrix_row_by_row(
                 self._data.generate_status_matrix(build_ids))

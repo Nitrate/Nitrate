@@ -2,7 +2,6 @@
 
 import six
 
-from collections import defaultdict
 from collections import namedtuple
 from itertools import chain
 from itertools import groupby
@@ -43,8 +42,8 @@ __all__ = (
 
 
 def models_to_pks(models):
-    return workaround_single_value_for_in_clause(
-        [model.pk for model in models])
+    return tuple(workaround_single_value_for_in_clause(
+        [model.pk for model in models]))
 
 
 def model_to_pk(model):
@@ -58,15 +57,13 @@ def do_nothing(value):
 def overview_view_get_running_runs_count(product_id):
     return get_groupby_result(sqls.overview_running_runs_count,
                               (product_id,),
-                              key_name='stop_status',
-                              with_rollup=True)
+                              key_name='stop_status')
 
 
 def overview_view_get_case_run_status_count(product_id):
     return get_groupby_result(sqls.overview_case_run_status_count,
                               (product_id,),
-                              key_name='name',
-                              with_rollup=True)
+                              key_name='name')
 
 
 class ProductBuildReportData(object):
@@ -100,8 +97,7 @@ class ProductBuildReportData(object):
     def caserun_status_subtotal(self, product_id, build_id):
         return get_groupby_result(sqls.build_caserun_status_subtotal,
                                   (product_id, build_id),
-                                  key_name='name',
-                                  with_rollup=True)
+                                  key_name='name')
 
 
 class ProductComponentReportData(object):
@@ -128,8 +124,7 @@ class ProductComponentReportData(object):
     def case_runs_count(self, component_id):
         return get_groupby_result(sqls.component_case_runs_count,
                                   (component_id,),
-                                  key_name='name',
-                                  with_rollup=True)
+                                  key_name='name')
 
 
 class ProductVersionReportData(object):
@@ -173,8 +168,7 @@ class ProductVersionReportData(object):
     def case_runs_status_subtotal(self, product_id, version_id):
         return get_groupby_result(sqls.version_case_run_status_subtotal,
                                   (product_id, version_id),
-                                  key_name='name',
-                                  with_rollup=True)
+                                  key_name='name')
 
 
 SQLQueryInfo = namedtuple('SQLQueryInfo',
@@ -307,15 +301,11 @@ class CustomReportData(object):
 
     def runs_subtotal(self):
         sql, params = self._prepare_sql(sqls.custom_builds_runs_subtotal)
-        return get_groupby_result(sql, params,
-                                  key_name='build_id',
-                                  with_rollup=True)
+        return get_groupby_result(sql, params, key_name='build_id')
 
     def plans_subtotal(self):
         sql, params = self._prepare_sql(sqls.custom_builds_plans_subtotal)
-        return get_groupby_result(sql, params,
-                                  key_name='build_id',
-                                  with_rollup=True)
+        return get_groupby_result(sql, params, key_name='build_id')
 
     def case_runs_subtotal(self):
         sql, params = self._prepare_sql(sqls.custom_builds_case_runs_subtotal)
@@ -324,9 +314,7 @@ class CustomReportData(object):
     def cases_isautomated_subtotal(self):
         sql, params = self._prepare_sql(
             sqls.custom_builds_cases_isautomated_subtotal)
-        return get_groupby_result(sql, params,
-                                  key_name='isautomated',
-                                  with_rollup=True)
+        return get_groupby_result(sql, params, key_name='isautomated')
 
     # ## Case run status matrix to show progress bar for each build ###
 
@@ -369,28 +357,41 @@ class CustomDetailsReportData(CustomReportData):
 
     def generate_status_matrix(self, build_ids):
         matrix_dataset = {}
-        # TODO: replace defaultdict with GroupByResult
-        status_total_line = defaultdict(int)
+        status_total_line = GroupByResult()
 
-        rows = SQLExecution(sqls.custom_details_status_matrix,
-                            params=(build_ids,),
-                            with_field_name=False).rows
+        rows = list(SQLExecution(sqls.custom_details_status_matrix,
+                                 params=(build_ids,),
+                                 with_field_name=False).rows)
+
+        plan_ids = run_ids = case_run_status_ids = []
+        for plan_id, run_id, case_run_status_id, _ in rows:
+            plan_ids.append(plan_id)
+            run_ids.append(run_id)
+            case_run_status_ids.append(case_run_status_id)
+
+        plans = {
+            plan.pk: plan for plan in TestPlan.objects.filter(
+                pk__in=plan_ids).only('pk', 'name')
+        }
+        runs = {
+            run.pk: run for run in TestRun.objects.filter(
+                pk__in=run_ids).only('pk', 'summary')
+        }
+        case_run_status_names = {
+            pk: name for pk, name in TestCaseRunStatus.objects.filter(
+                pk__in=case_run_status_ids).values_list('pk', 'name')
+        }
 
         for row in rows:
-            plan_id, plan_name, run_id, run_summary, \
-                status_name, status_count = row
-            plan = TestPlan(pk=plan_id, name=plan_name)
-            plan_node = matrix_dataset.setdefault(plan, {})
+            plan_id, run_id, case_run_status_id, status_count = row
 
-            run = TestRun(pk=run_id, summary=run_summary)
-            run_node = plan_node.setdefault(run, defaultdict(int))
+            plan_node = matrix_dataset.setdefault(plans[plan_id], {})
+            run_node = plan_node.setdefault(runs[run_id], GroupByResult())
 
+            status_name = case_run_status_names[case_run_status_id]
             run_node[status_name] = status_count
-            run_node['TOTAL'] += status_count
-
             # calculate the last total line
             status_total_line[status_name] += status_count
-            status_total_line['TOTAL'] += status_count
 
         # Add total line to final data set
         matrix_dataset[None] = status_total_line
@@ -415,6 +416,28 @@ class CustomDetailsReportData(CustomReportData):
                          'tested_by__username', 'close_date')
         tcrs = tcrs.order_by('case')
         return tcrs
+
+    def get_case_runs_issues(self, build_ids, status_ids):
+        """Get case runs' issues according to builds and status
+
+        :param build_ids: IDs of builds
+        :type build_ids: list or tuple
+        :param status_ids: IDs of case run status
+        :type status_ids: list or tuple
+        :return: mapping between case run ID and its bugs
+        :rtype: dict
+        """
+        from tcms.integration.issuetracker.models import Issue
+        from operator import attrgetter
+        issues = (
+            Issue.objects.filter(case_run__run__build__in=build_ids,
+                                 case_run__case_run_status_id__in=status_ids)
+                         .only('pk', 'tracker__issue_url_fmt', 'case_run')
+        )
+        return {
+            case_run_id: list(issues) for case_run_id, issues in
+            groupby(issues, key=attrgetter('case_run_id'))
+        }
 
     def get_case_runs_comments(self, build_ids, status_ids):
         """Get case runs' bugs according to builds and status
@@ -726,9 +749,7 @@ class TestingReportByCasePriorityData(TestingReportBaseData):
     def runs_subtotal(self, form):
         sql, params = self._prepare_sql(form,
                                         sqls.testing_report_runs_subtotal)
-        return get_groupby_result(sql, params,
-                                  key_name='build_id',
-                                  with_rollup=True)
+        return get_groupby_result(sql, params, key_name='build_id')
 
     def status_matrix(self, form):
         sql, params = self._prepare_sql(form, sqls.by_case_priority_subtotal)
@@ -941,33 +962,39 @@ class TestingReportByPlanBuildData(TestingReportBaseData):
         }
 
     def builds_subtotal(self, form):
-        sql, params = self._prepare_sql(form,
-                                        sqls.by_plan_build_builds_subtotal)
-        rows = SQLExecution(sql, params, with_field_name=False).rows
+        sql, params = self._prepare_sql(form, sqls.by_plan_build_builds_subtotal)
+        rows = list(SQLExecution(sql, params, with_field_name=False).rows)
+        plans = {
+            p.pk: p for p in TestPlan.objects.filter(
+                pk__in=[plan_id for plan_id, _ in rows]).only('pk', 'name')
+        }
         result = GroupByResult()
-        for plan_id, plan_name, builds_count in rows:
-            plan = TestPlan(pk=plan_id, name=plan_name)
-            result[plan] = builds_count
+        for plan_id, builds_count in rows:
+            result[plans[plan_id]] = builds_count
         return result
 
     def runs_subtotal(self, form):
-        sql, params = self._prepare_sql(form,
-                                        sqls.by_plan_build_runs_subtotal)
-        rows = SQLExecution(sql, params, with_field_name=False).rows
+        sql, params = self._prepare_sql(form, sqls.by_plan_build_runs_subtotal)
+        rows = list(SQLExecution(sql, params, with_field_name=False).rows)
+        plans = {
+            p.pk: p for p in TestPlan.objects.filter(
+                pk__in=[plan_id for plan_id, _ in rows]).only('pk', 'name')
+        }
         result = GroupByResult()
-        for plan_id, plan_name, runs_count in rows:
-            plan = TestPlan(pk=plan_id, name=plan_name)
-            result[plan] = runs_count
+        for plan_id, runs_count in rows:
+            result[plans[plan_id]] = runs_count
         return result
 
     def status_matrix(self, form):
-        sql, params = self._prepare_sql(form,
-                                        sqls.by_plan_build_status_matrix)
-        rows = SQLExecution(sql, params, with_field_name=False).rows
+        sql, params = self._prepare_sql(form, sqls.by_plan_build_status_matrix)
+        rows = list(SQLExecution(sql, params, with_field_name=False).rows)
+        plans = {
+            p.pk: p for p in TestPlan.objects.filter(
+                pk__in=[plan_id for plan_id, _, _ in rows]).only('pk', 'name')
+        }
         status_matrix = GroupByResult()
-        for plan_id, plan_name, status_name, total_count in rows:
-            plan = TestPlan(pk=plan_id, name=plan_name)
-            status_subtotal = status_matrix.setdefault(plan, GroupByResult())
+        for plan_id, status_name, total_count in rows:
+            status_subtotal = status_matrix.setdefault(plans[plan_id], GroupByResult())
             status_subtotal[status_name] = total_count
         return status_matrix
 
@@ -1028,20 +1055,30 @@ class TestingReportByPlanBuildDetailData(TestingReportByPlanBuildData):
         rows = SQLExecution(sql, params, with_field_name=False).rows
         status_matrix = GroupByResult()
 
+        plan_ids = build_ids = run_ids = []
+        for plan_id, build_id, run_id, status_name, _ in rows:
+            plan_ids.append(plan_id)
+            build_ids.append(build_id)
+            run_ids.append(run_id)
+
+        plans = {
+            plan.pk: plan for plan in TestPlan.objects.filter(
+                pk__in=plan_ids).only('pk', 'name')
+        }
+        test_builds = {
+            build.pk: build for build in TestBuild.objects.filter(
+                pk__in=build_ids).only('pk', 'name')
+        }
+        runs = {
+            run.pk: run for run in TestRun.objects.filter(
+                pk__in=run_ids).only('pk', 'summary')
+        }
+
         for row in rows:
-            plan_id, plan_name, build_id, build_name, \
-                run_id, run_summary, status_name, total_count = row
-
-            plan = TestPlan(pk=plan_id, name=plan_name)
-            builds = status_matrix.setdefault(plan, GroupByResult())
-
-            build = TestBuild(pk=build_id, name=build_name)
-            runs = builds.setdefault(build, GroupByResult(
-
-            ))
-
-            run = TestRun(pk=run_id, summary=run_summary)
-            status_subtotal = runs.setdefault(run, GroupByResult())
+            plan_id, build_id, run_id, status_name, total_count = row
+            builds = status_matrix.setdefault(plans[plan_id], GroupByResult())
+            runs = builds.setdefault(test_builds[build_id], GroupByResult())
+            status_subtotal = runs.setdefault(runs[run_id], GroupByResult())
             status_subtotal[status_name] = total_count
 
         return status_matrix

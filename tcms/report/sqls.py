@@ -5,13 +5,13 @@ from collections import namedtuple
 SQLStatement = namedtuple('SQLStatement',
                           'sql_template, default_joins, default_where')
 
-
 overview_running_runs_count = '''
-SELECT IF(stop_date is null, 'running', 'finished') AS stop_status, COUNT(*) AS total_count
+SELECT CASE WHEN stop_date is NULL THEN 'running' ELSE 'finished' END AS stop_status,
+    COUNT(*) AS total_count
 FROM test_runs
 INNER JOIN test_plans ON (test_runs.plan_id = test_plans.plan_id)
 WHERE test_plans.product_id = %s
-GROUP BY stop_status WITH ROLLUP'''
+GROUP BY stop_status'''
 
 overview_case_run_status_count = '''
 SELECT tcrss.name, COUNT(*) AS total_count
@@ -20,7 +20,7 @@ INNER JOIN test_case_runs AS tcrs ON (tcrss.case_run_status_id = tcrs.case_run_s
 INNER JOIN test_runs AS trs ON (tcrs.run_id = trs.run_id)
 INNER JOIN test_plans AS tps ON (trs.plan_id = tps.plan_id)
 WHERE tps.product_id = %s
-GROUP BY tcrss.name WITH ROLLUP'''
+GROUP BY tcrss.name'''
 
 build_builds_total_runs_count = '''
 SELECT test_runs.build_id, COUNT(*) AS total_count
@@ -41,7 +41,7 @@ SELECT tbs.build_id, COUNT(*) AS total_count
 FROM test_builds AS tbs
 INNER JOIN test_runs AS trs ON (trs.build_id = tbs.build_id)
 INNER JOIN test_case_runs AS tcrs ON (tcrs.run_id = trs.run_id)
-WHERE tbs.product_id = %s AND tcrs.case_run_status_id NOT IN (1, 4, 5, 6)
+WHERE tbs.product_id = %s AND tcrs.case_run_status_id IN (4, 5, 7, 8)
 GROUP BY tbs.build_id'''
 
 build_failed_caseruns_count = '''
@@ -68,7 +68,7 @@ INNER JOIN test_case_runs AS tcrs ON (tcrss.case_run_status_id = tcrs.case_run_s
 INNER JOIN test_runs AS trs ON (trs.run_id = tcrs.run_id)
 INNER JOIN test_builds AS tbs ON (trs.build_id = tbs.build_id)
 WHERE tbs.product_id = %s AND tbs.build_id = %s
-GROUP BY tcrss.name WITH ROLLUP'''
+GROUP BY tcrss.name'''
 
 component_total_cases = '''
 SELECT tccs.component_id, COUNT(*) AS total_count
@@ -111,7 +111,7 @@ INNER JOIN test_case_runs AS tcrs ON (tcrss.case_run_status_id = tcrs.case_run_s
 INNER JOIN test_cases AS tcs ON (tcrs.case_id = tcs.case_id)
 INNER JOIN test_case_components AS tccs ON (tcs.case_id = tccs.case_id)
 WHERE tccs.component_id = %s
-GROUP BY tcrss.name WITH ROLLUP'''
+GROUP BY tcrss.name'''
 
 version_plans_subtotal = '''
 SELECT test_plans.product_version_id, count(*) as total_count
@@ -172,7 +172,7 @@ INNER JOIN test_case_run_status AS tcrss ON (tcrss.case_run_status_id = tcrs.cas
 INNER JOIN test_runs AS trs ON (tcrs.run_id = trs.run_id)
 INNER JOIN test_plans AS tps ON (trs.plan_id = tps.plan_id)
 WHERE tps.product_id = %s AND tps.product_version_id = %s
-GROUP BY tcrss.name WITH ROLLUP'''
+GROUP BY tcrss.name'''
 
 
 ### SQL for custom report ###
@@ -193,7 +193,7 @@ SELECT test_builds.build_id, COUNT(DISTINCT test_runs.run_id) AS total_count
 FROM test_builds
 %(joins)s
 WHERE %(where)s
-GROUP BY test_builds.build_id WITH ROLLUP''',
+GROUP BY test_builds.build_id''',
     default_joins=(
         'INNER JOIN test_runs ON (test_builds.build_id = test_runs.build_id)',
     ),
@@ -206,7 +206,7 @@ SELECT test_builds.build_id, COUNT(DISTINCT test_runs.plan_id) AS total_count
 FROM test_builds
 %(joins)s
 WHERE %(where)s
-GROUP BY test_builds.build_id WITH ROLLUP''',
+GROUP BY test_builds.build_id''',
     default_joins=(
         'INNER JOIN test_runs ON (test_builds.build_id = test_runs.build_id)',
     ),
@@ -219,7 +219,7 @@ SELECT test_cases.isautomated, COUNT(DISTINCT test_cases.case_id) AS total_count
 FROM test_builds
 %(joins)s
 WHERE %(where)s
-GROUP BY test_cases.isautomated WITH ROLLUP''',
+GROUP BY test_cases.isautomated''',
     default_joins=(
         'INNER JOIN test_runs ON (test_builds.build_id = test_runs.build_id)',
         'INNER JOIN test_case_runs ON (test_runs.run_id = test_case_runs.run_id)',
@@ -260,12 +260,15 @@ GROUP BY test_builds.build_id''',
 
 
 custom_details_status_matrix = '''
-SELECT test_plans.plan_id, test_plans.name, test_runs.run_id, test_runs.summary,
-    test_case_run_status.name, count(*) as total_count
+SELECT test_plans.plan_id,
+       test_runs.run_id,
+       test_case_runs.case_run_status_id,
+       COUNT(*) AS total_count
 FROM test_plans
 INNER JOIN test_runs on (test_plans.plan_id = test_runs.plan_id)
 INNER JOIN test_case_runs on (test_case_runs.run_id = test_runs.run_id)
-INNER JOIN test_case_run_status on (test_case_runs.case_run_status_id = test_case_run_status.case_run_status_id)
+INNER JOIN test_case_run_status on (
+    test_case_runs.case_run_status_id = test_case_run_status.case_run_status_id)
 WHERE test_runs.build_id IN %s
 GROUP BY test_plans.plan_id, test_runs.run_id, test_case_runs.case_run_status_id
 ORDER BY test_plans.plan_id, test_runs.run_id'''
@@ -281,7 +284,7 @@ INNER JOIN test_case_runs ON (django_comments.object_pk = test_case_runs.case_ru
 INNER JOIN test_runs ON (test_runs.run_id = test_case_runs.run_id)
 WHERE
     django_comments.content_type_id = %s AND django_comments.site_id = 1 AND
-    django_comments.is_removed = 0 AND test_runs.build_id IN %s AND
+    not django_comments.is_removed AND test_runs.build_id IN %s AND
     test_case_runs.case_run_status_id IN %s'''
 
 
@@ -313,7 +316,7 @@ select test_runs.build_id, count(*) as total_count
 from test_runs
 inner join test_builds on (test_runs.build_id = test_builds.build_id)
 where {0}
-group by test_runs.build_id with rollup'''
+group by test_runs.build_id'''
 
 # SQLs for report "By Case-Run Tester"
 
@@ -433,7 +436,7 @@ group by test_plan_tags.tag_id, test_builds.build_id, test_plans.plan_id,
 ### Report data of By Plan Build ###
 
 by_plan_build_builds_subtotal = '''
-select test_plans.plan_id, test_plans.name, count(distinct test_builds.build_id) as total_count
+select test_runs.plan_id, count(distinct test_builds.build_id) as total_count
 from test_builds
 inner join test_runs on (test_runs.build_id = test_builds.build_id)
 inner join test_plans on (test_runs.plan_id = test_plans.plan_id)
@@ -441,7 +444,7 @@ where {0}
 group by test_runs.plan_id'''
 
 by_plan_build_runs_subtotal = '''
-select test_plans.plan_id, test_plans.name, count(distinct test_runs.run_id) as total_count
+select test_runs.plan_id, count(distinct test_runs.run_id) as total_count
 from test_builds
 inner join test_runs on (test_runs.build_id = test_builds.build_id)
 inner join test_plans on (test_runs.plan_id = test_plans.plan_id)
@@ -449,10 +452,8 @@ where {0}
 group by test_runs.plan_id'''
 
 by_plan_build_status_matrix = '''
-select
-    test_plans.plan_id, test_plans.name,
-    test_case_run_status.name,
-    count(distinct test_runs.run_id) as total_count
+select test_runs.plan_id, test_case_run_status.name,
+       count(distinct test_runs.run_id) as total_count
 from test_builds
 inner join test_runs on (test_runs.build_id = test_builds.build_id)
 inner join test_plans on (test_runs.plan_id = test_plans.plan_id)
@@ -465,18 +466,17 @@ group by test_runs.plan_id, test_case_run_status.name'''
 ### Report data of By Plan Build detail ###
 
 by_plan_build_detail_status_matrix = '''
-select
-    test_runs.plan_id, test_plans.name as plan_name,
-    test_runs.build_id, test_builds.name as build_name,
-    test_runs.run_id, test_runs.summary as run_summary,
-    test_case_run_status.name as status_name, count(*) as total_count
-from test_builds
-inner join test_runs on (test_runs.build_id = test_builds.build_id)
-inner join test_plans on (test_runs.plan_id = test_plans.plan_id)
-inner join test_case_runs on (test_case_runs.run_id = test_runs.run_id)
-inner join test_case_run_status on (
+SELECT test_runs.plan_id,
+       test_runs.build_id,
+       test_runs.run_id,
+       test_case_run_status.name AS status_name,
+       COUNT(*) AS total_count
+FROM test_builds
+INNER JOIN test_runs ON (test_runs.build_id = test_builds.build_id)
+INNER JOIN test_plans ON (test_runs.plan_id = test_plans.plan_id)
+INNER JOIN test_case_runs ON (test_case_runs.run_id = test_runs.run_id)
+INNER JOIN test_case_run_status ON (
     test_case_runs.case_run_status_id = test_case_run_status.case_run_status_id)
-where {0}
-group by
-    test_runs.plan_id, test_runs.build_id,
-    test_runs.run_id, test_case_run_status.name'''
+WHERE {0}
+GROUP BY test_runs.plan_id, test_runs.build_id,
+         test_runs.run_id, test_case_run_status.name'''

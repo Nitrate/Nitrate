@@ -195,6 +195,11 @@ class GroupByResultCalculationTest(unittest.TestCase):
         result = GroupByResult({})
         self.assertEqual(.0, result.PASSED_percent)
 
+    def test_default_zero(self):
+        result = GroupByResult()
+        result['RUNNING'] += 1
+        self.assertEqual(1, result['RUNNING'])
+
 
 class GroupByResultLevelTest(unittest.TestCase):
     def setUp(self):

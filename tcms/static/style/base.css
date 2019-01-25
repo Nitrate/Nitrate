@@ -296,12 +296,12 @@ fieldset .required{ clear:left;width:150px; padding-left:10px; font-weight:600; 
 .progress-bar{ float:left; }
 .variety_0{ font-weight:bold; }
 .emphasize{ color:#FF3333; }
-.variety_idel{ color:#333; }
-.variety_tested { color:#000; }
-.variety_pass { color:green; }
-.variety_fail{ color:red; font-weight:bold; }
+.variety_idle{ color:#333; }
+.variety_paused{ color:#000; }
+.variety_passed { color:green; }
+.variety_failed{ color:red; font-weight:bold; }
 .variety_error{ color:#BF80FF; }
-.variety_block{ color:#FF8080; }
+.variety_blocked{ color:#FF8080; }
 .variety_running{ color:#4242FF; }
 .page_control{ text-align:right; padding-right:10px; clear:both; }
 .filter{ float:right; border-color:#ccc; border-width:1px; margin-right:10px; }

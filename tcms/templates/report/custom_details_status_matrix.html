@@ -32,7 +32,7 @@
 			<td valign="top">{{ status_count.BLOCKED|default:'' }}</td>
 			<td valign="top">{{ status_count.ERROR|default:'' }}</td>
 			<td valign="top">{{ status_count.WAIVED|default:'' }}</td>
-			<td valign="top">{{ status_count.TOTAL|default:'' }}</td>
+			<td valign="top">{{ status_count.total|default:'' }}</td>
 		</tr>
 		{% else %}
 		<tr>
@@ -45,7 +45,7 @@
 			<td valign="top">{{ status_count.BLOCKED|default:'' }}</td>
 			<td valign="top">{{ status_count.ERROR|default:'' }}</td>
 			<td valign="top">{{ status_count.WAIVED|default:'' }}</td>
-			<td valign="top">{{ status_count.TOTAL|default:'' }}</td>
+			<td valign="top">{{ status_count.total|default:'' }}</td>
 		</tr>
 		{% endif %}
 	{% endfor %}
