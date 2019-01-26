@@ -218,11 +218,13 @@ class GroupByResult(object):
         :rtype: float
         """
         total = self._total_result
+        if total == 0:
+            return 0
         subtotal = self[key]
         if total == 0:
-            return .0
+            return 0
         else:
-            return subtotal * 100.0 / total
+            return round(subtotal * 100.0 / total, 1)
 
     def __getattr__(self, name):
         if name.endswith('_percent'):

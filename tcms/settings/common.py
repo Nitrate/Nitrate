@@ -199,6 +199,8 @@ INSTALLED_APPS = (
     'tcms.testruns',
     'tcms.xmlrpc.apps.AppConfig',
 
+    'tcms.report',
+
     # core app must be here in order to use permissions created during creating
     # modules for above apps.
     'tcms.core.apps.AppConfig',

@@ -80,17 +80,6 @@ class GroupByResultDictLikeTest(unittest.TestCase):
         ret_val = self.groupby_result.setdefault('total', 200)
         self.assertEqual(ret_val, 100)
 
-    def test_getitem(self):
-        ret_val = self.groupby_result['total']
-        self.assertEqual(ret_val, 100)
-
-        try:
-            ret_val = self.groupby_result['xxx']
-        except KeyError:
-            pass
-        else:
-            self.fail('xxx does not exist. KeyError should be raised.')
-
     def test_setitem(self):
         self.groupby_result['count'] = 200
         self.assertEqual(self.groupby_result['count'], 200)

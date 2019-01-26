@@ -60,11 +60,11 @@ class TestProductOverview(BaseCaseRun):
             ('PASSED', 2, 33.3),
             ('FAILED', 1, 16.7),
             ('IDLE', 2, 33.3),
-            ('ERROR', 0, 0.0),
-            ('PAUSED', 0, 0.0),
-            ('BLOCKED', 0, 0.0),
+            ('ERROR', 0, 0),
+            ('PAUSED', 0, 0),
+            ('BLOCKED', 0, 0),
             ('RUNNING', 1, 16.7),
-            ('WAIVED', 0, 0.0),
+            ('WAIVED', 0, 0),
         )
 
         for item_name, subtotal_count, percent in case_runs_subtotal:

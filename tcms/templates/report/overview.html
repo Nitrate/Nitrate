@@ -1,5 +1,5 @@
 {% extends "tcms_base.html" %}
-{% load report_tags %}
+{% load report_stats %}
 
 {% block subtitle %}Reporting - {{ product }}{% endblock %}
 
@@ -27,12 +27,12 @@ Nitrate.Utils.after_page_load(Nitrate.Report.List.on_load);
 				<tr>
 					<td>Finished</td>
 					<td>{{ runs_count.finished }}</td>
-					<td>{{ runs_count.finished|default:0|percentage:runs_count.total }}</td>
+					<td>{% groupby_result_percent runs_count "finished" %}%</td>
 				</tr>
 				<tr>
 					<td>Running</td>
 					<td>{{ runs_count.running }}</td>
-					<td>{{ runs_count.running|default:0|percentage:runs_count.total }}</td>
+					<td>{% groupby_result_percent runs_count "running" %}%</td>
 				</tr>
 				<tr class="attrib_line" >
 					<td colspan="3">Case Runs</td>
@@ -40,42 +40,42 @@ Nitrate.Utils.after_page_load(Nitrate.Report.List.on_load);
 				<tr>
 					<td>PASSED</td>
 					<td>{{ case_run_count.PASSED }}</td>
-					<td>{{ case_run_count.PASSED|default:0|percentage:case_run_count.total }}</td>
+					<td>{% groupby_result_percent case_run_count "PASSED" %}%</td>
 				</tr>
 				<tr>
 					<td>FAILED</td>
 					<td>{{ case_run_count.FAILED }}</td>
-					<td>{{ case_run_count.FAILED|default:0|percentage:case_run_count.total }}</td>
+					<td>{% groupby_result_percent case_run_count "FAILED" %}%</td>
 				</tr>
 				<tr>
 					<td>IDLE</td>
 					<td>{{ case_run_count.IDLE }}</td>
-					<td>{{ case_run_count.IDLE|default:0|percentage:case_run_count.total }}</td>
+					<td>{% groupby_result_percent case_run_count "IDLE" %}%</td>
 				</tr>
 				<tr>
 					<td>ERROR</td>
 					<td>{{ case_run_count.ERROR }}</td>
-					<td>{{ case_run_count.ERROR|default:0|percentage:case_run_count.total }}</td>
+					<td>{% groupby_result_percent case_run_count "ERROR" %}%</td>
 				</tr>
 				<tr>
 					<td>PAUSED</td>
 					<td>{{ case_run_count.PAUSED }}</td>
-					<td>{{ case_run_count.PAUSED|default:0|percentage:case_run_count.total }}</td>
+					<td>{% groupby_result_percent case_run_count "PAUSED" %}%</td>
 				</tr>
 				<tr>
 					<td>BLOCKED</td>
 					<td>{{ case_run_count.BLOCKED }}</td>
-					<td>{{ case_run_count.BLOCKED|default:0|percentage:case_run_count.total }}</td>
+					<td>{% groupby_result_percent case_run_count "BLOCKED" %}%</td>
 				</tr>
 				<tr>
 					<td>RUNNING</td>
 					<td>{{ case_run_count.RUNNING }}</td>
-					<td>{{ case_run_count.RUNNING|default:0|percentage:case_run_count.total }}</td>
+					<td>{% groupby_result_percent case_run_count "RUNNING" %}%</td>
 				</tr>
 				<tr>
 					<td>WAIVED</td>
 					<td>{{ case_run_count.WAIVED }}</td>
-					<td>{{ case_run_count.WAIVED|default:0|percentage:case_run_count.total }}</td>
+					<td>{% groupby_result_percent case_run_count "WAIVED" %}%</td>
 				</tr>
 			</table>
 		</div>
