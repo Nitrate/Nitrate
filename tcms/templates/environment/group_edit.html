@@ -56,7 +56,7 @@ Nitrate.Utils.after_page_load(Nitrate.Management.Environment.Edit.on_load);
 				</td>
 				<td>
 					<div class="selectgroup">
-						<select id="id_properties" name="selected_property_ids" multiple="multiple">
+						<select name="selected_property_ids" multiple="multiple">
 							{% for property in properties %}
 							<option value="{{ property.id }}" {% ifin property selected_properties %}selected{% endifin %}>{{ property.name }}</option>
 							{% endfor %}
