@@ -10,13 +10,33 @@ Nitrate - Test Case Management System
 .. image::  https://readthedocs.org/projects/nitrate/badge/?version=latest
    :target: http://nitrate.readthedocs.io/en/latest/
 
-Introduction
-------------
 
-Nitrate is a new test plan, test run and test case management system, that is
-written in Python and Django. It has a lot of great features, such as Bugzilla
-and JIRA integration, QPID integration, fast test plan and runs search,
-powerful access control for each plan, run and case, and XMLRPC APIs.
+Nitrate is a new test plan, test run and test case management system, which is
+written in `Python`_ and `Django`_ web framework. It has a lot of great features,
+such as:
+
+* Easy to use to create and manage testing life cycle with plans, cases and runs.
+* Multiple and configurable authentication backend, e.g. Bugzilla and Kerberos.
+* Fast search for plans, cases and runs.
+* powerful access control for each plan, run and case
+* Ready-to-use and extensible issue tracker that allows to track external issues
+  with test cases and test case runs.
+* Accessible with XMLRPC APIs.
+
+Nitrate works with:
+
+* Python: ``2.7``, ``3.6`` and ``3.7``.
+* Django: ``1.11``, ``2.0`` and ``2.1``.
+* Following database versions are tested with:
+
+  * MariaDB: ``10.2.21``.
+  * MySQL: ``5.7``.
+  * PostgreSQL: ``10.6``.
+
+Python 3 is strongly recommended.
+
+.. _Python: https://www.python.org/
+.. _Django: https://docs.djangoproject.com/
 
 Dependencies
 ------------
@@ -24,13 +44,6 @@ Dependencies
 Dependencies are listed in ``setup.py``. ``requirements.txt`` file is also
 provided for provision a local virtualenv for a consistent development
 environment.
-
-Wanna hack on Nitrate quickly?
-------------------------------
-
-A ready-to-use Vagrantfile is provided in ``contrib`` directory, copy that to
-root directory, then ``vagrant up``. Currently, it requires VirtualBox
-installed to create virtual machine.
 
 Documentation
 -------------
@@ -40,34 +53,47 @@ http://nitrate.readthedocs.org/
 Installation
 ------------
 
-See also `Installation in RHEL`_
+There are a series of documentation for installing Nitrate in
+`Installation Guide`_. Choose one for your case. It is appreciated to catch any
+issues of the documentation, report it or fix it.
 
-.. _Installation in RHEL:  http://nitrate.readthedocs.org/en/latest/installing_in_rhel.html
+.. _Installation Guide: https://nitrate.readthedocs.io/en/latest/install/index.html
 
 Contribution
 ------------
 
-See also Contribution_
+Any kind of contribution is welcome, whatever to the documentation, code or
+even just ideas to make Nitrate better. Please refer to Contribution_ for more
+information on how to contribute.
+
+If you would like to write some code, the ``conf/Vagrantfile.example`` would be
+a good choice for you to setup a development environment quickly, where you can
+run tests and debug issues. What you need to do is:
+
+* First, please ensure ``vagrant`` is installed and usable.
+
+* Copy ``conf/Vagrantfile.example`` to project root directory and name it
+  ``Vagrantfile``.
+
+* ``vagrant up``.
 
 .. _Contribution: http://nitrate.readthedocs.org/en/latest/contribution.html
 
 Bug Reports
 -----------
 
-`File a New Bug Report`_
+File an issue `here`_.
 
+Refer to `File a New Bug Report`_ for details to report an issue.
+
+.. _here: https://github.com/Nitrate/Nitrate/issues/new
 .. _File a New Bug Report: http://nitrate.readthedocs.org/en/latest/bug_reporting.html
 
-Mailing Lists
--------------
+Contact
+-------
 
-`nitrate-devel at lists.fedorahosted.org`_
+* Mailing List: `nitrate-devel at lists.fedorahosted.org`_
+* IRC: `#nitrate on irc.freenode.org`_
 
 .. _nitrate-devel at lists.fedorahosted.org: mailto:nitrate-devel@lists.fedorahosted.org
-
-IRC
----
-
-`#nitrate on irc.freenode.org`_
-
 .. _#nitrate on irc.freenode.org: irc://irc.freenode.org/nitrate
