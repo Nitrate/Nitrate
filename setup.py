@@ -105,4 +105,9 @@ setup(
         'Topic :: Software Development :: Quality Assurance',
         'Topic :: Software Development :: Testing',
     ],
+    project_urls={
+        'Issue Tracker': 'https://github.com/Nitrate/Nitrate/issues',
+        'Source Code': 'https://github.com/Nitrate/Nitrate',
+        'Documentation': 'https://nitrate.readthedocs.io/',
+    },
 )
