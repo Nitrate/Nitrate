@@ -4,10 +4,9 @@ from functools import partial
 
 from django import forms
 
-from tcms.management.models import Product, TestBuild, Component, Version
-from tcms.search.utils import cached_entities
+from tcms.management.models import Product, TestBuild, Component, Version, Priority
 from tcms.testcases.forms import IssueKeyField
-from tcms.testcases.models import TestCaseCategory
+from tcms.testcases.models import TestCaseCategory, TestCaseStatus
 from tcms.testplans.models import TestPlanType
 
 # template-functions creating form field with required = False
@@ -139,10 +138,12 @@ class CaseForm(forms.Form):
         return get_choice(self.cleaned_data['cs_tester'])
 
     def populate(self, data):
-        status_choice = [(s.pk, s.name) for s in cached_entities('TestCaseStatus')]
+        status_choice = list(TestCaseStatus.objects.order_by('pk')
+                                                   .values_list('pk', 'name'))
         self.fields['cs_status'].choices = status_choice
 
-        priority_choice = [(p.pk, p.value) for p in cached_entities('Priority')]
+        priority_choice = list(Priority.objects.order_by('pk')
+                                               .values_list('pk', 'value'))
         self.fields['cs_priority'].choices = priority_choice
 
         prod_pks = data.getlist('cs_product')

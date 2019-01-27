@@ -47,8 +47,8 @@
 						<div class="title"><label>Product&nbsp;:</label></div>
 						<div class="listinfo_input">
 							<select name="pl_product" id="pl_product" multiple="multiple" size="5">
-								{% for k, v in PRODUCT_CHOICE %}
-								<option value="{{k}}">{{v}}</option>
+								{% for p in products %}
+								<option value="{{ p.pk }}">{{ p.name }}</option>
 								{% endfor %}
 							</select>
 						</div>
@@ -77,8 +77,8 @@
 						<div class="title"><label>Plan Type&nbsp;:</label></div>
 						<div class="listinfo_input">
 							<select name="pl_type" multiple="multiple" size="5">
-								{% for t in PLAN_TYPE_CHOICES %}
-								<option value="{{t.pk}}">{{t.name}}</option>
+								{% for t in plan_types %}
+								<option value="{{ t.pk }}">{{ t.name }}</option>
 								{% endfor %}
 							</select>
 						</div>
@@ -142,8 +142,8 @@
 						<div class="title"><label>Product&nbsp;:</label></div>
 						<div class="listinfo_input">
 							<select name="cs_product" id="cs_product" multiple="multiple" size="5">
-								{% for k, v in PRODUCT_CHOICE %}
-								<option value="{{k}}">{{v}}</option>
+								{% for p in products %}
+								<option value="{{ p.pk }}">{{ p.name }}</option>
 								{% endfor %}
 							</select>
 						</div>
@@ -272,8 +272,8 @@
 						<div class="title"><label>Product&nbsp;:</label></div>
 						<div class="listinfo_input">
 							<select name="r_product" id="r_product" multiple="multiple" size="5">
-								{% for k, v in PRODUCT_CHOICE %}
-								<option value="{{k}}">{{v}}</option>
+								{% for p in products %}
+								<option value="{{ p.pk }}">{{ p.name }}</option>
 								{% endfor %}
 							</select>
 						</div>
