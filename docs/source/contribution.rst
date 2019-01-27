@@ -101,21 +101,13 @@ Happy hacking.
 
 #. create local branch based on the ``develop`` branch.
 
-#. hacking, hacking and hacking. Please do remember to write unit tests
+#. hacking, hacking and hacking. Please do remember to write unit tests.
 
 #. test, test and test ...
 
-   this command will help you to run project's tests conveniently.
-
    ::
 
-       make test
-
-#. check your code to ensure it meets PEP8 style.
-
-   ::
-
-       make flake8
+       tox
 
 #. when your code is ready, commit your changes with sign-off, push to your
    cloned repository, and make a pull request to ``develop`` branch.
@@ -129,18 +121,64 @@ and correctly as possible. Your commit message should follow this format::
 
     summary to describe what this commit does
 
-    [Fixed issues or bugs]
-
     Arbitrary text to describe why you commit these code in detail
+
+    Fixes #N
 
 Generally, the length of summary line should be limited within range 70-75. The
 remaining text should be wrapped at 79 character.
 
-If your pull-request is fixing an issue reported, remember to record in the
-second part. It should look like::
 
-    Fix #100
+Sign-off commit
+~~~~~~~~~~~~~~~
 
+Every commit must be signed off with your name and email address. This can be
+done by specifying option ``-s`` to ``git commit``, for example::
+
+    git commit -s -m "commit message"
+
+The sign-off means you have read and agree to `Developer Certificate of Origin`_.
+Nitrate uses version 1.1::
+
+    Developer Certificate of Origin
+    Version 1.1
+
+    Copyright (C) 2004, 2006 The Linux Foundation and its contributors.
+    1 Letterman Drive
+    Suite D4700
+    San Francisco, CA, 94129
+
+    Everyone is permitted to copy and distribute verbatim copies of this
+    license document, but changing it is not allowed.
+
+
+    Developer's Certificate of Origin 1.1
+
+    By making a contribution to this project, I certify that:
+
+    (a) The contribution was created in whole or in part by me and I
+        have the right to submit it under the open source license
+        indicated in the file; or
+
+    (b) The contribution is based upon previous work that, to the best
+        of my knowledge, is covered under an appropriate open source
+        license and I have the right under that license to submit that
+        work with modifications, whether created in whole or in part
+        by me, under the same open source license (unless I am
+        permitted to submit under a different license), as indicated
+        in the file; or
+
+    (c) The contribution was provided directly to me by some other
+        person who certified (a), (b) or (c) and I have not modified
+        it.
+
+    (d) I understand and agree that this project and the contribution
+        are public and that a record of the contribution (including all
+        personal information I submit with it, including my sign-off) is
+        maintained indefinitely and may be redistributed consistent with
+        this project or the open source license(s) involved.
+
+.. _Developer Certificate of Origin: https://developercertificate.org/
 
 Review & Acceptance
 ~~~~~~~~~~~~~~~~~~~
