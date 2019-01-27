@@ -90,6 +90,7 @@ setup(
     extras_require=extras_require,
     packages=find_packages(),
     include_package_data=True,
+    zip_safe=False,
     classifiers=[
         'Framework :: Django',
         'Framework :: Django :: 1.11',
