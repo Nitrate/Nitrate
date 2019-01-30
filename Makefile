@@ -71,15 +71,15 @@ dev-image:
 
 # ./manage.py runserver with default SQLite database
 runserver:
-	@./manage.py runserver
+	@./src/manage.py runserver
 
 runserver-mysql:
 	@mysql -uroot -e "CREATE DATABASE IF NOT EXISTS nitrate CHARACTER SET utf8mb4;"
-	@NITRATE_DB_ENGINE=mysql NITRATE_DB_NAME=nitrate ./manage.py runserver
+	@NITRATE_DB_ENGINE=mysql NITRATE_DB_NAME=nitrate ./src/manage.py runserver
 
 runserver-pgsql:
 	@echo "CREATE DATABASE nitrate" | psql -U postgres || true
-	@NITRATE_DB_ENGINE=pgsql NITRATE_DB_NAME=nitrate NITRATE_DB_USER=postgres ./manage.py runserver
+	@NITRATE_DB_ENGINE=pgsql NITRATE_DB_NAME=nitrate NITRATE_DB_USER=postgres ./src/manage.py runserver
 
 .PHONY: help
 help:

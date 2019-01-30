@@ -7,31 +7,31 @@ Issue Tracker
    :maxdepth: 2
 
 
-.. autoclass:: tcms.integration.issuetracker.models.CredentialTypes
+.. autoclass:: tcms.issuetracker.models.CredentialTypes
    :members:
 
 Models
 ------
 
-.. autoclass:: tcms.integration.issuetracker.models.IssueTrackerProduct
+.. autoclass:: tcms.issuetracker.models.IssueTrackerProduct
    :members:
 
-.. autoclass:: tcms.integration.issuetracker.models.IssueTracker
+.. autoclass:: tcms.issuetracker.models.IssueTracker
    :members:
 
-.. autoclass:: tcms.integration.issuetracker.models.ProductIssueTrackerRelationship
+.. autoclass:: tcms.issuetracker.models.ProductIssueTrackerRelationship
    :members:
 
-.. autoclass:: tcms.integration.issuetracker.models.Issue
+.. autoclass:: tcms.issuetracker.models.Issue
    :members:
 
-.. autoclass:: tcms.integration.issuetracker.models.Credential
+.. autoclass:: tcms.issuetracker.models.Credential
    :members:
 
-.. autoclass:: tcms.integration.issuetracker.models.UserPwdCredential
+.. autoclass:: tcms.issuetracker.models.UserPwdCredential
    :members:
 
-.. autoclass:: tcms.integration.issuetracker.models.TokenCredential
+.. autoclass:: tcms.issuetracker.models.TokenCredential
    :members:
 
 Services
@@ -46,16 +46,16 @@ tracker trackers, a general Bugzilla instance, the Red Hat Bugzilla, and JIRA
 instance. See below for more information. It is free for users to change
 settings to make it work with user's environment.
 
-.. autofunction:: tcms.integration.issuetracker.services.find_service
+.. autofunction:: tcms.issuetracker.services.find_service
 
-.. autoclass:: tcms.integration.issuetracker.services.IssueTrackerService
+.. autoclass:: tcms.issuetracker.services.IssueTrackerService
    :members:
 
-.. autoclass:: tcms.integration.issuetracker.services.Bugzilla
+.. autoclass:: tcms.issuetracker.services.Bugzilla
    :members:
 
-.. autoclass:: tcms.integration.issuetracker.services.RHBugzilla
+.. autoclass:: tcms.issuetracker.services.RHBugzilla
    :members:
 
-.. autoclass:: tcms.integration.issuetracker.services.JIRA
+.. autoclass:: tcms.issuetracker.services.JIRA
    :members:

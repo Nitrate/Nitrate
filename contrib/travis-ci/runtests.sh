@@ -132,7 +132,7 @@ pip install \"${django_rel}\"
 pip install -e /code[${install_extra_deps}]
 
 cd /code
-py.test tcms
-flake8 tcms
+py.test src/tests
+flake8 src/tcms src/tests
 cd docs; make html
 "

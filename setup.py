@@ -37,7 +37,7 @@ extras_require = {
     'mysql': ['PyMySQL == 0.9.2'],
     'pgsql': ['psycopg2 == 2.7.5'],
 
-    # Required for tcms.core.contrib.auth.backends.KerberosBackend
+    # Required for tcms.auth.backends.KerberosBackend
     'krbauth': [
         'kerberos == 1.2.5'
     ],
@@ -88,7 +88,8 @@ setup(
     keywords='test case',
     install_requires=install_requires,
     extras_require=extras_require,
-    packages=find_packages(),
+    package_dir={'': 'src'},
+    packages=find_packages('src', exclude=['test*']),
     include_package_data=True,
     zip_safe=False,
     classifiers=[
