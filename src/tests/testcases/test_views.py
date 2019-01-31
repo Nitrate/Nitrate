@@ -8,6 +8,7 @@ import xml.etree.ElementTree
 
 from bs4 import BeautifulSoup
 from datetime import datetime
+from six.moves import http_client
 
 import mock
 
@@ -27,8 +28,6 @@ from tcms.testcases.models import TestCaseComponent
 from tcms.testcases.models import TestCasePlan
 from tcms.testcases.models import TestCaseTag
 from tcms.testcases.views import ajax_response
-from tcms.utils import HTTP_BAD_REQUEST
-from tcms.utils import HTTP_FORBIDDEN
 from tests.factories import ComponentFactory
 from tests.factories import IssueTrackerFactory
 from tests.factories import IssueTrackerProductFactory
@@ -1083,7 +1082,7 @@ class TestIssueManagement(BaseCaseRun):
             'case_run': self.case_run_1.pk,
         })
 
-        self.assertEqual(HTTP_BAD_REQUEST, resp.status_code)
+        self.assertEqual(http_client.BAD_REQUEST, resp.status_code)
         self.assertIn('Missing issue key to delete.', resp.json()['messages'])
 
     def test_bad_case_run_to_remove(self):
@@ -1096,7 +1095,7 @@ class TestIssueManagement(BaseCaseRun):
             'case_run': 1000,
         })
 
-        self.assertEqual(HTTP_BAD_REQUEST, resp.status_code)
+        self.assertEqual(http_client.BAD_REQUEST, resp.status_code)
         self.assertIn('Test case run does not exists.', resp.json()['messages'])
 
     def test_bad_case_run_case_rel_to_remove(self):
@@ -1109,7 +1108,7 @@ class TestIssueManagement(BaseCaseRun):
             'case_run': self.case_run_2.pk,
         })
 
-        self.assertEqual(HTTP_BAD_REQUEST, resp.status_code)
+        self.assertEqual(http_client.BAD_REQUEST, resp.status_code)
         self.assertIn(
             'Case run {} is not associated with case {}.'.format(
                 self.case_run_2.pk, self.case_1.pk),
@@ -1125,7 +1124,7 @@ class TestIssueManagement(BaseCaseRun):
             'tracker': self.issue_tracker.pk,
         })
 
-        self.assertEqual(HTTP_FORBIDDEN, resp.status_code)
+        self.assertEqual(http_client.FORBIDDEN, resp.status_code)
 
     def test_no_permission_to_remove(self):
         # Note that, no permission is set for self.tester.
@@ -1136,7 +1135,7 @@ class TestIssueManagement(BaseCaseRun):
             'case_run': self.case_run_1.pk,
         })
 
-        self.assertEqual(HTTP_FORBIDDEN, resp.status_code)
+        self.assertEqual(http_client.FORBIDDEN, resp.status_code)
 
     def test_add_an_issue(self):
         user_should_have_perm(self.tester, 'issuetracker.add_issue')

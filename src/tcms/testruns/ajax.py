@@ -3,6 +3,7 @@
 import logging
 
 from operator import attrgetter
+from six.moves import http_client
 
 from django import forms
 from django.contrib.auth.decorators import permission_required
@@ -17,10 +18,7 @@ from tcms.issuetracker.services import find_service
 from tcms.testcases.forms import CaseRunIssueForm
 from tcms.testruns.models import TestCaseRun
 from tcms.testruns.models import TestRun
-from tcms.utils import HTTP_BAD_REQUEST
-from tcms.utils import HTTP_FORBIDDEN
-from tcms.utils import HTTP_NOT_FOUND
-from tcms.utils import form_errors_to_list
+from tcms.core.utils import form_error_messags_to_list
 
 logger = logging.getLogger(__name__)
 
@@ -43,13 +41,13 @@ def manage_case_run_issues(request, run_id):
             # TODO: make a migration for the permission
             if not self.request.user.has_perm('issuetracker.add_issue'):
                 return JsonResponse({'messages': ['Permission denied.']},
-                                    status=HTTP_FORBIDDEN)
+                                    status=http_client.FORBIDDEN)
 
             form = CaseRunIssueForm(request.GET)
 
             if not form.is_valid():
-                msgs = form_errors_to_list(form)
-                return JsonResponse({'messages': msgs}, status=HTTP_BAD_REQUEST)
+                msgs = form_error_messags_to_list(form)
+                return JsonResponse({'messages': msgs}, status=http_client.BAD_REQUEST)
 
             service = find_service(form.cleaned_data['tracker'])
             issue_key = form.cleaned_data['issue_key']
@@ -62,7 +60,7 @@ def manage_case_run_issues(request, run_id):
                     {'messages': [
                         'Not all case runs belong to run {}.'.format(self.run.pk)
                     ]},
-                    status=HTTP_BAD_REQUEST)
+                    status=http_client.BAD_REQUEST)
 
             try:
                 for case_run in case_runs:
@@ -74,14 +72,14 @@ def manage_case_run_issues(request, run_id):
                 logger.exception(
                     'Failed to add issue to case run %s. Error reported: %s',
                     form.case_run.pk, str(e))
-                return JsonResponse({'messages': [str(e)]}, status=HTTP_BAD_REQUEST)
+                return JsonResponse({'messages': [str(e)]}, status=http_client.BAD_REQUEST)
 
             return self.run_issues_info(case_runs)
 
         def remove(self):
             if not self.request.user.has_perm('issuetracker.delete_issue'):
                 return JsonResponse({'messages': ['Permission denied.']},
-                                    status=HTTP_FORBIDDEN)
+                                    status=http_client.FORBIDDEN)
 
             class RemoveIssueForm(forms.Form):
                 issue_key = forms.CharField()
@@ -95,8 +93,8 @@ def manage_case_run_issues(request, run_id):
 
             form = RemoveIssueForm(request.GET)
             if not form.is_valid():
-                return JsonResponse({'messages': form_errors_to_list(form)},
-                                    status=HTTP_BAD_REQUEST)
+                return JsonResponse({'messages': form_error_messags_to_list(form)},
+                                    status=http_client.BAD_REQUEST)
 
             issue_key = form.cleaned_data['issue_key']
             case_runs = form.cleaned_data['case_run']
@@ -108,7 +106,7 @@ def manage_case_run_issues(request, run_id):
                         issue_key, case_run.pk)
                     logger.exception(msg)
                     return JsonResponse(
-                        {'messages': [msg]}, status=HTTP_BAD_REQUEST)
+                        {'messages': [msg]}, status=http_client.BAD_REQUEST)
 
             return self.run_issues_info(case_runs)
 
@@ -128,13 +126,13 @@ def manage_case_run_issues(request, run_id):
     except Http404:
         return JsonResponse(
             {'messages': ['Test run {} does not exist.'.format(run_id)]},
-            status=HTTP_NOT_FOUND)
+            status=http_client.NOT_FOUND)
 
     crba = CaseRunIssueActions(request=request, run=run)
 
     if not request.GET.get('a') in crba.__all__:
         return JsonResponse({'messages': ['Unrecognizable actions']},
-                            status=HTTP_BAD_REQUEST)
+                            status=http_client.BAD_REQUEST)
 
     func = getattr(crba, request.GET['a'])
     return func()

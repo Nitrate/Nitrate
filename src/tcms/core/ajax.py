@@ -19,7 +19,7 @@ from django.shortcuts import render
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
 
-from tcms import utils
+from tcms.core import utils
 from tcms.management.models import Component, TestBuild, Version
 from tcms.management.models import Priority
 from tcms.management.models import TestTag

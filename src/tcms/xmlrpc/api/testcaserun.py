@@ -2,12 +2,12 @@
 
 from django.contrib.auth.decorators import permission_required
 
-from tcms.linkreference.models import create_link, LinkReference
+from tcms.core.utils import form_error_messags_to_list
 from tcms.issuetracker.models import Issue
 from tcms.issuetracker.services import find_service
+from tcms.linkreference.models import create_link, LinkReference
 from tcms.testcases.forms import CaseRunIssueForm
 from tcms.testruns.models import TestCaseRun, TestCaseRunStatus
-from tcms.utils import form_errors_to_list
 from tcms.xmlrpc.decorators import log_call
 from tcms.xmlrpc.serializer import XMLRPCSerializer
 from tcms.xmlrpc.utils import pre_process_ids, distinct_count
@@ -151,7 +151,7 @@ def attach_issue(request, values):
                     summary=summary,
                     description=description)
         else:
-            raise ValueError(form_errors_to_list(form))
+            raise ValueError(form_error_messags_to_list(form))
 
 
 @log_call(namespace=__xmlrpc_namespace__)

@@ -5,7 +5,7 @@ import six
 
 from django.db.models import Count, FieldDoesNotExist
 
-from tcms import utils
+from tcms.core import utils
 from tcms.management.models import Product
 
 

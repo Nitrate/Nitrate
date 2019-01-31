@@ -11,7 +11,7 @@ from django.views.decorators.http import require_POST
 
 import django_comments as comments
 
-from tcms import utils
+from tcms.core import utils
 
 
 @require_POST

@@ -18,7 +18,6 @@ from tcms.testruns.models import TCMSEnvRunValueMap
 from tcms.testruns.models import TestCaseRun
 from tcms.testruns.models import TestCaseRunStatus
 from tcms.testruns.models import TestRun
-from tcms.utils import HTTP_BAD_REQUEST
 from tests.factories import IssueTrackerFactory
 from tests.factories import IssueTrackerProductFactory
 from tests.factories import ProductFactory, TCMSEnvGroupFactory
@@ -1122,7 +1121,7 @@ class TestIssueActions(BaseCaseRun):
 
         response = self.client.get(self.run_issues_url, post_data)
         self.assertJsonResponse(
-            response, {'messages': ['Unrecognizable actions']}, HTTP_BAD_REQUEST)
+            response, {'messages': ['Unrecognizable actions']}, http_client.BAD_REQUEST)
 
     def test_remove_issue_from_case_run(self):
         self.login_tester()

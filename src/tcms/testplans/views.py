@@ -48,7 +48,7 @@ from tcms.testplans import sqls
 from tcms.testplans.models import TestPlan, TestPlanComponent
 from tcms.testplans.models import TestPlanEmailSettings
 from tcms.testruns.models import TestRun, TestCaseRun
-from tcms.utils.dict_utils import create_group_by_dict as create_dict
+from tcms.core.utils.dict_utils import create_group_by_dict as create_dict
 
 
 MODULE_NAME = "testplans"

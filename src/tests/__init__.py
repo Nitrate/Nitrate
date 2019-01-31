@@ -5,6 +5,7 @@ import re
 import six
 import sys
 
+from six.moves import http_client
 from six.moves.urllib_parse import urlparse, parse_qs
 
 from django import test
@@ -14,7 +15,6 @@ from django.core.exceptions import ValidationError
 
 from tcms.testcases.models import TestCaseStatus
 from tcms.testruns.models import TestCaseRunStatus
-from tcms.utils import HTTP_NOT_FOUND
 from tests.factories import ProductFactory
 from tests.factories import TestBuildFactory
 from tests.factories import TestCaseFactory
@@ -113,7 +113,7 @@ class HelperAssertions(object):
     """Helper assertion methods"""
 
     def assert404(self, response):
-        self.assertEqual(HTTP_NOT_FOUND, response.status_code)
+        self.assertEqual(http_client.NOT_FOUND, response.status_code)
 
     def assertJsonResponse(self, response, expected, status_code=200):
         self.assertEqual(status_code, response.status_code)

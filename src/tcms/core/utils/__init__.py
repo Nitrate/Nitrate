@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import six
+import operator
+
+from django.apps import apps
 
 
 def string_to_list(strs, spliter=','):
@@ -26,6 +29,10 @@ def form_errors_to_list(form):
     Use for Ajax.Request response
     """
     return [(k, six.u(v[0])) for k, v in form.errors.items()]
+
+
+def form_error_messags_to_list(form):
+    return list(six.moves.reduce(operator.add, form.errors.values()))
 
 
 def get_string_combinations(s):
@@ -194,3 +201,14 @@ class DataTableResult(object):
             'iTotalDisplayRecords': total_display_records,
             'querySet': self.queryset,
         }
+
+
+def get_model(content_type):
+    """Get model class from content type
+
+    :param str content_type: content type in format ``app_label.model_name``.
+    :return: model class
+    """
+    app_label, model_name = content_type.split('.')
+    app_config = apps.get_app_config(app_label)
+    return app_config.get_model(model_name)
