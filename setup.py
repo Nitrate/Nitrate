@@ -55,7 +55,7 @@ extras_require = {
         'factory_boy',
         'flake8',
         'mock',
-        'pytest',
+        'pytest < 4.2.0',
         'pytest-cov',
         'pytest-django',
     ],
