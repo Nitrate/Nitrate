@@ -820,7 +820,7 @@ class TestRunReportView(TemplateView, TestCaseRunDataMixin):
 
         display_issues_by_tracker = [
             (tracker.name, find_service(tracker).make_issues_display_url(
-                map(attrgetter('issue_key'), issues)))
+                sorted(map(attrgetter('issue_key'), issues))))
             for tracker, issues in itertools.groupby(
                 sorted(run_issues, key=attrgetter('tracker.pk')),
                 attrgetter('tracker'))
