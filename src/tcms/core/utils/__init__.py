@@ -212,3 +212,35 @@ def get_model(content_type):
     app_label, model_name = content_type.split('.')
     app_config = apps.get_app_config(app_label)
     return app_config.get_model(model_name)
+
+
+class EnumLike(object):
+
+    NAME_FIELD = 'name'
+
+    @classmethod
+    def get(cls, name):
+        criteria = {cls.NAME_FIELD: name}
+        return cls.objects.get(**criteria)
+
+    @classmethod
+    def as_dict(cls):
+        return {
+            pk: name for pk, name in cls.objects.values_list('pk', cls.NAME_FIELD)
+        }
+
+    @classmethod
+    def name_to_id(cls, name):
+        criteria = {cls.NAME_FIELD: name}
+        obj = cls.objects.filter(**criteria).only('pk').first()
+        if obj is None:
+            raise ValueError('{} does not exist in model {}'.format(name, cls.__name__))
+        return obj.pk
+
+    @classmethod
+    def id_to_name(cls, obj_id):
+        obj = cls.objects.filter(pk=obj_id).first()
+        if obj is None:
+            return ValueError('ID {} does not exist in model {}.'.format(
+                obj_id, cls.__name__))
+        return obj.name

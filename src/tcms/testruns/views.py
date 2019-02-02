@@ -85,7 +85,7 @@ def new(request, template_name='run/new.html'):
         )
 
     # Ready to write cases to test plan
-    confirm_status = TestCaseStatus.get_CONFIRMED()
+    confirm_status = TestCaseStatus.get('CONFIRMED')
     tcs = get_selected_testcases(request)
     # FIXME: optimize this query, only get necessary columns, not all fields
     # are necessary

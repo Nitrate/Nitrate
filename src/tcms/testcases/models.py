@@ -17,6 +17,7 @@ from django.utils.encoding import smart_str
 from tcms.core.models import TCMSActionModel
 from tcms.core.models import TCMSContentTypeBaseModel
 from tcms.core.models.fields import DurationField
+from tcms.core.utils import EnumLike
 from tcms.core.utils.checksum import checksum
 from tcms.core.utils.timedeltaformat import format_timedelta
 from tcms.issuetracker.models import Issue
@@ -62,7 +63,7 @@ class PlainText(object):
         self.breakdown = breakdown
 
 
-class TestCaseStatus(TCMSActionModel):
+class TestCaseStatus(EnumLike, TCMSActionModel):
     id = models.AutoField(
         db_column='case_status_id', max_length=6, primary_key=True
     )
@@ -79,31 +80,6 @@ class TestCaseStatus(TCMSActionModel):
 
     def __str__(self):
         return self.name
-
-    @classmethod
-    def get_PROPOSED(cls):
-        try:
-            return cls.objects.get(name='PROPOSED')
-        except cls.DoesNotExist:
-            return None
-
-    @classmethod
-    def get_CONFIRMED(cls):
-        try:
-            return cls.objects.get(name='CONFIRMED')
-        except cls.DoesNotExist:
-            return None
-
-    @classmethod
-    def string_to_instance(cls, name):
-        return cls.objects.get(name=name)
-
-    @classmethod
-    def id_to_string(cls, id):
-        try:
-            return cls.objects.get(id=id).name
-        except cls.DoesNotExist:
-            return None
 
     def is_confirmed(self):
         return self.name == 'CONFIRMED'
@@ -320,13 +296,7 @@ class TestCase(TCMSActionModel):
 
     @classmethod
     def list_confirmed(cls):
-        confirmed_case_status = TestCaseStatus.get_CONFIRMED()
-
-        query = {
-            'case_status_id': confirmed_case_status.case_status_id,
-        }
-
-        return cls.list(query)
+        return cls.list({'case_status__name': 'CONFIRMED'})
 
     @classmethod
     def mail_scene(cls, objects, field=None, value=None, ctype=None, object_pk=None):

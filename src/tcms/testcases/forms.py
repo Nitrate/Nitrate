@@ -274,7 +274,7 @@ class BaseCaseForm(forms.Form):
 class NewCaseForm(BaseCaseForm):
     def clean_case_status(self):
         if not self.cleaned_data['case_status']:
-            return TestCaseStatus.get_PROPOSED()
+            return TestCaseStatus.get('PROPOSED')
 
         return self.cleaned_data['case_status']
 
@@ -322,7 +322,7 @@ class XMLRPCNewCaseForm(XMLRPCBaseCaseForm):
 
     def clean_case_status(self):
         if not self.cleaned_data['case_status']:
-            return TestCaseStatus.get_PROPOSED()
+            return TestCaseStatus.get('PROPOSED')
 
         return self.cleaned_data['case_status']
 

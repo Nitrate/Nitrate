@@ -356,7 +356,7 @@ class TestPlan(TCMSActionModel):
                         requirement=tpcase_src.requirement,
                         alias=tpcase_src.alias,
                         estimated_time=tpcase_src.estimated_time,
-                        case_status=TestCaseStatus.get_PROPOSED(),
+                        case_status=TestCaseStatus.get('PROPOSED'),
                         category=tc_category,
                         priority=tpcase_src.priority,
                         author=author,
