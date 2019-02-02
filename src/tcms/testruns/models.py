@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
-from django.core.cache import cache
 from django.urls import reverse
 from django.db import models
 from django.db.models import Q
@@ -145,7 +144,7 @@ class TestRun(TCMSActionModel):
         tcrs = tcrs.select_related('case_run_status')
 
         for tcr in tcrs:
-            if not tcr.is_finished():
+            if not tcr.finished():
                 return False
 
         return True
@@ -258,17 +257,19 @@ class TestRun(TCMSActionModel):
         return percent
 
     def _get_completed_case_run_percentage(self):
-        ids = TestCaseRunStatus._get_completed_status_ids()
+        ids = TestCaseRunStatus.completed_status_ids()
         completed_caserun = self.case_run.filter(
             case_run_status__in=ids)
 
         percentage = self.get_percentage(completed_caserun.count())
         return percentage
 
+    # IIRC, this could be used inside the test runs search result to provide
+    # data for progress bar.
     completed_case_run_percent = property(_get_completed_case_run_percentage)
 
     def _get_failed_case_run_num(self):
-        failed_status_id = TestCaseRunStatus.id_failed()
+        failed_status_id = TestCaseRunStatus.name_to_id('FAILED')
         failed_caserun = self.case_run.filter(
             case_run_status=failed_status_id
         )
@@ -283,7 +284,7 @@ class TestRun(TCMSActionModel):
     failed_case_run_percent = property(_get_failed_case_run_percentage)
 
     def _get_passed_case_run_num(self):
-        passed_status_id = TestCaseRunStatus.id_passed()
+        passed_status_id = TestCaseRunStatus.name_to_id('PASSED')
         passed_caserun = self.case_run.filter(
             case_run_status=passed_status_id
         )
@@ -297,8 +298,9 @@ class TestRun(TCMSActionModel):
 
     passed_case_run_percent = property(_get_passed_case_run_percentage)
 
+    # FIXME: unused
     def get_status_case_run_num(self, status_name):
-        status_id = TestCaseRunStatus._status_to_id(status_name)
+        status_id = TestCaseRunStatus.name_to_id(status_name)
         caserun = self.case_run.filter(
             case_run_status=status_id
         )
@@ -340,7 +342,39 @@ class TestRun(TCMSActionModel):
 # machanism
 
 
-class TestCaseRunStatus(TCMSActionModel):
+class EnumLike(object):
+
+    NAME_FIELD = 'name'
+
+    @classmethod
+    def get(cls, name):
+        criteria = {cls.NAME_FIELD: name}
+        return cls.objects.get(**criteria)
+
+    @classmethod
+    def as_dict(cls):
+        return {
+            pk: name for pk, name in cls.objects.values_list('pk', cls.NAME_FIELD)
+        }
+
+    @classmethod
+    def name_to_id(cls, name):
+        criteria = {cls.NAME_FIELD: name}
+        obj = cls.objects.filter(**criteria).only('pk').first()
+        if obj is None:
+            raise ValueError('{} does not exist in model {}'.format(name, cls.__name__))
+        return obj.pk
+
+    @classmethod
+    def id_to_name(cls, obj_id):
+        obj = cls.objects.filter(pk=obj_id).first()
+        if obj is None:
+            return ValueError('ID {} does not exist in model {}.'.format(
+                obj_id, cls.__name__))
+        return obj.name
+
+
+class TestCaseRunStatus(EnumLike, TCMSActionModel):
     complete_status_names = ('PASSED', 'ERROR', 'FAILED', 'WAIVED')
     failure_status_names = ('ERROR', 'FAILED')
     idle_status_names = ('IDLE',)
@@ -357,161 +391,18 @@ class TestCaseRunStatus(TCMSActionModel):
     def __str__(self):
         return self.name
 
-    cache_key_names = 'case_run_status__names'
+    def finished(self):
+        return self.name in self.complete_status_names
 
     @classmethod
-    def get_names(cls):
-        '''Get all status names in mapping between id and name'''
-        names = cache.get(cls.cache_key_names)
-        if names is None:
-            names = dict(cls.objects.values_list('pk', 'name').iterator())
-            cache.set(cls.cache_key_names, names)
-        return names
-
-    @classmethod
-    def get_names_ids(cls):
-        '''Get all status names in reverse mapping between name and id'''
-        return {name: _id for _id, name in six.iteritems(cls.get_names())}
-
-    def is_finished(self):
-        if self.name in ['PASSED', 'FAILED', 'ERROR', 'WAIVED']:
-            return True
-        return False
-
-    @classmethod
-    def get_IDLE(cls):
-        key = 'IDLE'
-        result = cls.cache_get(key)
-        if result is None:
-            result = cls.cache_set(key, cls.objects.get(name='IDLE'))
-        return result
-
-    @classmethod
-    def id_to_string(cls, _id):
-        key = 'id_to_string_' + str(_id)
-        result = cls.cache_get(key)
-        if result is None:
-            try:
-                result = cls.objects.get(id=_id).name
-            except cls.DoesNotExist:
-                result = None
-            cls.cache_set(key, result)
-        return result
-
-    @classmethod
-    def _status_to_id(cls, status):
-        status = status.upper()
-        key = 'status_to_id_' + status
-        result = cls.cache_get(key)
-        if result is None:
-            try:
-                result = cls.objects.get(name=status).pk
-            except cls.DoesNotExist:
-                result = None
-            cls.cache_set(key, result)
-        return result
-
-    @classmethod
-    def _get_completed_status_ids(cls):
+    def completed_status_ids(cls):
         '''
         There are some status indicate that
         the testcaserun is completed.
         Return IDs of these statuses.
         '''
-        key = 'completed_status_ids'
-        result = cls.cache_get(key)
-        if result is None:
-            completed_status = cls.objects.filter(name__in=(
-                'FAILED', 'PASSED', 'ERROR', 'WAIVED'
-            ))
-
-            result = completed_status.values_list('pk', flat=True)
-            result = cls.cache_set(key, list(result))
-        return result
-
-    @classmethod
-    def _get_failed_status_ids(cls):
-        '''
-        There are some status indicate that
-        the testcaserun is failed.
-        Return IDs of these statuses.
-        '''
-        key = 'failed_status_ids'
-        result = cls.cache_get(key)
-        if result is None:
-            statuses = cls.objects.all()
-            failed_status = statuses.filter(name__in=(
-                'FAILED', 'ERROR'
-            ))
-
-            result = failed_status.values_list('pk', flat=True)
-            result = cls.cache_set(key, list(result))
-        return result
-
-    # TODO: gather following id_xxx into one method
-
-    @classmethod
-    def id_passed(cls):
-        key = 'id_passed'
-        result = cls.cache_get(key)
-        if result is None:
-            return cls.cache_set(key, cls._status_to_id('passed'))
-        return result
-
-    @classmethod
-    def id_failed(cls):
-        key = 'id_failed'
-        result = cls.cache_get(key)
-        if result is None:
-            return cls.cache_set(key, cls._status_to_id('failed'))
-        return result
-
-    @classmethod
-    def id_blocked(cls):
-        key = 'id_blocked'
-        result = cls.cache_get(key)
-        if result is None:
-            return cls.cache_set(key, cls._status_to_id('blocked'))
-        return result
-
-    @classmethod
-    def _get_cache(cls):
-        """A dictionary used to cache statuses.
-
-        The caching implementation in here is a
-        dedicated cache for this class. There are
-        limited few number of statuses, and they
-        are needed frequently enough to be cached.
-        """
-        key_cache = '_cache'
-        cache = getattr(cls, key_cache, {})
-        if not hasattr(cls, key_cache):
-            setattr(cls, key_cache, cache)
-
-        return cache
-
-    @classmethod
-    def cache_get(cls, key):
-        cache = cls._get_cache()
-        return cache.get(key, None)
-
-    @classmethod
-    def cache_set(cls, key, value):
-        cache = cls._get_cache()
-        if len(cache) > 1000:  # Prevent overflow
-            cache.clear()
-        cache[key] = value
-        return value
-
-    def save(self, *args, **kwargs):
-        """Overrides save() only to outdate the cached statuses."""
-        cache = getattr(self.__class__, '_cache', {})
-        cache.clear()
-
-        result = super(self.__class__, self).save(*args, **kwargs)
-        if self.cache_key_names in cache:
-            del cache[self.cache_key_names]
-        return result
+        return (cls.objects.filter(name__in=cls.complete_status_names)
+                           .values_list('pk', flat=True))
 
 
 class TestCaseRunManager(models.Manager):
@@ -527,9 +418,11 @@ class TestCaseRunManager(models.Manager):
         return self.count() - count1 - count2
 
     def get_caserun_failed_count(self):
+        # FIXME: could be problem due to the name in lower case
         return self.filter(case_run_status__name='failed').count()
 
     def get_caserun_passed_count(self):
+        # FIXME: could be problem due to the name in lower case
         return self.filter(case_run_status__name='passed').count()
 
 

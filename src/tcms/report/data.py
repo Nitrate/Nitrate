@@ -1176,7 +1176,7 @@ class TestingReportCaseRunsData(object):
 
         status = form.cleaned_data['status']
         if status:
-            status_id = TestCaseRunStatus.get_names_ids()[status.upper()]
+            status_id = TestCaseRunStatus.name_to_id(status.upper())
             filter_criteria['case_run_status'] = status_id
 
         return filter_criteria

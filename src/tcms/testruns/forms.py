@@ -400,7 +400,7 @@ class XMLRPCNewCaseRunForm(BaseCaseRunForm):
     def clean_case_run_status(self):
         data = self.cleaned_data.get('case_run_status')
         if not data:
-            data = TestCaseRunStatus.get_IDLE()
+            data = TestCaseRunStatus.get('IDLE')
 
         return data
 

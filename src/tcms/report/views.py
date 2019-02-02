@@ -321,11 +321,10 @@ class CustomReport(TemplateView):
             # Staus matrix used to render progress bar for each build
             case_runs_status_matrix = _data.status_matrix()
 
-            status_names_ids = TestCaseRunStatus.get_names_ids()
             # FIXME: this would raise KeyError once status names are modified
             # to other ones.
-            passed_id = status_names_ids['PASSED']
-            failed_id = status_names_ids['FAILED']
+            passed_id = TestCaseRunStatus.name_to_id('PASSED')
+            failed_id = TestCaseRunStatus.name_to_id('FAILED')
 
             for build in builds:
                 bid = build.pk
@@ -455,11 +454,11 @@ class CustomDetailReport(CustomReport):
 
             # TODO: remove this after upgrading MySQL-python to 1.2.5
             status_ids = workaround_single_value_for_in_clause(
-                (TestCaseRunStatus.id_failed(),))
+                (TestCaseRunStatus.name_to_id('FAILED'),))
             failed_case_runs = self.read_case_runs(build_ids, status_ids)
             # TODO: remove this after upgrading MySQL-python to 1.2.5
             status_ids = workaround_single_value_for_in_clause(
-                (TestCaseRunStatus.id_blocked(),))
+                (TestCaseRunStatus.name_to_id('BLOCKED'),))
             blocked_case_runs = self.read_case_runs(build_ids, status_ids)
 
             data.update({
@@ -621,7 +620,7 @@ class TestingReportCaseRuns(TestingReportBase, TestingReportCaseRunsData):
 
         if form.is_valid():
             test_case_runs = self.get_case_runs(form)
-            status_names = TestCaseRunStatus.get_names()
+            status_names = TestCaseRunStatus.as_dict()
             priority_values = Priority.get_values()
 
             testers_ids, assignees_ids = self._get_testers_assignees_ids(

@@ -514,7 +514,7 @@ def update_case_run_status(request):
                     who=request.user,
                     field=field,
                     original_value=getattr(t, field),
-                    new_value=TestCaseRunStatus.id_to_string(value))
+                    new_value=TestCaseRunStatus.id_to_name(value))
             except (AttributeError, User.DoesNotExist):
                 pass
     objects_update(targets, **{field: value})

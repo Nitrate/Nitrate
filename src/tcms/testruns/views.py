@@ -378,7 +378,7 @@ def load_runs_of_one_plan(request, plan_id,
         }
 
         qs = TestCaseRun.objects.filter(
-            case_run_status=TestCaseRunStatus.id_failed(),
+            case_run_status=TestCaseRunStatus.name_to_id('FAILED'),
             **run_filters
         ).values(
             'run', 'case_run_status'
@@ -388,7 +388,7 @@ def load_runs_of_one_plan(request, plan_id,
         failure_subtotal = magic_convert(qs, key_name='run', value_name='count')
 
         qs = TestCaseRun.objects.filter(
-            case_run_status=TestCaseRunStatus.id_passed(),
+            case_run_status=TestCaseRunStatus.name_to_id('PASSED'),
             **run_filters
         ).values(
             'run', 'case_run_status'
@@ -480,7 +480,7 @@ def ajax_search(request, template_name='run/common/json_runs.txt'):
         # Get associated statistics data
         run_ids = [run.pk for run in searched_runs]
         qs = TestCaseRun.objects.filter(
-            case_run_status=TestCaseRunStatus.id_failed(),
+            case_run_status=TestCaseRunStatus.name_to_id('FAILED'),
             run__in=run_ids
         ).values(
             'run', 'case_run_status'
@@ -489,7 +489,7 @@ def ajax_search(request, template_name='run/common/json_runs.txt'):
         ).order_by('run', 'case_run_status')
         failure_subtotal = magic_convert(qs, key_name='run', value_name='count')
 
-        completed_status_ids = TestCaseRunStatus._get_completed_status_ids()
+        completed_status_ids = TestCaseRunStatus.completed_status_ids()
         qs = TestCaseRun.objects.filter(
             case_run_status__in=completed_status_ids,
             run__in=run_ids
@@ -643,7 +643,7 @@ def get(request, run_id, template_name='run/get.html'):
         testers, assignees = open_run_get_users(tcrs)
         comments_subtotal = open_run_get_comments_subtotal(
             [cr.pk for cr in tcrs])
-        case_run_status = TestCaseRunStatus.get_names()
+        case_run_status = TestCaseRunStatus.as_dict()
         issues_subtotal = tr.subtotal_issues_by_case_run()
 
         for case_run in tcrs:
