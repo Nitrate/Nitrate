@@ -34,6 +34,7 @@ from tcms.core.views import Prompt
 from tcms.management.models import TCMSEnvGroup, Component
 from tcms.search.views import remove_from_request_path
 from tcms.search.order import order_plan_queryset
+from tcms.testcases.data import get_exported_cases_and_related_data
 from tcms.testcases.forms import SearchCaseForm, QuickSearchCaseForm
 from tcms.testcases.models import TestCaseStatus
 from tcms.testcases.models import TestCase, TestCasePlan
@@ -48,7 +49,6 @@ from tcms.testplans import sqls
 from tcms.testplans.models import TestPlan, TestPlanComponent
 from tcms.testplans.models import TestPlanEmailSettings
 from tcms.testruns.models import TestRun, TestCaseRun
-from tcms.core.utils.dict_utils import create_group_by_dict as create_dict
 
 
 MODULE_NAME = "testplans"
@@ -1066,57 +1066,25 @@ def printable(request, template_name='plan/printable.html'):
 
 
 @require_GET
-def export(request, template_name='plan/export.xml'):
+def export(request, template_name='case/export.xml'):
     """Export the plan"""
-    plan_pks = request.GET.getlist('plan')
+    plan_pks = list(six.moves.map(int, request.GET.getlist('plan')))
+
     if not plan_pks:
         return Prompt.render(
             request=request,
             info_type=Prompt.Info,
             info='At least one target is required.')
-    timestamp = datetime.datetime.now()
-    timestamp_str = '%02i-%02i-%02i' % (timestamp.year, timestamp.month, timestamp.day)
 
     context_data = {
-        'data_generator': generator_proxy(plan_pks),
+        'cases_info': get_exported_cases_and_related_data(plan_pks),
     }
 
+    timestamp = datetime.datetime.now()
+    timestamp_str = '%02i-%02i-%02i' % (
+        timestamp.year, timestamp.month, timestamp.day)
+
     response = render(request, template_name, context=context_data)
-    response['Content-Disposition'] = 'attachment; filename=tcms-testcases-%s.xml' % timestamp_str
+    response['Content-Disposition'] = \
+        'attachment; filename=tcms-testcases-%s.xml' % timestamp_str
     return response
-
-
-def generator_proxy(plan_pks):
-    def key_func(data):
-        return (data['plan_id'], data['case_id'])
-
-    params_sql = ','.join(itertools.repeat('%s', len(plan_pks)))
-    metas = SQLExecution(sqls.TP_EXPORT_ALL_CASES_META % params_sql,
-                         plan_pks).rows
-    compoment_dict = create_dict(
-        sqls.TP_EXPORT_ALL_CASES_COMPONENTS % params_sql,
-        plan_pks,
-        key_func)
-    tag_dict = create_dict(sqls.TP_EXPORT_ALL_CASE_TAGS % params_sql,
-                           plan_pks,
-                           key_func)
-
-    sql = sqls.TP_EXPORT_ALL_CASE_TEXTS % (params_sql, params_sql)
-    plan_text_dict = create_dict(sql, plan_pks * 2, key_func)
-
-    for meta in metas:
-        plan_id = meta['plan_id']
-        case_id = meta['case_id']
-        c_meta = compoment_dict.get((plan_id, case_id), None)
-        if c_meta:
-            meta['c_meta'] = c_meta
-
-        tag = tag_dict.get((plan_id, case_id), None)
-        if tag:
-            meta['tag'] = tag
-
-        plan_text = plan_text_dict.get((plan_id, case_id), None)
-        if plan_text:
-            meta['latest_text'] = plan_text
-
-        yield meta

@@ -32,9 +32,10 @@ from tests.factories import TestPlanTypeFactory
 from tests.factories import UserFactory
 from tests.factories import VersionFactory
 from tests import BasePlanCase
+from tests import json_loads
 from tests import remove_perm_from_user
 from tests import user_should_have_perm
-from tests import json_loads
+from tests.testcases.test_views import PlanCaseExportTestHelper
 
 
 class PlanTests(test.TestCase):
@@ -112,17 +113,6 @@ class PlanTests(test.TestCase):
         location = reverse('plans-printable')
         response = self.c.get(location, {'plan_id': self.plan_id})
         self.assertEqual(response.status_code, http_client.OK)
-
-    def test_plan_export(self):
-        location = reverse('plans-export')
-        response = self.c.get(location, {'plan': self.plan_id})
-        self.assertEqual(response.status_code, http_client.OK)
-
-        xml_doc = response.content
-        try:
-            et.fromstring(xml_doc)
-        except et.ParseError:
-            self.fail('XML document exported from test plan is invalid.')
 
     def test_plan_attachment(self):
         location = reverse('plan-attachment', args=[self.plan_id])
@@ -786,3 +776,69 @@ class TestAJAXSearch(BasePlanCase):
             self.assertEqual(
                 "<a href='{}'>{}</a>".format(plan.get_absolute_url(), plan.pk),
                 data['aaData'][i]['1'])
+
+
+class TestExport(PlanCaseExportTestHelper, BasePlanCase):
+    """Test export view method"""
+
+    @classmethod
+    def setUpTestData(cls):
+        super(TestExport, cls).setUpTestData()
+
+        cls.plan_export = TestPlanFactory(
+            name='Test export from plan',
+            author=cls.tester,
+            owner=cls.tester,
+            product=cls.product,
+            product_version=cls.version)
+
+        cls.case_export = TestCaseFactory(
+            summary='Export from a plan',
+            author=cls.tester,
+            default_tester=None,
+            reviewer=cls.tester,
+            case_status=cls.case_status_confirmed,
+            plan=[cls.plan_export])
+        cls.case_export_more = TestCaseFactory(
+            summary='Export more',
+            author=cls.tester,
+            default_tester=None,
+            reviewer=cls.tester,
+            case_status=cls.case_status_confirmed,
+            plan=[cls.plan_export])
+
+    def test_export(self):
+        location = reverse('plans-export')
+        response = self.client.get(location, {'plan': self.plan_export.pk})
+        self.assertEqual(response.status_code, http_client.OK)
+
+        xmldoc = et.fromstring(response.content)
+
+        for elem_case in xmldoc.findall('testcase'):
+            summary = elem_case.find('summary').text.strip()
+            if summary == self.case_export.summary:
+                self.assert_exported_case(
+                    self.case_export,
+                    elem_case,
+                    {
+                        'action': None,
+                        'effect': None,
+                        'setup': None,
+                        'breakdown': None,
+                    },
+                    # No components and tags are set to case
+                    [], [], []
+                )
+            elif summary == self.case_export_more.summary:
+                self.assert_exported_case(
+                    self.case_export_more,
+                    elem_case,
+                    {
+                        'action': None,
+                        'effect': None,
+                        'setup': None,
+                        'breakdown': None,
+                    },
+                    # No components and tags are set to case
+                    [], [], []
+                )

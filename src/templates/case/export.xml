@@ -4,27 +4,32 @@
         <!ENTITY testopia_gt ">">
         ]>
 <testopia version="1.1">
-    {% for meta in data_generator %}
-    <testcase author="{{ meta.auther_email }}"
-              priority="{{ meta.priority }}"
-              automated="{{ meta.isautomated }}"
-              status="{{ meta.case_status }}">
-        <summary>{{ meta.summary }}</summary>
-        <categoryname>{{ meta.category_name }}</categoryname>
-        {% for component in meta.c_meta %}
+    {% for case, components, text, tags in cases_info %}
+    <testcase author="{{ case.author.email }}"
+              priority="{{ case.priority.value }}"
+              automated="{{ case.is_automated }}"
+              status="{{ case.case_status.name }}">
+        <summary>{{ case.summary }}</summary>
+        <categoryname>{{ case.category.name }}</categoryname>
+        {% for component in components %}
         <component product="{{ component.product_name }}">
             {{ component.component_name }}
         </component>
         {% endfor %}
-        <defaulttester>{{ meta.tester_email|default:"" }}</defaulttester>
-        <notes>{{ meta.notes }}</notes>
-        <action>{{ meta.latest_text.0.action }}</action>
-        <expectedresults>{{ meta.latest_text.0.effect }}</expectedresults>
-        <setup>{{ meta.latest_text.0.setup }}</setup>
-        <breakdown>{{ meta.latest_text.0.breakdown }}</breakdown>
-        {% for tag in meta.tag %}
-        <tag>{{ tag.tag_name }}</tag>
+        <defaulttester>{{ case.default_tester.email|default:"" }}</defaulttester>
+        <notes>{{ case.notes }}</notes>
+        <action>{{ text.action }}</action>
+        <expectedresults>{{ text.effect }}</expectedresults>
+        <setup>{{ text.setup }}</setup>
+        <breakdown>{{ text.breakdown }}</breakdown>
+        {% for tag in tags %}
+        <tag>{{ tag }}</tag>
         {% endfor %}
+        <testplan_reference type="Xml_description">
+            {% for plan in case.plan.all %}
+            <item>{{ plan.name }}</item>
+            {% endfor %}
+        </testplan_reference>
     </testcase>
     {% endfor %}
 </testopia>

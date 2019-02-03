@@ -52,7 +52,7 @@ from tcms.testcases.forms import CaseAutomatedForm, NewCaseForm, \
     SearchCaseForm, CaseFilterForm, EditCaseForm, CaseNotifyForm, \
     CloneCaseForm, CaseIssueForm, CaseTagForm
 from tcms.testplans.forms import SearchPlanForm
-from tcms.core.utils.dict_utils import create_group_by_dict as create_dict
+from tcms.testcases.data import get_exported_cases_and_related_data
 from tcms.testcases.fields import CC_LIST_DEFAULT_DELIMITER
 from tcms.testcases.forms import CaseComponentForm
 from tcms.issuetracker.models import IssueTracker
@@ -1079,60 +1079,26 @@ def printable(request, template_name='case/printable.html'):
 @require_POST
 def export(request, template_name='case/export.xml'):
     """Export the plan"""
-    case_pks = request.POST.getlist('case')
+    case_pks = list(map(int, request.POST.getlist('case')))
+
     if not case_pks:
         return Prompt.render(
             request=request,
             info_type=Prompt.Info,
             info='At least one target is required.')
 
-    timestamp = datetime.datetime.now()
-    timestamp_str = '%02i-%02i-%02i' \
-                    % (timestamp.year, timestamp.month, timestamp.day)
-
     context_data = {
-        'data_generator': generator_proxy(case_pks),
+        'cases_info': get_exported_cases_and_related_data(case_pks=case_pks),
     }
 
     response = render(request, template_name, context=context_data)
 
+    timestamp = datetime.datetime.now()
+    timestamp_str = '%02i-%02i-%02i' \
+                    % (timestamp.year, timestamp.month, timestamp.day)
     response['Content-Disposition'] = \
         'attachment; filename=tcms-testcases-%s.xml' % timestamp_str
     return response
-
-
-def generator_proxy(case_pks):
-    def key_func(data):
-        return data['case_id']
-
-    param_sql = ','.join(itertools.repeat('%s', len(case_pks)))
-
-    metas = SQLExecution(sqls.TC_EXPORT_ALL_CASES_META % param_sql,
-                         case_pks).rows
-    compoment_dict = create_dict(
-        sqls.TC_EXPORT_ALL_CASES_COMPONENTS % param_sql,
-        case_pks, key_func)
-    tag_dict = create_dict(sqls.TC_EXPORT_ALL_CASE_TAGS % param_sql,
-                           case_pks, key_func)
-
-    sql = sqls.TC_EXPORT_ALL_CASE_TEXTS % (param_sql, param_sql)
-    plan_text_dict = create_dict(sql, case_pks * 2, key_func)
-
-    for meta in metas:
-        case_id = meta['case_id']
-        c_meta = compoment_dict.get(case_id, None)
-        if c_meta:
-            meta['c_meta'] = c_meta
-
-        tag = tag_dict.get(case_id, None)
-        if tag:
-            meta['tag'] = tag
-
-        plan_text = plan_text_dict.get(case_id, None)
-        if plan_text:
-            meta['latest_text'] = plan_text
-
-        yield meta
 
 
 def update_testcase(request, tc, tc_form):

@@ -8,7 +8,9 @@ import xml.etree.ElementTree
 
 from bs4 import BeautifulSoup
 from datetime import datetime
+from operator import attrgetter, itemgetter
 from six.moves import http_client
+from six.moves import map
 
 import mock
 
@@ -20,7 +22,7 @@ from django.test import RequestFactory
 from uuslug import slugify
 
 from tcms.issuetracker.models import Issue
-from tcms.management.models import TestTag
+from tcms.management.models import TestTag, Component
 from tcms.testcases.fields import MultipleEmailField
 from tcms.testcases.forms import CaseTagForm
 from tcms.testcases.models import TestCase
@@ -752,13 +754,144 @@ class TestChangeCasesAutomated(BasePlanCase):
             self.assertTrue(case.is_automated_proposed)
 
 
-class TestExportCases(BasePlanCase):
+class PlanCaseExportTestHelper(object):
+    """Used to verify exported cases
+
+    This could be reused for two use cases of export from cases or plans.
+    """
+
+    def assert_exported_case(self, case, element, expected_text,
+                             expected_components, expected_tags,
+                             expected_products):
+        """Verify exported case info inside XML document
+
+        :param case: a test case object to be exported.
+        :type case: :class:`TestCase`
+        :param element: an XML element object representing a test case inside
+            XML document. It is the return value from ``ElementTree.findall``
+            or ``ElementTree.find``.
+        :param dict expected_text: a mapping representing expected case text object.
+            It must have four key/value pairs ``action``, ``effect``, ``breakdown``
+            and ``setup``.
+        :param expected_components: a list of expected component names in
+            whatever order.
+        :type expected_components: list[str]
+        :param expected_tags: a list of expected tag names in whatever order.
+        :type expected_tags: list[str]
+        :param expected_products: a list of expected product names in whatever
+            order.
+        :type expected_tags: list[str]
+        """
+        self.assertEqual(case.author.email, element.attrib['author'])
+        self.assertEqual(case.priority.value, element.attrib['priority'])
+        self.assertEqual(case.is_automated, int(element.attrib['automated']))
+        self.assertEqual(case.case_status.name, element.attrib['status'])
+        self.assertEqual(case.summary, element.find('summary').text)
+        self.assertEqual(case.category.name, element.find('categoryname').text)
+        if not case.default_tester:
+            self.assertEqual(None, element.find('defaulttester').text)
+        else:
+            self.assertEqual(case.default_tester.email,
+                             element.find('defaulttester').text)
+        self.assertEqual(case.notes or None, element.find('notes').text)
+        self.assertEqual(expected_text['action'], element.find('action').text)
+        self.assertEqual(expected_text['effect'],
+                         element.find('expectedresults').text)
+        self.assertEqual(expected_text['setup'], element.find('setup').text)
+        self.assertEqual(expected_text['breakdown'],
+                         element.find('breakdown').text)
+
+        self.assertEqual(
+            sorted(expected_components),
+            sorted(elem.text.strip() for elem in element.findall('component')))
+
+        self.assertEqual(
+            set(expected_products),
+            set(map(itemgetter('product'),
+                    map(attrgetter('attrib'), element.findall('component'))
+                    ))
+        )
+
+        self.assertEqual(
+            sorted(expected_tags),
+            sorted(elem.text.strip() for elem in element.findall('tag'))
+        )
+
+        self.assertEqual(
+            sorted(map(attrgetter('name'), case.plan.all())),
+            sorted(item.text.strip() for item in
+                   element.find('testplan_reference').findall('item'))
+        )
+
+
+class TestExportCases(PlanCaseExportTestHelper, BasePlanCase):
     """Test export view method"""
 
     @classmethod
     def setUpTestData(cls):
         super(TestExportCases, cls).setUpTestData()
         cls.export_url = reverse('cases-export')
+
+        # Change case status in order to test cases in expected scope can be exported.
+        cls.case_1.case_status = cls.case_status_proposed
+        cls.case_1.save()
+
+        # Add components to case 1 and case 2
+        for name in ['vi', 'emacs']:
+            component = Component.objects.create(
+                name=name,
+                product=cls.product,
+                initial_owner=cls.tester,
+                initial_qa_contact=cls.tester)
+            cls.case_1.add_component(component)
+
+        for name in ['db', 'cli', 'webui']:
+            component = Component.objects.create(
+                name=name,
+                product=cls.product,
+                initial_owner=cls.tester,
+                initial_qa_contact=cls.tester)
+            cls.case_2.add_component(component)
+
+        # Add tags to case 2
+        for name in ['python', 'nitrate']:
+            tag = TestTag.objects.create(name=name)
+            cls.case_2.add_tag(tag)
+
+        # Add text to case 1 with several verions
+        cls.case_1.add_text('action', 'effect', 'setup', 'breakdown')
+        cls.case_1.add_text('action 1', 'effect 1', 'setup 1', 'breakdown 1')
+        cls.case_1.add_text('action 2', 'effect 2', 'setup 2', 'breakdown 2')
+
+    def assert_exported_case_1(self, element):
+        self.assert_exported_case(
+            self.case_1,
+            element,
+            {
+                'action': 'action 2',
+                'effect': 'effect 2',
+                'setup': 'setup 2',
+                'breakdown': 'breakdown 2'
+            },
+            ['emacs', 'vi'],
+            [],
+            [self.product.name]
+        )
+
+    def assert_exported_case_2(self, element):
+        self.assert_exported_case(
+            self.case_2,
+            element,
+            {
+                'action': None,
+                'effect': None,
+                'setup': None,
+                'breakdown': None,
+            },
+            ['cli', 'db', 'webui'],
+            ['nitrate', 'python'],
+            [self.product.name]
+        )
 
     def test_export_cases(self):
         response = self.client.post(self.export_url,
@@ -773,8 +906,15 @@ class TestExportCases(BasePlanCase):
         # verify content
 
         xmldoc = xml.etree.ElementTree.fromstring(response.content)
-        exported_cases_count = xmldoc.findall('testcase')
-        self.assertEqual(2, len(exported_cases_count))
+        exported_cases_elements = xmldoc.findall('testcase')
+        self.assertEqual(2, len(exported_cases_elements))
+
+        for element in exported_cases_elements:
+            summary = element.find('summary').text
+            if summary == self.case_1.summary:
+                self.assert_exported_case_1(element)
+            elif summary == self.case_2.summary:
+                self.assert_exported_case_2(element)
 
     def test_no_cases_to_be_exported(self):
         response = self.client.post(self.export_url, {})
