@@ -9,7 +9,7 @@
 		<th align="left" class="sortcol" width="120">Issues</th>
 		<th align="left" class="sortcol" width="200">Lastest Execute Time</th>
 	</tr>
-	{% for test_case_run, bugs, comments in case_runs %}
+	{% for test_case_run in case_runs %}
 	<tr>
 		<td valign="top"><a href="{{ test_case_run.case.get_absolute_url }}">{{ test_case_run.case.pk }}</a></td>
 		<td valign="top"><a href="{% url "run-get" test_case_run.run_id %}#caserun_{{ test_case_run.pk }}">{{ test_case_run.pk }}</a></td>
@@ -17,8 +17,8 @@
 		<td valign="top">{{ test_case_run.case.category }}</td>
 		<td valign="top">{{ test_case_run.tested_by }}</td>
 		<td valign="top">
-		{% for bug in bugs %}
-			<a href="{{ bug.get_full_url }}">{{ bug }}</a>,
+		{% for issue in test_case_run.issues.all %}
+			<a href="{{ issue.get_absolute_url }}">{{ issue.issue_key }}</a>,
 		{% empty %}
 			<span class="grey"></span>
 		{% endfor %}
@@ -26,28 +26,28 @@
 		<td valign="top" >{{ test_case_run.close_date }}</td>
 	</tr>
 
-	{% if comments %}
-		<tr>
-			<td colspan="7">Comments:</td>
-		</tr>
-		{% for comment in comments %}
-		<tr class="border-bottom">
-			<td valign="top" colspan="7">{{ comment.comment|urlize|linebreaksbr }}<span class="grey">[{{ comment.username }} {{ comment.submit_date }}]</span></td>
-		</tr>
-		{% endfor %}
+	{% if test_case_run.comments.all %}
+    <tr>
+        <td colspan="7">Comments:</td>
+    </tr>
+    {% for comment in test_case_run.comments.all %}
+    <tr class="border-bottom">
+        <td valign="top" colspan="7">{{ comment.comment|urlize|linebreaksbr }}<span class="grey">[{{ comment.username }} {{ comment.submit_date }}]</span></td>
+    </tr>
+    {% endfor %}
 	{% endif %}
 
-	{% if test_case_run.bug.count %}
+	{% if test_case_run.issues.all %}
 	<tr>
 		<td colspan="7">Issues:</td>
 	</tr>
-	{% endif %}
-	{% for bug in test_case_run.bug.all %}
-	<h1>bottom bugs</h1>
+	{% for issue in test_case_run.issues.all %}
+	<h1>bottom issues</h1>
 	<tr class="border-bottom">
-		<td valign="top" colspan="7"><a href="{{ bug.get_full_url }}">{{ bug }}</a> </td>
+		<td valign="top" colspan="7"><a href="{{ issue.get_absolute_url }}">{{ issue.issue_key }}</a> </td>
 	</tr>
 	{% endfor %}
+	{% endif %}
 
 	{% empty %}
 	<tr><td align="center" colspan="7"><span class="grey">No data.</span></td></tr>

@@ -5,6 +5,7 @@ from __future__ import absolute_import
 import six
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Prefetch
 from django.urls import reverse
 from django.http import Http404
 from django.shortcuts import render
@@ -12,22 +13,20 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.generic import TemplateView
 from django.views.generic import View
+from django_comments.models import Comment
 
+from tcms.issuetracker.models import Issue
 from .forms import CustomSearchDetailsForm
 from tcms.management.models import Priority
 from tcms.management.models import Product
-from tcms.testruns.models import TestCaseRunStatus
+from tcms.testruns.models import TestCaseRunStatus, TestCaseRun
 from tcms.core.db import workaround_single_value_for_in_clause
-from tcms.core.utils.raw_sql import ReportSQL as RawSQL
+from tcms.report import data as stats
 from tcms.report.forms import TestingReportForm
 from tcms.report.forms import TestingReportCaseRunsListForm
 from tcms.report.data import CustomDetailsReportData
 from tcms.report.data import CustomReportData
-from tcms.report.data import overview_view_get_case_run_status_count
 from tcms.report.data import overview_view_get_running_runs_count
-from tcms.report.data import ProductBuildReportData
-from tcms.report.data import ProductComponentReportData
-from tcms.report.data import ProductVersionReportData
 from tcms.report.data import TestingReportByCasePriorityData
 from tcms.report.data import TestingReportByCaseRunTesterData
 from tcms.report.data import TestingReportByPlanBuildData
@@ -44,24 +43,35 @@ MODULE_NAME = "report"
 # To cache report view for 10 minutes.
 # FIXME: this value is chosen in a very short thinking, not evaluated
 # enough. Choose a proper one in the future.
-REPORT_VIEW_CACHE_DURATION = 60 * 10
+REPORT_VIEW_CACHE_DURATION = 0  # 60 * 10
 
 
 def overall(request, template_name='report/list.html'):
     """Overall of products report"""
     SUB_MODULE_NAME = 'overall'
-    products = Product.objects.all()
 
-    products = products.extra(select={
-        'plans_count': RawSQL.index_product_plans_count,
-        'runs_count': RawSQL.index_product_runs_count,
-        'cases_count': RawSQL.index_product_cases_count,
-    })
+    products = {
+        item['pk']: item['name'] for item in
+        Product.objects.values('pk', 'name')
+    }
+    plans_count = stats.subtotal_plans(by='product')
+    runs_count = stats.subtotal_test_runs(by='plan__product')
+    cases_count = stats.subtotal_cases(by='plan__product')
+
+    def generate_product_stats():
+        for product_id, product_name in products.items():
+            yield (
+                product_id,
+                product_name,
+                plans_count[product_id],
+                runs_count[product_id],
+                cases_count[product_id],
+            )
 
     context_data = {
         'module': MODULE_NAME,
         'sub_module': SUB_MODULE_NAME,
-        'products': products
+        'products': generate_product_stats(),
     }
     return render(request, template_name, context=context_data)
 
@@ -75,7 +85,9 @@ def overview(request, product_id, template_name='report/overview.html'):
         raise Http404(error)
 
     runs_count = overview_view_get_running_runs_count(product.pk)
-    caserun_status_count = overview_view_get_case_run_status_count(product.pk)
+    caserun_status_count = stats.subtotal_case_run_status(
+        filter_={'case_runs__run__plan__product': product.pk}
+    )
 
     context_data = {
         'module': MODULE_NAME,
@@ -87,7 +99,7 @@ def overview(request, product_id, template_name='report/overview.html'):
     return render(request, template_name, context=context_data)
 
 
-class ProductVersionReport(TemplateView, ProductVersionReportData):
+class ProductVersionReport(TemplateView):
     submodule_name = 'version'
     template_name = 'report/version.html'
 
@@ -109,14 +121,46 @@ class ProductVersionReport(TemplateView, ProductVersionReportData):
         versions = self.product.version.only('product', 'value')
         product_id = self.product.pk
 
-        plans_subtotal = self.plans_subtotal(product_id)
-        running_runs_subtotal = self.running_runs_subtotal(product_id)
-        finished_runs_subtotal = self.finished_runs_subtotal(product_id)
-        cases_subtotal = self.cases_subtotal(product_id)
-        case_runs_subtotal = self.case_runs_subtotal(product_id)
-        finished_case_runs_subtotal = \
-            self.finished_case_runs_subtotal(product_id)
-        failed_case_runs_subtotal = self.failed_case_runs_subtotal(product_id)
+        plans_subtotal = stats.subtotal_plans(
+            filter_={'product': product_id}, by='product_version')
+
+        running_runs_subtotal = stats.subtotal_test_runs(
+            filter_={
+                'plan__product': product_id,
+                'stop_date__isnull': True,
+            },
+            by='plan__product_version')
+
+        finished_runs_subtotal = stats.subtotal_test_runs(
+            filter_={
+                'plan__product': product_id,
+                'stop_date__isnull': False,
+            },
+            by='plan__product_version')
+
+        cases_subtotal = stats.subtotal_cases(
+            filter_={'plan__product': product_id},
+            by='plan__product_version')
+
+        case_runs_subtotal = stats.subtotal_case_runs(
+            filter_={'run__plan__product': product_id},
+            by='run__plan__product_version'
+        )
+
+        finished_case_runs_subtotal = stats.subtotal_case_runs(
+            filter_={
+                'run__plan__product': product_id,
+                'case_run_status__name__in':
+                    TestCaseRunStatus.complete_status_names
+            },
+            by='run__plan__product_version')
+
+        failed_case_runs_subtotal = stats.subtotal_case_runs(
+            filter_={
+                'run__plan__product': product_id,
+                'case_run_status__name': 'FAILED',
+            },
+            by='run__plan__product_version')
 
         for version in versions:
             vid = version.pk
@@ -137,8 +181,11 @@ class ProductVersionReport(TemplateView, ProductVersionReportData):
         case_runs_status_subtotal = None
         selected_version = getattr(self, 'selected_version', None)
         if selected_version is not None:
-            case_runs_status_subtotal = self.case_runs_status_subtotal(
-                product_id, selected_version.pk)
+            case_runs_status_subtotal = stats.subtotal_case_run_status(
+                filter_={
+                    'case_runs__run__plan__product': product_id,
+                    'case_runs__run__plan__product_version': selected_version,
+                })
 
         data = super(ProductVersionReport, self).get_context_data(**kwargs)
         data.update({
@@ -153,7 +200,7 @@ class ProductVersionReport(TemplateView, ProductVersionReportData):
         return data
 
 
-class ProductBuildReport(TemplateView, ProductBuildReportData):
+class ProductBuildReport(TemplateView):
     submodule_name = 'build'
     template_name = 'report/build.html'
 
@@ -175,11 +222,32 @@ class ProductBuildReport(TemplateView, ProductBuildReportData):
         builds = self.product.build.only('product', 'name')
 
         pid = self.product.pk
-        builds_total_runs = self.total_runs_count(pid)
-        builds_finished_runs = self.finished_runs_count(pid)
-        builds_finished_caseruns = self.finished_caseruns_count(pid)
-        builds_caseruns = self.caseruns_count(pid)
-        builds_failed_caseruns = self.failed_caseruns_count(pid)
+
+        builds_total_runs = stats.subtotal_test_runs(
+            filter_={'build__product': pid}, by='build')
+
+        builds_finished_runs = stats.subtotal_test_runs(
+            filter_={'build__product': pid, 'stop_date__isnull': False},
+            by='build')
+
+        builds_finished_caseruns = stats.subtotal_case_runs(
+            filter_={
+                'run__build__product': pid,
+                'case_run_status__name__in':
+                    TestCaseRunStatus.complete_status_names,
+            },
+            by='run__build')
+
+        builds_caseruns = stats.subtotal_case_runs(
+            filter_={'run__build__product': pid},
+            by='run__build')
+
+        builds_failed_caseruns = stats.subtotal_case_runs(
+            filter_={
+                'run__build__product': pid,
+                'case_run_status__name': 'FAILED',
+            },
+            by='run__build')
 
         for build in builds:
             bid = build.pk
@@ -197,8 +265,11 @@ class ProductBuildReport(TemplateView, ProductBuildReportData):
         case_runs_status_subtotal = None
         selected_build = getattr(self, 'selected_build', None)
         if selected_build is not None:
-            case_runs_status_subtotal = self.caserun_status_subtotal(
-                pid, selected_build.pk)
+            case_runs_status_subtotal = stats.subtotal_case_run_status(
+                filter_={
+                    'case_runs__run__build__product': pid,
+                    'case_runs__run__build': selected_build.pk,
+                })
 
         data = super(ProductBuildReport, self).get_context_data(**kwargs)
         data.update({
@@ -213,7 +284,7 @@ class ProductBuildReport(TemplateView, ProductBuildReportData):
         return data
 
 
-class ProductComponentReport(TemplateView, ProductComponentReportData):
+class ProductComponentReport(TemplateView):
     submodule_name = 'component'
     template_name = 'report/component.html'
 
@@ -236,19 +307,34 @@ class ProductComponentReport(TemplateView, ProductComponentReportData):
         components = components.only('name', 'product__name')
 
         pid = self.product.pk
-        total_cases = self.total_cases(pid)
-        failed_case_runs_count = self.failed_case_runs_count(pid)
-        finished_case_runs_count = self.finished_case_runs_count(pid)
-        total_case_runs_count = self.total_case_runs_count(pid)
+
+        subtotal_case_runs = stats.subtotal_case_runs(
+            {'case__component__product': pid},
+            by='case__component')
+
+        failed_case_runs_count = stats.subtotal_case_runs(
+            {
+                'case__component__product': pid,
+                'case_run_status__name': 'FAILED'
+            },
+            by='case__component')
+
+        finished_case_runs_count = stats.subtotal_case_runs(
+            {
+                'case__component__product': pid,
+                'case_run_status__name__in':
+                    TestCaseRunStatus.complete_status_names
+            },
+            by='case__component')
 
         for component in components:
             cid = component.pk
-            component.total_cases = total_cases.get(cid, 0)
+            component.case_runs_count = subtotal_case_runs.get(cid, 0)
             component.failed_case_run_count = failed_case_runs_count.get(cid,
                                                                          0)
 
             n = finished_case_runs_count.get(cid, 0)
-            m = total_case_runs_count.get(cid, 0)
+            m = subtotal_case_runs.get(cid, 0)
             if n and m:
                 component.finished_case_run_percent = round(n * 100.0 / m, 1)
             else:
@@ -259,8 +345,8 @@ class ProductComponentReport(TemplateView, ProductComponentReportData):
         case_runs_status_subtotal = None
         selected_component = getattr(self, 'selected_component', None)
         if selected_component is not None:
-            case_runs_status_subtotal = self.case_runs_count(
-                selected_component.pk)
+            case_runs_status_subtotal = stats.subtotal_case_run_status(
+                {'case_runs__case__component': selected_component.pk})
 
         data = super(ProductComponentReport, self).get_context_data(**kwargs)
         data.update({
@@ -427,14 +513,24 @@ class CustomDetailReport(CustomReport):
 
     def read_case_runs(self, build_ids, status_ids):
         """Generator for reading case runs and related objects"""
-        case_runs = self._data.get_case_runs(build_ids, status_ids)
-        issues = self._data.get_case_runs_issues(build_ids, status_ids)
-        comments = self._data.get_case_runs_comments(build_ids, status_ids)
 
-        for case_run in case_runs.iterator():
-            related_issues = issues.get(case_run.pk, ())
-            related_comments = comments.get(case_run.pk, ())
-            yield case_run, related_issues, related_comments
+        return TestCaseRun.objects.filter(
+            run__build__in=build_ids,
+            case_run_status_id__in=status_ids
+        ).select_related(
+            'run', 'case', 'case__category', 'tested_by'
+        ).prefetch_related(
+            Prefetch('comments', queryset=Comment.objects.select_related(
+                'user'
+            ).only(
+                'pk', 'comment', 'object_pk', 'user__username', 'submit_date'
+            )),
+            Prefetch('issues', queryset=Issue.objects.select_related(
+                'tracker').only('pk', 'tracker__issue_url_fmt', 'case_run')),
+        ).only(
+            'run', 'case__summary', 'case__category__name',
+            'tested_by__username', 'close_date'
+        ).order_by('case')
 
     def _report_data_context(self):
         data = {}

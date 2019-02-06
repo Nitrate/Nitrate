@@ -4,34 +4,30 @@ import six
 
 from collections import namedtuple
 from itertools import chain
-from itertools import groupby
 from operator import attrgetter
 from operator import itemgetter
 
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
+from django.db.models import Count
 
+from tcms.core.db import get_groupby_result
+from tcms.core.db import GroupByResult
+from tcms.core.db import SQLExecution
+from tcms.core.db import workaround_single_value_for_in_clause
 from tcms.management.models import Priority
+from tcms.management.models import TestBuild
+from tcms.report import sqls
+from tcms.testcases.models import TestCase
 from tcms.testplans.models import TestPlan
 from tcms.testruns.models import TestCaseRun
 from tcms.testruns.models import TestCaseRunStatus
 from tcms.testruns.models import TestRun
-from tcms.core.db import get_groupby_result
-from tcms.core.db import SQLExecution
-from tcms.core.db import GroupByResult
-from tcms.core.db import workaround_single_value_for_in_clause
-from tcms.report import sqls
-from tcms.management.models import TestBuild
 
 
 __all__ = (
     'CustomDetailsReportData',
     'CustomReportData',
-    'overview_view_get_case_run_status_count',
     'overview_view_get_running_runs_count',
-    'ProductBuildReportData',
-    'ProductComponentReportData',
-    'ProductVersionReportData',
     'TestingReportByCasePriorityData',
     'TestingReportByCaseRunTesterData',
     'TestingReportByPlanBuildData',
@@ -55,120 +51,68 @@ def do_nothing(value):
 
 
 def overview_view_get_running_runs_count(product_id):
-    return get_groupby_result(sqls.overview_running_runs_count,
-                              (product_id,),
-                              key_name='stop_status')
+    stats = TestRun.objects.extra(select={
+        'stop_status': "CASE WHEN stop_date is NULL THEN 'running' "
+                       "ELSE 'finished' END"
+    }).values('stop_status').annotate(subtotal=Count('pk'))
+    return GroupByResult({
+        item['stop_status']: item['subtotal'] for item in stats
+    })
 
 
-def overview_view_get_case_run_status_count(product_id):
-    return get_groupby_result(sqls.overview_case_run_status_count,
-                              (product_id,),
-                              key_name='name')
+def subtotal_test_runs(filter_=None, by=None):
+    group_by = by or 'pk'
+    stats = TestRun.objects
+    if filter_:
+        stats = stats.filter(**filter_)
+    return GroupByResult({
+        item[group_by]: item['subtotal'] for item in
+        stats.values(group_by).annotate(subtotal=Count('pk'))
+    })
 
 
-class ProductBuildReportData(object):
-    """Report data by builds of a Product"""
-
-    def total_runs_count(self, product_id):
-        return get_groupby_result(sqls.build_builds_total_runs_count,
-                                  (product_id,),
-                                  key_name='build_id')
-
-    def finished_runs_count(self, product_id):
-        return get_groupby_result(sqls.build_builds_finished_runs_count,
-                                  (product_id,),
-                                  key_name='build_id')
-
-    def finished_caseruns_count(self, product_id):
-        return get_groupby_result(sqls.build_finished_caseruns_count,
-                                  (product_id,),
-                                  key_name='build_id')
-
-    def failed_caseruns_count(self, product_id):
-        return get_groupby_result(sqls.build_failed_caseruns_count,
-                                  (product_id,),
-                                  key_name='build_id')
-
-    def caseruns_count(self, product_id):
-        return get_groupby_result(sqls.build_caseruns_count,
-                                  (product_id,),
-                                  key_name='build_id')
-
-    def caserun_status_subtotal(self, product_id, build_id):
-        return get_groupby_result(sqls.build_caserun_status_subtotal,
-                                  (product_id, build_id),
-                                  key_name='name')
+def subtotal_case_runs(filter_=None, by=None):
+    group_by = by or 'case_run_status'
+    stats = TestCaseRun.objects
+    if filter_:
+        stats = stats.filter(**filter_)
+    return GroupByResult({
+        item[group_by]: item['subtotal'] for item in
+        stats.values(group_by).annotate(subtotal=Count('pk'))
+    })
 
 
-class ProductComponentReportData(object):
-    def total_cases(self, product_id):
-        return get_groupby_result(sqls.component_total_cases,
-                                  (product_id,),
-                                  key_name='component_id')
-
-    def failed_case_runs_count(self, product_id):
-        return get_groupby_result(sqls.component_failed_case_runs_count,
-                                  (product_id,),
-                                  key_name='component_id')
-
-    def finished_case_runs_count(self, product_id):
-        return get_groupby_result(sqls.component_finished_case_runs_count,
-                                  (product_id,),
-                                  key_name='component_id')
-
-    def total_case_runs_count(self, product_id):
-        return get_groupby_result(sqls.component_total_case_runs_count,
-                                  (product_id,),
-                                  key_name='component_id')
-
-    def case_runs_count(self, component_id):
-        return get_groupby_result(sqls.component_case_runs_count,
-                                  (component_id,),
-                                  key_name='name')
+def subtotal_case_run_status(filter_=None, by=None):
+    group_by = by or 'name'
+    stats = TestCaseRunStatus.objects
+    if filter_:
+        stats = stats.filter(**filter_)
+    return GroupByResult({
+        item[group_by]: item['subtotal'] for item in
+        stats.values(group_by).annotate(subtotal=Count('pk'))
+    })
 
 
-class ProductVersionReportData(object):
-    """Report data by versions of a Product"""
+def subtotal_plans(filter_=None, by=None):
+    group_by = by or 'product'
+    stats = TestPlan.objects
+    if filter_:
+        stats = stats.filter(**filter_)
+    return GroupByResult({
+        item[group_by]: item['subtotal'] for item in
+        stats.values(group_by).annotate(subtotal=Count('pk'))
+    })
 
-    def plans_subtotal(self, product_id):
-        return get_groupby_result(sqls.version_plans_subtotal,
-                                  (product_id,),
-                                  key_name='product_version_id')
 
-    def running_runs_subtotal(self, product_id):
-        return get_groupby_result(sqls.version_running_runs_subtotal,
-                                  (product_id,),
-                                  key_name='product_version_id')
-
-    def finished_runs_subtotal(self, product_id):
-        return get_groupby_result(sqls.version_finished_runs_subtotal,
-                                  (product_id,),
-                                  key_name='product_version_id')
-
-    def cases_subtotal(self, product_id):
-        return get_groupby_result(sqls.version_cases_subtotal,
-                                  (product_id,),
-                                  key_name='product_version_id')
-
-    def case_runs_subtotal(self, product_id):
-        return get_groupby_result(sqls.version_case_runs_subtotal,
-                                  (product_id,),
-                                  key_name='product_version_id')
-
-    def finished_case_runs_subtotal(self, product_id):
-        return get_groupby_result(sqls.version_finished_case_runs_subtotal,
-                                  (product_id,),
-                                  key_name='product_version_id')
-
-    def failed_case_runs_subtotal(self, product_id):
-        return get_groupby_result(sqls.version_failed_case_runs_subtotal,
-                                  (product_id,),
-                                  key_name='product_version_id')
-
-    def case_runs_status_subtotal(self, product_id, version_id):
-        return get_groupby_result(sqls.version_case_run_status_subtotal,
-                                  (product_id, version_id),
-                                  key_name='name')
+def subtotal_cases(filter_=None, by=None):
+    group_by = by or 'plan'
+    stats = TestCase.objects
+    if filter_:
+        stats = stats.filter(**filter_)
+    return GroupByResult({
+        item[group_by]: item['subtotal'] for item in
+        stats.values(group_by).annotate(subtotal=Count('pk'))
+    })
 
 
 SQLQueryInfo = namedtuple('SQLQueryInfo',
@@ -359,9 +303,17 @@ class CustomDetailsReportData(CustomReportData):
         matrix_dataset = {}
         status_total_line = GroupByResult()
 
-        rows = list(SQLExecution(sqls.custom_details_status_matrix,
-                                 params=(build_ids,),
-                                 with_field_name=False).rows)
+        rows = TestCaseRun.objects.filter(
+            run__build__in=build_ids
+        ).values(
+            'run__plan', 'run', 'case_run_status'
+        ).annotate(
+            subtotal=Count('pk')
+        ).order_by(
+            'run__plan', 'run', 'case_run_status'
+        ).values_list(
+            'run__plan', 'run', 'case_run_status', 'subtotal'
+        )
 
         plan_ids = run_ids = case_run_status_ids = []
         for plan_id, run_id, case_run_status_id, _ in rows:
@@ -396,66 +348,6 @@ class CustomDetailsReportData(CustomReportData):
         # Add total line to final data set
         matrix_dataset[None] = status_total_line
         return matrix_dataset
-
-    def get_case_runs(self, build_ids, status_ids):
-        """Get case runs according to builds and status
-
-        :param build_ids: IDs of builds
-        :type build_ids: list or tuple
-        :param status_ids: IDs of case run status
-        :type status_ids: list or tuple
-        :return: queried case runs
-        :rtype: QuerySet
-        """
-        tcrs = TestCaseRun.objects.filter(run__build__in=build_ids,
-                                          case_run_status_id__in=status_ids)
-        tcrs = tcrs.select_related('run', 'case',
-                                   'case__category',
-                                   'tested_by')
-        tcrs = tcrs.only('run', 'case__summary', 'case__category__name',
-                         'tested_by__username', 'close_date')
-        tcrs = tcrs.order_by('case')
-        return tcrs
-
-    def get_case_runs_issues(self, build_ids, status_ids):
-        """Get case runs' issues according to builds and status
-
-        :param build_ids: IDs of builds
-        :type build_ids: list or tuple
-        :param status_ids: IDs of case run status
-        :type status_ids: list or tuple
-        :return: mapping between case run ID and its bugs
-        :rtype: dict
-        """
-        from tcms.issuetracker.models import Issue
-        from operator import attrgetter
-        issues = (
-            Issue.objects.filter(case_run__run__build__in=build_ids,
-                                 case_run__case_run_status_id__in=status_ids)
-                         .only('pk', 'tracker__issue_url_fmt', 'case_run')
-        )
-        return {
-            case_run_id: list(issues) for case_run_id, issues in
-            groupby(issues, key=attrgetter('case_run_id'))
-        }
-
-    def get_case_runs_comments(self, build_ids, status_ids):
-        """Get case runs' bugs according to builds and status
-
-        :param build_ids: IDs of builds
-        :type build_ids: list or tuple
-        :param status_ids: IDs of case run status
-        :type status_ids: list or tuple
-        :return: mapping between case run ID and its comments
-        :rtype: dict
-        """
-        ct = ContentType.objects.get_for_model(TestCaseRun)
-        rows = SQLExecution(sqls.custom_details_case_runs_comments,
-                            (ct.pk, build_ids, status_ids)).rows
-        return {
-            case_run_id: list(comments) for case_run_id, comments in
-            groupby(rows, key=itemgetter('case_run_id'))
-        }
 
 
 class TestingReportBaseData(object):

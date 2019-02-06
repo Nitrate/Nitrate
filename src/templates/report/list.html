@@ -28,18 +28,18 @@ Nitrate.Utils.after_page_load(Nitrate.Report.List.on_load);
 				<th>Runs</th>
 				<th>Cases</th>
 			</tr>
-			{% for product in products %}
+			{% for product_id, product_name, plans_count, runs_count, cases_count in products %}
 			<tr class="{% cycle 'even' 'odd' %}">
 				<td>
-					{% if product.plans_count %}
-					<a href="{% url "report-overview" product.id %}">{{ product }}</a>
+					{% if plans_count %}
+					<a href="{% url "report-overview" product_id %}">{{ product_name }}</a>
 					{% else %}
-					{{ product }}
+					{{ product_name }}
 					{% endif %}
 				</td>
-				<td>{{ product.plans_count }}</td>
-				<td>{{ product.runs_count }}</td>
-				<td>{{ product.cases_count }}</td>
+				<td>{{ plans_count }}</td>
+				<td>{{ runs_count }}</td>
+				<td>{{ cases_count }}</td>
 			</tr>
 			{% endfor %}
 		</table>
