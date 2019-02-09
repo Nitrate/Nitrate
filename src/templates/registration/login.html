@@ -27,6 +27,12 @@
                     	<td></td>
 						<td ><a href="{% url "password_reset" %}">Forget the password</a></td>
 					</tr>
+					{% if SETTINGS.ENABLED_AUTH_BACKENDS.USERPWD.ALLOW_REGISTER %}
+					<tr>
+						<td></td>
+						<td><a href="{% url "nitrate-register" %}?next={{ request.path }}">Register a new account</a></td>
+					</tr>
+					{% endif %}
 					<tr>
                     	<td>&nbsp;</td>
 						<td  class="submit">

@@ -149,7 +149,6 @@ TEMPLATES = [
                 # Added for Nitrate
                 'django.template.context_processors.request',
                 'tcms.core.context_processors.admin_prefix_processor',
-                'tcms.core.context_processors.auth_backend_processor',
                 'tcms.core.context_processors.request_contents_processor',
                 'tcms.core.context_processors.settings_processor',
             ],
@@ -256,11 +255,24 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
 # See http://docs.djangoproject.com/en/dev/ref/templates/api/#django-core-context-processors-debug
 INTERNAL_IPS = ('127.0.0.1', )
 
-# Authentication backends
-# For the login/register/logout reaon, we only support the internal auth backends.
 AUTHENTICATION_BACKENDS = (
-    'tcms.auth.backends.DBModelBackend',
+    'django.contrib.auth.backends.ModelBackend',
 )
+
+# Config for enabled authentication backend set in AUTHENTICATION_BACKENDS
+ENABLED_AUTH_BACKENDS = {
+    # Generally, only one backend requiring username and password is enabled,
+    # for example a backend that authenticates a user from a LDAP, or a backend
+    # that authenticates a user against database user info.
+    # If no such kind of backend is enabled, for example RemoteUserBackend is
+    # enabled to work with Web server that authenticates users actually, just
+    # omit this config.
+    'USERPWD': {
+        # Whether to show user registration link.
+        'ALLOW_REGISTER': True,
+        # No other configs are defined at this moment.
+    }
+}
 
 #
 # Mail settings

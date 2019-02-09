@@ -14,22 +14,12 @@ from tcms.auth import initiate_user_with_default_setups
 logger = logging.getLogger(__name__)
 
 
-class DBModelBackend(ModelBackend):
-    can_login = True
-    can_register = True
-    can_logout = True
-
-
 class EmailBackend(ModelBackend):
     # The source code is based on: http://www.djangosnippets.org/snippets/74/
     # All rights reserved by the orignal authors.
     """
     Email authorization backend for TCMS.
     """
-    # Web UI Needed
-    can_login = True
-    can_register = True
-    can_logout = True
 
     def authenticate(self, request, username=None, password=None, **kwargs):
         # If username is an email address, then try to pull it up
@@ -56,10 +46,6 @@ class BugzillaBackend(ModelBackend):
 
     It's required bugzilla xmlrpc.
     """
-    # Web UI Needed
-    can_login = True
-    can_register = False
-    can_logout = True
 
     def authenticate(self, request, username=None, password=None, **kwargs):
         try:
@@ -117,10 +103,6 @@ class KerberosBackend(ModelBackend):
     # Kerberos settings
     KRB5_REALM = 'REDHAT.COM'
     """
-    # Web UI Needed
-    can_login = True
-    can_register = False
-    can_logout = True
 
     # Disable for python 2.4 compatible
     # def __init__(self):
@@ -187,10 +169,6 @@ class ModAuthKerbBackend(RemoteUserBackend):
         Require valid-user
     </Location>
     """
-    # Web UI Needed
-    can_login = False
-    can_register = False
-    can_logout = False
 
     # Disable for python 2.4 compatible
     # def __init__(self):

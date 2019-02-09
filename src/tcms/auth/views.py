@@ -7,7 +7,6 @@ from django.shortcuts import redirect, render
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_http_methods
 
-from tcms.auth import get_using_backend
 from tcms.auth.forms import RegistrationForm
 from tcms.auth.models import UserActivateKey
 from tcms.core.views import Prompt
@@ -26,10 +25,11 @@ def register(request, template_name='registration/registration_form.html'):
 
     request_data = request.GET or request.POST
 
-    # Check that registration is allowed by backend
-    backend = get_using_backend()
-    cr = getattr(backend, 'can_register')  # can register
-    if not cr:
+    # Check that registration is allowed by backend config
+    user_pwd_backend_config = settings.ENABLED_AUTH_BACKENDS.get('USERPWD')
+
+    if (user_pwd_backend_config is None or
+            not user_pwd_backend_config.get('ALLOW_REGISTER')):
         return Prompt.render(
             request=request,
             info_type=Prompt.Alert,

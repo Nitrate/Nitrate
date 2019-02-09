@@ -50,18 +50,11 @@
 		<label>
 			{% if user.is_authenticated %}
 			<a href="{% url "user-profile" user.username %}">Welcome, {{ user }}</a>
-			{% if AUTH_BACKEND.can_logout %}
 			<span>[</span><a href="{% url "nitrate-logout" %}?next={{ request.path }}">Logout</a><span>]</span>
-			{% endif %}
 			{% else %}
 			Welcome, Guest.
 			[
-			{% if AUTH_BACKEND.can_login %}
 			<a href="{% url "nitrate-login" %}?next={{ request.path }}" class="banner_login">Login</a>
-			{% endif %}
-			{% if AUTH_BACKEND.can_register %}
-			<a href="{% url "nitrate-register" %}?next={{ request.path }}" class="banner_login">Register</a>
-			{% endif %}
 			]
 			{% endif %}
 			<a class="sprites userguide" href="{{ SETTINGS.USER_GUIDE_URL }}" target="_blank">User Guide</a>
