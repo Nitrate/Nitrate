@@ -31,7 +31,7 @@ class EmailBackend(ModelBackend):
     can_register = True
     can_logout = True
 
-    def authenticate(self, username=None, password=None):
+    def authenticate(self, request, username=None, password=None, **kwargs):
         # If username is an email address, then try to pull it up
         try:
             validate_email(username)
@@ -61,7 +61,7 @@ class BugzillaBackend(ModelBackend):
     can_register = False
     can_logout = True
 
-    def authenticate(self, username=None, password=None):
+    def authenticate(self, request, username=None, password=None, **kwargs):
         try:
             validate_email(username)
         except ValidationError:
@@ -131,7 +131,7 @@ class KerberosBackend(ModelBackend):
     #                "Variable '%s' not set in settings." % var
     #            )
 
-    def authenticate(self, username=None, password=None):
+    def authenticate(self, request, username=None, password=None, **kwargs):
         import kerberos
 
         try:
