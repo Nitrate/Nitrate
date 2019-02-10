@@ -1,0 +1,137 @@
+.. _4.3:
+
+4.3
+===
+
+*Feb 10, 2019*
+
+Highlighted
+-----------
+
+Multiple authentication backends
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In addition to the default authentication backend, Nitrate is able to work with
+package ``social-app-django`` to allow users to be authenticated by 3rd party
+services, for example, Fedora account system (aka FAS) or Google.
+
+Please refer to :ref:`Configuration` for more information.
+
+Work with Django 2.x
+~~~~~~~~~~~~~~~~~~~~
+
+This is the first version of Nitrate to work with Django ``2.0`` and ``2.1``.
+Please feel free to report any issue while you are using Nitrate with these
+Django versions.
+
+Work with PostgreSQL
+~~~~~~~~~~~~~~~~~~~~
+
+Report app is the major one of modules that are updated to be able to work
+with PostgreSQL. Latest PostgreSQL version is added to test infrastructure to
+ensure code works properly.
+
+Docker Images
+~~~~~~~~~~~~~
+
+Dockerfiles are added for building dev and prod images. In addition,
+corresponding docker-compose files are added, so that developers could be
+easier to run Nitrate locally in dev or prod mode.
+
+There is also another target in ``Makefile`` to build prod image. Run ``make
+release-image``.
+
+Test infrastructure is improved
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A new script is added for running tests for the matrix defined in
+``.travis.yml``, which is cleaned up for defining test matrix clearly and
+easily.
+
+Tests now run in docker image and with SQLite, MySQL, MariaDB and PostgreSQL. Refer to ``.travis.yml`` to know which versions of database are used.
+
+Database Migration
+------------------
+
+If some social authentication backends are enabled, ensure to run migrate since
+``social-app-django`` has migrations.
+
+Change Log
+----------
+
+* Update Dockerfiles (Chenxiong Qi)
+* Clean .coveragerc (Chenxiong Qi)
+* Work with social-app-django to allow login with social accounts (Chenxiong Qi)
+* Display login, logout and register links according to new auth backends
+  config (Chenxiong Qi)
+* Fix overrided authenticate method in custom backends (Chenxiong Qi)
+* Convert raw SQLs to ORM for report/Overall and report/Custom (Chenxiong Qi)
+* Remove unused methods from TestCaseRunManager (Chenxiong Qi)
+* Rewrite data generator for plans and cases export (Chenxiong Qi)
+* Reuse EnumLike for TestCaseStatus (Chenxiong Qi)
+* Cleanup cache code from TesCaseRunStatus model (Chenxiong Qi)
+* Sort issue keys inside dislay URL in run report (Chenxiong Qi)
+* Sort cases in clone run page (Chenxiong Qi)
+* Use pytest<4.2.0 (Chenxiong Qi)
+* Move src/tcms/utils into src/tcms/core/utils (Chenxiong Qi)
+* Relayout tcms (Chenxiong Qi)
+* Remove unused template from tcms/templates/report (Chenxiong Qi)
+* Update contribution doc and add DCO (Chenxiong Qi)
+* Update README (Chenxiong Qi)
+* Reformat some raw SQLs (Chenxiong Qi)
+* Remove cached_entities - `#321`_ (Chenxiong Qi)
+* Set zip_safe to False - `#362`_ (Chenxiong Qi)
+* Add more project metadata to Python package - `#363`_ (Chenxiong Qi)
+* Fix multiple select in environment group edit page - `#308`_ (Chenxiong Qi)
+* New template tag to show percent from GroupByResult (Chenxiong Qi)
+* Sort code coverage result by filenames (Chenxiong Qi)
+* App report works with PostgreSQL now (Chenxiong Qi)
+* GroupByResult.total just return calculated value (Chenxiong Qi)
+* Reword docstrings for report app and relative classes (Chenxiong Qi)
+* Add test for getting percentage from GroupByResult (Chenxiong Qi)
+* Extend Travis-CI test matrix (Chenxiong Qi)
+* Remove celery from install_requires and kobo from testenv deps (Chenxiong Qi)
+* Remove reference to nonexisting jquery.min.js (Chenxiong Qi)
+* updated kobo version (akhilsp)
+* added support to django 2.1 (akhilsp)
+* Runserver simply with different db engine (Chenxiong Qi)
+* Make db engine selectable for mysql and postgresql (Chenxiong Qi)
+* Run tests against PostgreSQL in Travis-CI job (Chenxiong Qi)
+* Fix feature code and tests against PostgreSQL (Chenxiong Qi)
+* Convert django_comments.object_pk to integer (Chenxiong Qi)
+* Rewrite script to set permissions to default groups (Chenxiong Qi)
+* Adjust SELECT layout and height in admin pages (Chenxiong Qi)
+* Calculate advanced search time cost correctly (Chenxiong Qi)
+* Reword argument doc in docstring (Chenxiong Qi)
+* Add tests for tcms/search (Chenxiong Qi)
+* Upload test coverage to coveralls correctly (Chenxiong Qi)
+* Fix tests (Chenxiong Qi)
+* New test runner for Travis-CI (Chenxiong Qi)
+* Fix Prompt.render calls (Chenxiong Qi)
+* Reconsider setting permissions to default groups (Chenxiong Qi)
+* Refine docker images (Chenxiong Qi)
+* Dockerize Nitrate and update documentation (Mr. Senko)
+* Allow reading DB settings from environment (Mr. Senko)
+* Clean settngs modules (Chenxiong Qi)
+* Work with Python 3.7 - `#353`_ (Chenxiong Qi)
+* Fix celery detection in core/task.py (Chenxiong Qi)
+* Use python3 to run testenv flake8 and docs (Chenxiong Qi)
+* Remove faq from docs index.rst (Chenxiong Qi)
+* Add missing installatio guide index.rst (Chenxiong Qi)
+* New async task (Chenxiong Qi)
+* Fix default release version in settings (Chenxiong Qi)
+* Fix issuetracker async task (Chenxiong Qi)
+* Minor changes (Chenxiong Qi)
+* Django 1.11 is the minimum version to work with - `#342`_ (Chenxiong Qi)
+* Replace some dict calls (Chenxiong Qi)
+* Replace some lambdas with operator module methods (Chenxiong Qi)
+* Use str.isdigit instead of custom is_int (Chenxiong Qi)
+* Refine docs (Chenxiong Qi)
+
+.. _#308: https://github.com/Nitrate/Nitrate/issues/308/
+.. _#321: https://github.com/Nitrate/Nitrate/issues/321/
+.. _#342: https://github.com/Nitrate/Nitrate/issues/342/
+.. _#353: https://github.com/Nitrate/Nitrate/issues/353/
+.. _#362: https://github.com/Nitrate/Nitrate/issues/362/
+.. _#363: https://github.com/Nitrate/Nitrate/issues/363/
+

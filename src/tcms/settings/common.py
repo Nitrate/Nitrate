@@ -6,7 +6,7 @@ TCMS_ROOT_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..', '..')
 )
 
-NITRATE_VERSION = '4.2'
+NITRATE_VERSION = '4.3'
 
 DEBUG = True
 
