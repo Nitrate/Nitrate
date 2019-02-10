@@ -15,7 +15,7 @@ ADD . /code
 
 RUN rm -rf /code/.git && \
     python3 -m venv /devenv && \
-    /devenv/bin/pip install --no-cache-dir -e /code[devtools,async]
+    /devenv/bin/pip install --no-cache-dir -e /code[devtools,async,multiauth]
 
 ADD docker/dev-start.sh /code/
 
