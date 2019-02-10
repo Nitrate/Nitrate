@@ -72,6 +72,10 @@ extras_require = {
     # Required packages required to run async tasks
     'async': [
         'celery == 4.2.0',
+    ],
+
+    'multiauth': [
+        'social-auth-app-django == 3.1.0',
     ]
 }
 

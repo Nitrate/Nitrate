@@ -2,6 +2,7 @@
 
 from django.conf import settings
 from django.contrib import auth
+from django.contrib.auth.views import LoginView as DjangoLoginView
 from django.urls import reverse
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_GET
@@ -110,3 +111,28 @@ def confirm(request, activation_key):
         info=msg,
         next=request.GET.get('next', reverse('user-profile-redirect'))
     )
+
+
+class LoginView(DjangoLoginView):
+    """Custom Django admin LoginView to provide social auth backends info"""
+
+    def get_context_data(self, **kwargs):
+        data = super(LoginView, self).get_context_data(**kwargs)
+
+        social_auth_backends = settings.ENABLED_AUTH_BACKENDS.get('SOCIAL')
+        if social_auth_backends is not None:
+            data.update({
+                'social_auth_backends': [
+                    (
+                        # URL
+                        reverse('social:begin', args=[backend_info['backend']]),
+                        # Display label
+                        backend_info['label'],
+                        # title in A
+                        backend_info['title'],
+                    )
+                    for backend_info in social_auth_backends
+                ]
+            })
+
+        return data

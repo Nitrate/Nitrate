@@ -271,7 +271,26 @@ ENABLED_AUTH_BACKENDS = {
         # Whether to show user registration link.
         'ALLOW_REGISTER': True,
         # No other configs are defined at this moment.
-    }
+    },
+
+    # Allow to login some social authentication backend. This works by enabling
+    # social-auth-app-django.
+    # Add following example mapping to enable supported social authentication
+    # backends. Each of the list is a mapping to indicate the backend name,
+    # what text should be displayed in login webpage, and optional value of
+    # title attribute of the link.
+    # The order of backends matters. Login URLs will display in the order of
+    # the given backends.
+    #
+    # 'SOCIAL': [
+    #     {
+    #         'backend': 'fedora',
+    #         'label': 'Fedora',
+    #         'title': 'Login with Fedora account',
+    #     },
+    # ]
+
+    # No other key/value pairs are supported so far.
 }
 
 #

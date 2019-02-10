@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 from django.conf.urls import url
 from django.contrib.auth import views as django_auth_views
+from tcms.auth.views import LoginView as NitrateLoginView
 
 from . import views
 from tcms.auth import views as tcms_auth_views
@@ -18,7 +19,7 @@ urlpatterns = [
     url(r'confirm/(?P<activation_key>[A-Za-z0-9\-]+)/$',
         tcms_auth_views.confirm, name='nitrate-activation-confirm'),
 
-    url(r'login/$', django_auth_views.LoginView.as_view(), name='nitrate-login'),
+    url(r'login/$', NitrateLoginView.as_view(), name='nitrate-login'),
     url(r'changepassword/$', django_auth_views.PasswordChangeView.as_view(), name='password_change'),
     url(r'changepassword/done/$', django_auth_views.PasswordChangeDoneView.as_view(), name='password_change_done'),
     url(r'^passwordreset/$', django_auth_views.PasswordResetView.as_view(), name='password_reset'),

@@ -1116,3 +1116,5 @@ ul.data_content_title li{ display:inline-block; margin-left:3px;}
     border-right: 0px;
     border-top: 0px;
 }
+
+.social_auth_login {margin-bottom: 16px; width: 48%; padding: 8px;}

@@ -11,6 +11,7 @@
 <div id="content">
 	<div id="index" >
 		<br clear="all">
+		{% if 'USERPWD' in SETTINGS.ENABLED_AUTH_BACKENDS %}
 		<div class="login radius">
 			<form id="id_login_form" action="{% url "nitrate-login" %}" method="POST">
 				{% csrf_token %}
@@ -43,6 +44,15 @@
 				</table>
 			</form>
 		</div>
+		{% endif %}
+		{% if social_auth_backends %}
+		<div class="login radius">
+			<p style="font-weight: bold; font-size: medium">Sign in with:</p>
+			{% for login_url, display_label, title in social_auth_backends %}
+				<a href="{{ login_url }}" title="{{ title }}" class="social_auth_login">{{ display_label }}</a>
+			{% endfor %}
+		</div>
+		{% endif %}
 	</div>
 </div>
 {% endblock %}
