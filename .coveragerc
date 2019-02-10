@@ -2,15 +2,12 @@
 branch = True
 
 [report]
-#show_missing = True
 skip_covered = True
 omit =
-    .tox/*
-    */tests.py
-    */tests/test_*.py
     */migrations/*.py
-    tcms/wsgi.py
-    tcms/settings/*.py
-    tcms/tests/*.py
+    src/tcms/celery.py
+    src/tcms/__init__.py
+    src/tcms/settings/*.py
+    src/tcms/wsgi.py
     */urls.py
     */urls/*.py
