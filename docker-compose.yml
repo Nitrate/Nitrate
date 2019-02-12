@@ -11,6 +11,7 @@ services:
     - "nitrate_db_data:/var/lib/mysql"
     restart: always
     environment:
+    - MYSQL_DATABASE=nitrate
     - MYSQL_ALLOW_EMPTY_PASSWORD=yes
 
   web:
@@ -19,22 +20,19 @@ services:
     restart: always
     build:
       context: .
-      dockerfile: Dockerfile-venv
-    image: nitrate:4.2
+      dockerfile: ./docker/released/Dockerfile
+    image: nitrate/nitrate:4.3
     ports:
     - "8001:80"
     volumes:
     - "nitrate_uploads:/code/uploads"
     - "nitrate_httpd_logs:/var/log/httpd"
-
-    # Uncomment out these lines after 4.3 release
-#    environment:
-#      NITRATE_DB_ENGINE: mysql
-#      NITRATE_DB_HOST: db
-#      NITRATE_DB_PORT: 3306
-#      NITRATE_DB_NAME: nitrate
-#      NITRATE_DB_USER: root
-#      NITRATE_DB_PASSWORD:
+    environment:
+      NITRATE_DB_ENGINE: mysql
+      NITRATE_DB_HOST: db
+      NITRATE_DB_PORT: 3306
+      NITRATE_DB_NAME: nitrate
+      NITRATE_DB_USER: root
 
 # Run `docker inspect web` to see volume directory on host.
 
