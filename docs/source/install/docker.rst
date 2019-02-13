@@ -18,12 +18,12 @@ Create Docker container
 
 You can then start using Nitrate by executing::
 
-    docker-compose -f docker-compose-venv.yml up -d
+    docker-compose -f docker-compose.yml up -d
 
 This will create two containers:
 
 1) A web container based on the latest Nitrate image
-2) A DB container based on the official mariadb image
+2) A DB container based on the official Mariadb image
 
 
 ``docker-compose`` will also create two volumes for persistent data storage:
@@ -37,8 +37,8 @@ Nitrate development image has an entrypoint which tries to do database
 migrations and create a superuser for initial use. However, you are
 free to do it for yourself by executing::
 
-    docker exec -it nitrate_web_1 /Nitrate/manage.py migrate
-    docker exec -it nitrate_web_1 /Nitrate/manage.py createsuperuser
+    docker exec -it nitrate_web_1 /code/src/manage.py migrate
+    docker exec -it nitrate_web_1 /code/src/manage.py createsuperuser
 
 
 Upgrading
@@ -50,8 +50,8 @@ To upgrade running Nitrate containers execute the following commands::
     make dev-image
     docker-compose stop
     docker rm nitrate_web_1 nitrate_db_1
-    docker-compose -f docker-compose-dev.yml up -d
-    docker exec -it nitrate_web_1 /Nitrate/manage.py migrate
+    docker-compose -f docker-compose.yml up -d
+    docker exec -it nitrate_web_1 /code/src/manage.py migrate
 
 .. note::
 

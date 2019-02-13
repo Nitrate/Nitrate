@@ -50,8 +50,8 @@ Documentation
 
 http://nitrate.readthedocs.org/
 
-Installation
-------------
+How to run
+----------
 
 There are a series of documentation for installing Nitrate in
 `Installation Guide`_. Choose one for your case. It is appreciated to catch any
@@ -66,18 +66,9 @@ Any kind of contribution is welcome, whatever to the documentation, code or
 even just ideas to make Nitrate better. Please refer to Contribution_ for more
 information on how to contribute.
 
-If you would like to write some code, the ``conf/Vagrantfile.example`` would be
-a good choice for you to setup a development environment quickly, where you can
-run tests and debug issues. What you need to do is:
-
-* First, please ensure ``vagrant`` is installed and usable.
-
-* Copy ``conf/Vagrantfile.example`` to project root directory and name it
-  ``Vagrantfile``.
-
-* ``vagrant up``.
-
-.. _Contribution: http://nitrate.readthedocs.org/en/latest/contribution.html
+If you would like to write some code, the Vagrant machine would be a good
+choice for you to setup a development environment quickly, where you can run
+tests and debug issues. Refer to :ref:`The Vagrant Way <how_to_run>`.
 
 Bug Reports
 -----------
