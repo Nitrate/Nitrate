@@ -13,8 +13,7 @@ Dockerfile: [docker/released/Dockerfile](https://github.com/Nitrate/Nitrate/tree
 
 ## Usage
 
-Before logging into Nitrate, you have to create initial users in database
-manually.
+### How to Run
 
 This image only has installed Nitrate Web application. The container running
 from this image has to be linked with a MySQL or MariaDB container to work.
@@ -22,6 +21,19 @@ from this image has to be linked with a MySQL or MariaDB container to work.
 For example to run Nitrate with a MariaDB:
 
     docker run --link nitrate_db:mariadb -p 80:80 -e NITRATE_DB_NAME=nitrate nitrate/nitrate:4.3
+
+### Before Use
+
+Before logging into Nitrate, you may need to complete following tasks:
+
+* have to create initial users in database manually. This initial user is
+  usually a superuser os that someone can log into Nitrate with this account to
+  manage service.
+* Set permissions to default groups. This is optional, but nice-to-have.
+  ```
+  docker exec -i -t --env DJANGO_SETTINGS_MODULE=tcms.settings.product \
+      container_name /prodenv/bin/django-admin setdefaultperms
+  ```
 
 ## Environment Variables
 
