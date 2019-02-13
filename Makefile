@@ -63,7 +63,7 @@ NITRATE_VERSION=$(shell cat VERSION.txt | tr -d '\n')
 release-image:
 	@docker build \
 		-t $(DOCKER_ORG)/nitrate:$(NITRATE_VERSION) \
-		-f Dockerfile-venv \
+		-f ./docker/released/Dockerfile \
 		--build-arg VERSION=$(NITRATE_VERSION) .
 
 dev-image:
