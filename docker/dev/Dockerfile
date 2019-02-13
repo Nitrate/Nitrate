@@ -15,9 +15,9 @@ ADD . /code
 
 RUN rm -rf /code/.git && \
     python3 -m venv /devenv && \
-    /devenv/bin/pip install --no-cache-dir -e /code[devtools,async,multiauth]
+    /devenv/bin/pip install --no-cache-dir -e /code[mysql,devtools,async,multiauth]
 
-ADD docker/dev-start.sh /code/
+ADD docker/dev/entrypoint.sh /code/
 
 # Nitrate will run by django's runserver command and listen on 8000.
 EXPOSE 8000
@@ -25,4 +25,4 @@ EXPOSE 8000
 # devel settings sets this directory to store uploaded files.
 VOLUME ["/code/uploads"]
 
-CMD ["/code/dev-start.sh"]
+CMD ["/code/entrypoint.sh"]

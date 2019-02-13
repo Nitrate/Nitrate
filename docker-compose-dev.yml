@@ -15,8 +15,8 @@ services:
     restart: always
     build:
       context: .
-      dockerfile: Dockerfile-dev
-    image: nitrate:dev
+      dockerfile: docker/dev/Dockerfile
+    image: nitrate/nitrate:dev
     ports:
     - '8000:8000'
     volumes:
