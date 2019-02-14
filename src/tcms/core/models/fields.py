@@ -36,7 +36,7 @@ class DurationField(IntegerField):
         else:
             raise TypeError('Unable to convert %s to timedelta.' % value)
 
-    def from_db_value(self, value, expression, connection, context):
+    def from_db_value(self, value, *args, **kwargs):
         if value is None:
             return value
         return datetime.timedelta(seconds=value)
