@@ -10,6 +10,7 @@ Nitrate - Test Case Management System
 .. image::  https://readthedocs.org/projects/nitrate/badge/?version=latest
    :target: http://nitrate.readthedocs.io/en/latest/
 
+.. image:: https://quay.io/repository/nitrate/nitrate/status
 
 Nitrate is a new test plan, test run and test case management system, which is
 written in `Python`_ and `Django`_ web framework. It has a lot of great features,
