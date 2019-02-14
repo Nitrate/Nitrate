@@ -5,10 +5,14 @@ Shared functions for plan/case/run.
 Most of these functions are use for Ajax.
 """
 import datetime
-import sys
 import json
+import operator
+import sys
+
+from six.moves import reduce
 
 from django import http
+from django.db import models
 from django.contrib.auth.models import User
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
@@ -127,9 +131,11 @@ def info(request):
             # case sensitive table
             if query.get('name__startswith'):
                 seq = get_string_combinations(query['name__startswith'])
-                tags = tags.filter(eval(
-                    '|'.join(["models.Q(name__startswith = '%s')" % item for item in seq])
-                ))
+                criteria = reduce(
+                    operator.or_,
+                    (models.Q(name__startswith=item) for item in seq)
+                )
+                tags = tags.filter(criteria)
                 del query['name__startswith']
 
             tags = tags.filter(**query).distinct()
