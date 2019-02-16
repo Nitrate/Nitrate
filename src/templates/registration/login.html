@@ -1,58 +1,57 @@
-{% extends "tcms_base.html" %}
-{% block subtitle %}Nitrate{% endblock %}
-{% block custom_stylesheet %}
-{% endblock %}
-{% block custom_javascript %}
-	<script type="text/javascript" src='{{ STATIC_URL }}js/index.js'></script>
-	<script type="text/javascript" src='{{ STATIC_URL }}js/footer_at_the_end.js'></script>
-{% endblock %}
-
-{% block contents %}
-<div id="content">
-	<div id="index" >
-		<br clear="all">
-		{% if 'USERPWD' in SETTINGS.ENABLED_AUTH_BACKENDS %}
-		<div class="login radius">
-			<form id="id_login_form" action="{% url "nitrate-login" %}" method="POST">
+{% extends "tcms_master.html" %}
+{% block subtitle %}Login{% endblock %}
+{% block page_content %}
+<div class="container">
+    <div class="row" style="min-height:60px"></div>
+	<div class="row">
+        <div class="col-6 col-md-4"></div>
+        <div class="col-6 col-md-4">
+			<div class="d-flex justify-content-center">
+				<h4>Log In to Your Account</h4>
+			</div>
+			<form action="{% url "nitrate-login" %}" method="POST">
 				{% csrf_token %}
-				{% if SETTINGS.MOTD_LOGIN %}
-				<div class="cc">{{ SETTINGS.MOTD_LOGIN|safe}}</div>
-				{% endif %}
-				{% if SETTINGS.WELCOME_MESSAGE %}<h3>{{ SETTINGS.WELCOME_MESSAGE }}</h3>{% endif %}
-				<table border="0" cellpadding="10" cellspacing="10" class="login_table">
-					{{ form.as_table }}
-					<tr style="display:none">
-						<td id="login_info" colspan="2"></td>
-					</tr>
-                    <tr>
-                    	<td></td>
-						<td ><a href="{% url "password_reset" %}">Forget the password</a></td>
-					</tr>
-					{% if SETTINGS.ENABLED_AUTH_BACKENDS.USERPWD.ALLOW_REGISTER %}
-					<tr>
-						<td></td>
-						<td><a href="{% url "nitrate-register" %}?next={{ request.path }}">Register a new account</a></td>
-					</tr>
-					{% endif %}
-					<tr>
-                    	<td>&nbsp;</td>
-						<td  class="submit">
-							<input type="hidden" name="next" value="{{ next }}" />
-							<input type="submit" value="Login" class="loginbutton sprites" />
-						</td>
-					</tr>
-				</table>
+				<div class="form-group">
+					<label class="sr-only" for="usernameInput">Username</label>
+					<input type="input" class="form-control" id="usernameInput" name="username" placeholder="Username">
+				</div>
+				<div class="form-group">
+					<label class="sr-only" for="passwordInput">Password
+					</label>
+					<input type="password" class="form-control" id="passwordInput" name="password" placeholder="Password">
+				</div>
+				<div class="form-group">
+					<a href="#">Forgot password?</a>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-block">Log In</button>
+				</div>
+				<div class="form-group">
+					Need an account? <a href="{% url "nitrate-register" %}?next={{ request.path }}">Sign up</a>
+				</div>
 			</form>
-		</div>
-		{% endif %}
-		{% if social_auth_backends %}
-		<div class="login radius">
-			<p style="font-weight: bold; font-size: medium">Sign in with:</p>
-			{% for login_url, display_label, title in social_auth_backends %}
-				<a href="{{ login_url }}" title="{{ title }}" class="social_auth_login">{{ display_label }}</a>
-			{% endfor %}
-		</div>
-		{% endif %}
-	</div>
+			<div>
+				{% if social_auth_backends %}
+					<h5>Sign in with:</h5>
+					<ul class="social-logins">
+						{% for social_login_info in social_auth_backends %}
+							<li>
+							{% if social_login_info.icon %}
+								<a href="{{ social_login_info.social_begin_url }}" title="{{ social_login_info.title }}" class="social_auth_login">
+									<i class="fab fa-{{ social_login_info.icon }} fa-{{ social_login_info.icon_size }}"></i>
+								</a>
+							{% else %}
+								<a class="btn btn-outline-primary" href="{{ social_login_info.social_begin_url }}"
+									title="{{ social_login_info.title }}">{{ social_login_info.label }}</a>
+							{% endif %}
+							</li>
+						{% endfor %}
+					</ul>
+				{% endif %}
+			</div>
+		</div><!-- col -->
+        <div class="col-6 col-md-4"></div>
+	</div><!-- row -->
 </div>
+
 {% endblock %}

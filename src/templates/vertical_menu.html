@@ -1,0 +1,193 @@
+{% load i18n %}
+<div class="nav-pf-vertical nav-pf-vertical-with-sub-menus hide-nav-pf">
+	<ul class="list-group">
+		<li class="list-group-item">
+			<a href="{% url "nitrate-index" %}">
+				<span class="list-group-item-value">Home</span>
+			</a>
+		</li>
+
+		{% comment %} Planning {% endcomment %}
+
+		<li class="list-group-item secondary-nav-item-pf {% ifequal module "testplans" %}active{% endifequal %}" data-target="#planning-secondary">
+			<a href="javascript:void(0)">
+				<span class="list-group-item-value">{% trans "PLANNING" %}</span>
+			</a>
+			<div id="planning-secondary" class="nav-pf-secondary-nav">
+				<div class="nav-item-pf-header">
+					<span>{% trans "PLANNING" %}</span>
+				</div>
+				<ul class="list-group">
+					<li class="list-group-item" data-target="#ipsum-intellegam-tertiary">
+						<a href="{% url "plans-all" %}">
+							<span class="list-group-item-value">Search Plans</span>
+						</a>
+					</li>
+					{% if user.is_authenticated %}
+						<li class="list-group-item " data-target="#ipsum-copiosae-tertiary">
+							<a href="{% url "plans-all" %}?author__email__startswith={{ user.email }}">
+								<span class="list-group-item-value">My Plans</span>
+							</a>
+						</li>
+					{% endif %}
+					{% if perms.testplans.add_testplan %}
+						{# Select menu by module and submodule #}
+						<li class="list-group-item " data-target="#ipsum-patrioque-tertiary">
+							<a href="{% url "plans-new" %}">
+								<span class="list-group-item-value">New Plan</span>
+							</a>
+						</li>
+					{% endif %}
+				</ul>
+			</div>
+		</li>
+
+		{% comment %} Testing {% endcomment %}
+
+		<li class="list-group-item secondary-nav-item-pf {% ifequal module "testruns" %}active{% endifequal %}" data-target="#testing-secondary">
+			<a href="#0">
+				<span class="list-group-item-value">{% trans "TESTING" %}</span>
+			</a>
+			<div id="testing-secondary" class="nav-pf-secondary-nav">
+				<div class="nav-item-pf-header">
+					<a href="#0" class="secondary-collapse-toggle-pf" data-toggle="collapse-secondary-nav"></a>
+					<span>{% trans "TESTING" %}</span>
+				</div>
+				<ul class="list-group">
+					<li class="list-group-item" data-target="#ipsum-intellegam-tertiary">
+						<a href="{% url "runs-all" %}">
+							<span class="list-group-item-value">Search Runs</span>
+						</a>
+					</li>
+					<li class="list-group-item" data-target="#ipsum-copiosae-tertiary">
+						<a href="{% url "cases-search" %}">
+							<span class="list-group-item-value">Search Cases</span>
+						</a>
+					</li>
+					{% if user.is_authenticated %}
+						<li class="list-group-item" data-target="#ipsum-patrioque-tertiary">
+							<a href="{% url "runs-all" %}?people={{ user.email }}">
+								<span class="list-group-item-value">My Runs</span>
+							</a>
+						</li>
+					{% endif %}
+					{% if perms.testcases.add_testcase %}
+						<li class="list-group-item" data-target="#ipsum-patrioque-tertiary">
+							<a href="{% url "cases-new" %}">
+								<span class="list-group-item-value">New Case</span>
+							</a>
+						</li>
+					{% endif %}
+				</ul>
+			</div>
+		</li>
+
+		{% comment %} Environment {% endcomment %}
+
+		<li class="list-group-item secondary-nav-item-pf {% ifequal module "env" %}active{% endifequal %}" data-target="#environment-secondary">
+			<a href="#0">
+				<span class="list-group-item-value">{% trans "ENVIRONMENT" %}</span>
+			</a>
+			<div id="environment-secondary" class="nav-pf-secondary-nav">
+				<div class="nav-item-pf-header">
+					<a href="#0" class="secondary-collapse-toggle-pf" data-toggle="collapse-secondary-nav"></a>
+					<span>{% trans "ENVIRONMENT" %}</span>
+				</div>
+				<ul class="list-group">
+					<li class="list-group-item" data-target="#amet-detracto-tertiary">
+						<a href="{% url "management-env-groups" %}">
+							<span class="list-group-item-value">GROUPS</span>
+						</a>
+					</li>
+					<li class="list-group-item " data-target="#amet-mediocrem-tertiary">
+						<a href="{% url "management-env-properties" %}">
+							<span class="list-group-item-value">PROPERTIES</span>
+						</a>
+					</li>
+				</ul>
+			</div>
+		</li>
+
+		{% comment %} Reporting {% endcomment %}
+
+		<li class="list-group-item secondary-nav-item-pf {% ifequal module "report" %}active{% endifequal %}" data-target="#reporting-secondary">
+			<a href="#0">
+				<span class="list-group-item-value">{% trans "REPORTING" %}</span>
+			</a>
+			<div id="reporting-secondary" class="nav-pf-secondary-nav">
+				<div class="nav-item-pf-header">
+					<a href="#0" class="secondary-collapse-toggle-pf" data-toggle="collapse-secondary-nav"></a>
+					<span>{% trans "REPORTING" %}</span>
+				</div>
+				<ul class="list-group">
+					<li class="list-group-item" data-target="#ipsum-intellegam-tertiary">
+						<a href="{% url "report-overall" %}">
+							<span class="list-group-item-value">Overall</span>
+						</a>
+					</li>
+					<li class="list-group-item" data-target="#ipsum-copiosae-tertiary">
+						<a href="{% url "report-custom" %}">
+							<span class="list-group-item-value">Custom</span>
+						</a>
+					</li>
+					<li class="list-group-item" data-target="#ipsum-patrioque-tertiary">
+						<a href="{% url "testing-report" %}">
+							<span class="list-group-item-value">Testing Report</span>
+						</a>
+					</li>
+				</ul>
+			</div>
+		</li>
+
+		{# Admin #}
+
+		{% if user.is_staff %}
+		<li class="list-group-item secondary-nav-item-pf {% if not module %}active{% endif %}" data-target="#reporting-secondary">
+			<a href="#0">
+				<span class="list-group-item-value">{% trans "ADMIN" %}</span>
+			</a>
+			<div id="reporting-secondary" class="nav-pf-secondary-nav">
+				<div class="nav-item-pf-header">
+					<a href="#0" class="secondary-collapse-toggle-pf" data-toggle="collapse-secondary-nav"></a>
+					<span>{% trans "ADMIN" %}</span>
+				</div>
+				<ul class="list-group">
+					{% if perms.auth.change_user %}
+					<li class="list-group-item" data-target="#ipsum-intellegam-tertiary">
+						<a href="{% url "admin:app_list" "auth" %}">
+							<span class="list-group-item-value">Auth</span>
+						</a>
+					</li>
+					{% endif %}
+					{% if perms.management %}
+					<li class="list-group-item" data-target="#ipsum-copiosae-tertiary">
+						<a href="{% url "admin:app_list" "management" %}">
+							<span class="list-group-item-value">Management</span>
+						</a>
+					</li>
+					{% endif %}
+					{% if perms.testplans.change_testplantype %}
+					<li class="list-group-item" data-target="#ipsum-patrioque-tertiary">
+						<a href="{% url "admin:app_list" "testplans" %}">
+							<span class="list-group-item-value">Test Plans</span>
+						</a>
+					</li>
+					{% endif %}
+					{% if perms.testcases %}
+					<li class="list-group-item" data-target="#ipsum-patrioque-tertiary">
+						<a href="{% url "admin:app_list" "testcases" %}">
+							<span class="list-group-item-value">Test Cases</span>
+						</a>
+					</li>
+					{% endif %}
+					<li class="list-group-item" data-target="#ipsum-patrioque-tertiary">
+						<a href="{% url "admin:index" %}">
+							<span class="list-group-item-value">All</span>
+						</a>
+					</li>
+				</ul>
+			</div>
+		</li>
+		{% endif %}
+	</ul>
+</div>

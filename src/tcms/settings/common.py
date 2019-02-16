@@ -348,12 +348,12 @@ PLAN_RUNS_PAGE_SIZE = 20
 
 # The URLS will be list in footer
 # Example:
-# FOOTER_LINKS = (
+# HELP_LINKS = (
 #   ('mailto:nitrate-dev-list@example.com', 'Contact Us'),
 #   ('mailto:nitrate-admin@example.com', 'Request Permission'),
 #   ('http://foo.com', 'foo')
 # )
-FOOTER_LINKS = ()
+HELP_LINKS = ()
 
 # Attachment file download path
 # it could be specified to a different out of MEDIA_URL

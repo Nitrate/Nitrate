@@ -119,20 +119,23 @@ class LoginView(DjangoLoginView):
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
 
+        from tcms.auth.social_auths import SOCIAL_AUTHS_CONFIG
+
         social_auth_backends = settings.ENABLED_AUTH_BACKENDS.get('SOCIAL')
         if social_auth_backends is not None:
-            data.update({
-                'social_auth_backends': [
-                    (
-                        # URL
-                        reverse('social:begin', args=[backend_info['backend']]),
-                        # Display label
-                        backend_info['label'],
-                        # title in A
-                        backend_info['title'],
-                    )
-                    for backend_info in social_auth_backends
-                ]
-            })
+            social_auth_data = []
+            for backend_info in social_auth_backends:
+                auth_data = {
+                    'social_begin_url': reverse(
+                        'social:begin', args=[backend_info['backend']]),
+                    'label': backend_info['label'],
+                    'title': backend_info['title']
+                }
+                additional_config = SOCIAL_AUTHS_CONFIG.get(backend_info['backend'])
+                if additional_config:
+                    auth_data.update(additional_config)
+                social_auth_data.append(auth_data)
+
+            data['social_auth_backends'] = social_auth_data
 
         return data
