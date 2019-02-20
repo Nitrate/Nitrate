@@ -44,7 +44,6 @@ FOOTER_LINKS = (
 
 # added for nitrate3.4 compatibility
 DEFAULT_GROUPS = ['default']
-TESTOPIA_XML_VERSION = '1.0'
 
 ADMINS = (
 )
