@@ -2,7 +2,7 @@
 
 import operator
 
-from six.moves.http_client import BAD_REQUEST
+from http.client import BAD_REQUEST
 
 from tcms.xmlrpc.api import tag
 from tests.factories import TestTagFactory

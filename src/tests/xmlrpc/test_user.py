@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from six.moves.http_client import FORBIDDEN
-from six.moves.http_client import NOT_FOUND
+from http.client import FORBIDDEN
+from http.client import NOT_FOUND
 
 from django.contrib.auth.models import User
 from django.test import TestCase

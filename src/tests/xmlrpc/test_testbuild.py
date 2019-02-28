@@ -2,9 +2,9 @@
 
 import unittest
 
-from six.moves.http_client import BAD_REQUEST
-from six.moves.http_client import FORBIDDEN
-from six.moves.http_client import NOT_FOUND
+from http.client import BAD_REQUEST
+from http.client import FORBIDDEN
+from http.client import NOT_FOUND
 
 from django.test import TestCase
 
