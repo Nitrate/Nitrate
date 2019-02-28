@@ -61,7 +61,6 @@ python-dateutil==2.7.5
 python-slugify==1.2.6
 pytz==2018.7
 requests==2.20.1
-six==1.11.0
 snowballstemmer==1.2.1
 Sphinx==1.8.2
 sphinx-rtd-theme==0.4.2

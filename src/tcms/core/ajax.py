@@ -9,7 +9,7 @@ import json
 import operator
 import sys
 
-from six.moves import reduce
+from functools import reduce
 
 from django import http
 from django.db import models

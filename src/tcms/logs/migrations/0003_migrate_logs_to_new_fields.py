@@ -6,7 +6,7 @@ import io
 import re
 import logging
 
-from six.moves.html_parser import HTMLParser
+from html.parser import HTMLParser
 
 from django.db import migrations
 

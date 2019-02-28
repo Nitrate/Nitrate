@@ -21,7 +21,6 @@ install_requires = [
     'html2text',
     'odfpy >= 0.9.6',
     'python-bugzilla',
-    'six',
     'xmltodict',
     'kobo == 0.9.0'
 ]

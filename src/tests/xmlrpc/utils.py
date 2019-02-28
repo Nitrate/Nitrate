@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from six.moves.xmlrpc_client import Fault
+from xmlrpc.client import Fault
 
 from django import test
 from django.contrib.auth.models import User

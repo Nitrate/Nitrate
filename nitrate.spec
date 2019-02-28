@@ -37,7 +37,6 @@ Requires:       python2-kerberos
 Requires:       python2-kobo-django
 Requires:       python2-odfpy
 Requires:       python2-xmltodict
-Requires:       python2-six
 
 # This is not available in Fedora repository yet.
 # Requires:       python2-django-contrib-comments

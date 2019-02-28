@@ -10,7 +10,6 @@ from http.client import BAD_REQUEST
 from http.client import NOT_FOUND
 from http.client import FORBIDDEN
 from http.client import NOT_IMPLEMENTED
-from six.moves import map
 
 from tcms.xmlrpc.api import product
 from tests.factories import ComponentFactory

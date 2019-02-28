@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import six
 import xmltodict
 
 from django.contrib.auth.models import User
@@ -142,6 +141,6 @@ def clean_xml_file(xml_content):
     if case_elements is not None:
         if isinstance(case_elements, dict):
             case_elements = [case_elements]
-        return six.moves.map(process_case, case_elements)
+        return map(process_case, case_elements)
     else:
         raise ValueError('No case found in XML document.')

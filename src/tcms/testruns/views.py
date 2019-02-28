@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import functools
 import itertools
 import json
 import logging
 import operator
-import six
 import time
+import urllib
 
 from operator import attrgetter
 from operator import itemgetter
-from six.moves import urllib
 
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
@@ -200,7 +200,7 @@ def new(request, template_name='run/new.html'):
             )
 
     else:
-        estimated_time = six.moves.reduce(
+        estimated_time = functools.reduce(
             operator.add,
             (tc.estimated_time for tc in tcs_values))
         form = NewRunForm(initial={
@@ -864,7 +864,7 @@ def new_run_with_caseruns(request, run_id, template_name='run/clone.html'):
             info_type=Prompt.Info,
             info='At least one case is required by a run',
             next=request.META.get('HTTP_REFERER', '/'))
-    estimated_time = six.moves.reduce(
+    estimated_time = functools.reduce(
         operator.add,
         [tcr.case.estimated_time for tcr in tcrs])
 
@@ -1063,8 +1063,8 @@ def order_case(request, run_id):
     #         (20, 10294)
     #         (30, 10315)
     #         (40, 10443)
-    new_sort_keys = six.moves.xrange(10, (len(case_run_ids) + 1) * 10, 10)
-    key_id_pairs = six.moves.zip(new_sort_keys, (int(pk) for pk in case_run_ids))
+    new_sort_keys = range(10, (len(case_run_ids) + 1) * 10, 10)
+    key_id_pairs = zip(new_sort_keys, (int(pk) for pk in case_run_ids))
     with transaction.atomic():
         for key_id_pair in key_id_pairs:
             cursor = connection.writer_cursor
@@ -1165,7 +1165,7 @@ class AddCasesToRunView(View):
                                                         'estimated_time')
         ncs = tcs.filter(case_id__in=ncs_id)
 
-        estimated_time = six.moves.reduce(
+        estimated_time = functools.reduce(
             operator.add,
             (nc.estimated_time for nc in ncs))
         tr.estimated_time = tr.estimated_time + estimated_time

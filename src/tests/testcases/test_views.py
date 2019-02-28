@@ -3,7 +3,6 @@
 from __future__ import absolute_import
 
 import json
-import six
 import unittest
 import xml.etree.ElementTree
 
@@ -11,7 +10,6 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 from operator import attrgetter, itemgetter
 import http.client
-from six.moves import map
 
 import mock
 
@@ -992,7 +990,7 @@ class TestCloneCase(BasePlanCase):
         # response, it is necessary to inspect the response content directly.
 
         bs = BeautifulSoup(response.content.decode('utf-8'), 'html.parser')
-        case_ids = sorted(six.moves.map(int, [
+        case_ids = sorted(map(int, [
             elem.attrs['value'] for elem in bs.find(id='id_case').find_all('input')
         ]))
         self.assertEqual([self.case_1.pk, self.case_2.pk], case_ids)

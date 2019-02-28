@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from six.moves import filterfalse
+from itertools import filterfalse
 
 from django.forms import EmailField
 from django.forms import ValidationError

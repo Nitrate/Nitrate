@@ -6,7 +6,7 @@ import traceback
 
 from functools import wraps
 import http.client
-from six.moves.xmlrpc_client import Fault
+from xmlrpc.client import Fault
 
 import django
 from django.conf import settings

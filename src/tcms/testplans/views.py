@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import functools
 import itertools
 import json
-import six
+import urllib
 
 from operator import add, itemgetter
-from six.moves import urllib
 
 from django.utils.decorators import method_decorator
 from django.conf import settings
@@ -516,7 +516,7 @@ def choose_run(request, plan_id, template_name='plan/choose_testrun.html'):
                 if testcase.case_id not in exist_cases_id:
                     testrun.add_case_run(case=testcase)
 
-            estimated_time = six.moves.reduce(
+            estimated_time = functools.reduce(
                 add,
                 [nc.estimated_time for nc in to_be_added_cases])
             testrun.estimated_time = testrun.estimated_time + estimated_time
@@ -990,7 +990,7 @@ class PlanComponentsActionView(View):
     @method_decorator(permission_required('testplans.add_testplancomponent'))
     def add(self, request, plan, components):
         """Add components to given plans"""
-        list(six.moves.map(plan.add_component, components))
+        list(map(plan.add_component, components))
 
     @method_decorator(permission_required('testplans.delete_testplancomponent'))
     def remove_components_from_plan(self, request, plan, components=None):
@@ -1003,7 +1003,7 @@ class PlanComponentsActionView(View):
         if components is None:
             TestPlanComponent.objects.filter(plan=plan).delete()
         else:
-            list(six.moves.map(plan.remove_component, components))
+            list(map(plan.remove_component, components))
 
         return self.get_default_component_list(request, plan)
 
@@ -1068,7 +1068,7 @@ def printable(request, template_name='plan/printable.html'):
 @require_GET
 def export(request, template_name='case/export.xml'):
     """Export the plan"""
-    plan_pks = list(six.moves.map(int, request.GET.getlist('plan')))
+    plan_pks = list(map(int, request.GET.getlist('plan')))
 
     if not plan_pks:
         return Prompt.render(
