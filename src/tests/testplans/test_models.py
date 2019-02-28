@@ -40,7 +40,7 @@ class TestSendEmailOnPlanUpdated(test.TestCase):
 
         mailto.assert_called_once_with(
             settings.PLAN_EMAIL_TEMPLATE,
-            'TestPlan {} has been updated.'.format(self.plan.pk),
+            f'TestPlan {self.plan.pk} has been updated.',
             ['owner@example.com'],
             context={'plan': self.plan})
 
@@ -71,7 +71,7 @@ class TestSendEmailOnPlanDeleted(test.TestCase):
 
         mailto.assert_called_once_with(
             settings.PLAN_DELELE_EMAIL_TEMPLATE,
-            'TestPlan {} has been deleted.'.format(plan_id),
+            f'TestPlan {plan_id} has been deleted.',
             ['owner@example.com'],
             context={'plan': self.plan})
 

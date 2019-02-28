@@ -254,7 +254,7 @@ class TestPlan(TCMSActionModel):
 
     def make_cloned_name(self):
         """Make default name of cloned plan"""
-        return 'Copy of {}'.format(self.name)
+        return f'Copy of {self.name}'
 
     def clone(self, new_name=None, product=None, version=None,
               new_original_author=None, set_parent=True,

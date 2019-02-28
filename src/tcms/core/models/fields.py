@@ -67,4 +67,4 @@ class NitrateBooleanField(BooleanField):
         if value in (0, '0', 'false', 'False', False):
             return False
         raise ValidationError(
-            '{} is not recognized as a bool value.'.format(value))
+            f'{value} is not recognized as a bool value.')

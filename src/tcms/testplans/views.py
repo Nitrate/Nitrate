@@ -944,10 +944,10 @@ class DeleteCasesView(View):
         for case in cases:
             plan_log.make(
                 who=request.user,
-                new_value='Remove case {} from plan {}'.format(case.pk, plan.pk))
+                new_value=f'Remove case {case.pk} from plan {plan.pk}')
             case.log_action(
                 who=request.user,
-                new_value='Remove from plan {}'.format(plan.pk))
+                new_value=f'Remove from plan {plan.pk}')
             plan.delete_case(case=case)
 
         return JsonResponse({'rc': 0, 'response': 'ok'})

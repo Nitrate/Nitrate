@@ -120,7 +120,7 @@ class TestOverallProductByBuilds(BaseCaseRun):
         resp = self.client.get(self.url)
 
         stats = (
-            ('<a href="?build_id={}">{}</a>'.format(self.build.pk, self.build.name),
+            (f'<a href="?build_id={self.build.pk}">{self.build.name}</a>',
              '<p>0/2</p>',
              '50.0',
              '<div class="strong emphasize">2 Failed</div>'),

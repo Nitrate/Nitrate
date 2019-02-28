@@ -15,7 +15,7 @@ def split_as_option(value, splitter='|', autoescape=None):
     result = ""
 
     for v in value:
-        result += '<option value="{}">{}</option>\n'.format(v, v)
+        result += f'<option value="{v}">{v}</option>\n'
 
     return mark_safe(result)
 

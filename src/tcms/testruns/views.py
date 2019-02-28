@@ -373,7 +373,7 @@ def load_runs_of_one_plan(request, plan_id,
 
         # Get associated statistics data
         run_filters = {
-            'run__{}'.format(key): value for key, value in
+            f'run__{key}': value for key, value in
             form.cleaned_data.items()
         }
 

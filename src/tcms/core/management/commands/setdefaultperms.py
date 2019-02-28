@@ -148,7 +148,7 @@ class Command(BaseCommand):
                 group = Group.objects.get(name=group)
                 if isinstance(capabilities, dict):
                     for action, is_enabled in capabilities.items():
-                        codename = '{}_{}'.format(action, model_name)
+                        codename = f'{action}_{model_name}'
                         perm = Permission.objects.get(codename=codename)
                         if is_enabled:
                             group.permissions.add(perm)

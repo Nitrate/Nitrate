@@ -110,7 +110,7 @@ class TCR2File:
             write_to_output('<loglinks>')
             for link in tcr.links.iterator():
                 write_to_output(
-                    '<loglink name="{}" url="{}" />'.format(link.name, link.url))
+                    f'<loglink name="{link.name}" url="{link.url}" />')
             write_to_output('</loglinks>')
             write_to_output('<issues>')
             for issue in tcr.issues.iterator():

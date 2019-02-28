@@ -420,7 +420,7 @@ class TestCaseRun(TCMSActionModel):
         unique_together = ('case', 'run', 'case_text_version')
 
     def __str__(self):
-        return '{}: {}'.format(self.pk, self.case_id)
+        return f'{self.pk}: {self.case_id}'
 
     @classmethod
     def to_xmlrpc(cls, query={}):

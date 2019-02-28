@@ -28,7 +28,7 @@ class TCMSLog:
         for element in elements:
             if not hasattr(self, element):
                 raise NotImplementedError(
-                    'Log does not have attribute {}'.format(element))
+                    f'Log does not have attribute {element}')
 
         model = self.get_log_model()
         new = model(**self.get_log_create_data())

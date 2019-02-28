@@ -172,7 +172,7 @@ class TestOperateComponentView(BasePlanCase):
             html=True)
 
         comp_options = (
-            '<option value="{}">{}</option>'.format(comp.pk, comp.name)
+            f'<option value="{comp.pk}">{comp.name}</option>'
             for comp in (self.comp_application,
                          self.comp_database,
                          self.comp_cli,
@@ -263,7 +263,7 @@ class TestOperateCategoryView(BasePlanCase):
                 self.product.pk, self.product.name),
             html=True)
 
-        categories = ('<option value="{}">{}</option>'.format(category.pk, category.name)
+        categories = (f'<option value="{category.pk}">{category.name}</option>'
                       for category in self.product.category.all())
         self.assertContains(
             response,
@@ -460,7 +460,7 @@ class TestOperateCaseTag(BasePlanCase):
 
         tags = TestTag.objects.filter(
             cases__in=[self.case_1, self.case_3]).order_by('name').distinct()
-        tag_options = ['<option value="{}">{}</option>'.format(tag.pk, tag.name)
+        tag_options = [f'<option value="{tag.pk}">{tag.name}</option>'
                        for tag in tags]
 
         self.assertContains(
@@ -575,7 +575,7 @@ class TestEditCase(BasePlanCase):
         self.login_tester()
 
         edit_data = self.edit_data.copy()
-        new_summary = 'Edited: {}'.format(self.case_1.summary)
+        new_summary = f'Edited: {self.case_1.summary}'
         edit_data['summary'] = new_summary
 
         response = self.client.post(self.case_edit_url, edit_data)
@@ -949,7 +949,7 @@ class TestPrintablePage(BasePlanCase):
         for case in [self.case_1, self.case_2]:
             self.assertContains(
                 response,
-                '<h3>[{}] {}</h3>'.format(case.pk, case.summary),
+                f'<h3>[{case.pk}] {case.summary}</h3>',
                 html=True
             )
 

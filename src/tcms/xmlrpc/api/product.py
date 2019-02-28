@@ -386,11 +386,11 @@ def update_component(request, component_id, values):
     from tcms.management.models import Component
 
     if not isinstance(values, dict) or 'name' not in values:
-        raise ValueError('Component name is not in values {}.'.format(values))
+        raise ValueError(f'Component name is not in values {values}.')
 
     name = values['name']
     if not isinstance(name, str) or len(name) == 0:
-        raise ValueError('Component name {} is not a string value.'.format(name))
+        raise ValueError(f'Component name {name} is not a string value.')
 
     component = Component.objects.get(pk=int(component_id))
     component.name = name

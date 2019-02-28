@@ -1833,7 +1833,7 @@ def manage_case_issues(request, case_id, template_name='case/get_issues.html'):
         tc = get_object_or_404(TestCase, case_id=case_id)
     except Http404:
         return JsonResponse(
-            {'messages': ['Case {} does not exist.'.format(case_id)]},
+            {'messages': [f'Case {case_id} does not exist.']},
             status=http_client.NOT_FOUND)
 
     actions = CaseIssueActions(request=request,

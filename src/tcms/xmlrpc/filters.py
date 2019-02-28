@@ -125,7 +125,7 @@ def wrap_exceptions(func):
 
         if settings.DEBUG:
             stack_trace = ''.join(traceback.format_exception(*sys.exc_info()))
-            fault_string = '{}\n{}'.format(fault_string, stack_trace)
+            fault_string = f'{fault_string}\n{stack_trace}'
 
         raise Fault(faultCode=fault_code,
                     faultString=_format_message(fault_string))
