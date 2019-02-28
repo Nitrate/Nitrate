@@ -758,8 +758,8 @@ class TestDeleteProduct(test.TestCase):
         the_new_plan = list(TestPlan.objects.order_by('pk'))[-1]
 
         # now delete the product
-        admin_delete_url = "admin:%s_%s_delete" % (product._meta.app_label,
-                                                   product._meta.model_name)
+        admin_delete_url = "admin:{}_{}_delete".format(product._meta.app_label,
+                                                       product._meta.model_name)
         location = reverse(admin_delete_url, args=[product.pk])
         response = self.c.get(location)
         self.assertEqual(http_client.OK, response.status_code)
@@ -772,8 +772,8 @@ class TestDeleteProduct(test.TestCase):
         response = self.c.post(location, {'post': 'yes'})
         self.assertEqual(302, response.status_code)
         self.assertIn(
-            '/admin/%s/%s/' % (product._meta.app_label,
-                               product._meta.model_name),
+            '/admin/{}/{}/'.format(product._meta.app_label,
+                                   product._meta.model_name),
             response['Location'])
 
         # verify everything has been deleted

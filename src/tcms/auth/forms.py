@@ -46,7 +46,7 @@ class RegistrationForm(UserCreationForm):
         from tcms.core.utils import request_host_link
 
         s = Site.objects.get_current()
-        cu = '%s%s' % (
+        cu = '{}{}'.format(
             request_host_link(request, s.domain),
             reverse('nitrate-activation-confirm', args=[active_key.activation_key])
         )

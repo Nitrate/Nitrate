@@ -22,5 +22,5 @@ def bugzilla_external_track(issue_tracker, issue):
             ext_type_description='Nitrate Test Case')
 
     except Exception as err:
-        message = '%s: %s' % (err.__class__.__name__, str(err))
+        message = '{}: {}'.format(err.__class__.__name__, str(err))
         warnings.warn(message)

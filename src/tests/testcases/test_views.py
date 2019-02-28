@@ -575,12 +575,12 @@ class TestEditCase(BasePlanCase):
         self.login_tester()
 
         edit_data = self.edit_data.copy()
-        new_summary = 'Edited: {0}'.format(self.case_1.summary)
+        new_summary = 'Edited: {}'.format(self.case_1.summary)
         edit_data['summary'] = new_summary
 
         response = self.client.post(self.case_edit_url, edit_data)
 
-        redirect_url = '{0}?from_plan={1}'.format(
+        redirect_url = '{}?from_plan={}'.format(
             reverse('case-get', args=[self.case_1.pk]),
             self.plan.pk,
         )
@@ -597,7 +597,7 @@ class TestEditCase(BasePlanCase):
 
         response = self.client.post(self.case_edit_url, edit_data)
 
-        redirect_url = '{0}?from_plan={1}'.format(
+        redirect_url = '{}?from_plan={}'.format(
             reverse('case-edit', args=[self.case_1.pk]),
             self.plan.pk,
         )
@@ -611,7 +611,7 @@ class TestEditCase(BasePlanCase):
 
         response = self.client.post(self.case_edit_url, edit_data)
 
-        redirect_url = '{0}?from_plan={1}'.format(
+        redirect_url = '{}?from_plan={}'.format(
             reverse('case-edit', args=[self.case_2.pk]),
             self.plan.pk,
         )
@@ -626,7 +626,7 @@ class TestEditCase(BasePlanCase):
 
         response = self.client.post(self.case_edit_url, edit_data)
 
-        redirect_url = '{0}?from_plan={1}'.format(
+        redirect_url = '{}?from_plan={}'.format(
             reverse('case-edit', args=[self.proposed_case.pk]),
             self.plan.pk,
         )
@@ -640,7 +640,7 @@ class TestEditCase(BasePlanCase):
 
         response = self.client.post(self.case_edit_url, edit_data)
 
-        redirect_url = '{0}#testcases'.format(
+        redirect_url = '{}#testcases'.format(
             reverse('plan-get', args=[self.plan.pk])
         )
         self.assertRedirects(response, redirect_url, target_status_code=301)
@@ -654,7 +654,7 @@ class TestEditCase(BasePlanCase):
 
         response = self.client.post(self.case_edit_url, edit_data)
 
-        redirect_url = '{0}#reviewcases'.format(
+        redirect_url = '{}#reviewcases'.format(
             reverse('plan-get', args=[self.plan.pk])
         )
         self.assertRedirects(response, redirect_url, target_status_code=301)
@@ -949,7 +949,7 @@ class TestPrintablePage(BasePlanCase):
         for case in [self.case_1, self.case_2]:
             self.assertContains(
                 response,
-                '<h3>[{0}] {1}</h3>'.format(case.pk, case.summary),
+                '<h3>[{}] {}</h3>'.format(case.pk, case.summary),
                 html=True
             )
 
@@ -1004,15 +1004,15 @@ class TestCloneCase(BasePlanCase):
 
         self.assertNotContains(
             response,
-            'Use the same Plan -- {0} : {1}'.format(self.plan.pk,
-                                                    self.plan.name),
+            'Use the same Plan -- {} : {}'.format(self.plan.pk,
+                                                  self.plan.name),
         )
 
         self.assertContains(
             response,
             '<label for="id_case_0">'
             '<input checked="checked" id="id_case_0" name="case" '
-            'type="checkbox" value="{0}"> {1}</label>'.format(
+            'type="checkbox" value="{}"> {}</label>'.format(
                 self.case_1.pk, self.case_1.summary),
             html=True)
 
@@ -1038,7 +1038,7 @@ class TestSearchCases(BasePlanCase):
                                    {'product': self.product.pk})
         self.assertContains(
             response,
-            '<option value="{0}" selected="selected">{1}</option>'.format(
+            '<option value="{}" selected="selected">{}</option>'.format(
                 self.product.pk, self.product.name),
             html=True
         )
@@ -1111,7 +1111,7 @@ class TestAJAXResponse(BasePlanCase):
         id_links = [row[2] for row in data['aaData']]
         id_links.sort()
         expected_id_links = [
-            "<a href='{0}'>{1}</a>".format(
+            "<a href='{}'>{}</a>".format(
                 reverse('case-get', args=[case.pk]),
                 case.pk,
             )

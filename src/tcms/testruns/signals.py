@@ -19,7 +19,7 @@ class NewRunEmailThread(threading.Thread):
             self.instance.mail(
                 # new_run.txt can use in testrun update
                 template='mail/update_run.txt',
-                subject='Test Run %s - %s has been updated' % (
+                subject='Test Run {} - {} has been updated'.format(
                     self.instance.pk, self.instance.summary
                 ),
                 context={'test_run': self.instance, }
@@ -28,7 +28,7 @@ class NewRunEmailThread(threading.Thread):
         else:
             self.instance.mail(
                 template='mail/new_run.txt',
-                subject='New run create from plan %s: %s' % (
+                subject='New run create from plan {}: {}'.format(
                     self.instance.plan_id, self.instance.summary
                 ),
                 context={'test_run': self.instance, }

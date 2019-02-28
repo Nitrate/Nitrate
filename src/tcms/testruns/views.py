@@ -204,7 +204,7 @@ def new(request, template_name='run/new.html'):
             operator.add,
             (tc.estimated_time for tc in tcs_values))
         form = NewRunForm(initial={
-            'summary': 'Test run for %s on %s' % (
+            'summary': 'Test run for {} on {}'.format(
                 tp.name,
                 tp.env_group.all() and tp.env_group.all()[0] or 'Unknown environment'
             ),
@@ -373,7 +373,7 @@ def load_runs_of_one_plan(request, plan_id,
 
         # Get associated statistics data
         run_filters = {
-            'run__{0}'.format(key): value for key, value in
+            'run__{}'.format(key): value for key, value in
             six.iteritems(form.cleaned_data)
         }
 
@@ -1007,7 +1007,7 @@ def clone(request, template_name='run/clone.html'):
                 'product_version': form.cleaned_data['product_version'].pk,
                 'build': form.cleaned_data['build'].pk}
 
-            return HttpResponseRedirect('%s?%s' % (
+            return HttpResponseRedirect('{}?{}'.format(
                 reverse('runs-all'),
                 urllib.parse.urlencode(params, True)
             ))
@@ -1271,7 +1271,7 @@ def update_case_run_text(request, run_id):
         lctv = tcr.latest_text().case_text_version
         if tcr.case_text_version != lctv:
             count += 1
-            updated_tcrs += '<li>%s: %s -> %s</li>' % (
+            updated_tcrs += '<li>{}: {} -> {}</li>'.format(
                 tcr.case.summary, tcr.case_text_version, lctv
             )
             tcr.case_text_version = lctv

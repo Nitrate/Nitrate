@@ -119,10 +119,10 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='usergroupmap',
-            unique_together=set([('user', 'group')]),
+            unique_together={('user', 'group')},
         ),
         migrations.AlterIndexTogether(
             name='bookmark',
-            index_together=set([('content_type', 'object_pk', 'site')]),
+            index_together={('content_type', 'object_pk', 'site')},
         ),
     ]

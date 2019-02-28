@@ -210,7 +210,7 @@ class TestCaseRunAddComment(XmlrpcAPIBaseTest):
 
     def test_add_comment_with_string(self):
         comment = testcaserun.add_comment(self.admin_request,
-                                          "{0},{1}".format(self.case_run_1.pk, self.case_run_2.pk),
+                                          "{},{}".format(self.case_run_1.pk, self.case_run_2.pk),
                                           "Hello World!")
         self.assertIsNone(comment)
 
@@ -497,7 +497,7 @@ class TestCaseRunDetachIssue(XmlrpcAPIBaseTest):
     @unittest.skip('Refer to #148.')
     def test_detach_issue_with_non_exist_bug(self):
         original_links_count = self.case_run.case.issues.count()
-        nonexisting_bug = '{0}111'.format(self.bz_bug)
+        nonexisting_bug = '{}111'.format(self.bz_bug)
         testcaserun.detach_issue(self.admin_request, self.case_run.pk, nonexisting_bug)
         self.assertEqual(original_links_count, self.case_run.case.issues.count())
 

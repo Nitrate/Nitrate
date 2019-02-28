@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterUniqueTogether(
             name='testcasecomponent',
-            unique_together=set([('case', 'component')]),
+            unique_together={('case', 'component')},
         ),
     ]

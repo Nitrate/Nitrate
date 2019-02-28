@@ -29,6 +29,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterIndexTogether(
             name='linkreference',
-            index_together=set([('content_type', 'object_pk', 'site')]),
+            index_together={('content_type', 'object_pk', 'site')},
         ),
     ]

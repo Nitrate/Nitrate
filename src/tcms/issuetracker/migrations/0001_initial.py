@@ -124,10 +124,10 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='productissuetrackerrelationship',
-            unique_together=set([('product', 'issue_tracker')]),
+            unique_together={('product', 'issue_tracker')},
         ),
         migrations.AlterUniqueTogether(
             name='issue',
-            unique_together=set([('tracker', 'issue_key'), ('issue_key', 'case', 'case_run'), ('issue_key', 'case')]),
+            unique_together={('tracker', 'issue_key'), ('issue_key', 'case', 'case_run'), ('issue_key', 'case')},
         ),
     ]

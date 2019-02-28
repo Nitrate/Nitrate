@@ -100,22 +100,22 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='testcasetext',
-            unique_together=set([('case', 'case_text_version')]),
+            unique_together={('case', 'case_text_version')},
         ),
         migrations.AlterUniqueTogether(
             name='testcaseplan',
-            unique_together=set([('plan', 'case')]),
+            unique_together={('plan', 'case')},
         ),
         migrations.AlterUniqueTogether(
             name='testcasecategory',
-            unique_together=set([('product', 'name')]),
+            unique_together={('product', 'name')},
         ),
         migrations.AlterUniqueTogether(
             name='testcasebug',
-            unique_together=set([('bug_id', 'case_run', 'case'), ('bug_id', 'case_run')]),
+            unique_together={('bug_id', 'case_run', 'case'), ('bug_id', 'case_run')},
         ),
         migrations.AlterIndexTogether(
             name='contact',
-            index_together=set([('content_type', 'object_pk', 'site')]),
+            index_together={('content_type', 'object_pk', 'site')},
         ),
     ]

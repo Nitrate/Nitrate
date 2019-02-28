@@ -33,7 +33,7 @@ class UploadedPlainTextFile(UploadedFile):
     """Represent an uploaded plain text file"""
 
     def get_content(self):
-        return '<pre>{0}</pre>'.format(self.uploaded_file.read())
+        return '<pre>{}</pre>'.format(self.uploaded_file.read())
 
 
 class UploadedHTMLFile(UploadedFile):
@@ -167,7 +167,7 @@ class CasePlanXMLField(forms.FileField):
         except ValueError as e:
             raise forms.ValidationError(str(e))
         except Exception as error:
-            raise forms.ValidationError('%s: %s' % (
+            raise forms.ValidationError('{}: {}'.format(
                 self.error_messages['interpret_error'],
                 error
             ))

@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterUniqueTogether(
             name='testcasebug',
-            unique_together=set([]),
+            unique_together=set(),
         ),
         migrations.RemoveField(
             model_name='testcasebug',

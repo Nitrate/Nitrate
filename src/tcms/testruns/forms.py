@@ -350,7 +350,7 @@ class PlanFilterRunForm(forms.Form):
 
     def __init__(self, request_data):
         super(PlanFilterRunForm, self).__init__(
-            dict((k, v) for k, v in six.iteritems(request_data) if v.strip())
+            {k: v for k, v in six.iteritems(request_data) if v.strip()}
         )
 
     def clean(self):

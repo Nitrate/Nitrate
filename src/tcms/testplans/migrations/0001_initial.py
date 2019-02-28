@@ -200,18 +200,18 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='testplantext',
-            unique_together=set([('plan', 'plan_text_version')]),
+            unique_together={('plan', 'plan_text_version')},
         ),
         migrations.AlterUniqueTogether(
             name='testplanpermission',
-            unique_together=set([('plan', 'userid')]),
+            unique_together={('plan', 'userid')},
         ),
         migrations.AlterUniqueTogether(
             name='testplancomponent',
-            unique_together=set([('plan', 'component')]),
+            unique_together={('plan', 'component')},
         ),
         migrations.AlterIndexTogether(
             name='testplan',
-            index_together=set([('product', 'plan_id')]),
+            index_together={('product', 'plan_id')},
         ),
     ]
