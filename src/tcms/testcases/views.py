@@ -9,7 +9,7 @@ import logging
 
 from operator import itemgetter, attrgetter
 from six.moves import map
-from six.moves import http_client
+import http.client
 
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
@@ -1768,14 +1768,14 @@ def manage_case_issues(request, case_id, template_name='case/get_issues.html'):
             #        Maybe in future.
             if not self.request.user.has_perm('issuetracker.add_issue'):
                 return JsonResponse({'messages': ['Permission denied.']},
-                                    status=http_client.FORBIDDEN)
+                                    status=http.client.FORBIDDEN)
 
             request_data = request.GET.copy()
             request_data.update({'case': self.case.pk})
             form = CaseIssueForm(request_data)
             if not form.is_valid():
                 return JsonResponse({'messages': form_error_messags_to_list(form)},
-                                    status=http_client.BAD_REQUEST)
+                                    status=http.client.BAD_REQUEST)
 
             try:
                 self.case.add_issue(
@@ -1785,19 +1785,19 @@ def manage_case_issues(request, case_id, template_name='case/get_issues.html'):
                     description=form.cleaned_data['description'],
                 )
             except ValidationError as e:
-                return JsonResponse({'messages': e.messages}, status=http_client.BAD_REQUEST)
+                return JsonResponse({'messages': e.messages}, status=http.client.BAD_REQUEST)
             except Exception as e:
                 msg = 'Failed to add issue {} to case {}. Error reported: {}'.format(
                     form.cleaned_data['issue_key'], self.case.pk, str(e))
                 logger.exception(msg)
-                return JsonResponse({'messages': [msg]}, status=http_client.BAD_REQUEST)
+                return JsonResponse({'messages': [msg]}, status=http.client.BAD_REQUEST)
 
             return JsonResponse({'html': self.render()})
 
         def remove(self):
             if not self.request.user.has_perm('issuetracker.delete_issue'):
                 return JsonResponse(
-                    {'messages': ['Permission denied.']}, status=http_client.FORBIDDEN)
+                    {'messages': ['Permission denied.']}, status=http.client.FORBIDDEN)
 
             class CaseRemoveIssueForm(djforms.Form):
                 handle = djforms.RegexField(r'^remove$')
@@ -1821,12 +1821,12 @@ def manage_case_issues(request, case_id, template_name='case/get_issues.html'):
                     self.case.remove_issue(form.cleaned_data['issue_key'],
                                            form.cleaned_data['case_run'])
                 except (TypeError, ValueError) as e:
-                    return JsonResponse({'messages': [str(e)]}, status=http_client.BAD_REQUEST)
+                    return JsonResponse({'messages': [str(e)]}, status=http.client.BAD_REQUEST)
                 else:
                     return JsonResponse({'html': self.render()})
             else:
                 return JsonResponse({'messages': form_error_messags_to_list(form)},
-                                    status=http_client.BAD_REQUEST)
+                                    status=http.client.BAD_REQUEST)
 
     # FIXME: Rewrite these codes for Ajax.Request
     try:
@@ -1834,7 +1834,7 @@ def manage_case_issues(request, case_id, template_name='case/get_issues.html'):
     except Http404:
         return JsonResponse(
             {'messages': [f'Case {case_id} does not exist.']},
-            status=http_client.NOT_FOUND)
+            status=http.client.NOT_FOUND)
 
     actions = CaseIssueActions(request=request,
                                case=tc,
@@ -1842,7 +1842,7 @@ def manage_case_issues(request, case_id, template_name='case/get_issues.html'):
 
     if not request.GET.get('handle') in actions.__all__:
         return JsonResponse({'messages': ['Unrecognizable actions']},
-                            status=http_client.BAD_REQUEST)
+                            status=http.client.BAD_REQUEST)
 
     func = getattr(actions, request.GET['handle'])
     return func()
