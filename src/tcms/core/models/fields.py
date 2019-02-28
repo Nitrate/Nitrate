@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import datetime
-import six
 
 from django.core.exceptions import ValidationError
 from django.db.models.fields import IntegerField
@@ -29,7 +28,7 @@ class DurationField(IntegerField):
     """
 
     def to_python(self, value):
-        if isinstance(value, six.integer_types):
+        if isinstance(value, int):
             return datetime.timedelta(seconds=value)
         elif isinstance(value, datetime.timedelta):
             return value
@@ -49,7 +48,7 @@ class DurationField(IntegerField):
         if isinstance(value, datetime.timedelta):
             return value.seconds + (86400 * value.days)
         else:
-            value = super(DurationField, self).get_db_prep_value(
+            value = super().get_db_prep_value(
                 value, connection, prepared)
             return value
 

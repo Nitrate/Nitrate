@@ -50,35 +50,35 @@ class TestMultipleEmailField(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestMultipleEmailField, cls).setUpClass()
+        super().setUpClass()
         cls.default_delimiter = ','
         cls.field = MultipleEmailField(delimiter=cls.default_delimiter)
 
     def test_to_python(self):
-        value = u'zhangsan@localhost'
+        value = 'zhangsan@localhost'
         pyobj = self.field.to_python(value)
         self.assertEqual(pyobj, [value])
 
-        value = u'zhangsan@localhost,,lisi@example.com,'
+        value = 'zhangsan@localhost,,lisi@example.com,'
         pyobj = self.field.to_python(value)
-        self.assertEqual(pyobj, [u'zhangsan@localhost', u'lisi@example.com'])
+        self.assertEqual(pyobj, ['zhangsan@localhost', 'lisi@example.com'])
 
         for value in ('', None, []):
             pyobj = self.field.to_python(value)
             self.assertEqual(pyobj, [])
 
     def test_clean(self):
-        value = u'zhangsan@localhost'
+        value = 'zhangsan@localhost'
         data = self.field.clean(value)
         self.assertEqual(data, [value])
 
-        value = u'zhangsan@localhost,lisi@example.com'
+        value = 'zhangsan@localhost,lisi@example.com'
         data = self.field.clean(value)
-        self.assertEqual(data, [u'zhangsan@localhost', u'lisi@example.com'])
+        self.assertEqual(data, ['zhangsan@localhost', 'lisi@example.com'])
 
-        value = u',zhangsan@localhost, ,lisi@example.com, \n'
+        value = ',zhangsan@localhost, ,lisi@example.com, \n'
         data = self.field.clean(value)
-        self.assertEqual(data, [u'zhangsan@localhost', 'lisi@example.com'])
+        self.assertEqual(data, ['zhangsan@localhost', 'lisi@example.com'])
 
         value = ',zhangsan,zhangsan@localhost, \n,lisi@example.com, '
         self.assertRaises(ValidationError, self.field.clean, value)
@@ -131,7 +131,7 @@ class TestOperateComponentView(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestOperateComponentView, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.comp_application = ComponentFactory(name='Application',
                                                 product=cls.product,
@@ -243,7 +243,7 @@ class TestOperateCategoryView(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestOperateCategoryView, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.case_cat_full_auto = TestCaseCategoryFactory(name='Full Auto', product=cls.product)
         cls.case_cat_full_manual = TestCaseCategoryFactory(name='Full Manual', product=cls.product)
@@ -297,7 +297,7 @@ class TestAddIssueToCase(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestAddIssueToCase, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.plan_tester = User.objects.create_user(username='plantester',
                                                    email='plantester@example.com',
@@ -335,7 +335,7 @@ class TestOperateCasePlans(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestOperateCasePlans, cls).setUpTestData()
+        super().setUpTestData()
 
         # Besides the plan and its cases created in parent class, this test case
         # also needs other cases in order to list multiple plans of a case and
@@ -440,7 +440,7 @@ class TestOperateCaseTag(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestOperateCaseTag, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.tag_fedora = TestTagFactory(name='fedora')
         cls.tag_rhel = TestTagFactory(name='rhel')
@@ -518,7 +518,7 @@ class TestEditCase(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestEditCase, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.proposed_case = TestCaseFactory(
             author=cls.tester,
@@ -665,7 +665,7 @@ class TestAJAXSearchCases(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestAJAXSearchCases, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.search_data = {
             'summary': '',
@@ -697,7 +697,7 @@ class TestChangeCasesAutomated(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestChangeCasesAutomated, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.change_data = {
             'case': [cls.case_1.pk, cls.case_2.pk],
@@ -754,7 +754,7 @@ class TestChangeCasesAutomated(BasePlanCase):
             self.assertTrue(case.is_automated_proposed)
 
 
-class PlanCaseExportTestHelper(object):
+class PlanCaseExportTestHelper:
     """Used to verify exported cases
 
     This could be reused for two use cases of export from cases or plans.
@@ -829,7 +829,7 @@ class TestExportCases(PlanCaseExportTestHelper, BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestExportCases, cls).setUpTestData()
+        super().setUpTestData()
         cls.export_url = reverse('cases-export')
 
         # Change case status in order to test cases in expected scope can be exported.
@@ -926,7 +926,7 @@ class TestPrintablePage(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestPrintablePage, cls).setUpTestData()
+        super().setUpTestData()
         cls.printable_url = reverse('cases-printable')
 
         cls.case_1.add_text(action='action',
@@ -959,7 +959,7 @@ class TestCloneCase(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestCloneCase, cls).setUpTestData()
+        super().setUpTestData()
 
         user_should_have_perm(cls.tester, 'testcases.add_testcase')
         cls.clone_url = reverse('cases-clone')
@@ -1022,7 +1022,7 @@ class TestSearchCases(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestSearchCases, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.search_url = reverse('cases-search')
 
@@ -1126,7 +1126,7 @@ class TestAddComponent(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestAddComponent, cls).setUpTestData()
+        super().setUpTestData()
         cls.component_db = ComponentFactory(name='db', product=cls.product)
         cls.component_doc = ComponentFactory(name='doc', product=cls.product)
         cls.component_cli = ComponentFactory(name='cli', product=cls.product)
@@ -1187,7 +1187,7 @@ class TestIssueManagement(BaseCaseRun):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestIssueManagement, cls).setUpTestData()
+        super().setUpTestData()
 
         user_should_have_perm(cls.tester, 'issuetracker.change_issue')
         cls.issue_manage_url = reverse('case-issue', args=[cls.case_1.pk])

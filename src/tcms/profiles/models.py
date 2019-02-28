@@ -17,7 +17,7 @@ class Profiles(models.Model):
     extern_id = models.IntegerField(blank=True)
 
     class Meta:
-        db_table = u'profiles'
+        db_table = 'profiles'
 
     def get_groups(self):
         q = UserGroupMap.objects.filter(user__userid=self.userid)
@@ -34,7 +34,7 @@ class Groups(models.Model):
     isactive = models.IntegerField()
 
     class Meta:
-        db_table = u'groups'
+        db_table = 'groups'
 
 
 class UserGroupMap(models.Model):
@@ -45,7 +45,7 @@ class UserGroupMap(models.Model):
     grant_type = models.IntegerField(default=0)
 
     class Meta:
-        db_table = u'user_group_map'
+        db_table = 'user_group_map'
         unique_together = ('user', 'group')
 
 
@@ -66,7 +66,7 @@ class UserProfile(models.Model):
     notes = models.TextField(blank=True, default='')
 
     class Meta:
-        db_table = u'tcms_user_profiles'
+        db_table = 'tcms_user_profiles'
 
     def get_im(self):
         from .forms import IM_CHOICES
@@ -92,7 +92,7 @@ class BookmarkCategory(models.Model):
     name = models.CharField(max_length=1024)
 
     class Meta:
-        db_table = u'tcms_bookmark_categories'
+        db_table = 'tcms_bookmark_categories'
 
     def __str__(self):
         return self.name
@@ -108,7 +108,7 @@ class Bookmark(TCMSContentTypeBaseModel):
     url = models.CharField(max_length=8192)
 
     class Meta:
-        db_table = u'tcms_bookmarks'
+        db_table = 'tcms_bookmarks'
         index_together = (('content_type', 'object_pk', 'site'),)
 
     def __str__(self):

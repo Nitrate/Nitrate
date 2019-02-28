@@ -12,7 +12,7 @@ class TestOpenBookmarks(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestOpenBookmarks, cls).setUpClass()
+        super().setUpClass()
 
         cls.tester = User.objects.create_user(username='bookmark_tester',
                                               email='bookmark_tester@example.com',

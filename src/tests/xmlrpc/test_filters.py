@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import six
 from six.moves import http_client
 
 from django.test import TestCase
@@ -28,7 +27,7 @@ class TestFaultCode(XmlrpcAPIBaseTest):
         self.assertRaisesXmlrpcFault(http_client.NOT_FOUND, wrapper)
 
     def test_400(self):
-        exceptions = [v for k, v in six.iteritems(locals().copy()) if k != 'self']
+        exceptions = [v for k, v in locals().copy().items() if k != 'self']
         exceptions.extend((TypeError, ValueError))
 
         def raise_exception(cls):
@@ -69,5 +68,5 @@ class TestAutoWrap(TestCase):
 
         for func_name in func_names:
             func = getattr(auth, func_name)
-            code = six.get_function_code(func)
+            code = func.__code__
             self.assertEqual(code.co_name, "_decorator")

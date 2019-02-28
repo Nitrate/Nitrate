@@ -2,8 +2,6 @@
 
 from __future__ import absolute_import
 
-import six
-
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Prefetch
 from django.urls import reverse
@@ -115,7 +113,7 @@ class ProductVersionReport(TemplateView):
         except (TypeError, ValueError, ObjectDoesNotExist) as error:
             raise Http404(error)
 
-        return super(ProductVersionReport, self).get(request, product_id)
+        return super().get(request, product_id)
 
     def get_context_data(self, **kwargs):
         versions = self.product.version.only('product', 'value')
@@ -187,7 +185,7 @@ class ProductVersionReport(TemplateView):
                     'case_runs__run__plan__product_version': selected_version,
                 })
 
-        data = super(ProductVersionReport, self).get_context_data(**kwargs)
+        data = super().get_context_data(**kwargs)
         data.update({
             'module': MODULE_NAME,
             'SUB_MODULE_NAME': 'version',
@@ -216,7 +214,7 @@ class ProductBuildReport(TemplateView):
         except (TypeError, ValueError, ObjectDoesNotExist) as error:
             raise Http404(error)
 
-        return super(ProductBuildReport, self).get(request, product_id)
+        return super().get(request, product_id)
 
     def get_context_data(self, **kwargs):
         builds = self.product.build.only('product', 'name')
@@ -271,7 +269,7 @@ class ProductBuildReport(TemplateView):
                     'case_runs__run__build': selected_build.pk,
                 })
 
-        data = super(ProductBuildReport, self).get_context_data(**kwargs)
+        data = super().get_context_data(**kwargs)
         data.update({
             'module': MODULE_NAME,
             'SUB_MODULE_NAME': 'build',
@@ -300,7 +298,7 @@ class ProductComponentReport(TemplateView):
         except (TypeError, ValueError, Product.DoesNotExist) as error:
             raise Http404(error)
 
-        return super(ProductComponentReport, self).get(request, product_id)
+        return super().get(request, product_id)
 
     def get_context_data(self, **kwargs):
         components = self.product.component.select_related('product')
@@ -348,7 +346,7 @@ class ProductComponentReport(TemplateView):
             case_runs_status_subtotal = stats.subtotal_case_run_status(
                 {'case_runs__case__component': selected_component.pk})
 
-        data = super(ProductComponentReport, self).get_context_data(**kwargs)
+        data = super().get_context_data(**kwargs)
         data.update({
             'module': MODULE_NAME,
             'SUB_MODULE_NAME': self.submodule_name,
@@ -369,7 +367,7 @@ class CustomReport(TemplateView):
 
     @method_decorator(cache_page(REPORT_VIEW_CACHE_DURATION))
     def get(self, request):
-        return super(CustomReport, self).get(request)
+        return super().get(request)
 
     def _get_search_form(self):
         req = self.request.GET
@@ -461,7 +459,7 @@ class CustomReport(TemplateView):
             return self._initial_context()
 
     def get_context_data(self, **kwargs):
-        data = super(CustomReport, self).get_context_data(**kwargs)
+        data = super().get_context_data(**kwargs)
         data.update(self._get_report_data_context())
         data.update({
             'module': MODULE_NAME,
@@ -493,12 +491,12 @@ class CustomDetailReport(CustomReport):
         prev_plan = None
         # TODO: replace this with collections.OrderedDict after
         # upgrading to Python 2.7
-        ordered_plans = sorted(six.iteritems(matrix_dataset),
+        ordered_plans = sorted(matrix_dataset.items(),
                                key=lambda item: item[0].pk)
         for plan, runs in ordered_plans:
             plan_runs_count = len(runs)
             # TODO: and also this line
-            ordered_runs = sorted(six.iteritems(runs),
+            ordered_runs = sorted(runs.items(),
                                   key=lambda item: item[0].pk)
             for run, status_subtotal in ordered_runs:
                 if plan == prev_plan:
@@ -537,8 +535,7 @@ class CustomDetailReport(CustomReport):
         form = self._get_search_form()
 
         if form.is_valid():
-            summary_header_data = super(CustomDetailReport,
-                                        self)._report_data_context()
+            summary_header_data = super()._report_data_context()
             data.update(summary_header_data)
 
             build_ids = [build.pk for build in data['builds']]
@@ -576,7 +573,7 @@ class TestingReportBase(TemplateView):
 
     @method_decorator(cache_page(REPORT_VIEW_CACHE_DURATION))
     def get(self, *args, **kwargs):
-        return super(TestingReportBase, self).get(*args, **kwargs)
+        return super().get(*args, **kwargs)
 
     def _get_form(self, data=None):
         product_id = self.request.GET.get('r_product')
@@ -632,7 +629,7 @@ class TestingReportBase(TemplateView):
         return data
 
     def get_context_data(self, **kwargs):
-        data = super(TestingReportBase, self).get_context_data(**kwargs)
+        data = super().get_context_data(**kwargs)
 
         if 'report_type' not in self.request.GET:
             context = self._init_context()
@@ -709,7 +706,7 @@ class TestingReportCaseRuns(TestingReportBase, TestingReportCaseRunsData):
     form_class = TestingReportCaseRunsListForm
 
     def get_context_data(self, **kwargs):
-        data = super(TestingReportCaseRuns, self).get_context_data(**kwargs)
+        data = super().get_context_data(**kwargs)
 
         query_args = self.request.GET
         form = self._get_form(query_args)

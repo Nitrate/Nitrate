@@ -18,7 +18,7 @@ class TestGetCaseRunsStatsByStatusFromEmptyTestRun(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestGetCaseRunsStatsByStatusFromEmptyTestRun, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.empty_test_run = TestRunFactory(manager=cls.tester, default_tester=cls.tester,
                                             plan=cls.plan)
@@ -41,7 +41,7 @@ class TestGetCaseRunsStatsByStatus(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestGetCaseRunsStatsByStatus, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.case_run_statuss = TestCaseRunStatus.objects.all().order_by('pk')
 
@@ -90,7 +90,7 @@ class TestGetCaseRunsComments(BaseCaseRun):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestGetCaseRunsComments, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.submit_date = datetime(2017, 7, 7, 7, 7, 7)
 

@@ -4,7 +4,7 @@ from django.conf import settings
 from django.db import connections
 
 
-class RWRouter(object):
+class RWRouter:
     def __init__(self):
         self.db_list = list(settings.DATABASES.keys())
         self.db_read = list(settings.DATABASES.keys())
@@ -30,7 +30,7 @@ class RWRouter(object):
 
 class RAWRouter(RWRouter):
     def __init__(self):
-        super(RAWRouter, self).__init__()
+        super().__init__()
 
     def _get_reader(self):
         return connections[self.db_for_read(None)].cursor()

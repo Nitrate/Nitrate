@@ -8,7 +8,7 @@ from tcms.linkreference.forms import TargetCharField
 
 
 class TestTargetCharField(unittest.TestCase):
-    class PseudoClass(object):
+    class PseudoClass:
         pass
 
     def setUp(self):

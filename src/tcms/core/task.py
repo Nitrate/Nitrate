@@ -18,7 +18,7 @@ if settings.ASYNC_TASK not in [item.value for item in AsyncTask]:
     raise ValueError('Unknown async task type {}'.format(settings.ASYNC_TASK))
 
 
-class Task(object):
+class Task:
     """"""
 
     def __init__(self, target):

@@ -78,7 +78,7 @@ class TestLogout(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestLogout, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.tester = User.objects.create_user(username='authtester',
                                               email='authtester@example.com',

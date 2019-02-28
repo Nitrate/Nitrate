@@ -15,7 +15,7 @@ class TestProductOverview(BaseCaseRun):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestProductOverview, cls).setUpTestData()
+        super().setUpTestData()
 
         tcrs_get = TestCaseRunStatus.objects.get
         cls.status_idle = tcrs_get(name='IDLE')
@@ -80,7 +80,7 @@ class TestOverallProductByBuilds(BaseCaseRun):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestOverallProductByBuilds, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.url = reverse('report-overall-product-build', args=[cls.product.pk])
 

@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import six
-
 from collections import namedtuple
 from itertools import groupby
 from operator import itemgetter
@@ -52,7 +50,7 @@ def stats_caseruns_status(run_id, case_run_statuss):
     status_complete_names = TestCaseRunStatus.complete_status_names
     status_failure_names = TestCaseRunStatus.failure_status_names
 
-    for status_pk, total_info in six.iteritems(caserun_statuss_subtotal):
+    for status_pk, total_info in caserun_statuss_subtotal.items():
         status_caseruns_count, caserun_status = total_info
         status_name = caserun_status.name
 
@@ -77,7 +75,7 @@ def stats_caseruns_status(run_id, case_run_statuss):
                                      failure_percent)
 
 
-class TestCaseRunDataMixin(object):
+class TestCaseRunDataMixin:
     """Data for test case runs"""
 
     def stats_mode_caseruns(self, case_runs):

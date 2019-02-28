@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import six
 
 from datetime import datetime, timedelta
 
@@ -70,7 +69,7 @@ class TestRun(TCMSActionModel):
     auto_update_run_status = models.BooleanField(default=False)
 
     class Meta:
-        db_table = u'test_runs'
+        db_table = 'test_runs'
         unique_together = ('run_id', 'product_version', 'plan_text_version')
 
     def __str__(self):
@@ -119,7 +118,7 @@ class TestRun(TCMSActionModel):
             }[query.get('people_type')],
         }
 
-        conditions = [mapping[key](value) for key, value in six.iteritems(query)
+        conditions = [mapping[key](value) for key, value in query.items()
                       if value and key in mapping]
 
         runs = cls.objects.filter(*conditions)
@@ -355,7 +354,7 @@ class TestCaseRunStatus(EnumLike, TCMSActionModel):
     auto_blinddown = models.BooleanField(default=True)
 
     class Meta:
-        db_table = u'test_case_run_status'
+        db_table = 'test_case_run_status'
 
     def __str__(self):
         return self.name
@@ -417,7 +416,7 @@ class TestCaseRun(TCMSActionModel):
     comments = GenericRelation(Comment, object_id_field='object_pk')
 
     class Meta:
-        db_table = u'test_case_runs'
+        db_table = 'test_case_runs'
         unique_together = ('case', 'run', 'case_text_version')
 
     def __str__(self):
@@ -548,7 +547,7 @@ class TestRunTag(models.Model):
     user = models.IntegerField(db_column='userid', default='0')
 
     class Meta:
-        db_table = u'test_run_tags'
+        db_table = 'test_run_tags'
 
 
 class TestRunCC(models.Model):
@@ -556,7 +555,7 @@ class TestRunCC(models.Model):
     user = models.ForeignKey('auth.User', db_column='who', on_delete=models.CASCADE)
 
     class Meta:
-        db_table = u'test_run_cc'
+        db_table = 'test_run_cc'
         unique_together = ('run', 'user')
 
 
@@ -565,7 +564,7 @@ class TCMSEnvRunValueMap(models.Model):
     value = models.ForeignKey('management.TCMSEnvValue', on_delete=models.CASCADE)
 
     class Meta:
-        db_table = u'tcms_env_run_value_map'
+        db_table = 'tcms_env_run_value_map'
 
 
 # Signals handler

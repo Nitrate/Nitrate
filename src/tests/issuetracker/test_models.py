@@ -36,11 +36,11 @@ class TestGetIssueTrackerCredential(test.TestCase):
     def setUp(self):
         fd, self.user_pwd_secret_file = tempfile.mkstemp()
         with io.open(fd, 'w', encoding='utf-8') as f:
-            f.write(u'[issuetracker]\nusername = admin\npassword = admin\n')
+            f.write('[issuetracker]\nusername = admin\npassword = admin\n')
 
         fd, self.token_secret_file = tempfile.mkstemp()
         with io.open(fd, 'w', encoding='utf-8') as f:
-            f.write(u'[issuetracker]\ntoken = abcde\n')
+            f.write('[issuetracker]\ntoken = abcde\n')
 
     def tearDown(self):
         os.unlink(self.user_pwd_secret_file)

@@ -25,7 +25,7 @@ class TestUtilsFunctions(unittest.TestCase):
         strings = 'Python,Go,,Perl,Ruby'
         strings_list = ['Python', 'Go', 'Perl', 'Ruby']
         strings_list.sort()
-        expected_strings = [u'Python', u'Go', u'Perl', u'Ruby']
+        expected_strings = ['Python', 'Go', 'Perl', 'Ruby']
         expected_strings.sort()
 
         result = string_to_list(strings_list)
@@ -51,7 +51,7 @@ class TestUtilsFunctions(unittest.TestCase):
         result = string_to_list(strings)
         self.assertEqual([strings], result)
 
-        strings = u'abcdefg'
+        strings = 'abcdefg'
         result = string_to_list(strings)
         self.assertEqual([strings], result)
 

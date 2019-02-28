@@ -2,7 +2,6 @@
 
 import inspect
 import logging
-import six
 
 from functools import wraps
 
@@ -55,7 +54,7 @@ def log_call(*args, **kwargs):
                 known_args = zip(arg_names, args)
                 unknown_args = list(enumerate(args[len(arg_names):]))
                 keyword_args = [(key, value) for key, value in
-                                six.iteritems(kwargs)
+                                kwargs.items()
                                 if (key, value) not in known_args]
 
                 create_log(user=request.user,

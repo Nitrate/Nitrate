@@ -35,7 +35,7 @@ def bookmark(request, username, template_name='profile/bookmarks.html'):
     else:
         up = {'user': request.user}
 
-    class BookmarkActions(object):
+    class BookmarkActions:
         def __init__(self):
             self.ajax_response = {'rc': 0, 'response': 'ok'}
 

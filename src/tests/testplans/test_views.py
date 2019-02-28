@@ -159,7 +159,7 @@ class TestImportCasesToPlan(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestImportCasesToPlan, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.plan_tester = User.objects.create_user(
             username='plan_tester',
@@ -191,7 +191,7 @@ class TestDeleteCasesFromPlan(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestDeleteCasesFromPlan, cls).setUpTestData()
+        super().setUpTestData()
         cls.plan_tester = User(username='tester')
         cls.plan_tester.set_password('password')
         cls.plan_tester.save()
@@ -241,7 +241,7 @@ class TestSortCases(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestSortCases, cls).setUpTestData()
+        super().setUpTestData()
         cls.plan_tester = User(username='tester')
         cls.plan_tester.set_password('password')
         cls.plan_tester.save()
@@ -277,7 +277,7 @@ class TestLinkCases(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestLinkCases, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.another_plan = TestPlanFactory(
             author=cls.tester,
@@ -399,7 +399,7 @@ class TestCloneView(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestCloneView, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.another_plan = TestPlanFactory(
             name='Another plan for test',
@@ -660,7 +660,7 @@ class TestAJAXSearch(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestAJAXSearch, cls).setUpTestData()
+        super().setUpTestData()
 
         # Add more plans for testing search
         for i in range(25):
@@ -783,7 +783,7 @@ class TestExport(PlanCaseExportTestHelper, BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestExport, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.plan_export = TestPlanFactory(
             name='Test export from plan',

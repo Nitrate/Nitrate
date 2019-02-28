@@ -19,7 +19,7 @@ MIMETYPE_OCTET_STREAM = 'application/octet-stream'
 MIMETYPE_OPENDOCUMENT = 'application/vnd.oasis.opendocument.text'
 
 
-class UploadedFile(object):
+class UploadedFile:
     """Base class for all classes representing a concrete uploaded file"""
 
     def __init__(self, uploaded_file):
@@ -102,7 +102,7 @@ class PlanFileField(forms.FileField):
     }
 
     def clean(self, data, initial=None):
-        f = super(PlanFileField, self).clean(data, initial)
+        f = super().clean(data, initial)
         if f is None:
             return None
         elif not data and initial:
@@ -141,7 +141,7 @@ class CasePlanXMLField(forms.FileField):
         """
         Check the file content type is XML or not
         """
-        f = super(CasePlanXMLField, self).clean(data, initial)
+        f = super().clean(data, initial)
         if f is None:
             return None
         elif not data and initial:
@@ -489,7 +489,7 @@ class PlanComponentForm(forms.Form):
         if kwargs.get('initial'):
             kwargs['initial']['plan'] = tp_ids
 
-        super(PlanComponentForm, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
         self.fields['plan'].queryset = tps
         self.fields['component'].queryset = Component.objects.filter(

@@ -10,12 +10,12 @@ def string_to_list(strs, spliter=','):
     """Convert the string to list"""
     if isinstance(strs, list):
         str_list = (
-            six.u(item).strip() if isinstance(item, six.binary_type) else item
+            item.strip() if isinstance(item, bytes) else item
             for item in strs
         )
     elif strs.find(spliter):
         str_list = (
-            six.u(item).strip() if isinstance(item, six.binary_type) else item
+            item.strip() if isinstance(item, bytes) else item
             for item in strs.split(spliter)
         )
     else:
@@ -28,7 +28,7 @@ def form_errors_to_list(form):
     Convert errors of form to list
     Use for Ajax.Request response
     """
-    return [(k, six.u(v[0])) for k, v in form.errors.items()]
+    return [(k, v[0]) for k, v in form.errors.items()]
 
 
 def form_error_messags_to_list(form):
@@ -79,13 +79,13 @@ def clean_request(request, keys=None):
 
             v = request.GET[k]
             # Convert the value to be list if it's __in filter.
-            if k.endswith('__in') and isinstance(v, six.string_types):
+            if k.endswith('__in') and isinstance(v, str):
                 v = string_to_list(v)
             rt[k] = v
     return rt
 
 
-class QuerySetIterationProxy(object):
+class QuerySetIterationProxy:
     """Iterate a series of object and its associated objects at once
 
     This iteration proxy applies to this kind of structure especially.
@@ -131,8 +131,8 @@ class QuerySetIterationProxy(object):
         return self
 
     def next(self):
-        next_one = six.next(self._iterable)
-        for name, lookup_table in six.iteritems(self._associated_data):
+        next_one = next(self._iterable)
+        for name, lookup_table in self._associated_data.items():
             setattr(next_one,
                     name,
                     lookup_table.get(
@@ -143,7 +143,7 @@ class QuerySetIterationProxy(object):
     __next__ = next
 
 
-class DataTableResult(object):
+class DataTableResult:
     """Paginate and order queryset for rendering DataTable response"""
 
     DEFAULT_PAGE_SIZE = 20
@@ -214,7 +214,7 @@ def get_model(content_type):
     return app_config.get_model(model_name)
 
 
-class EnumLike(object):
+class EnumLike:
 
     NAME_FIELD = 'name'
 

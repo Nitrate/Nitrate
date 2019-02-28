@@ -13,7 +13,7 @@ class TestAddComments(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestAddComments, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.reviewer = User.objects.create_user(
             username='reviewer',

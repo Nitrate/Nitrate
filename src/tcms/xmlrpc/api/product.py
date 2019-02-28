@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import six
-
 from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.models import User
 
@@ -391,7 +389,7 @@ def update_component(request, component_id, values):
         raise ValueError('Component name is not in values {}.'.format(values))
 
     name = values['name']
-    if not isinstance(name, six.string_types) or len(name) == 0:
+    if not isinstance(name, str) or len(name) == 0:
         raise ValueError('Component name {} is not a string value.'.format(name))
 
     component = Component.objects.get(pk=int(component_id))

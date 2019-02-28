@@ -4,14 +4,14 @@
 from django.shortcuts import render
 
 
-class Prompt(object):
+class Prompt:
     """Common dialog to prompt to users"""
 
     Alert = 'alert'
     Info = 'info'
 
     def __init__(self, request, info_type=None, info=None, next=None):
-        super(Prompt, self).__init__()
+        super().__init__()
         self.request = request
         self.info_type = info_type
         self.info = info

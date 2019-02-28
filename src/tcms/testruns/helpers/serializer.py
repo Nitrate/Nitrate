@@ -23,7 +23,7 @@ def escape_entities(text):
 # Nitrate objects.
 
 
-class TCR2File(object):
+class TCR2File:
     """
     Write TestCaseRun queryset into CSV or XML.
     """
@@ -93,28 +93,28 @@ class TCR2File(object):
            Element ``bugs`` is renamed to ``issues``.
         """
         write_to_output = output.write
-        tcr_start_elem = u'<testcaserun case_run_id="%d" case_id="%d" ' \
-                         u'category="%s" status="%s" summary="%s" ' \
-                         u'scripts="%s" automated="%s">'
+        tcr_start_elem = '<testcaserun case_run_id="%d" case_id="%d" ' \
+                         'category="%s" status="%s" summary="%s" ' \
+                         'scripts="%s" automated="%s">'
 
-        write_to_output(u'<%s>' % self.root)
+        write_to_output('<%s>' % self.root)
         for tcr in self.tcrs.iterator():
             summary = escape_entities(tcr.case.summary)
             script = escape_entities(tcr.case.script)
             write_to_output(tcr_start_elem % (tcr.pk, tcr.case.pk,
-                                              tcr.case.category.name or u'',
+                                              tcr.case.category.name or '',
                                               tcr.case_run_status.name,
-                                              summary or u'',
-                                              script or u'',
+                                              summary or '',
+                                              script or '',
                                               str(tcr.case.is_automated)))
-            write_to_output(u'<loglinks>')
+            write_to_output('<loglinks>')
             for link in tcr.links.iterator():
                 write_to_output(
-                    u'<loglink name="{}" url="{}" />'.format(link.name, link.url))
-            write_to_output(u'</loglinks>')
-            write_to_output(u'<issues>')
+                    '<loglink name="{}" url="{}" />'.format(link.name, link.url))
+            write_to_output('</loglinks>')
+            write_to_output('<issues>')
             for issue in tcr.issues.iterator():
-                write_to_output(u'<issue key="%s" />' % issue.issue_key)
-            write_to_output(u'</issues>')
-            write_to_output(u'</testcaserun>')
-        write_to_output(u'</%s>' % self.root)
+                write_to_output('<issue key="%s" />' % issue.issue_key)
+            write_to_output('</issues>')
+            write_to_output('</testcaserun>')
+        write_to_output('</%s>' % self.root)

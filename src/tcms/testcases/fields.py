@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import six
 from six.moves import filterfalse
 
 from django.forms import EmailField
@@ -15,12 +14,12 @@ class MultipleEmailField(EmailField):
     """Holding mulitple email addresses"""
 
     default_error_messages = {
-        'invalid': u'%(value)s is/are not valid email addresse(s).',
+        'invalid': '%(value)s is/are not valid email addresse(s).',
     }
 
     def __init__(self, delimiter=CC_LIST_DEFAULT_DELIMITER, *args, **kwargs):
 
-        super(MultipleEmailField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.delimiter = delimiter
 
     def to_python(self, value):
@@ -28,7 +27,7 @@ class MultipleEmailField(EmailField):
         if not value:
             return []
 
-        if not isinstance(value, six.string_types):
+        if not isinstance(value, str):
             raise ValidationError(
                 '%s is not a valid string value.' % str(value))
 
@@ -38,7 +37,7 @@ class MultipleEmailField(EmailField):
 
     def clean(self, value):
         email_addrs = self.to_python(value)
-        super_instance = super(MultipleEmailField, self)
+        super_instance = super()
 
         valid_email_addrs = []
         invalid_email_addrs = []

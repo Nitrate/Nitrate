@@ -34,7 +34,7 @@ def find_service(issue_tracker):
     return getattr(module, class_name)(issue_tracker)
 
 
-class IssueTrackerService(object):
+class IssueTrackerService:
     """Base issue tracker service
 
     Define and implement base functionalities for an issue tracker service. It
@@ -296,7 +296,7 @@ class Bugzilla(IssueTrackerService):
 
     def get_extra_issue_report_url_args(self, case_run):
         """Get extra URL arguments for reporting issue in Bugzilla"""
-        args = super(Bugzilla, self).get_extra_issue_report_url_args(case_run)
+        args = super().get_extra_issue_report_url_args(case_run)
 
         case_text = case_run.get_text_with_version(
             case_text_version=case_run.case_text_version)
@@ -366,7 +366,7 @@ class RHBugzilla(IssueTrackerService):
 
     def get_extra_issue_report_url_args(self, case_run):
         """Add URL arguments which are specific to Red Hat Bugzilla"""
-        args = super(RHBugzilla, self).get_extra_issue_report_url_args(case_run)
+        args = super().get_extra_issue_report_url_args(case_run)
         args['cf_build_id'] = case_run.run.build.name
         return args
 

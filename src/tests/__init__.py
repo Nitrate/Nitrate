@@ -39,14 +39,14 @@ def encode_if_py3(s):
     Python 3 compatibility. But, it is really necessary to think about the
     XMLPRC API that strings returned should be in bytestring or not.
     """
-    if six.PY3 and isinstance(s, six.text_type):
+    if six.PY3 and isinstance(s, str):
         return s.encode()
     else:
         return s
 
 
 def user_should_have_perm(user, perm):
-    if isinstance(perm, six.string_types):
+    if isinstance(perm, str):
         try:
             app_label, codename = perm.split('.')
         except ValueError:
@@ -66,7 +66,7 @@ def user_should_have_perm(user, perm):
 def remove_perm_from_user(user, perm):
     """Remove a permission from an user"""
 
-    if isinstance(perm, six.string_types):
+    if isinstance(perm, str):
         try:
             app_label, codename = perm.split('.')
         except ValueError:
@@ -96,7 +96,7 @@ def create_request_user(username=None, password=None):
     return user
 
 
-class HelperAssertions(object):
+class HelperAssertions:
     """Helper assertion methods"""
 
     def assert404(self, response):
@@ -256,7 +256,7 @@ class BaseCaseRun(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(BaseCaseRun, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.case_run_status_idle = TestCaseRunStatus.objects.get(name='IDLE')
 

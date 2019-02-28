@@ -2,8 +2,6 @@
 
 from __future__ import absolute_import
 
-import six
-
 from mock import patch
 
 from django.contrib.auth.models import User
@@ -39,7 +37,7 @@ class TestCaseRemoveIssue(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestCaseRemoveIssue, cls).setUpTestData()
+        super().setUpTestData()
         cls.build = TestBuildFactory(product=cls.product)
         cls.test_run = TestRunFactory(product_version=cls.version,
                                       plan=cls.plan,
@@ -106,7 +104,7 @@ class TestCaseRemoveComponent(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestCaseRemoveComponent, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.component_1 = ComponentFactory(name='Application',
                                            product=cls.product,
@@ -142,7 +140,7 @@ class TestCaseRemovePlan(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestCaseRemovePlan, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.new_case = TestCaseFactory(author=cls.tester, default_tester=None, reviewer=cls.tester,
                                        plan=[cls.plan])
@@ -161,7 +159,7 @@ class TestCaseRemoveTag(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestCaseRemoveTag, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.tag_rhel = TestTagFactory(name='rhel')
         cls.tag_fedora = TestTagFactory(name='fedora')
@@ -180,7 +178,7 @@ class TestGetPlainText(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestGetPlainText, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.action = '<p>First step:</p>'
         cls.effect = '''<ul>
@@ -220,18 +218,18 @@ class TestSendMailOnCaseIsUpdated(BasePlanCase):
     """Test send mail on case post_save signal is triggered"""
 
     def setUp(self):
-        super(TestSendMailOnCaseIsUpdated, self).setUp()
+        super().setUp()
         _listen()
 
     def tearDown(self):
         post_save.disconnect(case_watchers.on_case_save, TestCase)
         post_delete.disconnect(case_watchers.on_case_delete, TestCase)
         pre_save.disconnect(case_watchers.pre_save_clean, TestCase)
-        super(TestSendMailOnCaseIsUpdated, self).tearDown()
+        super().tearDown()
 
     @classmethod
     def setUpTestData(cls):
-        super(TestSendMailOnCaseIsUpdated, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.case.add_text('action', 'effect', 'setup', 'breakdown')
 
@@ -272,7 +270,7 @@ class TestCreate(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestCreate, cls).setUpTestData()
+        super().setUpTestData()
         cls.tag_fedora = TestTagFactory(name='fedora')
         cls.tag_python = TestTagFactory(name='python')
 
@@ -326,18 +324,17 @@ class TestAddIssue(BaseCaseRun):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestAddIssue, cls).setUpTestData()
+        super().setUpTestData()
         cls.issue_tracker = IssueTrackerFactory()
         cls.issue_tracker_1 = IssueTrackerFactory()
 
     def test_case_run_is_not_associated_with_case(self):
         # self.case_run_6 is not associated with self.case
-        six.assertRaisesRegex(
-            self, ValueError, r'Case run .+ is not associated with',
-            self.case.add_issue,
-            issue_key='123456',
-            issue_tracker=self.issue_tracker,
-            case_run=self.case_run_6)
+        self.assertRaisesRegex(ValueError, r'Case run .+ is not associated with',
+                               self.case.add_issue,
+                               issue_key='123456',
+                               issue_tracker=self.issue_tracker,
+                               case_run=self.case_run_6)
 
     def test_issue_already_exists(self):
         issue_key = '234567'

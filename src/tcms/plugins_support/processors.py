@@ -9,14 +9,14 @@ class NewThread(threading.Thread):
     def __init__(self, command, args):
         self.command = command
         self.args = args
-        super(NewThread, self).__init__()
+        super().__init__()
 
     def run(self):
         # The actual code we want to run
         return self.command(self.args)
 
 
-class PushSignalToPlugins(object):
+class PushSignalToPlugins:
     def __init__(self):
         self.plugins = []
 

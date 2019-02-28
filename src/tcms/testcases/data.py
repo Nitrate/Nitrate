@@ -19,7 +19,7 @@ from tcms.testcases.models import TestCaseText
 from tcms.testruns.models import TestCaseRun
 
 
-class TestCaseViewDataMixin(object):
+class TestCaseViewDataMixin:
     """Mixin class to get view data of test case"""
 
     def get_case_contenttype(self):
@@ -48,7 +48,7 @@ class TestCaseViewDataMixin(object):
         return comments
 
 
-class TestCaseRunViewDataMixin(object):
+class TestCaseRunViewDataMixin:
     """Mixin class to get view data of test case run"""
 
     def get_caserun_contenttype(self):

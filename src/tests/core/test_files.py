@@ -28,7 +28,7 @@ class TestUploadFile(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestUploadFile, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.upload_file_url = reverse('upload-file')
 
@@ -39,7 +39,7 @@ class TestUploadFile(BasePlanCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestUploadFile, cls).setUpClass()
+        super().setUpClass()
 
         cls.file_upload_dir = tempfile.mkdtemp(
             prefix='{}-upload-dir'.format(cls.__name__))
@@ -48,10 +48,10 @@ class TestUploadFile(BasePlanCase):
     def tearDownClass(cls):
         shutil.rmtree(cls.file_upload_dir)
 
-        super(TestUploadFile, cls).tearDownClass()
+        super().tearDownClass()
 
     def setUp(self):
-        super(TestUploadFile, self).setUp()
+        super().setUp()
 
         fd, self.upload_filename = tempfile.mkstemp(
             prefix='{}-upload-file.txt'.format(self.__class__.__name__))
@@ -60,7 +60,7 @@ class TestUploadFile(BasePlanCase):
 
     def tearDown(self):
         os.remove(self.upload_filename)
-        super(TestUploadFile, self).tearDown()
+        super().tearDown()
 
     def test_no_file_is_posted(self):
         self.client.login(username=self.user.username, password=self.password)
@@ -143,7 +143,7 @@ class TestAbleToDeleteFile(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestAbleToDeleteFile, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.superuser = UserFactory(username='admin')
         cls.superuser.is_superuser = True
@@ -155,7 +155,7 @@ class TestAbleToDeleteFile(BasePlanCase):
         cls.attachment = TestAttachmentFactory()
 
     def setUp(self):
-        super(TestAbleToDeleteFile, self).setUp()
+        super().setUp()
 
         self.request = RequestFactory()
 
@@ -204,7 +204,7 @@ class TestDeleteFileAuthorization(BasePlanCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestDeleteFileAuthorization, cls).setUpClass()
+        super().setUpClass()
 
         cls.superuser = UserFactory(username='admin')
         cls.superuser.set_password('admin')

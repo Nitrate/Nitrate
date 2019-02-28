@@ -10,7 +10,7 @@ REGISTERED_MODELS = {}
 
 
 # The global signal processor
-class GlobalSignalProcessor(object):
+class GlobalSignalProcessor:
     """
     This class is responsible for handling all of signals trigger by model
     """

@@ -145,7 +145,7 @@ class TestCaseRunCreate(XmlrpcAPIBaseTest):
         self.assertEqual(tcr['case_id'], self.case.pk)
         self.assertEqual(tcr['assignee_id'], None)
         self.assertEqual(tcr['case_text_version'], 2)
-        self.assertEqual(tcr['notes'], u"\u5f00\u6e90\u4e2d\u56fd")
+        self.assertEqual(tcr['notes'], "\u5f00\u6e90\u4e2d\u56fd")
 
     def test_create_with_long_field(self):
         large_str = """aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
@@ -349,8 +349,8 @@ class TestCaseRunAttachIssue(XmlrpcAPIBaseTest):
             testcaserun.attach_issue, self.admin_request, value)
 
     def test_attach_issue_with_chinese(self):
-        issue_summary = u'你好，中国'
-        issue_description = u'中国是一个具有悠久历史的文明古国'
+        issue_summary = '你好，中国'
+        issue_description = '中国是一个具有悠久历史的文明古国'
 
         bug = testcaserun.attach_issue(self.admin_request, {
             "case_run": [self.case_run.pk],

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import re
-import six
 
 from django.db.models import Count, FieldDoesNotExist
 
@@ -35,13 +34,13 @@ def pre_check_product(values):
     else:
         product_str = values
 
-    if isinstance(product_str, six.string_types):
+    if isinstance(product_str, str):
         if not product_str:
             raise ValueError('Got empty product name.')
         return Product.objects.get(name=product_str)
     elif isinstance(product_str, bool):
         raise ValueError('The type of product is not recognizable.')
-    elif isinstance(product_str, six.integer_types):
+    elif isinstance(product_str, int):
         return Product.objects.get(pk=product_str)
     else:
         raise ValueError('The type of product is not recognizable.')
@@ -51,13 +50,13 @@ def pre_process_ids(value):
     # FIXME: Add more type checks, e.g. value cannot be a boolean value.
 
     if isinstance(value, list):
-        return [isinstance(c, six.integer_types) and c or int(c.strip())
+        return [isinstance(c, int) and c or int(c.strip())
                 for c in value if c]
 
     if isinstance(value, str):
         return [int(c.strip()) for c in value.split(',') if c]
 
-    if isinstance(value, six.integer_types):
+    if isinstance(value, int):
         return [value]
 
     raise TypeError('Unrecognizable type of ids')
@@ -133,7 +132,7 @@ def distinct_m2m_rows(cls, values, op_type):
     @rtype: django.db.models.query.QuerySet
     """
     flag = False
-    for field in six.iterkeys(values):
+    for field in values.keys():
         if '__' in field:
             if _need_distinct_m2m_rows(cls, field.split('__')):
                 flag = True
@@ -157,7 +156,7 @@ def distinct_filter(cls, values):
     return distinct_m2m_rows(cls, values, op_type=QUERY_DISTINCT)
 
 
-class Comment(object):
+class Comment:
     def __init__(self, request, content_type, object_pks, comment=None):
         self.request = request
         self.content_type = content_type
@@ -230,7 +229,7 @@ def pre_process_estimated_time(value):
     support value - HH:MM:SS & xdxhxmxs
     return xdxhxmxs
     """
-    if isinstance(value, six.string_types):
+    if isinstance(value, str):
         match = estimated_time_re.match(value.replace(' ', ''))
         if match:
             return value

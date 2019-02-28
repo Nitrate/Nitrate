@@ -36,7 +36,7 @@ class TestPlanType(TCMSActionModel):
         return self.name
 
     class Meta:
-        db_table = u'test_plan_types'
+        db_table = 'test_plan_types'
         ordering = ['name']
 
 
@@ -71,7 +71,7 @@ class TestPlan(TCMSActionModel):
     tag = models.ManyToManyField('management.TestTag', through='testplans.TestPlanTag')
 
     class Meta:
-        db_table = u'test_plans'
+        db_table = 'test_plans'
         index_together = [['product', 'plan_id']]
 
     def __str__(self):
@@ -459,7 +459,7 @@ class TestPlanText(TCMSActionModel):
     checksum = models.CharField(max_length=32)
 
     class Meta:
-        db_table = u'test_plan_texts'
+        db_table = 'test_plan_texts'
         ordering = ['plan', '-plan_text_version']
         unique_together = ('plan', 'plan_text_version')
 
@@ -469,7 +469,7 @@ class TestPlanAttachment(models.Model):
     plan = models.ForeignKey(TestPlan, on_delete=models.CASCADE)
 
     class Meta:
-        db_table = u'test_plan_attachments'
+        db_table = 'test_plan_attachments'
 
 
 class TestPlanTag(models.Model):
@@ -478,7 +478,7 @@ class TestPlanTag(models.Model):
     user = models.IntegerField(default="1", db_column='userid')
 
     class Meta:
-        db_table = u'test_plan_tags'
+        db_table = 'test_plan_tags'
 
 
 class TestPlanComponent(models.Model):
@@ -486,7 +486,7 @@ class TestPlanComponent(models.Model):
     component = models.ForeignKey('management.Component', on_delete=models.CASCADE)
 
     class Meta:
-        db_table = u'test_plan_components'
+        db_table = 'test_plan_components'
         unique_together = ('plan', 'component')
 
 
@@ -511,7 +511,7 @@ class TCMSEnvPlanMap(models.Model):
     group = models.ForeignKey('management.TCMSEnvGroup', on_delete=models.CASCADE)
 
     class Meta:
-        db_table = u'tcms_env_plan_map'
+        db_table = 'tcms_env_plan_map'
 
 
 if register_model:

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import six
 
 from datetime import datetime
 from html2text import html2text
@@ -53,7 +52,7 @@ class NoneText:
         return {}
 
 
-class PlainText(object):
+class PlainText:
     """Contains plain text converted from four text"""
 
     def __init__(self, action, setup, effect, breakdown):
@@ -74,7 +73,7 @@ class TestCaseStatus(EnumLike, TCMSActionModel):
     description = models.TextField(null=True, blank=True)
 
     class Meta:
-        db_table = u'test_case_status'
+        db_table = 'test_case_status'
         verbose_name = "Test case status"
         verbose_name_plural = "Test case status"
 
@@ -93,8 +92,8 @@ class TestCaseCategory(TCMSActionModel):
     description = models.TextField(blank=True)
 
     class Meta:
-        db_table = u'test_case_categories'
-        verbose_name_plural = u'test case categories'
+        db_table = 'test_case_categories'
+        verbose_name_plural = 'test case categories'
         unique_together = ('product', 'name')
 
     def __str__(self):
@@ -146,7 +145,7 @@ class TestCase(TCMSActionModel):
     # Auto-generated attributes from back-references:
     # 'texts' : list of TestCaseTexts (from TestCaseTexts.case)
     class Meta:
-        db_table = u'test_cases'
+        db_table = 'test_cases'
 
     def __str__(self):
         return self.summary
@@ -200,12 +199,12 @@ class TestCase(TCMSActionModel):
         tcs = cls.objects.filter(pk__in=case_ids)
         _values = {
             k: v for k, v in values.items()
-            if k in fields and v is not None and v != u''
+            if k in fields and v is not None and v != ''
         }
-        if values['notes'] == u'':
-            _values['notes'] = u''
-        if values['script'] == u'':
-            _values['script'] = u''
+        if values['notes'] == '':
+            _values['notes'] = ''
+        if values['script'] == '':
+            _values['script'] = ''
         tcs.update(**_values)
         return tcs
 
@@ -570,7 +569,7 @@ class TestCase(TCMSActionModel):
             if isinstance(case_run, TestCaseRun):
                 case_run_id = case_run.pk
                 rel_exists = case_run.case == self
-            elif isinstance(case_run, six.integer_types):
+            elif isinstance(case_run, int):
                 case_run_id = case_run
                 rel_exists = TestCaseRun.objects.filter(
                     pk=case_run, case=self).exists()
@@ -625,7 +624,7 @@ class TestCaseText(TCMSActionModel):
     breakdown_checksum = models.CharField(max_length=32)
 
     class Meta:
-        db_table = u'test_case_texts'
+        db_table = 'test_case_texts'
         ordering = ['case', '-case_text_version']
         unique_together = ('case', 'case_text_version')
 
@@ -647,7 +646,7 @@ class TestCasePlan(models.Model):
     # in database.
 
     class Meta:
-        db_table = u'test_case_plans'
+        db_table = 'test_case_plans'
         unique_together = ('plan', 'case')
 
 
@@ -665,7 +664,7 @@ class TestCaseAttachment(models.Model):
                                  on_delete=models.CASCADE)
 
     class Meta:
-        db_table = u'test_case_attachments'
+        db_table = 'test_case_attachments'
         # FIXME: what unique constraints are needed against this model?
 
 
@@ -674,7 +673,7 @@ class TestCaseComponent(models.Model):
     component = models.ForeignKey('management.Component', on_delete=models.CASCADE)
 
     class Meta:
-        db_table = u'test_case_components'
+        db_table = 'test_case_components'
         unique_together = ('case', 'component')
 
 
@@ -684,7 +683,7 @@ class TestCaseTag(models.Model):
     user = models.IntegerField(db_column='userid', default='0')
 
     class Meta:
-        db_table = u'test_case_tags'
+        db_table = 'test_case_tags'
 
 
 class Contact(TCMSContentTypeBaseModel):
@@ -698,7 +697,7 @@ class Contact(TCMSContentTypeBaseModel):
         return self.name
 
     class Meta:
-        db_table = u'tcms_contacts'
+        db_table = 'tcms_contacts'
         index_together = (('content_type', 'object_pk', 'site'),)
 
     @classmethod
