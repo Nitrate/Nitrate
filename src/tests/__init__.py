@@ -2,7 +2,6 @@
 
 import json
 import re
-import six
 
 from six.moves import http_client
 from six.moves.urllib_parse import urlparse, parse_qs

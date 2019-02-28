@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import six
+import io
 
 from xml.etree import ElementTree
 
@@ -47,7 +47,7 @@ class TestTCR2FileToExportToXML(BaseCaseRun):
         case_runs = TestCaseRun.objects.filter(
             pk__in=[self.case_run_1.pk, self.case_run_2.pk])
         exporter = TCR2File(case_runs)
-        xml_buff = six.StringIO()
+        xml_buff = io.StringIO()
         exporter.write_to_xml(xml_buff)
         xml_doc = xml_buff.getvalue()
         xml_buff.close()
