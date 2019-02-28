@@ -15,7 +15,7 @@ class UserActivateKey(models.Model):
     user = models.ForeignKey('auth.User', on_delete=models.CASCADE)
 
     class Meta:
-        db_table = u'tcms_user_activate_keys'
+        db_table = 'tcms_user_activate_keys'
 
     @classmethod
     def set_random_key_for_user(cls, user, force=False):

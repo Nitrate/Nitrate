@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import re
-import six
 
 from django import forms
 from django.db.models import Q
@@ -55,14 +54,14 @@ class DurationField(forms.CharField):
     estimated_time using integer mix with d(ay), h(our), m(inute)
     """
     default_error_messages = {
-        'invalid': _(u'Enter a valid estimated time. e.g. 12h45m'),
+        'invalid': _('Enter a valid estimated time. e.g. 12h45m'),
     }
 
     def __init__(self, *args, **kwargs):
-        super(DurationField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def validate(self, value):
-        super(DurationField, self).validate(value)
+        super().validate(value)
         estimated_time_regex = re.compile(r'^(\d+[d])?(\d+[h])?(\d+[m])?(\d+[s])?$')
         match = estimated_time_regex.match(value.replace(' ', ''))
 
@@ -70,7 +69,7 @@ class DurationField(forms.CharField):
             raise forms.ValidationError(self.error_messages['invalid'])
 
     def clean(self, value):
-        value = super(DurationField, self).clean(value)
+        value = super().clean(value)
         return timedelta2int(value)
 
 
@@ -81,7 +80,7 @@ class MultipleEmailField(forms.EmailField):
         Unicode object.
         """
         value = super(forms.CharField, self).clean(value)
-        if value == u'':
+        if value == '':
             return value
 
         return [v for v in string_to_list(strs=value) if self.regex.search(v)]
@@ -89,14 +88,14 @@ class MultipleEmailField(forms.EmailField):
 
 class StripURLField(forms.URLField):
     def to_python(self, value):
-        if isinstance(value, six.string_types):
+        if isinstance(value, str):
             value = value.strip()
-        return super(StripURLField, self).to_python(value)
+        return super().to_python(value)
 
 
 class ModelChoiceField(forms.ModelChoiceField):
     def to_python(self, value):
         try:
-            return super(ModelChoiceField, self).to_python(value)
+            return super().to_python(value)
         except ValidationError as e:
             raise ValidationError(e.messages[0] % {'value': value})

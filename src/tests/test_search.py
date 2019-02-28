@@ -14,7 +14,7 @@ class TestAdvancedSearch(BaseCaseRun):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestAdvancedSearch, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.cool_product = ProductFactory(name='CoolProduct')
         cls.cool_version = VersionFactory(value='0.1', product=cls.cool_product)

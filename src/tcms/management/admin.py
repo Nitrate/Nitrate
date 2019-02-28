@@ -40,7 +40,7 @@ class ComponentAdmin(admin.ModelAdmin):
     list_filter = ('product',)
 
     def get_queryset(self, request):
-        qs = super(ComponentAdmin, self).get_queryset(request)
+        qs = super().get_queryset(request)
         return qs.select_related('product', 'initial_owner')
 
 

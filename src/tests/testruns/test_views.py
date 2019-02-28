@@ -42,7 +42,7 @@ class TestOrderCases(BaseCaseRun):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestOrderCases, cls).setUpTestData()
+        super().setUpTestData()
 
     def test_404_if_run_does_not_exist(self):
         nonexisting_run_pk = TestRun.objects.count() + 1
@@ -79,7 +79,7 @@ class TestGetRun(BaseCaseRun):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestGetRun, cls).setUpTestData()
+        super().setUpTestData()
 
     def test_404_if_non_existing_pk(self):
         url = reverse('run-get', args=[99999999])
@@ -110,7 +110,7 @@ class TestCreateNewRun(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestCreateNewRun, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.permission = 'testruns.add_testrun'
         user_should_have_perm(cls.tester, cls.permission)
@@ -233,7 +233,7 @@ class TestStartCloneRunFromRunPage(CloneRunBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestStartCloneRunFromRunPage, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.permission = 'testruns.add_testrun'
         user_should_have_perm(cls.tester, cls.permission)
@@ -357,7 +357,7 @@ class TestStartCloneRunFromRunsSearchPage(CloneRunBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestStartCloneRunFromRunsSearchPage, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.clone_url = reverse('runs-clone')
         cls.permission = 'testruns.add_testrun'
@@ -577,7 +577,7 @@ class TestSearchRuns(BaseCaseRun):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestSearchRuns, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.search_runs_url = reverse('runs-all')
 
@@ -611,7 +611,7 @@ class TestAJAXSearchRuns(BaseCaseRun):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestAJAXSearchRuns, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.search_url = reverse('runs-ajax-search')
 
@@ -863,7 +863,7 @@ class TestAddRemoveRunCC(BaseCaseRun):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestAddRemoveRunCC, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.cc_url = reverse('run-cc', args=[cls.test_run.pk])
 
@@ -945,7 +945,7 @@ class TestEnvValue(BaseCaseRun):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestEnvValue, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.property_os = TCMSEnvPropertyFactory(name='os')
         cls.value_linux = TCMSEnvValueFactory(value='Linux',
@@ -1039,7 +1039,7 @@ class TestExportTestRunCases(BaseCaseRun):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestExportTestRunCases, cls).setUpTestData()
+        super().setUpTestData()
         cls.export_url = reverse('run-export', args=[cls.test_run.pk])
 
     @patch('tcms.testruns.views.time.strftime', return_value='2017-06-17')
@@ -1075,7 +1075,7 @@ class TestIssueActions(BaseCaseRun):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestIssueActions, cls).setUpTestData()
+        super().setUpTestData()
 
         user_should_have_perm(cls.tester, 'testruns.change_testrun')
         user_should_have_perm(cls.tester, 'issuetracker.delete_issue')
@@ -1155,7 +1155,7 @@ class TestRemoveCaseRuns(BaseCaseRun):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestRemoveCaseRuns, cls).setUpTestData()
+        super().setUpTestData()
         user_should_have_perm(cls.tester, 'testruns.delete_testcaserun')
         cls.remove_case_run_url = reverse(
             'run-remove-caserun', args=[cls.test_run.pk])
@@ -1225,7 +1225,7 @@ class TestUpdateCaseRunText(BaseCaseRun):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestUpdateCaseRunText, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.update_url = reverse('run-update', args=[cls.test_run.pk])
 
@@ -1259,7 +1259,7 @@ class TestEditRun(BaseCaseRun):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestEditRun, cls).setUpTestData()
+        super().setUpTestData()
 
         user_should_have_perm(cls.tester, 'testruns.change_testrun')
         cls.edit_url = reverse('run-edit', args=[cls.test_run.pk])
@@ -1310,7 +1310,7 @@ class TestAddCasesToRun(BaseCaseRun):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestAddCasesToRun, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.proposed_case = TestCaseFactory(
             author=cls.tester,
@@ -1381,7 +1381,7 @@ class TestRunReportView(BaseCaseRun):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestRunReportView, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.bz_tracker = cls.create_bz_tracker()
         cls.case_run_1.add_issue('1', cls.bz_tracker)

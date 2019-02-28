@@ -93,7 +93,7 @@ def process_case(case):
             tag, create = TestTag.objects.get_or_create(name=case[element]['value'])
             tags.append(tag)
 
-        if isinstance(case[element], six.text_type):
+        if isinstance(case[element], str):
             tag, create = TestTag.objects.get_or_create(name=case[element])
             tags.append(tag)
 
@@ -126,7 +126,7 @@ def process_case(case):
 
 def clean_xml_file(xml_content):
     """Parse and extract cases from XML document"""
-    if isinstance(xml_content, six.binary_type):
+    if isinstance(xml_content, bytes):
         xml_content = xml_content.decode('utf-8')
     xml_content = xml_content.replace('\n', '')
     xml_content = xml_content.replace('&testopia_', '&')

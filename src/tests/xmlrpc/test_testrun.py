@@ -88,7 +88,7 @@ class TestGetIssues(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestGetIssues, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.run_1 = TestRunFactory()
         cls.case_1 = TestCaseFactory(plan=[cls.run_1.plan])

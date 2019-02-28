@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import six
 import xmltodict
 
 from django import test
@@ -46,7 +45,7 @@ sample_case_data = {
 }
 
 
-xml_file_without_error = u'''
+xml_file_without_error = '''
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <!DOCTYPE testopia SYSTEM "testopia.dtd" [
   <!ENTITY testopia_lt "<">
@@ -85,7 +84,7 @@ xml_file_without_error = u'''
 '''
 
 
-xml_file_single_case_without_error = u'''
+xml_file_single_case_without_error = '''
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <!DOCTYPE testopia SYSTEM "testopia.dtd" [
   <!ENTITY testopia_lt "<">
@@ -111,7 +110,7 @@ xml_file_single_case_without_error = u'''
 
 
 # With error, non-existent priority and defaulttester's email
-xml_file_with_error = u'''
+xml_file_with_error = '''
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <!DOCTYPE testopia SYSTEM "testopia.dtd" [
   <!ENTITY testopia_lt "<">
@@ -136,7 +135,7 @@ xml_file_with_error = u'''
 '''
 
 
-xml_file_with_wrong_version = u'''
+xml_file_with_wrong_version = '''
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <!DOCTYPE testopia SYSTEM "testopia.dtd" [
   <!ENTITY testopia_lt "<">
@@ -145,7 +144,7 @@ xml_file_with_wrong_version = u'''
 <testopia version="who knows"></testopia>'''
 
 
-xml_file_in_malformat = u'''
+xml_file_in_malformat = '''
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <!DOCTYPE testopia SYSTEM "testopia.dtd" [
   <!ENTITY testopia_lt "<">
@@ -204,24 +203,22 @@ class TestProcessCase(test.TestCase):
         case_data = sample_case_data.copy()
         case_data['author'] = 'another_user@example.com'
         xmldict = self._create_xml_dict(case_data)
-        six.assertRaisesRegex(
-            self, ValueError,
-            'Author email {} does not exist'.format(case_data['author']),
-            process_case, xmldict['testcase'])
+        self.assertRaisesRegex(ValueError,
+                               'Author email {} does not exist'.format(case_data['author']),
+                               process_case, xmldict['testcase'])
 
         case_data = sample_case_data.copy()
         case_data['defaulttester'] = 'another_user@example.com'
         xmldict = self._create_xml_dict(case_data)
-        six.assertRaisesRegex(
-            self, ValueError,
-            'Default tester\'s email another_user@example.com does not exist',
-            process_case, xmldict['testcase'])
+        self.assertRaisesRegex(ValueError,
+                               'Default tester\'s email another_user@example.com does not exist',
+                               process_case, xmldict['testcase'])
 
         case_data = sample_case_data.copy()
         case_data['priority'] = 'PP'
         xmldict = self._create_xml_dict(case_data)
-        six.assertRaisesRegex(self, ValueError, 'Priority PP does not exist',
-                              process_case, xmldict['testcase'])
+        self.assertRaisesRegex(ValueError, 'Priority PP does not exist',
+                               process_case, xmldict['testcase'])
 
         case_data = sample_case_data.copy()
         case_data['priority'] = ''
@@ -231,9 +228,8 @@ class TestProcessCase(test.TestCase):
         case_data = sample_case_data.copy()
         case_data['status'] = 'UNKNOWN_STATUS'
         xmldict = self._create_xml_dict(case_data)
-        six.assertRaisesRegex(
-            self, ValueError, 'Test case status UNKNOWN_STATUS does not exist',
-            process_case, xmldict['testcase'])
+        self.assertRaisesRegex(ValueError, 'Test case status UNKNOWN_STATUS does not exist',
+                               process_case, xmldict['testcase'])
 
         case_data = sample_case_data.copy()
         case_data['status'] = ''
@@ -268,15 +264,15 @@ class TestProcessCase(test.TestCase):
         case_data = sample_case_data.copy()
         case_data['author'] = ''
         case_dict = self._create_xml_dict(case_data)
-        six.assertRaisesRegex(self, ValueError, 'Missing required author',
-                              process_case, case_dict['testcase'])
+        self.assertRaisesRegex(ValueError, 'Missing required author',
+                               process_case, case_dict['testcase'])
 
     def test_invalid_priority(self):
         case_data = sample_case_data.copy()
         case_data['priority'] = ''
         case_dict = self._create_xml_dict(case_data)
-        six.assertRaisesRegex(self, ValueError, 'Missing required priority',
-                              process_case, case_dict['testcase'])
+        self.assertRaisesRegex(ValueError, 'Missing required priority',
+                               process_case, case_dict['testcase'])
 
 
 class TestCleanXMLFile(test.TestCase):
@@ -301,11 +297,10 @@ class TestCleanXMLFile(test.TestCase):
         self.assertEqual(1, len(list(result)))
 
         cases = clean_xml_file(xml_file_with_error)
-        six.assertRaisesRegex(
-            self, ValueError, 'Default tester\'s email .+ does not exist',
-            list, cases)
+        self.assertRaisesRegex(ValueError, 'Default tester\'s email .+ does not exist',
+                               list, cases)
 
-        six.assertRaisesRegex(self, ValueError, 'Invalid XML document',
-                              clean_xml_file, xml_file_in_malformat)
-        six.assertRaisesRegex(self, ValueError, 'Wrong version.+',
-                              clean_xml_file, xml_file_with_wrong_version)
+        self.assertRaisesRegex(ValueError, 'Invalid XML document',
+                               clean_xml_file, xml_file_in_malformat)
+        self.assertRaisesRegex(ValueError, 'Wrong version.+',
+                               clean_xml_file, xml_file_with_wrong_version)

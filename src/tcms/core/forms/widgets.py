@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-import six
 
 from django import forms
 from django.utils.translation import ugettext_lazy as _
@@ -41,7 +40,7 @@ class TimedeltaWidget(forms.Widget):
             multiply.append(self.MULTIPLY[self.INPUTS.index(input)])
         self.inputs = inputs
         self.multiply = multiply
-        super(TimedeltaWidget, self).__init__(attrs)
+        super().__init__(attrs)
 
     def render(self, name, value, attrs):
         if value is None:
@@ -62,7 +61,7 @@ class TimedeltaWidget(forms.Widget):
         assert not attrs, attrs
         rendered = []
         for input, widget, val in zip(self.inputs, self.widgets, values):
-            rendered.append(u'{} {}'.format(
+            rendered.append('{} {}'.format(
                 widget.render('{}_{}'.format(name, input), val), _(input)))
         return mark_safe('<div id="{}">{}</div>'.format(id, ' '.join(rendered)))
 
@@ -76,7 +75,7 @@ class TimedeltaWidget(forms.Widget):
     def _has_changed(self, initial_value, data_value):
         # data_value comes from value_from_datadict(): A tuple of strings.
         assert isinstance(initial_value, datetime.timedelta), initial_value
-        initial = tuple([six.u(i) for i in split_seconds(
+        initial = tuple([i for i in split_seconds(
             initial_value.days * SECONDS_PER_DAY + initial_value.seconds,
             self.inputs, self.multiply)])
         assert len(initial) == len(data_value)

@@ -18,7 +18,7 @@ def workaround_single_value_for_in_clause(build_ids):
     return build_ids * 2 if len(build_ids) == 1 else build_ids
 
 
-class SQLExecution(object):
+class SQLExecution:
     """Cursor.execute proxy class
 
     This proxy class provides two major abilities.
@@ -79,8 +79,8 @@ class SQLExecution(object):
 
     @property
     def scalar(self):
-        row = six.next(self.rows)
-        for key, value in six.iteritems(row):
+        row = next(self.rows)
+        for key, value in row.items():
             return value
 
 
@@ -88,7 +88,7 @@ class SQLExecution(object):
 # value node.
 
 
-class GroupByResult(object):
+class GroupByResult:
     """Group By result
 
     This object can be used as a normal dict object with less support of stock
@@ -162,7 +162,7 @@ class GroupByResult(object):
         return self._data.get(key, default)
 
     def iteritems(self):
-        return six.iteritems(self._data)
+        return self._data.items()
 
     def setdefault(self, key, default=None):
         return self._data.setdefault(key, default)
@@ -200,10 +200,10 @@ class GroupByResult(object):
             total = self[self._total_name]
         else:
             total = 0
-            for name, subtotal in six.iteritems(self._data):
+            for name, subtotal in self._data.items():
                 # NOTE: is it possible do such judgement in advance when adding
                 # element
-                if isinstance(subtotal, six.integer_types):
+                if isinstance(subtotal, int):
                     total += subtotal
                 elif isinstance(subtotal, GroupByResult):
                     total += subtotal.total

@@ -66,7 +66,7 @@ def strip_parameters(request_data, skip_parameters):
 def info(request):
     """Ajax responsor for misc information"""
 
-    class Objects(object):
+    class Objects:
         __all__ = [
             'builds', 'categories', 'components', 'envs', 'env_groups',
             'env_properties', 'env_values', 'tags', 'users', 'versions'
@@ -207,7 +207,7 @@ def form(request):
 def tag(request, template_name="management/get_tag.html"):
     """Get tags for test plan or test case"""
 
-    class Objects(object):
+    class Objects:
         __all__ = ['plan', 'case', 'run']
 
         def __init__(self, request, template_name):
@@ -235,7 +235,7 @@ def tag(request, template_name="management/get_tag.html"):
             return self.template_name, TestRun.objects.filter(
                 pk__in=self.object_pks)
 
-    class TagActions(object):
+    class TagActions:
         __all__ = ['add', 'remove']
 
         def __init__(self, obj, tag):
@@ -571,7 +571,7 @@ def update_case_run_status(request):
     return HttpResponse(json.dumps({'rc': 0, 'response': 'ok'}))
 
 
-class ModelUpdateActions(object):
+class ModelUpdateActions:
     """Abstract class defining interfaces to update a model properties"""
 
 

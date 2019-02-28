@@ -5,7 +5,6 @@ import logging
 import os
 import re
 import enum
-import six
 
 from datetime import datetime
 from django.core.exceptions import ValidationError
@@ -375,7 +374,7 @@ class Credential(TCMSActionModel):
         Each concrete credential model derived from :class:`Credential` should
         call parent's ``clean`` before other validation steps.
         """
-        super(Credential, self).clean()
+        super().clean()
 
         cred_type = self.issue_tracker.credential_type
 
@@ -437,7 +436,7 @@ class UserPwdCredential(Credential):
 
     def clean(self):
         """Validate username/password credential"""
-        super(UserPwdCredential, self).clean()
+        super().clean()
 
         if not self.secret_file and not self.username and not self.password:
             raise ValidationError({
@@ -489,7 +488,7 @@ class TokenCredential(Credential):
 
     def clean(self):
         """Validate token credential"""
-        super(TokenCredential, self).clean()
+        super().clean()
 
         if not self.secret_file and not self.token:
             raise ValidationError({
@@ -584,7 +583,7 @@ class Issue(TCMSActionModel):
 
     def clean(self):
         """Validate issue"""
-        super(Issue, self).clean()
+        super().clean()
 
         issue_key_re = re.compile(self.tracker.validate_regex)
         if not issue_key_re.match(self.issue_key):
@@ -607,7 +606,7 @@ class Issue(TCMSActionModel):
         """
         if case_run_ids is not None:
             assert isinstance(case_run_ids, list)
-            assert all(isinstance(item, six.integer_types)
+            assert all(isinstance(item, int)
                        for item in case_run_ids)
             criteria = {'case_run__in': case_run_ids}
         else:

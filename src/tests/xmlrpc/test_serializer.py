@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import six
 import unittest
 from django import test
 
@@ -191,7 +190,7 @@ class TestQuerySetBasedSerializer(test.TestCase):
         self.assertEqual(expected_field_name, field_name)
 
     def verify_m2m_field_query_result(self, m2m_field_name, result):
-        for object_pk, objects in six.iteritems(result):
+        for object_pk, objects in result.items():
             self.assertIsInstance(objects, tuple)
             for object_value in objects:
                 self.assertEqual(object_pk, object_value['pk'])
@@ -210,7 +209,7 @@ class TestQuerySetBasedSerializer(test.TestCase):
         self.assertIsInstance(result, dict)
         self.assertEqual(len(result), len(MockTestPlanSerializer.m2m_fields))
 
-        for m2m_field_name, this_query_result in six.iteritems(result):
+        for m2m_field_name, this_query_result in result.items():
             self.assertIn(m2m_field_name, MockTestPlanSerializer.m2m_fields)
             self.assertIsInstance(this_query_result, dict)
 

@@ -45,7 +45,7 @@ class Classification(TCMSActionModel):
     sortkey = models.IntegerField(default=0)
 
     class Meta:
-        db_table = u'classifications'
+        db_table = 'classifications'
 
     def __str__(self):
         return self.name
@@ -65,7 +65,7 @@ class Product(TCMSActionModel):
                                          max_length=20, default='---')
 
     class Meta:
-        db_table = u'products'
+        db_table = 'products'
 
     def __str__(self):
         return self.name
@@ -79,7 +79,7 @@ class Product(TCMSActionModel):
         return s.serialize_queryset()
 
     def save(self, *args, **kwargs):
-        super(Product, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         self.category.get_or_create(name='--default--')
         self.version.get_or_create(value='unspecified')
         self.build.get_or_create(name='unspecified')
@@ -121,8 +121,8 @@ class Priority(TCMSActionModel):
     is_active = models.BooleanField(db_column='isactive', default=True)
 
     class Meta:
-        db_table = u'priority'
-        verbose_name_plural = u'priorities'
+        db_table = 'priority'
+        verbose_name_plural = 'priorities'
 
     def __str__(self):
         return self.value
@@ -138,7 +138,7 @@ class Priority(TCMSActionModel):
         return values
 
     def save(self, *args, **kwargs):
-        result = super(Priority, self).save(*args, **kwargs)
+        result = super().save(*args, **kwargs)
         cache.delete(self.cache_key_values)
         return result
 
@@ -150,7 +150,7 @@ class Milestone(models.Model):
     sortkey = models.IntegerField(default=0)
 
     class Meta:
-        db_table = u'milestones'
+        db_table = 'milestones'
 
     def __str__(self):
         return self.value
@@ -173,7 +173,7 @@ class Component(TCMSActionModel):
     #   'cases' : list of TestCases (from TestCases.components)
 
     class Meta:
-        db_table = u'components'
+        db_table = 'components'
         unique_together = ('product', 'name')
 
     def __str__(self):
@@ -188,7 +188,7 @@ class Version(TCMSActionModel):
                                 on_delete=models.CASCADE)
 
     class Meta:
-        db_table = u'versions'
+        db_table = 'versions'
         unique_together = ('product', 'value')
 
     def __str__(self):
@@ -227,10 +227,10 @@ class TestBuild(TCMSActionModel):
                                 on_delete=models.CASCADE)
 
     class Meta:
-        db_table = u'test_builds'
+        db_table = 'test_builds'
         unique_together = ('product', 'name')
-        verbose_name = u'build'
-        verbose_name_plural = u'builds'
+        verbose_name = 'build'
+        verbose_name_plural = 'builds'
 
     @classmethod
     def to_xmlrpc(cls, query=None):
@@ -301,7 +301,7 @@ class TestEnvironment(TCMSActionModel):
                                 on_delete=models.CASCADE)
 
     class Meta:
-        db_table = u'test_environments'
+        db_table = 'test_environments'
 
     def __str__(self):
         return self.name
@@ -319,7 +319,7 @@ class TestEnvironmentCategory(models.Model):
                                 on_delete=models.CASCADE)
 
     class Meta:
-        db_table = u'test_environment_category'
+        db_table = 'test_environment_category'
         index_together = (('env_category_id', 'product'), ('product', 'name'))
 
     def __str__(self):
@@ -339,7 +339,7 @@ class TestEnvironmentElement(models.Model):
                                on_delete=models.SET_NULL)
 
     class Meta:
-        db_table = u'test_environment_element'
+        db_table = 'test_environment_element'
 
     def __str__(self):
         return self.name
@@ -354,7 +354,7 @@ class TestEnvironmentProperty(models.Model):
                                 on_delete=models.CASCADE)
 
     class Meta:
-        db_table = u'test_environment_property'
+        db_table = 'test_environment_property'
 
     def __str__(self):
         return self.name
@@ -371,7 +371,7 @@ class TestEnvironmentMap(models.Model):
                                 on_delete=models.CASCADE)
 
     class Meta:
-        db_table = u'test_environment_map'
+        db_table = 'test_environment_map'
         # FIXME: is unique_together against environment and property necessary?
 
     def __str__(self):
@@ -386,9 +386,9 @@ class TestTag(TCMSActionModel):
     name = models.CharField(db_column='tag_name', max_length=255)
 
     class Meta:
-        db_table = u'test_tags'
-        verbose_name = u'tag'
-        verbose_name_plural = u'tags'
+        db_table = 'test_tags'
+        verbose_name = 'tag'
+        verbose_name_plural = 'tags'
 
     def __str__(self):
         return self.name
@@ -427,7 +427,7 @@ class TestAttachment(models.Model):
         return self.file_name
 
     class Meta:
-        db_table = u'test_attachments'
+        db_table = 'test_attachments'
 
 
 class TestAttachmentData(models.Model):
@@ -435,7 +435,7 @@ class TestAttachmentData(models.Model):
     attachment = models.ForeignKey(TestAttachment, on_delete=models.CASCADE)
 
     class Meta:
-        db_table = u'test_attachment_data'
+        db_table = 'test_attachment_data'
 
 # ============================
 # New TCMS Environments models
@@ -462,7 +462,7 @@ class TCMSEnvGroup(TCMSActionModel):
     )
 
     class Meta:
-        db_table = u'tcms_env_groups'
+        db_table = 'tcms_env_groups'
 
     def __str__(self):
         return self.name
@@ -477,7 +477,7 @@ class TCMSEnvProperty(TCMSActionModel):
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        db_table = u'tcms_env_properties'
+        db_table = 'tcms_env_properties'
 
     def __str__(self):
         return self.name
@@ -492,7 +492,7 @@ class TCMSEnvGroupPropertyMap(models.Model):
     property = models.ForeignKey(TCMSEnvProperty, on_delete=models.CASCADE)
 
     class Meta:
-        db_table = u'tcms_env_group_property_map'
+        db_table = 'tcms_env_group_property_map'
 
 
 class TCMSEnvValue(TCMSActionModel):
@@ -504,7 +504,7 @@ class TCMSEnvValue(TCMSActionModel):
                                  on_delete=models.CASCADE)
 
     class Meta:
-        db_table = u'tcms_env_values'
+        db_table = 'tcms_env_values'
         unique_together = ('property', 'value')
 
     def __str__(self):

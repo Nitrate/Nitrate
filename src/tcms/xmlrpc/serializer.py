@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import operator
-import six
 
 from datetime import datetime
 from datetime import timedelta
@@ -62,7 +61,7 @@ def timedelta_to_str(value):
 # ## End of functions ###
 
 
-class XMLRPCSerializer(object):
+class XMLRPCSerializer:
     """
     Django XMLRPC Serializer
     The goal is to process the datetime and timedelta data structure
@@ -323,9 +322,9 @@ class QuerySetBasedXMLRPCSerializer(XMLRPCSerializer):
         """
         extra_fields = self.get_extra_fields()
 
-        for handle_name, value in six.iteritems(extra_fields):
+        for handle_name, value in extra_fields.items():
             if handle_name == 'alias':
-                for original_name, alias in six.iteritems(value):
+                for original_name, alias in value.items():
                     if original_name in data:
                         data[alias] = data[original_name]
 
@@ -360,7 +359,7 @@ class QuerySetBasedXMLRPCSerializer(XMLRPCSerializer):
             new_serialized_data = {}
             if values_fields_mapping:
                 for orm_name, serialize_info in \
-                        six.iteritems(values_fields_mapping):
+                        values_fields_mapping.items():
                     serialize_name, conv_func = serialize_info
                     value = conv_func(row[orm_name])
                     new_serialized_data[serialize_name] = value

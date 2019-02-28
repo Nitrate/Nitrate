@@ -12,7 +12,7 @@ class TestSetDefaultPerms(test.TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestSetDefaultPerms, cls).setUpTestData()
+        super().setUpTestData()
         cls.group = Group.objects.create(name='KeyTesters')
 
     def test_set_perms(self):

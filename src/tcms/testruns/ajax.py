@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 def manage_case_run_issues(request, run_id):
     """Process the issues for case runs."""
 
-    class CaseRunIssueActions(object):
+    class CaseRunIssueActions:
         __all__ = ['add', 'remove']
 
         def __init__(self, request, run):

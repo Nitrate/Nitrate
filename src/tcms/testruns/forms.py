@@ -2,8 +2,6 @@
 
 from __future__ import absolute_import
 
-import six
-
 from django import forms
 from django.contrib.auth.models import User
 
@@ -349,16 +347,16 @@ class PlanFilterRunForm(forms.Form):
     default_tester__username__iexact = UserField(required=False)
 
     def __init__(self, request_data):
-        super(PlanFilterRunForm, self).__init__(
-            {k: v for k, v in six.iteritems(request_data) if v.strip()}
+        super().__init__(
+            {k: v for k, v in request_data.items() if v.strip()}
         )
 
     def clean(self):
         cleaned_data = {}
-        for key, value in six.iteritems(self.cleaned_data):
+        for key, value in self.cleaned_data.items():
             if not value:
                 continue
-            if not (isinstance(value, six.string_types) and not value.strip()):
+            if not (isinstance(value, str) and not value.strip()):
                 cleaned_data[key] = value
         return cleaned_data
 

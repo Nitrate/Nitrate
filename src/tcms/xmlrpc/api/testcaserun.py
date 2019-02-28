@@ -40,7 +40,7 @@ __all__ = (
 __xmlrpc_namespace__ = 'TestCaseRun'
 
 
-class GetCaseRun(object):
+class GetCaseRun:
     def pre_process_tcr(self, case_run_id):
         return TestCaseRun.objects.get(pk=case_run_id)
 

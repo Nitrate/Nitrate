@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-class CsrfDisableMiddleware(object):
+class CsrfDisableMiddleware:
 
     def __init__(self, get_response):
         self.get_response = get_response

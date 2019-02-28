@@ -213,7 +213,7 @@ def new(request, template_name='case/new.html'):
         if form.is_valid():
             tc = create_testcase(request, form, tp)
 
-            class ReturnActions(object):
+            class ReturnActions:
                 def __init__(self, case, plan):
                     self.__all__ = ('_addanother', '_continue', '_returntocase', '_returntoplan')
                     self.case = case
@@ -747,7 +747,7 @@ class SimpleTestCaseView(TemplateView, data.TestCaseViewDataMixin):
     # NOTES: what permission is proper for this request?
     def get(self, request, case_id):
         self.case_id = case_id
-        return super(SimpleTestCaseView, self).get(request, case_id)
+        return super().get(request, case_id)
 
     def get_case(self):
         cases = TestCase.objects.filter(pk=self.case_id).only('notes')
@@ -755,7 +755,7 @@ class SimpleTestCaseView(TemplateView, data.TestCaseViewDataMixin):
         return cases[0] if cases else None
 
     def get_context_data(self, **kwargs):
-        data = super(SimpleTestCaseView, self).get_context_data(**kwargs)
+        data = super().get_context_data(**kwargs)
 
         case = self.get_case()
         data['test_case'] = case
@@ -777,7 +777,7 @@ class TestCaseReviewPaneView(SimpleTestCaseView):
     template_name = 'case/get_details_review.html'
 
     def get_context_data(self, **kwargs):
-        data = super(TestCaseReviewPaneView, self).get_context_data(**kwargs)
+        data = super().get_context_data(**kwargs)
         testcase = data['test_case']
         if testcase is not None:
             logs = self.get_case_logs(testcase)
@@ -1740,7 +1740,7 @@ def get_log(request, case_id, template_name="management/get_log.html"):
 def manage_case_issues(request, case_id, template_name='case/get_issues.html'):
     """Process the bugs for cases"""
 
-    class CaseIssueActions(object):
+    class CaseIssueActions:
         __all__ = ['get_form', 'render', 'add', 'remove']
 
         def __init__(self, request, case, template_name):

@@ -46,7 +46,7 @@ class IssueTrackerAdmin(admin.ModelAdmin):
     ]
 
     def get_form(self, request, obj=None, **kwargs):
-        form = super(IssueTrackerAdmin, self).get_form(request, obj, **kwargs)
+        form = super().get_form(request, obj, **kwargs)
         fields = form.base_fields
         fields['service_url'].widget = forms.TextInput(attrs={'size': 30})
         fields['api_url'].widget = forms.TextInput(attrs={'size': 30})

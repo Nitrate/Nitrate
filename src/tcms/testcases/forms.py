@@ -46,7 +46,7 @@ class IssueKeyField(forms.CharField):
     """
 
     def validate(self, value):
-        super(IssueKeyField, self).validate(value)
+        super().validate(value)
         issue_key_regex = [
             re.compile(regex) for regex in
             IssueTracker.objects.values_list('validate_regex', flat=True)
@@ -212,7 +212,7 @@ class BaseCaseForm(forms.Form):
         else:
             self.notes_val = ''
             self.script_val = ''
-        super(BaseCaseForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def clean_is_automated(self):
         data = self.cleaned_data['is_automated']
@@ -230,7 +230,7 @@ class BaseCaseForm(forms.Form):
 
     def clean_script(self):
         if self.script_val == '':
-            return u''
+            return ''
         elif self.script_val:
             return self.cleaned_data['script']
         else:
@@ -238,7 +238,7 @@ class BaseCaseForm(forms.Form):
 
     def clean_notes(self):
         if self.notes_val == '':
-            return u''
+            return ''
         elif self.notes_val:
             return self.cleaned_data['notes']
         else:
@@ -294,8 +294,8 @@ class CaseNotifyForm(forms.Form):
 
     cc_list = MultipleEmailField(
         required=False,
-        label=u'CC to',
-        help_text=u'''It will send notification email to each Email address
+        label='CC to',
+        help_text='''It will send notification email to each Email address
             within CC list. Email addresses within CC list are
             separated by comma.''',
         widget=forms.Textarea(attrs={'rows': 1, }))
@@ -516,7 +516,7 @@ class CaseAutomatedForm(forms.Form):
     )
 
     def clean(self):
-        super(CaseAutomatedForm, self).clean()
+        super().clean()
         cdata = self.cleaned_data.copy()  # Cleanen data
 
         cdata['is_automated'] = None

@@ -33,7 +33,7 @@ class TestVisitAndSearchGroupPage(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestVisitAndSearchGroupPage, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.group_url = reverse('management-env-groups')
 
@@ -140,7 +140,7 @@ class TestAddGroup(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestAddGroup, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.group_add_url = reverse('management-env-groups')
 
@@ -212,7 +212,7 @@ class TestDeleteGroup(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestDeleteGroup, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.group_delete_url = reverse('management-env-groups')
         cls.permission = 'management.delete_tcmsenvgroup'
@@ -276,7 +276,7 @@ class TestModifyGroup(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestModifyGroup, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.tester = User.objects.create_user(username='tester',
                                               email='tester@exmaple.com',
@@ -339,7 +339,7 @@ class TestVisitEnvironmentGroupPage(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestVisitEnvironmentGroupPage, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.tester = User.objects.create_user(username='tester',
                                               email='tester@example.com',
@@ -398,7 +398,7 @@ class TestEditEnvironmentGroup(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestEditEnvironmentGroup, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.tester = User.objects.create_user(username='tester',
                                               email='tester@example.com',
@@ -452,7 +452,7 @@ class TestAddProperty(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestAddProperty, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.permission = 'management.add_tcmsenvproperty'
         cls.group_properties_url = reverse('management-env-properties')
@@ -527,7 +527,7 @@ class TestEditProperty(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestEditProperty, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.permission = 'management.change_tcmsenvproperty'
         cls.group_properties_url = reverse('management-env-properties')
@@ -587,7 +587,7 @@ class TestEnableDisableProperty(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestEnableDisableProperty, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.permission = 'management.change_tcmsenvproperty'
         cls.group_properties_url = reverse('management-env-properties')
@@ -711,12 +711,12 @@ class TestDeleteProduct(test.TestCase):
         cls.c.login(username='admin', password='admin')
 
     def setUp(self):
-        super(TestDeleteProduct, self).setUp()
+        super().setUp()
         _listen()
 
     def tearDown(self):
         _disconnect_signals()
-        super(TestDeleteProduct, self).tearDown()
+        super().tearDown()
 
     def test_product_delete_with_test_plan_wo_email_settings(self):
         """

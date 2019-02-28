@@ -47,7 +47,7 @@ class UserProfileForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         if 'url' in kwargs:
             kwargs['url'] = kwargs['url'].strip()
-        super(UserProfileForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if 'instance' in kwargs:
             instance = kwargs['instance']
             self.initial['username'] = instance.user.username
@@ -110,7 +110,7 @@ class UserProfileForm(forms.ModelForm):
             if getattr(b, 'can_register', None):
                 can_register = True
 
-        instance = super(UserProfileForm, self).save(commit=commit)
+        instance = super().save(commit=commit)
         user = instance.user
         if can_register:
             user.username = self.cleaned_data['username']

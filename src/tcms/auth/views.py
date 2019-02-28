@@ -117,7 +117,7 @@ class LoginView(DjangoLoginView):
     """Custom Django admin LoginView to provide social auth backends info"""
 
     def get_context_data(self, **kwargs):
-        data = super(LoginView, self).get_context_data(**kwargs)
+        data = super().get_context_data(**kwargs)
 
         social_auth_backends = settings.ENABLED_AUTH_BACKENDS.get('SOCIAL')
         if social_auth_backends is not None:

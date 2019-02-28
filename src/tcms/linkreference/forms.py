@@ -25,14 +25,14 @@ class TargetCharField(forms.CharField):
             ' model class according to this target.'}
 
     def __init__(self, targets={}, *args, **kwargs):
-        super(TargetCharField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.targets = targets
 
     def clean(self, value):
         """Return the Model class object associated with the value"""
 
-        super(TargetCharField, self).clean(value)
+        super().clean(value)
         model_class = self.targets.get(value, None)
         if model_class is None:
             raise forms.ValidationError(

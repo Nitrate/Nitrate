@@ -11,7 +11,7 @@ from tcms.testcases.models import TestCaseCategory
 __all__ = ('CategoryActions',)
 
 
-class BaseActions(object):
+class BaseActions:
     """Base class for all Actions"""
 
     def __init__(self, request):

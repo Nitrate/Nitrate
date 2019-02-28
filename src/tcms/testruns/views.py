@@ -324,7 +324,7 @@ def run_queryset_from_querystring(querystring):
         filter_keywords.pop('page_size')
 
     filter_keywords = {
-        str(k): v for k, v in six.iteritems(filter_keywords) if v.strip()
+        str(k): v for k, v in filter_keywords.items() if v.strip()
     }
 
     trs = TestRun.objects.filter(**filter_keywords)
@@ -374,7 +374,7 @@ def load_runs_of_one_plan(request, plan_id,
         # Get associated statistics data
         run_filters = {
             'run__{}'.format(key): value for key, value in
-            six.iteritems(form.cleaned_data)
+            form.cleaned_data.items()
         }
 
         qs = TestCaseRun.objects.filter(
@@ -771,7 +771,7 @@ class TestRunReportView(TemplateView, TestCaseRunDataMixin):
 
     def get(self, request, run_id):
         self.run_id = run_id
-        return super(TestRunReportView, self).get(request, run_id)
+        return super().get(request, run_id)
 
     def get_context_data(self, **kwargs):
         """Generate report for specific TestRun
@@ -832,7 +832,7 @@ class TestRunReportView(TemplateView, TestCaseRunDataMixin):
             for issue in run_issues
         ]
 
-        context = super(TestRunReportView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context.update({
             'test_run': run,
             'test_case_runs': case_runs,
@@ -1125,7 +1125,7 @@ class AddCasesToRunView(View):
 
     @method_decorator(permission_required('testruns.add_testcaserun'))
     def dispatch(self, *args, **kwargs):
-        return super(AddCasesToRunView, self).dispatch(*args, **kwargs)
+        return super().dispatch(*args, **kwargs)
 
     def post(self, request, run_id):
         # Selected cases' ids to add to run
@@ -1318,7 +1318,7 @@ def env_value(request):
     """Run environment property edit function"""
     trs = TestRun.objects.filter(run_id__in=request.GET.getlist('run_id'))
 
-    class RunEnvActions(object):
+    class RunEnvActions:
         def __init__(self, requet, trs):
             self.__all__ = ['add', 'remove', 'change']
             self.ajax_response = {'rc': 0, 'response': 'ok'}
@@ -1357,7 +1357,7 @@ def env_value(request):
                 request,
                 "run/get_environment.html",
                 context={"test_run": self.trs[0], "is_ajax": True})
-            if isinstance(fragment.content, six.binary_type):
+            if isinstance(fragment.content, bytes):
                 self.ajax_response.update({
                     "fragment": fragment.content.decode('utf-8')
                 })

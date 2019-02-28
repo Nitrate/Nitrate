@@ -31,7 +31,7 @@ class TestQuickSearch(BaseCaseRun):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestQuickSearch, cls).setUpTestData()
+        super().setUpTestData()
         cls.search_url = reverse('nitrate-search')
 
     def test_goto_plan(self):
@@ -102,7 +102,7 @@ class TestCommentCaseRuns(BaseCaseRun):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestCommentCaseRuns, cls).setUpTestData()
+        super().setUpTestData()
         cls.many_comments_url = reverse('caserun-comment-caseruns')
 
     def test_refuse_if_missing_comment(self):
@@ -162,7 +162,7 @@ class TestUpdateObject(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestUpdateObject, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.permission = 'testplans.change_testplan'
         cls.update_url = reverse('ajax-update')
@@ -211,7 +211,7 @@ class TestUpdateCaseRunStatus(BaseCaseRun):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestUpdateCaseRunStatus, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.permission = 'testruns.change_testcaserun'
         cls.update_url = reverse('ajax-update-caserun-status')
@@ -270,7 +270,7 @@ class TestUpdateCasePriority(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestUpdateCasePriority, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.permission = 'testcases.change_testcase'
         cls.case_update_url = reverse('ajax-update-cases-default-tester')
@@ -320,7 +320,7 @@ class TestGetObjectInfo(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestGetObjectInfo, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.get_info_url = reverse('ajax-getinfo')
 

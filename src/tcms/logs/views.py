@@ -15,11 +15,11 @@ else:
     from django.utils.encoding import smart_unicode
 
 
-class TCMSLog(object):
+class TCMSLog:
     """TCMS Log"""
 
     def __init__(self, model):
-        super(TCMSLog, self).__init__()
+        super().__init__()
         self.model = model
 
     def get_new_log_object(self):

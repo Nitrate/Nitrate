@@ -119,7 +119,7 @@ SQLQueryInfo = namedtuple('SQLQueryInfo',
                           'joins, where_condition, where_param_conv')
 
 
-class CustomReportData(object):
+class CustomReportData:
     """Data for custom report
 
     In this data class, a major task is to construct INNER JOINS dynamically
@@ -190,7 +190,7 @@ class CustomReportData(object):
             joins = []
             where_conditions = []
             where_params = []
-            for field_name, value in six.iteritems(self._form.cleaned_data):
+            for field_name, value in self._form.cleaned_data.items():
                 if not value:
                     continue
                 query_info = self.report_criteria[field_name]
@@ -350,7 +350,7 @@ class CustomDetailsReportData(CustomReportData):
         return matrix_dataset
 
 
-class TestingReportBaseData(object):
+class TestingReportBaseData:
     """Base data of various testing report"""
 
     report_criteria = {
@@ -383,7 +383,7 @@ class TestingReportBaseData(object):
         """cache criteria to avoid generating repeately"""
         where_clause = []
         params = []
-        for field, condition in six.iteritems(self.report_criteria):
+        for field, condition in self.report_criteria.items():
             param = form.cleaned_data[field]
             if param:
                 expr, value_conv = condition
@@ -501,7 +501,7 @@ class TestingReportByCaseRunTesterData(TestingReportBaseData):
 
         # Get related tested_by's username. Don't need duplicated user ids.
         tested_by_ids = []
-        for build_id, tested_bys in six.iteritems(status_matrix):
+        for build_id, tested_bys in status_matrix.items():
             tested_by_ids += tested_bys.keys()
         tested_by_ids = set(tested_by_ids)
 
@@ -511,10 +511,10 @@ class TestingReportByCaseRunTesterData(TestingReportBaseData):
         def walk_status_matrix_rows():
             """For rendering template, walk through status matrix row by row"""
             prev_build = None
-            builds = sorted(six.iteritems(status_matrix), key=itemgetter(0))
+            builds = sorted(status_matrix.items(), key=itemgetter(0))
             for build_id, tested_by_ids in builds:
                 build_rowspan = len(tested_by_ids)
-                tested_by_ids = sorted(six.iteritems(tested_by_ids),
+                tested_by_ids = sorted(tested_by_ids.items(),
                                        key=itemgetter(0))
                 for tested_by_id, status_subtotal in tested_by_ids:
                     if build_id not in runs_subtotal:
@@ -976,7 +976,7 @@ class TestingReportByPlanBuildDetailData(TestingReportByPlanBuildData):
         return status_matrix
 
 
-class TestingReportCaseRunsData(object):
+class TestingReportCaseRunsData:
     """Data of case runs from testing report
 
     Case runs will be search by following criteria,
@@ -1041,7 +1041,7 @@ class TestingReportCaseRunsData(object):
 
     def runs_filter_criteria(self, form):
         result = {}
-        for criteria_field, expr in six.iteritems(self.run_filter_criteria):
+        for criteria_field, expr in self.run_filter_criteria.items():
             value = form.cleaned_data[criteria_field]
             if value:
                 result[expr[0]] = expr[1](value)

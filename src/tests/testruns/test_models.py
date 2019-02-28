@@ -9,7 +9,7 @@ class TestRunGetIssuesCount(BaseCaseRun):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestRunGetIssuesCount, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.empty_test_run = TestRunFactory(product_version=cls.version,
                                             plan=cls.plan,

@@ -8,7 +8,7 @@ def email_plan_update(plan):
     recipients = get_plan_notification_recipients(plan)
     if len(recipients) == 0:
         return
-    subject = u'TestPlan %s has been updated.' % plan.pk
+    subject = 'TestPlan %s has been updated.' % plan.pk
     mailto(settings.PLAN_EMAIL_TEMPLATE, subject, recipients,
            context={'plan': plan})
 
@@ -17,7 +17,7 @@ def email_plan_deletion(plan):
     recipients = get_plan_notification_recipients(plan)
     if len(recipients) == 0:
         return
-    subject = u'TestPlan %s has been deleted.' % plan.pk
+    subject = 'TestPlan %s has been deleted.' % plan.pk
     mailto(settings.PLAN_DELELE_EMAIL_TEMPLATE, subject, recipients,
            context={'plan': plan})
 

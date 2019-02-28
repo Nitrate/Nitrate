@@ -16,7 +16,7 @@ class TestTCR2FileToExportToXML(BaseCaseRun):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestTCR2FileToExportToXML, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.log_links = {
             cls.case_run_1.pk: [

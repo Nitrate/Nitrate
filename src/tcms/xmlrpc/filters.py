@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import six
 import sys
 import traceback
 
@@ -24,7 +23,7 @@ def _validate_config():
 def _get_enable_apis():
     _validate_config()
     apis = list()
-    for value in six.itervalues(settings.XMLRPC_METHODS):
+    for value in settings.XMLRPC_METHODS.values():
         for api in value:
             apis.append(api[0])
     return apis
@@ -86,7 +85,7 @@ def autowrap_xmlrpc_apis(path, package):
 
 
 def _format_message(msg):
-    return [msg] if isinstance(msg, six.string_types) else msg
+    return [msg] if isinstance(msg, str) else msg
 
 
 # create your own filter here.

@@ -15,7 +15,7 @@ class NitrateXmlRpcLogAdmin(admin.ModelAdmin):
         NitrateXmlRpcLogAdmin.user_cache.clear()
         NitrateXmlRpcLogAdmin.user_cache = {}
 
-        super(NitrateXmlRpcLogAdmin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def user_username(self, obj):
         username = NitrateXmlRpcLogAdmin.user_cache.get(obj.user_id)

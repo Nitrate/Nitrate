@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import six
 import unittest
 
 from django import test
@@ -26,8 +25,8 @@ class TestFindService(test.TestCase):
 
     def test_class_path_must_be_set(self):
         self.issue_tracker_1.class_path = ''
-        six.assertRaisesRegex(self, ValueError, 'class_path must be set',
-                              services.find_service, self.issue_tracker_1)
+        self.assertRaisesRegex(ValueError, 'class_path must be set',
+                               services.find_service, self.issue_tracker_1)
 
     def test_find_the_service(self):
         srv = services.find_service(self.issue_tracker_2)
@@ -40,7 +39,7 @@ class TestBaseIssueTrackerService(BaseCaseRun):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestBaseIssueTrackerService, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.tracker_product = IssueTrackerProductFactory()
 
@@ -122,7 +121,7 @@ class TestMakeIssueReportURLForBugzilla(BaseCaseRun):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestMakeIssueReportURLForBugzilla, cls).setUpTestData()
+        super().setUpTestData()
 
         cls.cp_db = ComponentFactory(name='db')
         cls.cp_docs = ComponentFactory(name='docs')

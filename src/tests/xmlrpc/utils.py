@@ -37,7 +37,7 @@ class XmlrpcAPIBaseTest(test.TestCase):
                       'but no exception is raised.'.format(faultCode))
 
 
-class FakeHTTPRequest(object):
+class FakeHTTPRequest:
 
     def __init__(self, user, data=None):
         self.user = user
