@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-import six
 
 from hashlib import sha1
 from mock import patch
@@ -39,14 +38,9 @@ class TestSetRandomKey(TestCase):
 
         self.assertEqual(self.new_user, activation_key.user)
 
-        if six.PY3:
-            s_random = sha1(str(fake_random).encode('utf-8')).hexdigest()[:5]
-            expected_key = sha1('{}{}'.format(
-                s_random, self.new_user.username).encode('utf-8')).hexdigest()
-        else:
-            s_random = sha1(str(fake_random)).hexdigest()[:5]
-            expected_key = sha1('{}{}'.format(
-                s_random, self.new_user.username)).hexdigest()
+        s_random = sha1(str(fake_random).encode('utf-8')).hexdigest()[:5]
+        expected_key = sha1('{}{}'.format(
+            s_random, self.new_user.username).encode('utf-8')).hexdigest()
 
         self.assertEqual(expected_key, activation_key.activation_key)
         self.assertEqual(datetime.datetime(2017, 5, 17),

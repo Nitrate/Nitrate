@@ -28,18 +28,18 @@ __all__ = (
     'remove_perm_from_user',
     'BasePlanCase',
     'BaseCaseRun',
-    'encode_if_py3',
+    'encode',
 )
 
 
-def encode_if_py3(s):
+def encode(s):
     """For running tests in Python 3
 
     This is added for running tests successfully with Python 3 while porting to
     Python 3 compatibility. But, it is really necessary to think about the
     XMLPRC API that strings returned should be in bytestring or not.
     """
-    if six.PY3 and isinstance(s, str):
+    if isinstance(s, str):
         return s.encode()
     else:
         return s

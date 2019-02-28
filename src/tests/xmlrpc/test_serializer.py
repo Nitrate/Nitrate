@@ -13,7 +13,7 @@ from tcms.xmlrpc.serializer import do_nothing
 from tcms.xmlrpc.serializer import encode_utf8
 from tcms.xmlrpc.serializer import to_str
 
-from tests import encode_if_py3
+from tests import encode
 from tests.factories import ComponentFactory
 from tests.factories import ProductFactory
 from tests.factories import TestCaseFactory
@@ -273,7 +273,7 @@ class TestQuerySetBasedSerializer(test.TestCase):
             self.assertEqual(expected_plan.author.username, plan['author'])
             self.assertEqual(expected_plan.product_version_id,
                              plan['product_version_id'])
-            self.assertEqual(encode_if_py3(expected_plan.product_version.value),
+            self.assertEqual(encode(expected_plan.product_version.value),
                              plan['product_version'])
 
     def test_serialize_queryset_with_empty_querset(self):

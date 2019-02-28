@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import json
-import six
 
 from django import test
 from django.contrib.contenttypes.models import ContentType
@@ -258,10 +257,7 @@ class TestGetForm(test.TestCase):
                                    {'app_form': 'testcases.CaseAutomatedForm'})
         form = CaseAutomatedForm()
 
-        if six.PY3:
-            resp_content = response.content.decode('utf-8')
-        else:
-            resp_content = response.content
+        resp_content = response.content.decode('utf-8')
         self.assertHTMLEqual(resp_content, form.as_p())
 
 

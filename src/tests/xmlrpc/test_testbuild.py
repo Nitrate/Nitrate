@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import six
 import unittest
 
 from six.moves.http_client import BAD_REQUEST
@@ -11,7 +10,7 @@ from django.test import TestCase
 
 from tcms.xmlrpc.api import build
 
-from tests import encode_if_py3
+from tests import encode
 from tests.factories import ProductFactory
 from tests.factories import TestBuildFactory
 from tests.factories import TestCaseRunFactory
@@ -92,12 +91,7 @@ class TestBuildCreate(XmlrpcAPIBaseTest):
         self.assertIsNotNone(b)
         self.assertEqual(b['product_id'], self.product.pk)
         self.assertEqual(b['name'], "B99")
-        if six.PY3:
-            self.assertEqual(b['description'], '开源中国')
-        else:
-            self.assertEqual(
-                b['description'],
-                '\xe5\xbc\x80\xe6\xba\x90\xe4\xb8\xad\xe5\x9b\xbd')
+        self.assertEqual(b['description'], '开源中国')
         self.assertEqual(b['is_active'], False)
 
     def test_build_create(self):
@@ -239,7 +233,7 @@ class TestBuildGetCaseRuns(XmlrpcAPIBaseTest):
         b = build.get_caseruns(None, self.build.pk)
         self.assertIsNotNone(b)
         self.assertEqual(2, len(b))
-        self.assertEqual(b[0]['case'], encode_if_py3(self.case_run_1.case.summary))
+        self.assertEqual(b[0]['case'], encode(self.case_run_1.case.summary))
 
 
 class TestBuildGetRuns(XmlrpcAPIBaseTest):
