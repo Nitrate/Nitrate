@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import io
 import importlib
 import re
-import six
 
 from django.core.exceptions import ValidationError
 
@@ -32,7 +32,7 @@ def validate_issue_report_params(value):
 
     This is a validator assigned to model's validators parameter.
     """
-    buf = six.StringIO(value)
+    buf = io.StringIO(value)
     param_lines = buf.readlines()
     buf.close()
     for line in param_lines:

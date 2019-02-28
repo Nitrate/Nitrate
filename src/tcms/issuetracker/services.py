@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import io
 import importlib
 import logging
-import six
 
 from six.moves import urllib
 from tcms.issuetracker.task import bugzilla_external_track
@@ -224,7 +224,7 @@ class IssueTrackerService:
         :rtype: dict[str, str]
         """
         result = dict()
-        buf = six.StringIO(self.tracker_model.issue_report_params)
+        buf = io.StringIO(self.tracker_model.issue_report_params)
         arg_lines = buf.readlines()
         buf.close()
         for line in arg_lines:
