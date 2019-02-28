@@ -26,9 +26,8 @@
 		}
 	</style>
 
-	<script src="{{ STATIC_URL }}js/lib/jquery-3.3.1.slim.min.js"></script>
+	<script src="{{ STATIC_URL }}js/lib/jquery-3.3.1.min.js"></script>
 	<script src="{{ STATIC_URL }}js/lib/bootstrap/bootstrap.bundle.min.js"></script>
-	<script type="text/javascript" src='{{ STATIC_URL }}js/tcms_actions.js'></script>
 
 	<script type="text/javascript" language="javascript" charset="utf-8">
 		jQuery.noConflict();
@@ -52,6 +51,7 @@
 		{% endif %}
 	</script>
 
+	<script type="text/javascript" src='{{ STATIC_URL }}js/tcms_actions.js'></script>
 	{% block custom_javascript %}{% endblock %}
 
 	<title>Nitrate - {% block subtitle %}{% endblock %}</title>

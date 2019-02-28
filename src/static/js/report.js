@@ -36,26 +36,6 @@ Nitrate.Report.CustomSearch.on_load = function() {
   if (jQ('#id_testcaserun__case__component').length) {
     bind_component_selector_to_product(true, false, jQ('#id_product')[0], jQ('#id_testcaserun__case__component')[0]);
   }
-
-  if (jQ('#id_table_report').length) {
-    jQ('#id_table_report').dataTable({
-      "aoColumnDefs":[{ "sType": "numeric", "aTargets": [1, 2, 3, 4, 5 ] }],
-      "bPaginate": false,
-      "bFilter": false,
-      "bProcessing": true,
-      "oLanguage": { "sEmptyTable": "No report data was found." }
-    });
-  }
-
-  jQ('.build_link').bind('click', function(e) {
-    e.stopPropagation();
-    e.preventDefault();
-    var params = Nitrate.Utils.formSerialize(jQ('#id_form_search')[0]);
-    var build_id = jQ(this).siblings().eq(0).val();
-    params.pk__in = build_id;
-        
-    postToURL(this.href, params, 'get');
-  });
 };
 
 Nitrate.Report.CustomDetails.on_load = function() {

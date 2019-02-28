@@ -1,0 +1,55 @@
+{% extends "tcms_master.html" %}
+
+{% block subtitle %}Case Run Report{% endblock %}
+
+{% block custom_javascript %}
+<script type="text/javascript" src="{{ STATIC_URL }}js/advance_search.js"></script>
+{% endblock %}
+
+{% block page_content %}
+{% block testing_reoprt_breadcrumb %}
+<nav aria-label="breadcrumb">
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item"><a href="{% url "nitrate-index" %}">Home</a></li>
+		<li class="breadcrumb-item active" aria-current="page">Testing Report</li>
+	</ol>
+</nav>
+{% endblock %}
+
+<div class="row">
+	<div class="col-2">
+		<form action="{% url "testing-report" %}" method="get">
+			<h2>Report Options</h2>
+			<div class="form-group">
+				<label for="{{ run_form.r_product.name }}">Product</label>
+				{{ run_form.r_product }}
+			</div>
+			<div class="form-group">
+				<label for="{{ run_form.r_build.name }}">Build</label>
+				{{ run_form.r_build }}
+			</div>
+			<div class="form-group">
+				<label for="{{ run_form.r_created_since.name }}">Execute Date:</label>
+				{{ run_form.r_created_since }}
+				{{ run_form.r_created_before }}
+			</div>
+			<div class="form-group">
+				<label for="{{ run_form.r_version.name }}">Version:</label>
+				{{ run_form.r_version }}
+			</div>
+			<div class="form-group">
+				<label>Report Type:</label>
+				{{ run_form.report_type }}
+			</div>
+			<div class="form-group">
+				<button type="submit" class="btn btn-primary" value="Generate Report">Generate Report</button>
+			</div>
+		</form>
+		{% if errors %}<div>{{ errors }}</div>{% endif %}
+	</div>
+	<div class="col-10">
+        {% block report_content %}Put report content here{% endblock %}
+	</div>
+</div>
+
+{% endblock %}

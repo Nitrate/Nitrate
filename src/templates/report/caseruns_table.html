@@ -1,23 +1,22 @@
 {% spaceless %}
-<table class="list" id="id_table_cases" cellspacing="0" cellspan="0">
+<table class="table table-striped table-hover" id="id_table_cases">
 	<thead>
 		<tr>
-			<th class="widthID">Case Run ID</th>
-			<th class="widthID">Case ID</th>
-			<th>Summary</th>
-			<th width="80">Tester</th>
-			<th width="80">Assignee</th>
-			<th width="150">Automated </th>
-			<th width="100">Category</th>
-			<th width="60">Priority</th>
-			{#<th width="40">Issues</th>#}
-			<th width="50" style='text-align:center'>Status</th>
-			<th width="40">Sort</th>
+			<th width="8%">Case Run ID</th>
+			<th width="6%">Case ID</th>
+			<th width="40%">Summary</th>
+			<th>Tester</th>
+			<th>Assignee</th>
+			<th>Automated </th>
+			<th>Category</th>
+			<th>Priority</th>
+			<th>Status</th>
+			<th>Sort</th>
 		</tr>
 	</thead>
 	<tbody>
 		{% for test_case_run, status_name, priority_value, tester, assignee in test_case_runs %}
-		<tr class="{% cycle 'odd' 'even' %} {% ifequal assignee.0 user.pk %} mine {%endifequal%}">
+		<tr>
 			<td>
 				<a target="_blank" href="{% url "run-get" test_case_run.run.pk %}#caserun_{{ test_case_run.pk }}">#{{ test_case_run.pk }}</a>
 			</td>
@@ -40,12 +39,11 @@
 			<td>{{ test_case_run.case.get_is_automated_status }}</td>
 			<td>{{ test_case_run.case.category }}</td>
 			<td>{{ priority_value }}</td>
-			{#<td><span id="{{ test_case_run.pk }}_case_issues_count" {% if test_case_run.num_bug %}class="have_issue"{% endif %}>{{ test_case_run.num_bug }}</span></td>#}
 			<td class="expandable center">
 				<img border="0" alt="" class="icon_status btn_{{ status_name.lower }}" />
 			</td>
 			<td>
-				<span class="mark">{{ test_case_run.sortkey }}</span>
+				<span>{{ test_case_run.sortkey }}</span>
 			</td>
 		</tr>
 		{% empty %}

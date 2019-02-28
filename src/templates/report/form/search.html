@@ -1,45 +1,31 @@
-<div class="leftlistinfo">
-    <div class="listinfo">
-        <div class="title">{{ form.product.label }}&nbsp;:</div>
-        <div class="listinfo_input">
-            {{ form.product }}
-        </div>
-    </div>
-    <div class="listinfo">
-        <div class="title">{{ form.build_run__product_version.label }}&nbsp;:</div>
-        <div class="listinfo_input">
-            {{ form.build_run__product_version }}
-        </div>
-    </div>
-    <div class="listinfo">
-        <div class="title">{{ form.testcaserun__case__category.label }}&nbsp;:</div>
-        <div class="listinfo_input">
-            {{ form.testcaserun__case__category }}
-        </div>
-    </div>
-    <div class="listinfo">
-        <div class="title">{{ form.testcaserun__case__component.label }}&nbsp;:</div>
-        <div class="listinfo_input">
-            {{ form.testcaserun__case__component }}
-        </div>
-    </div>
+<div class="form-group">
+  <label for="id_{{ form.product.name }}">{{ form.product.label }}</label>
+  {{ form.product }}
+</div>
+<div class="form-group">
+  <label for="{{ form.build_run__product_version.name }}">{{ form.build_run__product_version.label }}</label>
+  {{ form.build_run__product_version }}
+</div>
+<div class="form-group">
+  <label for="id_{{ form.testcaserun__case__category.name }}">{{ form.testcaserun__case__category.label }}</label>
+  {{ form.testcaserun__case__category }}
+</div>
+<div class="form-group">
+  <label for="id_{{ form.testcaserun__case__component.name }}">{{ form.testcaserun__case__component.label }}</label>
+  {{ form.testcaserun__case__component }}
+</div>
+<div class="form-group">
+  <label for="id_{{ form.build_run__plan__name__icontains.name }}">{{ form.build_run__plan__name__icontains.label }}</label>
+  {{ form.build_run__plan__name__icontains }}
+</div>
+<div class="form-group">
+  <label for="id_{{ form.pk__in.name }}">{{ form.pk__in.label }}</label>
+  {{ form.pk__in }}
+</div>
+<div class="form-group">
+  <button type="submit" name="a" class="btn btn-primary" value="Search" title="Generate report">Generate</button>
+</div>
 
-</div>
-<div class="rightlistinfo">
-    <div class="listinfo">
-        <div class="title">{{ form.build_run__plan__name__icontains.label }}&nbsp;:</div>
-        <div class="listinfo_input">
-            {{ form.build_run__plan__name__icontains }}
-        </div>
-    </div>
-    <div class="listinfo">
-        <div class="title">{{ form.pk__in.label }}&nbsp;:</div>
-        <div class="listinfo_input">
-            {{ form.pk__in }}
-        </div>
-    </div>
-</div>
-<div class="clear"></div>
 <div class="errors">
     {{ form.errors }}
 </div>

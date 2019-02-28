@@ -1,44 +1,46 @@
 {% load report_stats %}
 {# Expect a GroupByResult object #}
-<table class="report_data report" border="0" cellspacing="1" cellpadding="0" width="80%">
-	<tr class="variety_passed">
+<table class="table table-striped table-sm">
+	<tbody>
+	<tr>
 		<td>PASSED</td>
 		<td>{{ case_runs_status_subtotal.PASSED }}</td>
 		<td>{% groupby_result_percent case_runs_status_subtotal "PASSED" %}%</td>
 	</tr>
-	<tr class="variety_failed">
+	<tr>
 		<td>FAILED</td>
 		<td>{{ case_runs_status_subtotal.FAILED }}</td>
 		<td>{% groupby_result_percent case_runs_status_subtotal "FAILED" %}%</td>
 	</tr>
-	<tr class="variety_idle">
+	<tr>
 		<td>IDLE</td>
 		<td>{{ case_runs_status_subtotal.IDLE }}</td>
 		<td>{% groupby_result_percent case_runs_status_subtotal "IDLE" %}%</td>
 	</tr>
-	<tr class="variety_error">
+	<tr>
 		<td>ERROR</td>
 		<td>{{ case_runs_status_subtotal.ERROR }}</td>
 		<td>{% groupby_result_percent case_runs_status_subtotal "ERROR" %}%</td>
 	</tr>
-	<tr class="variety_paused">
+	<tr>
 		<td>PAUSED</td>
 		<td>{{ case_runs_status_subtotal.PAUSED }}</td>
 		<td>{% groupby_result_percent case_runs_status_subtotal "PAUSED" %}%</td>
 	</tr>
-	<tr class="variety_blocked">
+	<tr>
 		<td>BLOCKED</td>
 		<td>{{ case_runs_status_subtotal.BLOCKED }}</td>
 		<td>{% groupby_result_percent case_runs_status_subtotal "BLOCKED" %}%</td>
 	</tr>
-	<tr class="variety_running">
+	<tr>
 		<td>RUNNING</td>
 		<td>{{ case_runs_status_subtotal.RUNNING }}</td>
 		<td>{% groupby_result_percent case_runs_status_subtotal "RUNNING" %}%</td>
 	</tr>
-	<tr class="variety_waived">
+	<tr>
 		<td>WAIVED</td>
 		<td>{{ case_runs_status_subtotal.WAIVED }}</td>
 		<td>{% groupby_result_percent case_runs_status_subtotal "WAIVED" %}%</td>
 	</tr>
+	</tbody>
 </table>

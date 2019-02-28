@@ -1,55 +1,64 @@
-{% extends "report/common/search_run.html" %}
+{% extends "report/testing-report/master.html" %}
 
-{% block report %}
+{% block testing_reoprt_breadcrumb %}
+<nav aria-label="breadcrumb">
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item"><a href="{% url "nitrate-index" %}">Home</a></li>
+		<li class="breadcrumb-item"><a href="{% url "testing-report" %}">Testing Report</a></li>
+		<li class="breadcrumb-item active" aria-current="page">By Plan's Tag</li>
+	</ol>
+</nav>
+{% endblock %}
+
+{% block report_content %}
 {% if report_data %}
 	{% if queries %}
-	<div class="queries">
-		<ul>
-		{% for k, v in queries.items %}
-			<li><label>{{ k|title }}:</label>{{ v|safe }};</li>
-		{% endfor %}
-			<li class="clear"></li>
-		</ul>
-	</div>
+	<ul class="list-group list-group-horizontal">
+	{% for k, v in queries.items %}
+		<li class="list-group-item border-0 pl-2 pr-2">
+			<strong>{{ k|title }}</strong>: {{ v|safe }};
+		</li>
+	{% endfor %}
+	</ul>
 	{% endif %}
 
-	<div class="reportSummary01">
-		<ul>
-			<li class="tagTab">
-				{% if report_data.tags_names %}
-				Tag: {% for tag_name in report_data.tags_names %}{{ tag_name }},&nbsp;{% endfor %}
-				{% else %}
-				No tags have data for this report. Please refer to detail report
-				{% endif %}
-				<a href="{% url "testing-report" %}{{ request_path }}&report_type=per_plan_tag_report"
-					style="font-weight:normal; text-decoration:underline;">Per Tag View</a>
-			</li>
-		</ul>
-		<ul><li>Plan:<span>{{ report_data.plans_count }}</span>Run:<span>{{ report_data.runs_count }}</span></li></ul>
-		<div class="clear"></div>
-	</div>
+	<ul class="list-group list-group-horizontal justify-content-end">
+		<li class="list-group-item mr-auto border-0 pl-2">
+			<a href="{% url "testing-report" %}{{ request_path }}&report_type=per_plan_tag_report">Per Tag View</a>
+		</li>
+		<li class="list-group-item border-0 pl-2 pr-2">
+			Plan: <span class="red">{{ report_data.plans_count }}</span>
+		</li>
+		<li class="list-group-item border-0 pl-2 pr-2">
+			Run: <span class="red">{{ report_data.runs_count }}</span>
+		</li>
+	</ul>
 
-	<table width="100%" border="0" cellpadding="0" cellspacing="0" class="listTdReport">
-		<tr>
-			<th class="w350">Tag</th>
-			<th class="w50">plan</th>
-			<th class="w50">Run</th>
-			<th class="w90">Run Passed</th>
-			<th>Run Failed</th>
-		</tr>
-		{% for tag_name, plans_count, runs_count, status_subtotal in report_data.reports %}
-		<tr>
-			<td><span>{{ tag_name }}</span></td>
-			<td>{{ plans_count }}</td>
-			<td>{{ runs_count }}</td>
-			<td>{{ status_subtotal.PASSED|default:0 }}</td>
-			<td>{{ status_subtotal.FAILED|default:0 }}</td>
-		</tr>
-		{% empty %}
-		<tr>
-			<td colspan="5" align="center">No report data.</td>
-		</tr>
-		{% endfor %}
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th width="68%">Tag</th>
+				<th width="8%">Plan</th>
+				<th width="8%">Run</th>
+				<th width="8%">Run Passed</th>
+				<th width="8%">Run Failed</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for tag_name, plans_count, runs_count, status_subtotal in report_data.reports %}
+			<tr>
+				<td><span>{{ tag_name }}</span></td>
+				<td>{{ plans_count }}</td>
+				<td>{{ runs_count }}</td>
+				<td>{{ status_subtotal.PASSED|default:0 }}</td>
+				<td>{{ status_subtotal.FAILED|default:0 }}</td>
+			</tr>
+			{% empty %}
+			<tr>
+				<td colspan="5" align="center">No report data.</td>
+			</tr>
+			{% endfor %}
+		</tbody>
 	</table>
 {% endif %}
 {% endblock %}

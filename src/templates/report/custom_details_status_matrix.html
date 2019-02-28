@@ -1,17 +1,17 @@
-<table class="table_style" cellpadding="0" cellspacing="0" border="0" width="100%" id="id_table_cases" >
+<table class="table table-bordered">
 	<thead>
 		<tr>
-			<th align="left" class="sortcol sortdesc" >Plan name</th>
-			<th align="left" class="sortcol">Run name</th>
-			<th align="left" class="sortcol" width="40">Idle</th>
-			<th align="left" class="sortcol" width="70">Running</th>
-			<th align="left" class="sortcol" width="60">Paused</th>
-			<th align="left" class="sortcol" width="50">Passed</th>
-			<th align="left" class="sortcol" width="50">Failed</th>
-			<th align="left" class="sortcol" width="60">Blocked</th>
-			<th align="left" class="sortcol" width="50">Error</th>
-			<th align="left" class="sortcol" width="60">Waived</th>
-			<th align="left" class="sortcol" width="50">Total</th>
+			<th>Plan name</th>
+			<th>Run name</th>
+			<th width="40">Idle</th>
+			<th width="70">Running</th>
+			<th width="60">Paused</th>
+			<th width="50">Passed</th>
+			<th width="50">Failed</th>
+			<th width="60">Blocked</th>
+			<th width="50">Error</th>
+			<th width="60">Waived</th>
+			<th width="50">Total</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -23,29 +23,29 @@
 			  <a href="{{ plan.0.get_absolute_url }}">[{{ plan.0.plan_id }}] {{ plan.0.name }}</a>
 			</td>
 			{% endifnotequal %}
-			<td valign="top"><a href="{{ run.get_absolute_url }}">[{{ run.run_id }}] {{ run.summary }}</a></td>
-			<td valign="top">{{ status_count.IDLE|default:'' }}</td>
-			<td valign="top">{{ status_count.RUNNING|default:'' }}</td>
-			<td valign="top">{{ status_count.PAUSED|default:'' }}</td>
-			<td valign="top">{{ status_count.PASSED|default:'' }}</td>
-			<td valign="top">{{ status_count.FAILED|default:'' }}</td>
-			<td valign="top">{{ status_count.BLOCKED|default:'' }}</td>
-			<td valign="top">{{ status_count.ERROR|default:'' }}</td>
-			<td valign="top">{{ status_count.WAIVED|default:'' }}</td>
-			<td valign="top">{{ status_count.total|default:'' }}</td>
+			<td><a href="{{ run.get_absolute_url }}">[{{ run.run_id }}] {{ run.summary }}</a></td>
+			<td>{{ status_count.IDLE|default:'' }}</td>
+			<td>{{ status_count.RUNNING|default:'' }}</td>
+			<td>{{ status_count.PAUSED|default:'' }}</td>
+			<td>{{ status_count.PASSED|default:'' }}</td>
+			<td>{{ status_count.FAILED|default:'' }}</td>
+			<td>{{ status_count.BLOCKED|default:'' }}</td>
+			<td>{{ status_count.ERROR|default:'' }}</td>
+			<td>{{ status_count.WAIVED|default:'' }}</td>
+			<td>{{ status_count.total|default:'' }}</td>
 		</tr>
 		{% else %}
 		<tr>
 			<td colspan="2" align="right" style="padding-right:10px;">Total</td>
-			<td valign="top">{{ status_count.IDLE|default:'' }}</td>
-			<td valign="top">{{ status_count.RUNNING|default:'' }}</td>
-			<td valign="top">{{ status_count.PAUSED|default:'' }}</td>
-			<td valign="top">{{ status_count.PASSED|default:'' }}</td>
-			<td valign="top">{{ status_count.FAILED|default:'' }}</td>
-			<td valign="top">{{ status_count.BLOCKED|default:'' }}</td>
-			<td valign="top">{{ status_count.ERROR|default:'' }}</td>
-			<td valign="top">{{ status_count.WAIVED|default:'' }}</td>
-			<td valign="top">{{ status_count.total|default:'' }}</td>
+			<td>{{ status_count.IDLE|default:'' }}</td>
+			<td>{{ status_count.RUNNING|default:'' }}</td>
+			<td>{{ status_count.PAUSED|default:'' }}</td>
+			<td>{{ status_count.PASSED|default:'' }}</td>
+			<td>{{ status_count.FAILED|default:'' }}</td>
+			<td>{{ status_count.BLOCKED|default:'' }}</td>
+			<td>{{ status_count.ERROR|default:'' }}</td>
+			<td>{{ status_count.WAIVED|default:'' }}</td>
+			<td>{{ status_count.total|default:'' }}</td>
 		</tr>
 		{% endif %}
 	{% endfor %}

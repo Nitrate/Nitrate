@@ -1,4 +1,4 @@
-{% extends "tcms_base.html" %}
+{% extends "tcms_master.html" %}
 {% load report_stats %}
 
 {% block subtitle %}Reporting - {{ product }}{% endblock %}
@@ -10,20 +10,20 @@ Nitrate.Utils.after_page_load(Nitrate.Report.List.on_load);
 </script>
 {% endblock %}
 
-{% block contents %}
-<div id="content">
-	<div class="sprites crumble">
-		<a href="{% url "nitrate-index" %}">Home</a>
-		&gt;&gt;<a href="/report">Reporting</a>
-		&gt;&gt;{{ product }}
-	</div>
-	{% include 'report/nav.html' %}
-	<div class="Detailform border-1" style="background:#f1f1f1">
-		<div class="report">
-			<table class="report_tb" collspan="0" cellspacing="0" border="0">
-				<tr class="attrib_line">
-					<td  colspan="3">Testing Runs</td>
-				</tr>
+{% block page_content %}
+	<nav aria-label="breadcrumb">
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item"><a href="{% url "nitrate-index" %}">Home</a></li>
+			<li class="breadcrumb-item"><a href="{% url "report-overall" %}">Reporting</a></li>
+			<li class="breadcrumb-item active" aria-current="page">Product - {{ product }}</li>
+		</ol>
+	</nav>
+	<div class="row">
+		<div class="col"></div>
+		<div class="col-8">
+			{% include 'report/nav.html' %}
+			<h4 class="pt-3">Testing Runs</h4>
+			<table class="table table-striped">
 				<tr>
 					<td>Finished</td>
 					<td>{{ runs_count.finished }}</td>
@@ -34,9 +34,9 @@ Nitrate.Utils.after_page_load(Nitrate.Report.List.on_load);
 					<td>{{ runs_count.running }}</td>
 					<td>{% groupby_result_percent runs_count "running" %}%</td>
 				</tr>
-				<tr class="attrib_line" >
-					<td colspan="3">Case Runs</td>
-				</tr>
+			</table>
+			<h4>Case Runs</h4>
+			<table class="table table-striped">
 				<tr>
 					<td>PASSED</td>
 					<td>{{ case_run_count.PASSED }}</td>
@@ -79,7 +79,6 @@ Nitrate.Utils.after_page_load(Nitrate.Report.List.on_load);
 				</tr>
 			</table>
 		</div>
-	
+		<div class="col"></div>
 	</div>
-</div><!--content over -->
 {% endblock %}

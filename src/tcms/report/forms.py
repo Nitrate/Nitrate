@@ -4,6 +4,33 @@ from django import forms
 from tcms.core.forms.fields import ModelChoiceField
 from tcms.management.models import Component, Product, TestBuild, Version
 from tcms.testcases.models import TestCaseCategory
+from django.forms.widgets import ChoiceWidget
+from django.utils.safestring import mark_safe
+
+
+class ReportTypeSelect(ChoiceWidget):
+    """Radio group for report type choise for testing report"""
+
+    template_name = None
+
+    def render(self, name, value, attrs=None, renderer=None):
+        context = self.get_context(name, value, attrs)
+        lines = []
+        selected_values = context['widget']['value']
+        for item in context['widget']['optgroups']:
+            opt = item[1][0]
+            name = opt['name']
+            value = opt['value']
+            label = opt['label']
+            checked = 'checked' if value in selected_values else ''
+            lines.append('<div class="form-check">')
+            lines.append('<input class="form-check-input" type="radio" '
+                         'name="{0}" id="id_{1}" value="{1}" {2}>'
+                         .format(name, value, checked))
+            lines.append('<label class="form-check-label" for="id_{}">{}</label>'
+                         .format(value, label))
+            lines.append('</div>')
+        return mark_safe('\n'.join(lines))
 
 
 class CustomSearchForm(forms.Form):
@@ -11,6 +38,7 @@ class CustomSearchForm(forms.Form):
         label='Build',
         queryset=TestBuild.objects.none(),
         required=False,
+        widget=forms.SelectMultiple(attrs={'class': 'form-control'}),
     )
     product = ModelChoiceField(
         label='Product',
@@ -20,25 +48,31 @@ class CustomSearchForm(forms.Form):
             'required': 'Product is required to generate this report.',
             'invalid_choice': '%(value)s is not a valid product ID for '
                               'generating this report.',
-        })
+        },
+        widget=forms.Select(attrs={'class': 'form-control'}),
+    )
     build_run__product_version = forms.ModelChoiceField(
         label='Product version',
         queryset=Version.objects.none(),
         required=False,
+        widget=forms.Select(attrs={'class': 'form-control'}),
     )
     build_run__plan__name__icontains = forms.CharField(
         label='Plan name',
         required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
     )
     testcaserun__case__category = forms.ModelChoiceField(
         label='Case category',
         queryset=TestCaseCategory.objects.none(),
         required=False,
+        widget=forms.Select(attrs={'class': 'form-control'}),
     )
     testcaserun__case__component = forms.ModelChoiceField(
         label='Case component',
         queryset=Component.objects.none(),
         required=False,
+        widget=forms.Select(attrs={'class': 'form-control'}),
     )
 
     def populate(self, product_id):
@@ -75,7 +109,9 @@ class CustomSearchDetailsForm(CustomSearchForm):
             'required': 'A build is required to generate this report.',
             'invalid_choice': '%(value)s is not a valid test build ID for '
                               'generating this report.',
-        })
+        },
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
 
     def clean_build_run__product_version(self):
         return None
@@ -106,6 +142,7 @@ class BasicTestingReportFormFields(forms.Form):
         },
         widget=forms.Select(attrs={
             'id': 'r_product',
+            'class': 'form-control',
         }))
 
     r_build = forms.ModelMultipleChoiceField(
@@ -119,6 +156,7 @@ class BasicTestingReportFormFields(forms.Form):
         widget=forms.SelectMultiple(attrs={
             'id': 'r_build',
             'size': '5',
+            'class': 'form-control',
         }))
 
     r_version = forms.ModelMultipleChoiceField(
@@ -132,6 +170,7 @@ class BasicTestingReportFormFields(forms.Form):
         widget=forms.SelectMultiple(attrs={
             'id': 'r_version',
             'size': '5',
+            'class': 'form-control',
         }))
 
     r_created_since = forms.DateField(
@@ -144,7 +183,7 @@ class BasicTestingReportFormFields(forms.Form):
         widget=forms.TextInput(attrs={
             'id': 'r_created_since',
             'style': 'width:130px;',
-            'class': 'vDateField',
+            'class': 'form-control vDateField',
         }))
 
     r_created_before = forms.DateField(
@@ -157,7 +196,7 @@ class BasicTestingReportFormFields(forms.Form):
         widget=forms.TextInput(attrs={
             'id': 'r_created_before',
             'style': 'width:130px;',
-            'class': 'vDateField',
+            'class': 'form-control vDateField',
         }))
 
     def populate(self, product_id):
@@ -228,4 +267,7 @@ class TestingReportForm(BasicTestingReportFormFields):
         error_messages={
             'invalid_choice': '%(value)s is not a valid report type.',
         },
-        widget=forms.RadioSelect)
+        widget=ReportTypeSelect(attrs={
+            'class': 'form-control',
+        })
+    )

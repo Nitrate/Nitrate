@@ -1,52 +1,68 @@
-{% extends "report/common/search_run.html" %}
-{% block report %}
+{% extends "report/testing-report/master.html" %}
+
+{% block testing_reoprt_breadcrumb %}
+<nav aria-label="breadcrumb">
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item"><a href="{% url "nitrate-index" %}">Home</a></li>
+		<li class="breadcrumb-item"><a href="{% url "testing-report" %}">Testing Report</a></li>
+		<li class="breadcrumb-item active" aria-current="page">By Plan &amp; Build Per Plan View</li>
+	</ol>
+</nav>
+{% endblock %}
+
+{% block report_content %}
 {% if report_data %}
 	{% if queries %}
-	<div class="queries">
-		<ul>
-		{% for k, v in queries.items %}
-			<li><label>{{ k|title }}:</label>{{ v|safe }};</li>
-		{% endfor %}
-			<li class="clear"></li>
-		</ul>
-	</div>
+	<ul class="list-group list-group-horizontal">
+	{% for k, v in queries.items %}
+		<li class="list-group-item border-0 pl-2 pr-2">
+			<strong>{{ k|title }}</strong>: {{ v|safe }};
+		</li>
+	{% endfor %}
+	</ul>
 	{% endif %}
 
-	<div class="reportSummary01">
-		<ul>
-			<li>
-				Plan:<span>{{ report_data.plans_count }}</span>
-				Run:<span>{{ report_data.runs_count }}</span>
-				Case-Run:<span>{{ report_data.case_runs_count }}</span>
-			</li>
-		</ul>
-		<div class="clear"></div>
-	</div>
+	<ul class="list-group list-group-horizontal">
+		<li class="list-group-item border-0 pl-2 pr-2">
+			Plan: <span class="red">{{ report_data.plans_count }}</span>
+		</li>
+		<li class="list-group-item border-0 pl-2 pr-2">
+			Run: <span class="red">{{ report_data.runs_count }}</span>
+		</li>
+		<li class="list-group-item border-0 pl-2 pr-2">
+			Case Run: <span class="red">{{ report_data.case_runs_count }}</span>
+		</li>
+	</ul>
 
 	{% for plan, builds_count, runs_count, caseruns_count, status_matrix in report_data.reports %}
-	<div class="reportSummary01">
-		<ul><li class="tagTab">Plan: <a href="{{ plan.get_absolute_url }}">{{ plan }}</a></li></ul>
-		<ul>
-			<li>Builds:<span>{{ builds_count }}</span></li>
-			<li>Runs:<span>{{ runs_count }}</span></li>
-			<li>Case Runs:<span>{{ caseruns_count }}</span></li>
-		</ul>
-		<div class="clear"></div>
-	</div>
+	<ul class="list-group list-group-horizontal">
+		<li class="list-group-item mr-auto border-0 pl-2">
+            Plan: <a href="{{ plan.get_absolute_url }}">{{ plan }}</a>
+		</li>
+		<li class="list-group-item border-0 pl-2 pr-2">
+			Builds: <span class="red">{{ builds_count }}</span>
+		</li>
+		<li class="list-group-item border-0 pl-2 pr-2">
+			Runs: <span class="red">{{ runs_count }}</span>
+		</li>
+		<li class="list-group-item border-0 pl-2 pr-2">
+			Case Runs: <span class="red">{{ caseruns_count }}</span>
+		</li>
+	</ul>
 
-	<table width="100%" border="0" cellpadding="0" cellspacing="0" class="listTdReport">
+	<table class="table table-striped">
 		<thead>
 			<tr>
-				<th class="w200">Build</th>
-				<th>Run</th>
-				<th class="w50">Idle</th>
-				<th class="w50">Running</th>
-				<th class="w50">Paused</th>
-				<th class="w50">Passed</th>
-				<th class="w50">Failed</th>
-				<th class="w50">Blocked</th>
-				<th class="w50">Error</th>
-				<th class="w50">Waived</th>
+				<th width="15%">Build</th>
+				<th width="35%">Run</th>
+				<th>Idle</th>
+				<th>Running</th>
+				<th>Paused</th>
+				<th>Passed</th>
+				<th>Failed</th>
+				<th>Blocked</th>
+				<th>Error</th>
+				<th>Waived</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -69,19 +85,19 @@
 		</tbody>
 	</table>
 	{% empty %}
-	<table width="100%" border="0" cellpadding="0" cellspacing="0" class="listTdReport">
+	<table class="table table-striped">
 		<thead>
 			<tr>
-				<th class="w200">Build</th>
-				<th>Run</th>
-				<th class="w50">Idle</th>
-				<th class="w50">Running</th>
-				<th class="w50">Paused</th>
-				<th class="w50">Passed</th>
-				<th class="w50">Failed</th>
-				<th class="w50">Blocked</th>
-				<th class="w50">Error</th>
-				<th class="w50">Waived</th>
+				<th width="15%">Build</th>
+				<th width="35%">Run</th>
+				<th>Idle</th>
+				<th>Running</th>
+				<th>Paused</th>
+				<th>Passed</th>
+				<th>Failed</th>
+				<th>Blocked</th>
+				<th>Error</th>
+				<th>Waived</th>
 			</tr>
 		</thead>
 		<tbody>

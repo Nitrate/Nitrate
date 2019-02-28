@@ -1,12 +1,6 @@
-{% extends "tcms_base.html" %}
-
+{% extends "tcms_master.html" %}
 {% load report_tags %}
-
 {% block subtitle %}Custom Report Detail{% endblock %}
-
-{% block custom_stylesheet %}
-<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style/print.css" media="print" />
-{% endblock %}
 
 {% block custom_javascript %}
 <script type="text/javascript" src="{{ STATIC_URL }}js/report.js"></script>
@@ -15,64 +9,71 @@ Nitrate.Utils.after_page_load(Nitrate.Report.CustomDetails.on_load);
 </script>
 {% endblock %}
 
-{% block contents %}
-<div id="content">
-	<div class="sprites crumble">
-		<a href="{% url "nitrate-index" %}">Home</a>
-		&gt;&gt; <a href="{% url "report-custom" %}">Custom</a>
-		&gt;&gt; {% for build in builds %}{{ build }}{% endfor %}
-	</div>
-	<div class="report_title_bg">
-		<form action="{% url "report-custom-details" %}">
-			{{ form.product.label }}: {{ form.product }}<br />
-			{{ form.pk__in.label }}: {{ form.pk__in }}<br />
-			<input type="submit" value="Submit" />
+{% block page_content %}
+	<nav aria-label="breadcrumb">
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item"><a href="{% url "nitrate-index" %}">Home</a></li>
+			<li class="breadcrumb-item"><a href="{% url "report-custom" %}">Custom</a></li>
+			<li class="breadcrumb-item active" aria-current="page">{% for build in builds %}{{ build }}{% endfor %}</li>
+		</ol>
+	</nav>
+
+	<div class="border-bottom pb-2">
+		<form class="form-inline" action="{% url "report-custom-details" %}">
+			<div class="form-group">
+				<label class="my-1 mr-2" for="id_{{ form.product.name }}">Product</label>
+				{{ form.product }}
+			</div>
+			<div class="form-group">
+				<label class="my-1 mr-2 ml-3" for="id_{{ form.pk__in.name }}">Build</label>
+				{{ form.pk__in }}
+			</div>
+			<button type="submit" class="btn btn-primary my-1 ml-3">Submit</button>
 		</form>
+
 		{% if report_errors %}
 		<div>{{ report_errors }}</div>
 		{% endif %}
 	</div>
 
 	{% if not report_errors %}
-	<table cellpadding="0" cellspacing="0" class="table_noborder" border="0">
+	<table class="table" border="0">
 		{% for build in builds %}
 		<tr>
 			<td>
-				<strong>{{ build }}</strong>
-				Plan<span class="red">{{ build.plans_count|default_if_none:0 }}</span>
-				Run<span class="red">{{ build.runs_count|default_if_none:0 }}</span>
-				Manual Cases<span class="red">{{manual_count|percentage:total_count}} ({{manual_count}}/{{total_count}})</span>
-				Automated Cases<span class="red">{{auto_count|percentage:total_count}} ({{auto_count}}/{{total_count}})</span>
-				Manual/Automated<span class="red">{{both_count|percentage:total_count}} ({{both_count}}/{{total_count}})</span>
+				<span style="padding-right: 10px"><strong>{{ build }}</strong></span>
+				Plan: <span class="red">{{ build.plans_count|default_if_none:0 }}</span>
+				Run: <span class="red">{{ build.runs_count|default_if_none:0 }}</span>
+				Manual Cases: <span class="red">{{manual_count|percentage:total_count}} ({{manual_count}}/{{total_count}})</span>
+				Automated Cases: <span class="red">{{auto_count|percentage:total_count}} ({{auto_count}}/{{total_count}})</span>
+				Manual/Automated: <span class="red">{{both_count|percentage:total_count}} ({{both_count}}/{{total_count}})</span>
 			</td>
-			<td width="110">Passed Case-Run</td>
-			<td width="100">
-				<div class="progress-bar">
-					<div class="progress-inner" style="width:auto;	margin-right:-50px;text-align:cente">
-						<div class="progress-passed" style="width:{{ build.passed_case_runs_percent|floatformat:1 }}px;">&nbsp;</div>
+			<td>
+				<span>Passed Case-Run</span>
+				<div class="progress">
+					<div class="progress-bar" role="progressbar" style="width: {{ build.passed_case_runs_percent|floatformat:1 }}%;"
+						aria-valuenow="{{ build.passed_case_runs_percent|floatformat:1 }}" aria-valuemin="0" aria-valuemax="100">
+						<span class="pl-1">{{ build.passed_case_runs_percent|floatformat:1 }}%</span>
 					</div>
-					<div class="percent">{{ build.passed_case_runs_percent|floatformat:1 }}% ({{ build.passed_case_runs_count }})</div>
 				</div>
 			</td>
-			<td width="100">Failed Case-Run</td>
-			<td width="100">
-				<div class="progress-bar">
-					<div class="progress-inner" style="width:auto;	margin-right:-50px;text-align:cente">
-						<div class="progress-failed" style="width:{{ build.failed_case_runs_percent|floatformat:1 }}px;">&nbsp;</div>
+			<td>
+				<span>Failed Case-Run</span>
+				<div class="progress">
+					<div class="progress-bar bg-danger" role="progressbar" style="width: {{ build.failed_case_runs_percent|floatformat:1 }}%"
+						aria-valuenow="{{ build.failed_case_runs_percent|floatformat:1 }}" aria-valuemin="0" aria-valuemax="100">
+						<span class="pl-1">{{ build.failed_case_runs_percent|floatformat:1 }}%</span>
 					</div>
-					<div class="percent">{{ build.failed_case_runs_percent|floatformat:1 }}% ({{ build.failed_case_runs_count }})</div>
 				</div>
 			</td>
-			<td>&nbsp;</td>
 		</tr>
 		{% endfor %}
 	</table>
 
 	{% include "report/custom_details_status_matrix.html" %}
-	<div class="failed_caserun">All Failed Case-Run List</div>
+	<h5 style="color: #900;">All Failed Case-Run List</h5>
 	{% include "report/custom_details_case_runs.html" with case_runs=failed_case_runs %}
-	<div class="blocked_caserun">All Blocked Case-Run List</div>
+	<h5 style="color: #639;">All Blocked Case-Run List</h5>
 	{% include "report/custom_details_case_runs.html" with case_runs=blocked_case_runs %}
 	{% endif %} {# endif report_errors #}
-</div>
 {% endblock %}

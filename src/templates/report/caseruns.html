@@ -1,25 +1,31 @@
-{% extends "tcms_base.html" %}
+{% extends "tcms_master.html" %}
 {% load comments %}
 {% load report_tags %}
 {% block subtitle %}TestCaseRuns{% endblock %}
+
+{% comment %}
 {% block custom_stylesheet %}
 <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style/print.css" media="print" />
 {% endblock %}
+{% endcomment %}
 
 {% block custom_javascript %}
 <script type="text/javascript" src="{{ STATIC_URL }}js/report.js"></script>
 {% endblock %}
 
-{% block contents %}
-<div id="content">
-	<div class="sprites crumble"><a href="{% url "nitrate-index" %}">Home</a> &gt;&gt; <a href="{% url "testing-report" %}">Testing Report</a></div>
+{% block page_content %}
+	<nav aria-label="breadcrumb">
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item"><a href="{% url "nitrate-index" %}">Home</a></li>
+			<li class="breadcrumb-item active" aria-current="page">
+				<a href="{% url "testing-report" %}">Testing Report</a>
+			</li>
+		</ol>
+	</nav>
+
 	{% if form_errors %}
 	<div>{{ form_errors }}</div>
 	{% else %}
-	<div>
-		<h3>caseruns - {{ test_case_runs_count }}</h3>
-		{% include "report/caseruns_table.html" %}
-	</div>
+	{% include "report/caseruns_table.html" %}
 	{% endif %}
-</div>
 {% endblock %}

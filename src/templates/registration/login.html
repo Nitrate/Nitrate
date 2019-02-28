@@ -33,9 +33,10 @@
 			<div>
 				{% if social_auth_backends %}
 					<h5>Sign in with:</h5>
-					<ul class="social-logins">
+{#					<ul class="social-logins">#}
+					<ul class="list-group list-group-horizontal-md">
 						{% for social_login_info in social_auth_backends %}
-							<li>
+							<li class="list-group-item border-0">
 							{% if social_login_info.icon %}
 								<a href="{{ social_login_info.social_begin_url }}" title="{{ social_login_info.title }}" class="social_auth_login">
 									<i class="fab fa-{{ social_login_info.icon }} fa-{{ social_login_info.icon_size }}"></i>

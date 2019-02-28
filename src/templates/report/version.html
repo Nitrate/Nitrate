@@ -1,12 +1,11 @@
-{% extends "tcms_base.html" %}
+{% extends "tcms_master.html" %}
 {% load report_tags %}
-
 
 {% block subtitle %}Versions Report- {{ product }}{% endblock %}
 
-{% block custom_stylesheet %}
-<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style/print.css" media="print" />
-{% endblock %}
+{#{% block custom_stylesheet %}#}
+{#<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style/nitrate.css">#}
+{#{% endblock %}#}
 
 {% block custom_javascript %}
 <script type="text/javascript" src="{{ STATIC_URL }}js/report.js"></script>
@@ -15,52 +14,60 @@ Nitrate.Utils.after_page_load(Nitrate.Report.List.on_load);
 </script>
 {% endblock %}
 
-{% block contents %}
-<div id="content">
-	<div class="sprites crumble">
-		<a href="{% url "nitrate-index" %}">Home</a>
-		&gt;&gt;<a href="/report">Reporting</a>
-		&gt;&gt;{{ product }}
+{% block page_content %}
+	<nav aria-label="breadcrumb">
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item"><a href="{% url "nitrate-index" %}">Home</a></li>
+			<li class="breadcrumb-item"><a href="{% url "report-overall" %}">Reporting</a></li>
+			<li class="breadcrumb-item active" aria-current="page">Product - {{ product }}</li>
+		</ol>
+	</nav>
+	<div class="row">
+		<div class="col"></div>
+		<div class="col-8">
+			{% include 'report/nav.html' %}
+			{% if version %}
+				<h2 class="pt-3">Version: {{ version }}</h2>
+				{% include "report/case_runs_status_subtotal.html" %}
+			{% endif %}
+			<table class="table table-striped" style="margin-top: 15px">
+				<thead>
+				<tr>
+					<th>Version</th>
+					<th>Plans</th>
+					<th>Runs (Running/Finished)</th>
+					<th>Cases</th>
+					<th>Case Runs Progress</th>
+					<th>Failed Case Runs</th>
+				</tr>
+				</thead>
+				<tbody>
+				{% for version in versions %}
+					<tr>
+						<td>
+							<a href="?version_id={{ version.pk }}">{{ version }}</a>
+						</td>
+						<td>{{ version.plans_count }}</td>
+						<td>{{ version.running_runs_count }}/{{ version.finished_runs_count }}</td>
+						<td>{{ version.cases_count }}</td>
+						<td>
+							<div class="progress">
+								<div class="progress-bar" role="progressbar" style="width: {{ version.case_run_percent|default:'0' }}%"
+									 aria-valuenow="{{ version.case_run_percent|default:'0' }}" aria-valuemin="0" aria-valuemax="100">
+									<span class="pl-1">{{ version.case_run_percent|default:'0' }}%</span>
+								</div>
+							</div>
+						</td>
+						<td>
+							{% if version.failed_case_runs_count  %}
+								<span class="badge badge-danger">{{ version.failed_case_runs_count|default:'0' }} Failed</span>
+							{% endif %}
+						</td>
+					</tr>
+				{% endfor %}
+				</tbody>
+			</table>
+		</div>
+		<div class="col"></div>
 	</div>
-	{% include 'report/nav.html' %}
-	<div class="Detailform border-1" style="background:#f1f1f1 ;">
-		{% if version %}
-		<h2>Version: {{ version }}</h2>
-		<div class="bold-line" style="float:left;width:100%"></div>
-		{% include "report/case_runs_status_subtotal.html" %}
-		{% endif %}
-		<table class="list report" border="0" cellspacing="0" cellpadding="0" width="100%">
-			<tr>
-				<th width="20%">Version</th>
-				<th width="10%">Plans</th>
-				<th width="15%">Runs (Running/Finished)</th>
-				<th width="10%">Cases</th>
-				<th width="35%">Case Runs Progress</th>
-				<th width="10%">Failed Case Runs</th>
-			</tr>
-			{% for version in versions %}
-			<tr>
-				<td class="variety_0">
-					<a href="?version_id={{ version.pk }}">{{ version }}</a>
-				</td>
-				<td class="variety_1">{{ version.plans_count }}</td>
-				<td class="variety_2">{{ version.running_runs_count }}/{{ version.finished_runs_count }}</td>
-				<td class="variety_3">{{ version.cases_count }}</td>
-				<td class="variety_4">
-					<div class="progress-bar">
-						<div class="progress-inner" style="width:{{ version.case_run_percent|default:'0' }}%">
-							<div class="percent">{{ version.case_run_percent|default:'0' }}%</div>
-						</div>
-					</div>
-				</td>
-				<td class="variety_4">
-					{% if version.failed_case_runs_count  %}					
-					<div class="strong emphasize">{{ version.failed_case_runs_count|default:'0' }} Failed</div>
-					{% endif %}
-				</td>
-			</tr>
-			{% endfor %}
-		</table>
-	</div>
-</div>
 {% endblock %}

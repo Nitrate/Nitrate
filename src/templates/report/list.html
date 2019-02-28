@@ -1,4 +1,4 @@
-{% extends "tcms_base.html" %}
+{% extends "tcms_master.html" %}
 
 {% block subtitle %}Reporting{% endblock %}
 
@@ -13,36 +13,43 @@ Nitrate.Utils.after_page_load(Nitrate.Report.List.on_load);
 </script>
 {% endblock %}
 
-{% block contents %}
-<div id="content">
-	<div class="sprites crumble">
-		<a href="{% url "nitrate-index" %}">Home</a>
-		>> Reporting
+{% block page_content %}
+	<nav aria-label="breadcrumb">
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item"><a href="{% url "nitrate-index" %}">Home</a></li>
+			<li class="breadcrumb-item active" aria-current="page">Reporting</li>
+		</ol>
+	</nav>
+	<div class="row">
+		<div class="col"></div>
+		<div class="col-6">
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th>Product</th>
+						<th>Plans</th>
+						<th>Runs</th>
+						<th>Cases</th>
+					</tr>
+				</thead>
+				<tbody>
+				{% for product_id, product_name, plans_count, runs_count, cases_count in products %}
+					<tr class="{% cycle 'even' 'odd' %}">
+						<td>
+							{% if plans_count %}
+								<a href="{% url "report-overview" product_id %}">{{ product_name }}</a>
+							{% else %}
+								{{ product_name }}
+							{% endif %}
+						</td>
+						<td>{{ plans_count }}</td>
+						<td>{{ runs_count }}</td>
+						<td>{{ cases_count }}</td>
+					</tr>
+				{% endfor %}
+				</tbody>
+			</table>
+		</div>
+		<div class="col"></div>
 	</div>
-	<h1>Product</h1>
-	<div class="Detailform border-1">
-		<table class="list" border="0" cellspacing="0" cellpadding="0">
-			<tr>
-				<th>Product</th>
-				<th>Plans</th>
-				<th>Runs</th>
-				<th>Cases</th>
-			</tr>
-			{% for product_id, product_name, plans_count, runs_count, cases_count in products %}
-			<tr class="{% cycle 'even' 'odd' %}">
-				<td>
-					{% if plans_count %}
-					<a href="{% url "report-overview" product_id %}">{{ product_name }}</a>
-					{% else %}
-					{{ product_name }}
-					{% endif %}
-				</td>
-				<td>{{ plans_count }}</td>
-				<td>{{ runs_count }}</td>
-				<td>{{ cases_count }}</td>
-			</tr>
-			{% endfor %}
-		</table>
-	</div>
-</div><!--content over -->
 {% endblock %}

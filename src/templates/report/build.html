@@ -1,72 +1,75 @@
-{% extends "tcms_base.html" %}
+{% extends "tcms_master.html" %}
 {% load report_tags %}
 
 {% block subtitle %}Builds Report - {{ product }}{% endblock %}
 
-{% block custom_stylesheet %}
-<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style/print.css" media="print" />
-<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style/dataTables/jquery.dataTables.css" />
-<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style/dataTables/jquery.dataTables_themeroller.css" />
-{% endblock %}
+{#{% block custom_stylesheet %}#}
+{#<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style/dataTables/jquery.dataTables.css" />#}
+{#<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style/dataTables/jquery.dataTables_themeroller.css" />#}
+{#{% endblock %}#}
 
 {% block custom_javascript %}
-<script type="text/javascript" src="{{ STATIC_URL }}js/lib/jquery.dataTables.js"></script>
+{#<script type="text/javascript" src="{{ STATIC_URL }}js/lib/jquery.dataTables.js"></script>#}
 <script type="text/javascript" src="{{ STATIC_URL }}js/report.js"></script>
 <script type="text/javascript">
 Nitrate.Utils.after_page_load(Nitrate.Report.Builds.on_load);
 </script>
 {% endblock %}
 
-{% block contents %}
-<div id="content">
-	<div class="sprites crumble">
-		<a href="{% url "nitrate-index" %}">Home</a>
-		&gt;&gt;<a href="/report">Reporting</a>
-		&gt;&gt;{{ product }}
-	</div>
-	{% include 'report/nav.html' %}
-	<div class="Detailform border-1" style="background:#f1f1f1 ;">
-		{% if build %}
-		<div class="report">
-			<h2>Build: {{ build }}</h2>
-			{% include "report/case_runs_status_subtotal.html" %}
-		</div>
-		{% endif %}
-		<table class="list report" id="report_build" border="0" cellspacing="0" cellpadding="0" width="100%">
-			<thead>
+{% block page_content %}
+	<nav aria-label="breadcrumb">
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item"><a href="{% url "nitrate-index" %}">Home</a></li>
+			<li class="breadcrumb-item"><a href="{% url "report-overall" %}">Reporting</a></li>
+			<li class="breadcrumb-item active" aria-current="page">Product - {{ product }}</li>
+		</ol>
+	</nav>
+	<div class="row">
+		<div class="col"></div>
+		<div class="col-8">
+			{% include 'report/nav.html' %}
+			{% if build %}
+				<div class="report">
+					<h2 class="pt-3">Build: {{ build }}</h2>
+					{% include "report/case_runs_status_subtotal.html" %}
+				</div>
+			{% endif %}
+			<table class="table table-striped" style="margin-top: 15px">
+				<thead>
 				<tr>
 					<th>BUILD</th>
 					<th>RUNS (Finished/ Total)</th>
 					<th>Case Runs Progress</th>
 					<th>Failed Case Runs</th>
 				</tr>
-			</thead>
-			<tbody>
+				</thead>
+				<tbody>
 				{% for build in builds %}
-				<tr>
-					<td class="variety_0">
-						<a href="?build_id={{ build.build_id }}">{{ build }}</a>
-					</td>
-					<td class="variety_1">
-						<p>{{ build.finished_runs }}/{{ build.total_runs }}</p>
-					</td>
-					<td class="variety_4">
-						<div class="progress-bar">
-							<div class="progress-inner" style="width:{{ build.finished_case_run_percent|default:'0' }}%">
-								<div class="percent">{{ build.finished_case_run_percent|default:'0' }}%</div>
+					<tr>
+						<td>
+							<a href="?build_id={{ build.build_id }}">{{ build }}</a>
+						</td>
+						<td>
+							<p>{{ build.finished_runs }}/{{ build.total_runs }}</p>
+						</td>
+						<td>
+							<div class="progress">
+								<div class="progress-bar" role="progressbar" style="width: {{ build.finished_case_run_percent|default:'0' }}%"
+									 aria-valuenow="{{ build.finished_case_run_percent|default:'0' }}" aria-valuemin="0" aria-valuemax="100">
+									<span class="pl-1">{{ build.finished_case_run_percent|default:'0' }}%</span>
+								</div>
 							</div>
-						</div>
-					</td>
-					<td>
-						{% if build.failed_case_run_count %}
-						<div class="strong emphasize">{{ build.failed_case_run_count|default:'0' }} Failed</div>
-						{% endif %}
-					</td>
-				</tr>
+						</td>
+						<td>
+							{% if build.failed_case_run_count %}
+								<span class="badge badge-danger">{{ build.failed_case_run_count|default:'0' }} Failed</span>
+							{% endif %}
+						</td>
+					</tr>
 				{% endfor %}
-			</tbody>
-		</table>
+				</tbody>
+			</table>
+		</div>
+		<div class="col"></div>
 	</div>
-</div>
-<!--content over -->
 {% endblock %}
