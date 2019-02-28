@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import json
 import os
 import shutil
 import tempfile
@@ -20,7 +21,6 @@ from tests.factories import UserFactory
 from tests import BasePlanCase
 from tests import create_request_user
 from tests import user_should_have_perm
-from tests import json_loads
 
 
 class TestUploadFile(BasePlanCase):
@@ -237,7 +237,7 @@ class TestDeleteFileAuthorization(BasePlanCase):
         url = reverse('delete-file', args=[self.plan_attachment.pk])
         response = self.client.get(url, {'from_plan': self.plan.pk})
 
-        self.assertEqual({'rc': 2, 'response': 'auth_failure'}, json_loads(response.content))
+        self.assertEqual({'rc': 2, 'response': 'auth_failure'}, json.loads(response.content))
 
     def test_delete_attachment_from_plan(self):
         self.client.login(username=self.plan_attachment.submitter.username,
@@ -246,7 +246,7 @@ class TestDeleteFileAuthorization(BasePlanCase):
         url = reverse('delete-file', args=[self.plan_attachment.pk])
         response = self.client.get(url, {'from_plan': self.plan.pk})
 
-        self.assertEqual({'rc': 0, 'response': 'ok'}, json_loads(response.content))
+        self.assertEqual({'rc': 0, 'response': 'ok'}, json.loads(response.content))
         still_has = self.plan.attachment.filter(pk=self.plan_attachment.pk).exists()
         self.assertFalse(still_has)
         # TODO: skip because delete_file does not delete a TestAttachment object from database
@@ -259,7 +259,7 @@ class TestDeleteFileAuthorization(BasePlanCase):
         url = reverse('delete-file', args=[self.case_attachment.pk])
         response = self.client.get(url, {'from_case': self.case_1.pk})
 
-        self.assertEqual({'rc': 0, 'response': 'ok'}, json_loads(response.content))
+        self.assertEqual({'rc': 0, 'response': 'ok'}, json.loads(response.content))
         still_has = self.case_1.attachment.filter(pk=self.case_attachment.pk).exists()
         self.assertFalse(still_has)
         # TODO: skip because delete_file does not delete a TestAttachment object from database

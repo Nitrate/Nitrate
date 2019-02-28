@@ -22,7 +22,6 @@ from tests import BaseCaseRun
 from tests import BasePlanCase
 from tests import remove_perm_from_user
 from tests import user_should_have_perm
-from tests import json_loads
 from tests.factories import TCMSEnvGroupFactory
 from tests.factories import TCMSEnvGroupPropertyMapFactory
 from tests.factories import TCMSEnvPropertyFactory
@@ -112,7 +111,7 @@ class TestCommentCaseRuns(BaseCaseRun):
         response = self.client.post(self.many_comments_url,
                                     {'run': [self.case_run_1.pk, self.case_run_2.pk]})
         self.assertEqual({'rc': 1, 'response': 'Comments needed'},
-                         json_loads(response.content))
+                         json.loads(response.content))
 
     def test_refuse_if_missing_no_case_run_pk(self):
         self.client.login(username=self.tester.username, password='password')
@@ -120,12 +119,12 @@ class TestCommentCaseRuns(BaseCaseRun):
         response = self.client.post(self.many_comments_url,
                                     {'comment': 'new comment', 'run': []})
         self.assertEqual({'rc': 1, 'response': 'No runs selected.'},
-                         json_loads(response.content))
+                         json.loads(response.content))
 
         response = self.client.post(self.many_comments_url,
                                     {'comment': 'new comment'})
         self.assertEqual({'rc': 1, 'response': 'No runs selected.'},
-                         json_loads(response.content))
+                         json.loads(response.content))
 
     def test_refuse_if_passed_case_run_pks_not_exist(self):
         self.client.login(username=self.tester.username, password='password')
@@ -134,7 +133,7 @@ class TestCommentCaseRuns(BaseCaseRun):
                                     {'comment': 'new comment',
                                      'run': '99999998,1009900'})
         self.assertEqual({'rc': 1, 'response': 'No caserun found.'},
-                         json_loads(response.content))
+                         json.loads(response.content))
 
     def test_add_comment_to_case_runs(self):
         self.client.login(username=self.tester.username, password='password')
@@ -146,7 +145,7 @@ class TestCommentCaseRuns(BaseCaseRun):
              'run': ','.join([str(self.case_run_1.pk),
                               str(self.case_run_2.pk)])})
         self.assertEqual({'rc': 0, 'response': 'ok'},
-                         json_loads(response.content))
+                         json.loads(response.content))
 
         # Assert comments are added
         case_run_ct = ContentType.objects.get_for_model(TestCaseRun)
@@ -187,7 +186,7 @@ class TestUpdateObject(BasePlanCase):
         response = self.client.post(self.update_url, post_data)
 
         self.assertEqual({'rc': 1, 'response': 'Permission Dinied.'},
-                         json_loads(response.content))
+                         json.loads(response.content))
 
     def test_update_plan_is_active(self):
         self.client.login(username=self.tester.username, password='password')
@@ -202,7 +201,7 @@ class TestUpdateObject(BasePlanCase):
 
         response = self.client.post(self.update_url, post_data)
 
-        self.assertEqual({'rc': 0, 'response': 'ok'}, json_loads(response.content))
+        self.assertEqual({'rc': 0, 'response': 'ok'}, json.loads(response.content))
         plan = TestPlan.objects.get(pk=self.plan.pk)
         self.assertFalse(plan.is_active)
 
@@ -233,7 +232,7 @@ class TestUpdateCaseRunStatus(BaseCaseRun):
         })
 
         self.assertEqual({'rc': 1, 'response': 'Permission Dinied.'},
-                         json_loads(response.content))
+                         json.loads(response.content))
 
     def test_change_case_run_status(self):
         self.client.login(username=self.tester.username, password='password')
@@ -246,7 +245,7 @@ class TestUpdateCaseRunStatus(BaseCaseRun):
             'value_type': 'int',
         })
 
-        self.assertEqual({'rc': 0, 'response': 'ok'}, json_loads(response.content))
+        self.assertEqual({'rc': 0, 'response': 'ok'}, json.loads(response.content))
         self.assertEqual(
             'PAUSED', TestCaseRun.objects.get(pk=self.case_run_1.pk).case_run_status.name)
 
@@ -295,7 +294,7 @@ class TestUpdateCasePriority(BasePlanCase):
         self.assertEqual(
             {'rc': 1, 'response': "You don't have enough permission to "
                                   "update TestCases."},
-            json_loads(response.content))
+            json.loads(response.content))
 
     def test_update_case_priority(self):
         self.client.login(username=self.tester.username, password='password')
@@ -310,7 +309,7 @@ class TestUpdateCasePriority(BasePlanCase):
             })
 
         self.assertEqual({'rc': 0, 'response': 'ok'},
-                         json_loads(response.content))
+                         json.loads(response.content))
 
         for pk in (self.case_1.pk, self.case_3.pk):
             self.assertEqual('P3', TestCase.objects.get(pk=pk).priority.value)
@@ -347,7 +346,7 @@ class TestGetObjectInfo(BasePlanCase):
                 'json',
                 TCMSEnvProperty.objects.all(),
                 fields=('name', 'value')))
-        self.assertEqual(expected_json, json_loads(response.content))
+        self.assertEqual(expected_json, json.loads(response.content))
 
     def test_get_env_properties_by_group(self):
         response = self.client.get(self.get_info_url,
@@ -360,4 +359,4 @@ class TestGetObjectInfo(BasePlanCase):
                 'json',
                 group.property.all(),
                 fields=('name', 'value')))
-        self.assertEqual(expected_json, json_loads(response.content))
+        self.assertEqual(expected_json, json.loads(response.content))

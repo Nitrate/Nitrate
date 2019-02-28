@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import
 
+import json
 import six
 import unittest
 import xml.etree.ElementTree
@@ -41,7 +42,6 @@ from tests.factories import TestPlanFactory
 from tests.factories import TestTagFactory
 from tests import BaseCaseRun
 from tests import BasePlanCase
-from tests import json_loads
 from tests import remove_perm_from_user
 from tests import user_should_have_perm
 
@@ -197,7 +197,7 @@ class TestOperateComponentView(BasePlanCase):
         }
         response = self.client.post(reverse('cases-add-component'), post_data)
 
-        data = json_loads(response.content)
+        data = json.loads(response.content)
         self.assertEqual(
             {
                 'rc': 0,
@@ -224,7 +224,7 @@ class TestOperateComponentView(BasePlanCase):
         response = self.client.post(reverse('cases-remove-component'),
                                     post_data)
 
-        data = json_loads(response.content)
+        data = json.loads(response.content)
         self.assertEqual(
             {
                 'rc': 0,
@@ -284,7 +284,7 @@ class TestOperateCategoryView(BasePlanCase):
         }
         response = self.client.post(self.case_category_url, post_data)
 
-        data = json_loads(response.content)
+        data = json.loads(response.content)
         self.assertEqual({'rc': 0, 'response': 'ok', 'errors_list': []}, data)
 
         for pk in (self.case_1.pk, self.case_3.pk):
@@ -477,7 +477,7 @@ class TestOperateCaseTag(BasePlanCase):
             self.cases_tag_url,
             {'a': 'remove', 'o_tag': tags_to_remove, 'case': remove_from_cases})
 
-        data = json_loads(response.content)
+        data = json.loads(response.content)
         self.assertEqual({'rc': 0, 'response': 'ok', 'errors_list': []}, data)
 
         self.assertFalse(
@@ -503,7 +503,7 @@ class TestOperateCaseTag(BasePlanCase):
 
         remove_tag.assert_called_once()
 
-        data = json_loads(response.content)
+        data = json.loads(response.content)
         self.assertEqual(
             {
                 'rc': 1,
@@ -685,7 +685,7 @@ class TestAJAXSearchCases(BasePlanCase):
     def test_search_all_cases(self):
         response = self.client.get(self.search_url, self.search_data)
 
-        data = json_loads(response.content)
+        data = json.loads(response.content)
 
         cases_count = self.plan.case.count()
         self.assertEqual(cases_count, data['iTotalRecords'])
@@ -1074,7 +1074,7 @@ class TestAJAXResponse(BasePlanCase):
         empty_cases = TestCase.objects.none()
         response = ajax_response(request, empty_cases, self.column_names, self.template)
 
-        data = json_loads(response.content)
+        data = json.loads(response.content)
 
         self.assertEqual(0, data['sEcho'])
         self.assertEqual(0, data['iTotalRecords'])
@@ -1100,7 +1100,7 @@ class TestAJAXResponse(BasePlanCase):
         cases = self.plan.case.all()
         response = ajax_response(request, cases, self.column_names, self.template)
 
-        data = json_loads(response.content)
+        data = json.loads(response.content)
 
         total = self.plan.case.count()
         self.assertEqual(1, data['sEcho'])

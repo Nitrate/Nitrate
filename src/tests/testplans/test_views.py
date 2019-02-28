@@ -2,6 +2,7 @@
 
 from __future__ import division
 
+import json
 import os
 import xml.etree.ElementTree as et
 
@@ -32,7 +33,6 @@ from tests.factories import TestPlanTypeFactory
 from tests.factories import UserFactory
 from tests.factories import VersionFactory
 from tests import BasePlanCase
-from tests import json_loads
 from tests import remove_perm_from_user
 from tests import user_should_have_perm
 from tests.testcases.test_views import PlanCaseExportTestHelper
@@ -203,7 +203,7 @@ class TestDeleteCasesFromPlan(BasePlanCase):
                           password='password')
 
         response = self.client.post(self.cases_url, {})
-        data = json_loads(response.content)
+        data = json.loads(response.content)
         self.assertEqual(1, data['rc'])
         self.assertEqual('At least one case is required to delete.',
                          data['response'])
@@ -214,7 +214,7 @@ class TestDeleteCasesFromPlan(BasePlanCase):
 
         post_data = {'case': [self.case_1.pk, self.case_3.pk]}
         response = self.client.post(self.cases_url, post_data)
-        data = json_loads(response.content)
+        data = json.loads(response.content)
 
         self.assertEqual(0, data['rc'])
         self.assertEqual('ok', data['response'])
@@ -252,7 +252,7 @@ class TestSortCases(BasePlanCase):
         self.client.login(username=self.plan_tester.username, password='password')
 
         response = self.client.post(self.cases_url, {})
-        data = json_loads(response.content)
+        data = json.loads(response.content)
         self.assertEqual(1, data['rc'])
         self.assertEqual('At least one case is required to re-order.', data['response'])
 
@@ -261,7 +261,7 @@ class TestSortCases(BasePlanCase):
 
         post_data = {'case': [self.case_3.pk, self.case_1.pk]}
         response = self.client.post(self.cases_url, post_data)
-        data = json_loads(response.content)
+        data = json.loads(response.content)
 
         self.assertEqual({'rc': 0, 'response': 'ok'}, data)
 
@@ -697,7 +697,7 @@ class TestAJAXSearch(BasePlanCase):
     def test_emtpy_plans(self):
         response = self.client.get(self.search_url, {})
 
-        data = json_loads(response.content)
+        data = json.loads(response.content)
 
         self.assertEqual(0, data['sEcho'])
         self.assertEqual(0, data['iTotalRecords'])
@@ -709,7 +709,7 @@ class TestAJAXSearch(BasePlanCase):
 
         response = self.client.get(self.search_url, search_data)
 
-        data = json_loads(response.content)
+        data = json.loads(response.content)
 
         # Sort for assertion easily
         data['aaData'] = sorted(
@@ -738,7 +738,7 @@ class TestAJAXSearch(BasePlanCase):
 
         response = self.client.get(self.search_url, search_data)
 
-        data = json_loads(response.content)
+        data = json.loads(response.content)
 
         self.assertEqual(1, data['sEcho'])
         self.assertEqual(plans_count, data['iTotalRecords'])
@@ -762,7 +762,7 @@ class TestAJAXSearch(BasePlanCase):
 
         response = self.client.get(self.search_url, search_data)
 
-        data = json_loads(response.content)
+        data = json.loads(response.content)
 
         plans_count = TestPlan.objects.count()
         self.assertEqual(1, data['sEcho'])
