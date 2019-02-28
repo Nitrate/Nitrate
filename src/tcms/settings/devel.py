@@ -1,7 +1,5 @@
 # Django settings for devel env.
 
-from __future__ import absolute_import
-
 from tcms.settings.common import *
 
 # Debug settings

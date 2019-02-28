@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
-
 from mock import patch
 
 from django.contrib.auth.models import User

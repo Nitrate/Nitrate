@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
 from django.conf.urls import url
 from django.contrib.auth import views as django_auth_views
 from tcms.auth.views import LoginView as NitrateLoginView

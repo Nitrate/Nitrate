@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
-
 from django.contrib.auth.decorators import permission_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET, require_POST

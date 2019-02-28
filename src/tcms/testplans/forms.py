@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
-
 from django import forms
 from odf.odf2xhtml import ODF2XHTML, load
 
