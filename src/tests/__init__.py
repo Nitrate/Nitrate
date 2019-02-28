@@ -129,9 +129,9 @@ class HelperAssertions:
             func(*args, **kwargs)
         except Exception as e:
             self.assertIsInstance(
-                e, ValidationError, 'Exception {} is not a ValidationError.'.format(e))
+                e, ValidationError, f'Exception {e} is not a ValidationError.')
             self.assertIn(field, e.message_dict,
-                          'Field {} is not included in errors.'.format(field))
+                          f'Field {field} is not included in errors.')
             matches = [re.search(message_regex, item) is not None
                        for item in e.message_dict[field]]
             self.assertTrue(any(matches), 'Expected match message is not included.')

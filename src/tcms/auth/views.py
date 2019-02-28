@@ -59,7 +59,7 @@ def register(request, template_name='registration/registration_form.html'):
                 if settings.ADMINS:
                     msg.append('<p>Following is the admin list</p><ul>')
                     for name, email in settings.ADMINS:
-                        msg.append('<li><a href="mailto:{}">{}</a></li>'.format(email, name))
+                        msg.append(f'<li><a href="mailto:{email}">{name}</a></li>')
                     msg.append('</ul>')
                     msg = ''.join(msg)
 

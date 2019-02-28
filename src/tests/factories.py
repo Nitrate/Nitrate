@@ -641,7 +641,7 @@ class BookmarkFactory(DjangoModelFactory):
 class IssueTrackerProductFactory(DjangoModelFactory):
     """Factory to create model IssueTrackerProduct"""
 
-    name = factory.Sequence(lambda n: 'tracker_product_{}'.format(n))
+    name = factory.Sequence(lambda n: f'tracker_product_{n}')
 
     class Meta:
         model = 'issuetracker.IssueTrackerProduct'
@@ -650,7 +650,7 @@ class IssueTrackerProductFactory(DjangoModelFactory):
 class IssueTrackerFactory(DjangoModelFactory):
     """Factory to create model IssueTracker"""
 
-    name = factory.Sequence(lambda n: 'Cool Issue Tracker {}'.format(n))
+    name = factory.Sequence(lambda n: f'Cool Issue Tracker {n}')
     issue_url_fmt = 'http://localhost/%{issue_key}s'
     validate_regex = r'^\d+$'
     credential_type = CredentialTypes.NoNeed.name

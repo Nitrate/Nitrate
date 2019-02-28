@@ -157,11 +157,11 @@ class DataTableResult:
         number_of_sorting_cols = int(self.request_data.get('iSortingCols', 0))
         for idx_which_column in range(number_of_sorting_cols):
             sorting_col_index = int(
-                self.request_data.get('iSortCol_{}'.format(idx_which_column),
+                self.request_data.get(f'iSortCol_{idx_which_column}',
                                       0))
 
-            sortable_key = 'bSortable_{}'.format(sorting_col_index)
-            sort_dir_key = 'sSortDir_{}'.format(idx_which_column)
+            sortable_key = f'bSortable_{sorting_col_index}'
+            sort_dir_key = f'sSortDir_{idx_which_column}'
 
             sortable = self.request_data.get(sortable_key, 'false')
             if sortable == 'false':
@@ -173,7 +173,7 @@ class DataTableResult:
 
     def _sort_result(self):
         sorting_columns = self._iter_sorting_columns()
-        order_fields = ['-{}'.format(col_name) if direction == 'desc' else col_name
+        order_fields = [f'-{col_name}' if direction == 'desc' else col_name
                         for col_name, direction in sorting_columns]
         if order_fields:
             self.queryset = self.queryset.order_by(*order_fields)
@@ -234,7 +234,7 @@ class EnumLike:
         criteria = {cls.NAME_FIELD: name}
         obj = cls.objects.filter(**criteria).only('pk').first()
         if obj is None:
-            raise ValueError('{} does not exist in model {}'.format(name, cls.__name__))
+            raise ValueError(f'{name} does not exist in model {cls.__name__}')
         return obj.pk
 
     @classmethod

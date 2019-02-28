@@ -42,7 +42,7 @@ class TestUploadFile(BasePlanCase):
         super().setUpClass()
 
         cls.file_upload_dir = tempfile.mkdtemp(
-            prefix='{}-upload-dir'.format(cls.__name__))
+            prefix=f'{cls.__name__}-upload-dir')
 
     @classmethod
     def tearDownClass(cls):
@@ -54,7 +54,7 @@ class TestUploadFile(BasePlanCase):
         super().setUp()
 
         fd, self.upload_filename = tempfile.mkstemp(
-            prefix='{}-upload-file.txt'.format(self.__class__.__name__))
+            prefix=f'{self.__class__.__name__}-upload-file.txt')
         os.write(fd, b'abc' * 100)
         os.close(fd)
 

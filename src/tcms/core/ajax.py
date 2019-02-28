@@ -190,7 +190,7 @@ def form(request):
 
     # Get the form
     q_app, q_form = q_app_form.split('.')[0], q_app_form.split('.')[1]
-    exec('from tcms.{}.forms import {} as form'.format(q_app, q_form))
+    exec(f'from tcms.{q_app}.forms import {q_form} as form')
     try:
         __import__('tcms.%s.forms' % q_app)
     except ImportError:
@@ -416,7 +416,7 @@ def update(request):
     if not targets:
         return say_no('No record found')
     if not hasattr(targets[0], field):
-        return say_no('{} has no field {}'.format(ctype, field))
+        return say_no(f'{ctype} has no field {field}')
 
     if hasattr(targets[0], 'log_action'):
         for t in targets:
@@ -511,7 +511,7 @@ def update_case_run_status(request):
     if not targets:
         return say_no('No record found')
     if not hasattr(targets[0], field):
-        return say_no('{} has no field {}'.format(ctype, field))
+        return say_no(f'{ctype} has no field {field}')
 
     if hasattr(targets[0], 'log_action'):
         for t in targets:

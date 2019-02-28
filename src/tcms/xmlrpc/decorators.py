@@ -58,7 +58,7 @@ def log_call(*args, **kwargs):
                                 if (key, value) not in known_args]
 
                 create_log(user=request.user,
-                           method='{}{}'.format(namespace, function.__name__),
+                           method=f'{namespace}{function.__name__}',
                            args=str(known_args + unknown_args + keyword_args))
             except Exception:
                 pass

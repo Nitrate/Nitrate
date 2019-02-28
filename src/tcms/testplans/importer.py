@@ -29,7 +29,7 @@ def process_case(case):
             author = User.objects.get(email=author)
             author_id = author.id
         except User.DoesNotExist:
-            raise ValueError('Author email {} does not exist.'.format(author))
+            raise ValueError(f'Author email {author} does not exist.')
     else:
         raise ValueError('Missing required author')
 
@@ -52,7 +52,7 @@ def process_case(case):
             priority = Priority.objects.get(value=priority)
             priority_id = priority.id
         except Priority.DoesNotExist:
-            raise ValueError('Priority {} does not exist.'.format(priority))
+            raise ValueError(f'Priority {priority} does not exist.')
     else:
         raise ValueError('Missing required priority')
 
@@ -71,7 +71,7 @@ def process_case(case):
             case_status_id = case_status.id
         except TestCaseStatus.DoesNotExist:
             raise ValueError(
-                'Test case status {} does not exist.'.format(status))
+                f'Test case status {status} does not exist.')
     else:
         raise ValueError('Missing required status')
 

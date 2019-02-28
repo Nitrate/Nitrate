@@ -47,7 +47,7 @@ def upload_file(request):
 
         now = datetime.now()
 
-        stored_name = '{}-{}-{}'.format(request.user.username, now, upload_file.name)
+        stored_name = f'{request.user.username}-{now}-{upload_file.name}'
 
         stored_file_name = os.path.join(
             settings.FILE_UPLOAD_DIR, stored_name).replace('\\', '/')

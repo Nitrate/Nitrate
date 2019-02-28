@@ -119,7 +119,7 @@ class TestGetIssues(XmlrpcAPIBaseTest):
         test_data = (
             (self.run_1.pk, ('1', '2', '3')),
             ([self.run_1.pk, self.run_2.pk], ('1', '2', '3', '4', '5', '6')),
-            ('{}, {}'.format(self.run_1.pk, self.run_2.pk),
+            (f'{self.run_1.pk}, {self.run_2.pk}',
              ('1', '2', '3', '4', '5', '6')),
         )
 

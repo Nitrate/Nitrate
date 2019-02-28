@@ -104,7 +104,7 @@ class ProductIssueTrackerRelationship(TCMSActionModel):
         validators=[MaxLengthValidator(30)])
 
     def __str__(self):
-        return 'Rel {} - {}'.format(self.product, self.issue_tracker)
+        return f'Rel {self.product} - {self.issue_tracker}'
 
     class Meta:
         db_table = 'product_issue_tracker_relationship'
@@ -333,7 +333,7 @@ class Credential(TCMSActionModel):
             })
         if not os.path.isfile(filename):
             raise ValidationError({
-                'secret_file': '{} is not a file.'.format(filename)
+                'secret_file': f'{filename} is not a file.'
             })
         if not os.access(filename, os.R_OK):
             raise ValidationError({

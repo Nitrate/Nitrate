@@ -102,7 +102,7 @@ class PlanTests(test.TestCase):
         deleted = not TestPlan.objects.filter(pk=tp_pk).exists()
         self.assertTrue(
             deleted,
-            'TestPlan {} should be deleted. But, not.'.format(tp_pk))
+            f'TestPlan {tp_pk} should be deleted. But, not.')
 
     def test_plan_edit(self):
         location = reverse('plan-edit', args=[self.plan_id])
@@ -223,7 +223,7 @@ class TestDeleteCasesFromPlan(BasePlanCase):
 
         # Assert action logs are recorded for plan and case correctly
 
-        expected_log = 'Remove from plan {}'.format(self.plan.pk)
+        expected_log = f'Remove from plan {self.plan.pk}'
         for pk in (self.case_1.pk, self.case_3.pk):
             log = TCMSLogModel.get_logs_for_model(TestCase, pk)[0]
             self.assertEqual(expected_log, log.new_value)
@@ -494,7 +494,7 @@ class TestCloneView(BasePlanCase):
                            link_cases=True, copy_cases=None,
                            maintain_case_orignal_author=None,
                            keep_case_default_tester=None):
-        self.assertEqual('Copy of {}'.format(original_plan.name), cloned_plan.name)
+        self.assertEqual(f'Copy of {original_plan.name}', cloned_plan.name)
         self.assertEqual(Product.objects.get(pk=self.product.pk), cloned_plan.product)
         self.assertEqual(Version.objects.get(pk=self.version.pk), cloned_plan.product_version)
 

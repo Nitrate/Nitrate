@@ -58,7 +58,7 @@ def manage_case_run_issues(request, run_id):
             if not all(case_run.run_id == self.run.pk for case_run in case_runs):
                 return JsonResponse(
                     {'messages': [
-                        'Not all case runs belong to run {}.'.format(self.run.pk)
+                        f'Not all case runs belong to run {self.run.pk}.'
                     ]},
                     status=http_client.BAD_REQUEST)
 
@@ -125,7 +125,7 @@ def manage_case_run_issues(request, run_id):
         run = get_object_or_404(TestRun, pk=run_id)
     except Http404:
         return JsonResponse(
-            {'messages': ['Test run {} does not exist.'.format(run_id)]},
+            {'messages': [f'Test run {run_id} does not exist.']},
             status=http_client.NOT_FOUND)
 
     crba = CaseRunIssueActions(request=request, run=run)

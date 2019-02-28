@@ -276,7 +276,7 @@ class TestCreate(BasePlanCase):
 
     def test_create(self):
         values = {
-            'summary': 'Test new case: {}'.format(self.__class__.__name__),
+            'summary': f'Test new case: {self.__class__.__name__}',
             'is_automated': True,
             'is_automated_proposed': True,
             'script': '',

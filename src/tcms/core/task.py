@@ -15,7 +15,7 @@ class AsyncTask(enum.Enum):
 
 
 if settings.ASYNC_TASK not in [item.value for item in AsyncTask]:
-    raise ValueError('Unknown async task type {}'.format(settings.ASYNC_TASK))
+    raise ValueError(f'Unknown async task type {settings.ASYNC_TASK}')
 
 
 class Task:

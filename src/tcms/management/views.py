@@ -290,7 +290,7 @@ def environment_properties(request, template_name='environment/property.html'):
         except ValueError:
             return JsonResponse({
                 'rc': 1,
-                'response': 'ID {} is not a valid integer.'.format(property_id)
+                'response': f'ID {property_id} is not a valid integer.'
             })
         except TCMSEnvProperty.DoesNotExist:
             return JsonResponse({'rc': 1, 'response': 'ID does not exist.'})

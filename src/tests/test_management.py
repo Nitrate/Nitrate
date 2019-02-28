@@ -52,19 +52,19 @@ class TestVisitAndSearchGroupPage(TestCase):
             who=cls.new_tester,
             field='',
             original_value='',
-            new_value='Add group {}'.format(cls.group_1.name))
+            new_value=f'Add group {cls.group_1.name}')
 
         cls.group_1.log_action(
             who=cls.new_tester,
             field='',
             original_value='',
-            new_value='Edit group {}'.format(cls.group_1.name))
+            new_value=f'Edit group {cls.group_1.name}')
 
         cls.group_2.log_action(
             who=cls.new_tester,
             field='',
             original_value='',
-            new_value='Edit group {}'.format(cls.group_2.name))
+            new_value=f'Edit group {cls.group_2.name}')
 
         cls.property_1 = TCMSEnvPropertyFactory()
         cls.property_2 = TCMSEnvPropertyFactory()
@@ -88,11 +88,11 @@ class TestVisitAndSearchGroupPage(TestCase):
         for log in logs:
             self.assertContains(
                 response,
-                '<td>{}</td>'.format(log.who.username),
+                f'<td>{log.who.username}</td>',
                 html=True)
             self.assertContains(
                 response,
-                '<td>{}</td>'.format(log.new_value),
+                f'<td>{log.new_value}</td>',
                 html=True)
 
     def test_visit_group_page(self):
@@ -101,7 +101,7 @@ class TestVisitAndSearchGroupPage(TestCase):
         for group in (self.group_1, self.group_2):
             self.assertContains(
                 response,
-                '<label class=" ">{}</label>'.format(group.name),
+                f'<label class=" ">{group.name}</label>',
                 html=True)
 
             self.assert_group_logs_are_displayed(response, group)
@@ -127,11 +127,11 @@ class TestVisitAndSearchGroupPage(TestCase):
 
         self.assertContains(
             response,
-            '<label class=" ">{}</label>'.format(self.group_1.name),
+            f'<label class=" ">{self.group_1.name}</label>',
             html=True)
         self.assertNotContains(
             response,
-            '<label class=" ">{}</label>'.format(self.group_2.name),
+            f'<label class=" ">{self.group_2.name}</label>',
             html=True)
 
 
@@ -189,7 +189,7 @@ class TestAddGroup(TestCase):
         env_group_ct = ContentType.objects.get_for_model(TCMSEnvGroup)
         log = TCMSLogModel.objects.filter(content_type=env_group_ct,
                                           object_pk=new_group.pk)[0]
-        self.assertEqual('Initial env group {}'.format(self.new_group_name),
+        self.assertEqual(f'Initial env group {self.new_group_name}',
                          log.new_value)
 
     def test_add_existing_group(self):
@@ -202,7 +202,7 @@ class TestAddGroup(TestCase):
                                    {'action': 'add', 'name': self.new_group_name})
         response_data = json.loads(response.content)
         self.assertIn(
-            "Environment group name '{}' already".format(self.new_group_name),
+            f"Environment group name '{self.new_group_name}' already",
             response_data['response']
         )
 
@@ -369,7 +369,7 @@ class TestVisitEnvironmentGroupPage(TestCase):
 
         self.assertContains(
             response,
-            '<input name="name" value="{}" type="text">'.format(self.group_nitrate.name),
+            f'<input name="name" value="{self.group_nitrate.name}" type="text">',
             html=True)
 
         self.assertContains(
@@ -384,7 +384,7 @@ class TestVisitEnvironmentGroupPage(TestCase):
 
         self.assertContains(
             response,
-            '<input name="name" value="{}" type="text">'.format(self.disabled_group.name),
+            f'<input name="name" value="{self.disabled_group.name}" type="text">',
             html=True)
 
         self.assertContains(

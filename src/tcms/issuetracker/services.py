@@ -322,7 +322,7 @@ class Bugzilla(IssueTrackerService):
         run = case_run.run
         product = run.plan.product
         args = {
-            'short_desc': 'Test case failure: {}'.format(case.summary),
+            'short_desc': f'Test case failure: {case.summary}',
             'version': run.product_version.value,
 
             # product will be determined later below

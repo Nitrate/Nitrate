@@ -167,7 +167,7 @@ class TestProcessCase(test.TestCase):
         """Helper method to format case XML conveniently"""
         data = case_data.copy()
         data['tags'] = ''.join(
-            '<tag>{}</tag>'.format(tag) for tag in data['tag'])
+            f'<tag>{tag}</tag>' for tag in data['tag'])
         data.pop('tag')
         return xml_single_case % data
 

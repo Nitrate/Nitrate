@@ -359,7 +359,7 @@ class TestGetIssues(test.TestCase):
         ]
 
         for case_ids in ([self.case_1.pk, self.case_2.pk],
-                         '{}, {}'.format(self.case_1.pk, self.case_2.pk)):
+                         f'{self.case_1.pk}, {self.case_2.pk}'):
             self.assert_issues(case_ids, expected_issues)
 
 

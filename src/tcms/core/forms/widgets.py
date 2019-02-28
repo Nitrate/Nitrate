@@ -62,14 +62,14 @@ class TimedeltaWidget(forms.Widget):
         rendered = []
         for input, widget, val in zip(self.inputs, self.widgets, values):
             rendered.append('{} {}'.format(
-                widget.render('{}_{}'.format(name, input), val), _(input)))
+                widget.render(f'{name}_{input}', val), _(input)))
         return mark_safe('<div id="{}">{}</div>'.format(id, ' '.join(rendered)))
 
     def value_from_datadict(self, data, files, name):
         # Don't throw ValidationError here, just return a tuple of strings.
         ret = []
         for input, multi in zip(self.inputs, self.multiply):
-            ret.append(data.get('{}_{}'.format(name, input), 0))
+            ret.append(data.get(f'{name}_{input}', 0))
         return tuple(ret)
 
     def _has_changed(self, initial_value, data_value):

@@ -12,7 +12,7 @@ def validate_class_path(value):
     try:
         module = importlib.import_module(module_path)
     except Exception:
-        raise ValidationError('Cannot import {}'.format(module_path))
+        raise ValidationError(f'Cannot import {module_path}')
     if not hasattr(module, class_name):
         raise ValidationError('Module {} does not have class {}'.format(
             module_path, class_name))
@@ -43,6 +43,6 @@ def validate_issue_report_params(value):
                 "Line '{}' is not a pair of key/value separated by ':'.")
         if colon_count > 1:
             raise ValidationError(
-                "Line '{}' contains multiple ':'.".format(line))
+                f"Line '{line}' contains multiple ':'.")
 
     # TODO: what other points to check?

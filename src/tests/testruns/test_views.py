@@ -1366,11 +1366,11 @@ class TestAddCasesToRun(BaseCaseRun):
                 'href="javascript:void(0);">{1}</a></td>'.format(loop_counter,
                                                                  case.summary),
 
-                '<td>{}</td>'.format(case.author.username),
+                f'<td>{case.author.username}</td>',
                 '<td>{}</td>'.format(
                     formats.date_format(case.create_date, 'DATETIME_FORMAT')),
-                '<td>{}</td>'.format(case.category.name),
-                '<td>{}</td>'.format(case.priority.value),
+                f'<td>{case.category.name}</td>',
+                f'<td>{case.priority.value}</td>',
             ]
             for html in html_pieces:
                 self.assertContains(response, html, html=True)
@@ -1404,7 +1404,7 @@ class TestRunReportView(BaseCaseRun):
 
         # Ensure all issues display url is available in the Issues section
         self.assertContains(
-            response, 'View all issues ({})'.format(self.bz_tracker.name))
+            response, f'View all issues ({self.bz_tracker.name})')
 
         issues_display_url = 'http://bugs.example.com/?bug_id=1,2,3'
         self.assertContains(

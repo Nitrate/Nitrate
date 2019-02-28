@@ -91,12 +91,12 @@ class TextParser(HTMLParser):
         self.read_buffer.write('<{}{}{}>'.format(
             tag,
             ' ' if attrs else '',
-            ' '.join(['{}="{}"'.format(name, value) for name, value in attrs])
+            ' '.join([f'{name}="{value}"' for name, value in attrs])
         ))
         self.in_tag = True
 
     def handle_endtag(self, tag):
-        self.read_buffer.write('</{}>'.format(tag))
+        self.read_buffer.write(f'</{tag}>')
         self.in_tag = False
 
 

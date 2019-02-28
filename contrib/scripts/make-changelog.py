@@ -26,7 +26,7 @@ for commit in repo.iter_commits(f'HEAD...{last_version}'):
     if match:
         if args.link_issues:
             issue_number = match.groups()[0]
-            fixed_issue = '- `#{}`_ '.format(issue_number)
+            fixed_issue = f'- `#{issue_number}`_ '
             issue_numbers.append(issue_number)
         else:
             fixed_issue = '- #{} '.format(match.groups()[0])
