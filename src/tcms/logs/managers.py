@@ -1,13 +1,8 @@
 # -*- coding: utf-8 -*-
-import six
-
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 
-if six.PY3:
-    from django.utils.encoding import force_text as force_unicode
-else:
-    from django.utils.encoding import force_unicode
+from django.utils.encoding import force_text as force_unicode
 
 
 class TCMSLogManager(models.Manager):

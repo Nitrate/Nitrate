@@ -12,7 +12,7 @@ from tcms.issuetracker.models import Issue
 from tcms.linkreference.models import LinkReference
 from tcms.testruns.models import TestCaseRunStatus
 from tcms.xmlrpc.api import testcaserun
-from tests import encode_if_py3
+from tests import encode
 from tests.factories import IssueTrackerFactory
 from tests.factories import IssueTrackerProductFactory
 from tests.factories import ProductFactory
@@ -971,9 +971,9 @@ class TestCaseRunUpdate(XmlrpcAPIBaseTest):
         self.assertIsNotNone(tcr)
         self.assertIsInstance(tcr, list)
         self.assertEqual(1, len(tcr))
-        self.assertEqual(tcr[0]['build'], encode_if_py3(self.build.name))
+        self.assertEqual(tcr[0]['build'], encode(self.build.name))
         self.assertEqual(tcr[0]['assignee'], self.user.username)
-        self.assertEqual(tcr[0]['case_run_status'], encode_if_py3('RUNNING'))
+        self.assertEqual(tcr[0]['case_run_status'], encode('RUNNING'))
         self.assertEqual(tcr[0]['notes'], "AAAAAAAA")
         self.assertEqual(tcr[0]['sortkey'], 90)
 
