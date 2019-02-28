@@ -24,7 +24,7 @@
 
 set -ex
 
-# python version which will run tests. For example, 2.7.15, 3.7.1.
+# python version which will run tests. For example, 3.6.8, 3.7.1.
 py_version=$1
 # django version to run tests with. For example, django>=1.11,<2.0
 django_rel=$2
@@ -35,15 +35,11 @@ nitrate_db=${3-sqlite}
 install_extra_deps="tests,docs"
 py_version=${py_version%.*}
 
-if [ "$py_version" == "2.7" ] || [ "$py_version" == "3.6" ]; then
+if [ "$py_version" == "3.6" ]; then
     extra_deps="${install_extra_deps},async"
 fi
 
 case $py_version in
-    2.7)
-        py_bin=python2.7
-        install_extra_deps="${install_extra_deps},async"
-        ;;
     3.6)
         py_bin=python3.6
         install_extra_deps="${install_extra_deps},async"
