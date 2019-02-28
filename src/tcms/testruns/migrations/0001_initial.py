@@ -164,14 +164,14 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='testruncc',
-            unique_together=set([('run', 'user')]),
+            unique_together={('run', 'user')},
         ),
         migrations.AlterUniqueTogether(
             name='testrun',
-            unique_together=set([('run_id', 'product_version', 'plan_text_version')]),
+            unique_together={('run_id', 'product_version', 'plan_text_version')},
         ),
         migrations.AlterUniqueTogether(
             name='testcaserun',
-            unique_together=set([('case', 'run', 'case_text_version')]),
+            unique_together={('case', 'run', 'case_text_version')},
         ),
     ]

@@ -290,22 +290,22 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='version',
-            unique_together=set([('product', 'value')]),
+            unique_together={('product', 'value')},
         ),
         migrations.AlterIndexTogether(
             name='testenvironmentcategory',
-            index_together=set([('product', 'name'), ('env_category_id', 'product')]),
+            index_together={('product', 'name'), ('env_category_id', 'product')},
         ),
         migrations.AlterUniqueTogether(
             name='testbuild',
-            unique_together=set([('product', 'name')]),
+            unique_together={('product', 'name')},
         ),
         migrations.AlterUniqueTogether(
             name='tcmsenvvalue',
-            unique_together=set([('property', 'value')]),
+            unique_together={('property', 'value')},
         ),
         migrations.AlterUniqueTogether(
             name='component',
-            unique_together=set([('product', 'name')]),
+            unique_together={('product', 'name')},
         ),
     ]

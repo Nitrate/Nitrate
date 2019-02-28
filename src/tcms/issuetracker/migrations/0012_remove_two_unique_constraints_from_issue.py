@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterUniqueTogether(
             name='issue',
-            unique_together=set([('tracker', 'issue_key')]),
+            unique_together={('tracker', 'issue_key')},
         ),
     ]

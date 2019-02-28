@@ -102,7 +102,7 @@ class PlanTests(test.TestCase):
         deleted = not TestPlan.objects.filter(pk=tp_pk).exists()
         self.assertTrue(
             deleted,
-            'TestPlan {0} should be deleted. But, not.'.format(tp_pk))
+            'TestPlan {} should be deleted. But, not.'.format(tp_pk))
 
     def test_plan_edit(self):
         location = reverse('plan-edit', args=[self.plan_id])

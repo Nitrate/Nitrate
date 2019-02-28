@@ -76,7 +76,7 @@ class UserProfile(models.Model):
 
         for c in IM_CHOICES:
             if self.im_type_id == c[0]:
-                return '[%s] %s' % (c[1], self.im)
+                return '[{}] {}'.format(c[1], self.im)
 
     @classmethod
     def get_user_profile(cls, user):

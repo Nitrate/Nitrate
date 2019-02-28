@@ -88,15 +88,15 @@ class TextParser(HTMLParser):
             self.text_name = omatch.group(1)
 
     def handle_starttag(self, tag, attrs):
-        self.read_buffer.write('<{0}{1}{2}>'.format(
+        self.read_buffer.write('<{}{}{}>'.format(
             tag,
             ' ' if attrs else '',
-            ' '.join(['{0}="{1}"'.format(name, value) for name, value in attrs])
+            ' '.join(['{}="{}"'.format(name, value) for name, value in attrs])
         ))
         self.in_tag = True
 
     def handle_endtag(self, tag):
-        self.read_buffer.write('</{0}>'.format(tag))
+        self.read_buffer.write('</{}>'.format(tag))
         self.in_tag = False
 
 
@@ -183,7 +183,7 @@ def migrate_initial_env_group(log):
     match = initial_env_group_re.match(log.action)
     if not match:
         return None
-    log.new_value = 'New env group {0}'.format(match.group(1))
+    log.new_value = 'New env group {}'.format(match.group(1))
     return log
 
 

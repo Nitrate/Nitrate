@@ -221,7 +221,7 @@ def new(request, template_name='case/new.html'):
 
                 def _continue(self):
                     if self.plan:
-                        return HttpResponseRedirect('%s?from_plan=%s' % (
+                        return HttpResponseRedirect('{}?from_plan={}'.format(
                             reverse('case-edit', args=[self.case.case_id]),
                             self.plan.plan_id))
 
@@ -239,7 +239,7 @@ def new(request, template_name='case/new.html'):
                 def _returntocase(self):
                     if self.plan:
                         return HttpResponseRedirect(
-                            '%s?from_plan=%s' % (
+                            '{}?from_plan={}'.format(
                                 reverse('case-get', args=[self.case.pk]),
                                 self.plan.plan_id))
 
@@ -1207,7 +1207,7 @@ def edit(request, case_id, template_name='case/edit.html'):
 
             # Returns
             if request.POST.get('_continue'):
-                return HttpResponseRedirect('%s?from_plan=%s' % (
+                return HttpResponseRedirect('{}?from_plan={}'.format(
                     reverse('case-edit', args=[case_id]),
                     request.POST.get('from_plan', None),
                 ))
@@ -1231,7 +1231,7 @@ def edit(request, case_id, template_name='case/edit.html'):
 
                 # Get the previous and next case
                 p_tc, n_tc = tc.get_previous_and_next(pk_list=pk_list)
-                return HttpResponseRedirect('%s?from_plan=%s' % (
+                return HttpResponseRedirect('{}?from_plan={}'.format(
                     reverse('case-edit', args=[n_tc.pk, ]),
                     tp.pk,
                 ))
@@ -1241,15 +1241,15 @@ def edit(request, case_id, template_name='case/edit.html'):
                     raise Http404
                 confirm_status_name = 'CONFIRMED'
                 if tc.case_status.name == confirm_status_name:
-                    return HttpResponseRedirect('%s#testcases' % (
+                    return HttpResponseRedirect('{}#testcases'.format(
                         reverse('plan-get', args=[tp.pk, ]),
                     ))
                 else:
-                    return HttpResponseRedirect('%s#reviewcases' % (
+                    return HttpResponseRedirect('{}#reviewcases'.format(
                         reverse('plan-get', args=[tp.pk, ]),
                     ))
 
-            return HttpResponseRedirect('%s?from_plan=%s' % (
+            return HttpResponseRedirect('{}?from_plan={}'.format(
                 reverse('case-get', args=[case_id]),
                 request.POST.get('from_plan', None),
             ))
@@ -1500,7 +1500,7 @@ def clone(request, template_name='case/clone.html'):
             plans_count = len(clone_form.cleaned_data['plan'])
 
             if cases_count == 1 and plans_count == 1:
-                return HttpResponseRedirect('%s?from_plan=%s' % (
+                return HttpResponseRedirect('{}?from_plan={}'.format(
                     reverse('case-get', args=[tc_dest.pk]),
                     tp.pk
                 ))

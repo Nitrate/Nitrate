@@ -128,12 +128,12 @@ class TestCaseRemoveComponent(BasePlanCase):
         found = self.case.component.filter(pk=self.component_1.pk).exists()
         self.assertFalse(
             found,
-            'Component {0} exists. But, it should be removed.'.format(
+            'Component {} exists. But, it should be removed.'.format(
                 self.component_1.pk))
         found = self.case.component.filter(pk=self.component_2.pk).exists()
         self.assertTrue(
             found,
-            'Component {0} does not exist. It should not be removed.'.format(
+            'Component {} does not exist. It should not be removed.'.format(
                 self.component_2.pk))
 
 

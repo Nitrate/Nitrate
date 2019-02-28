@@ -422,16 +422,16 @@ class TestStartCloneRunFromRunsSearchPage(CloneRunBaseTest):
             '''
             <li>
                 <label for="id_run_0">
-                    <input checked="checked" id="id_run_0" name="run" value="{0}" type="checkbox">
-                    {1}
+                    <input checked="checked" id="id_run_0" name="run" value="{}" type="checkbox">
+                    {}
                 </label>
             </li>
             '''.format(self.test_run.pk, self.test_run.summary),
             '''
             <li>
                 <label for="id_run_1">
-                    <input checked="checked" id="id_run_1" name="run" value="{0}" type="checkbox">
-                    {1}
+                    <input checked="checked" id="id_run_1" name="run" value="{}" type="checkbox">
+                    {}
                 </label>
             </li>
             '''.format(self.test_run_1.pk, self.test_run_1.summary),
@@ -1328,7 +1328,7 @@ class TestAddCasesToRun(BaseCaseRun):
 
         self.assertNotContains(
             response,
-            '<a href="{0}">{1}</a>'.format(
+            '<a href="{}">{}</a>'.format(
                 reverse('case-get', args=[self.proposed_case.pk]),
                 self.proposed_case.pk),
             html=True
@@ -1341,7 +1341,7 @@ class TestAddCasesToRun(BaseCaseRun):
         self.assertContains(
             response,
             '<td align="left">'
-            '<input type="checkbox" name="case" value="{0}">'
+            '<input type="checkbox" name="case" value="{}">'
             '</td>'.format(self.case.pk),
             html=True)
 
@@ -1350,7 +1350,7 @@ class TestAddCasesToRun(BaseCaseRun):
             self.assertContains(
                 response,
                 '<td align="left">'
-                '<input type="checkbox" name="case" value="{0}" '
+                '<input type="checkbox" name="case" value="{}" '
                 'disabled="true" checked="true">'
                 '</td>'.format(case.pk),
                 html=True)
@@ -1358,7 +1358,7 @@ class TestAddCasesToRun(BaseCaseRun):
         # Check listed case properties
         for loop_counter, case in enumerate(confirmed_cases, 1):
             html_pieces = [
-                '<a href="{0}">{1}</a>'.format(
+                '<a href="{}">{}</a>'.format(
                     reverse('case-get', args=[case.pk]), case.pk),
 
                 '<td class="js-case-summary" data-param="{0}">'
@@ -1366,11 +1366,11 @@ class TestAddCasesToRun(BaseCaseRun):
                 'href="javascript:void(0);">{1}</a></td>'.format(loop_counter,
                                                                  case.summary),
 
-                '<td>{0}</td>'.format(case.author.username),
-                '<td>{0}</td>'.format(
+                '<td>{}</td>'.format(case.author.username),
+                '<td>{}</td>'.format(
                     formats.date_format(case.create_date, 'DATETIME_FORMAT')),
-                '<td>{0}</td>'.format(case.category.name),
-                '<td>{0}</td>'.format(case.priority.value),
+                '<td>{}</td>'.format(case.category.name),
+                '<td>{}</td>'.format(case.priority.value),
             ]
             for html in html_pieces:
                 self.assertContains(response, html, html=True)

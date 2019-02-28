@@ -129,7 +129,7 @@ class KerberosBackend(ModelBackend):
         except User.DoesNotExist:
             user = User.objects.create_user(
                 username=username,
-                email='%s@%s' % (username, settings.KRB5_REALM.lower())
+                email='{}@{}'.format(username, settings.KRB5_REALM.lower())
             )
         user.set_unusable_password()
         user.save()

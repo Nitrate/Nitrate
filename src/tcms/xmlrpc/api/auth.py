@@ -46,8 +46,8 @@ def login(request, credential):
         user = backend.authenticate(*check_user_name(credential))
 
         if user:
-            user.backend = "%s.%s" % (backend.__module__,
-                                      backend.__class__.__name__)
+            user.backend = "{}.{}".format(backend.__module__,
+                                          backend.__class__.__name__)
             django.contrib.auth.login(request, user)
             return request.session.session_key
 

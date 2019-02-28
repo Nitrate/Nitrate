@@ -239,6 +239,6 @@ def pre_process_estimated_time(value):
             if not match:
                 raise ValueError('Invaild estimated_time format.')
             else:
-                return '{0}h{1}m{2}s'.format(*match.groups())
+                return '{}h{}m{}s'.format(*match.groups())
     else:
         raise ValueError('Invaild estimated_time format.')

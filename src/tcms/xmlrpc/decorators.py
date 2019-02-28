@@ -17,7 +17,7 @@ logger = logging.getLogger('nitrate.xmlrpc')
 if settings.DEBUG:
     # To avoid pollute XMLRPC logs with those generated during development
     def create_log(user, method, args):
-        log_msg = 'user: {0}, method: {1}, args: {2}'.format(
+        log_msg = 'user: {}, method: {}, args: {}'.format(
             user.username if hasattr(user, 'username') else user,
             method,
             args)
@@ -59,7 +59,7 @@ def log_call(*args, **kwargs):
                                 if (key, value) not in known_args]
 
                 create_log(user=request.user,
-                           method='%s%s' % (namespace, function.__name__),
+                           method='{}{}'.format(namespace, function.__name__),
                            args=str(known_args + unknown_args + keyword_args))
             except Exception:
                 pass
