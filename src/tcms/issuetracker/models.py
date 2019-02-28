@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import configparser
 import importlib
 import logging
 import os
@@ -12,7 +13,6 @@ from django.core.validators import MaxLengthValidator, RegexValidator
 from django.db import models
 from django.db.models import Count
 from django.utils.encoding import python_2_unicode_compatible
-from six.moves import configparser
 
 from tcms.core.models import TCMSActionModel
 from tcms.issuetracker import validators

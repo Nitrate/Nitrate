@@ -7,9 +7,7 @@ import os
 import xml.etree.ElementTree as et
 
 import http.client
-from six.moves import map
-from six.moves import urllib
-from six.moves import zip
+import urllib
 
 from django import test
 from django.contrib.auth.models import User

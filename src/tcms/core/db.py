@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import six
-
 from tcms.core.utils.tcms_router import connection
 
 __all__ = ('SQLExecution',
@@ -67,7 +65,7 @@ class SQLExecution:
             row = self.cursor.fetchone()
             if row is None:
                 break
-            yield dict(six.moves.zip(self.field_names, row))
+            yield dict(zip(self.field_names, row))
 
     @property
     def _raw_rows(self):

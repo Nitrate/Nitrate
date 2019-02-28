@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import six
-
 from django.conf import settings
 
 from tcms.core.utils.mailto import mailto
@@ -50,4 +48,4 @@ def get_case_notification_recipients(case):
     if case.emailing.auto_to_case_run_assignee:
         assignees = case.case_run.values_list('assignee__email', flat=True)
         recipients.update(assignees)
-    return list(six.moves.filter(lambda e: bool(e), recipients))
+    return list(filter(lambda e: bool(e), recipients))

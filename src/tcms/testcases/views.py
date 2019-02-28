@@ -8,7 +8,6 @@ import json
 import logging
 
 from operator import itemgetter, attrgetter
-from six.moves import map
 import http.client
 
 from django.conf import settings

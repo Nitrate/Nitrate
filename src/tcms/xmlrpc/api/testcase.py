@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import six
 import itertools
 
 from django.contrib.auth.decorators import permission_required
@@ -837,7 +836,7 @@ def link_plan(request, case_ids, plan_ids):
     # Check the non-exist case ids.
     ids_diff = set(case_ids) - set(tcs_ids.iterator())
     if ids_diff:
-        ids_str = ','.join(six.moves.map(str, ids_diff))
+        ids_str = ','.join(map(str, ids_diff))
         if len(ids_diff) > 1:
             err_msg = 'TestCases %s do not exist.' % ids_str
         else:
@@ -851,7 +850,7 @@ def link_plan(request, case_ids, plan_ids):
     # Check the non-exist plan ids.
     ids_diff = set(plan_ids) - set(tps_ids.iterator())
     if ids_diff:
-        ids_str = ','.join(six.moves.map(str, ids_diff))
+        ids_str = ','.join(map(str, ids_diff))
         if len(ids_diff) > 1:
             err_msg = 'TestPlans %s do not exist.' % ids_str
         else:

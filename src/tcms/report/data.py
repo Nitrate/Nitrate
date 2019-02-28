@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import six
-
 from collections import namedtuple
 from itertools import chain
 from operator import attrgetter
@@ -223,7 +221,7 @@ class CustomReportData:
 
         sql = sql_statement.sql_template % {
             'joins': '\n'.join(_joins),
-            'where': ' AND '.join(six.moves.map(str, _where_conditions)),
+            'where': ' AND '.join(map(str, _where_conditions)),
         }
         return sql, where_params
 

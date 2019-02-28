@@ -4,7 +4,7 @@ import http.client
 import json
 import re
 
-from six.moves.urllib_parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs
 
 from django import test
 from django.contrib.auth.models import Permission

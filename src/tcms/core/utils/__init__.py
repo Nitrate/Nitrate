@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import six
+import functools
 import operator
 
 from django.apps import apps
@@ -32,7 +32,7 @@ def form_errors_to_list(form):
 
 
 def form_error_messags_to_list(form):
-    return list(six.moves.reduce(operator.add, form.errors.values()))
+    return list(functools.reduce(operator.add, form.errors.values()))
 
 
 def get_string_combinations(s):

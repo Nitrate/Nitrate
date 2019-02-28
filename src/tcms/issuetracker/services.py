@@ -4,7 +4,7 @@ import io
 import importlib
 import logging
 
-from six.moves import urllib
+import urllib
 from tcms.issuetracker.task import bugzilla_external_track
 from tcms.issuetracker.models import Issue
 from tcms.issuetracker.models import ProductIssueTrackerRelationship
