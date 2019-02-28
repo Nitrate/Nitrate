@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
-
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Prefetch
 from django.urls import reverse

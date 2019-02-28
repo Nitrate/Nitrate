@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
-
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 

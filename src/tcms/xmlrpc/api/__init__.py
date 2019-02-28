@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
-
 from .auth import *  # NOQA
 from .build import *  # NOQA
 from .env import *  # NOQA
