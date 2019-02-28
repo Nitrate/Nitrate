@@ -27,15 +27,13 @@ such as:
 
 Nitrate works with:
 
-* Python: ``2.7``, ``3.6`` and ``3.7``.
+* Python: ``3.6`` and ``3.7``.
 * Django: ``1.11``, ``2.0`` and ``2.1``.
 * Following database versions are tested with:
 
   * MariaDB: ``10.2.21``.
   * MySQL: ``5.7``.
   * PostgreSQL: ``10.6``.
-
-Python 3 is strongly recommended.
 
 .. _Python: https://www.python.org/
 .. _Django: https://docs.djangoproject.com/

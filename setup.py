@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import sys
-
 from setuptools import setup, find_packages
 
 
@@ -27,11 +25,6 @@ install_requires = [
     'xmltodict',
     'kobo == 0.9.0'
 ]
-
-if sys.version_info.major < 3:
-    install_requires += [
-        'enum34',
-    ]
 
 extras_require = {
     'mysql': ['PyMySQL == 0.9.2'],
@@ -92,6 +85,7 @@ setup(
     keywords='test case',
     install_requires=install_requires,
     extras_require=extras_require,
+    python_requires='>=3.6',
     package_dir={'': 'src'},
     packages=find_packages('src', exclude=['test*']),
     include_package_data=True,
@@ -103,11 +97,10 @@ setup(
         'Framework :: Django :: 2.1',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3 :: Only',
         'Topic :: Software Development :: Quality Assurance',
         'Topic :: Software Development :: Testing',
     ],
