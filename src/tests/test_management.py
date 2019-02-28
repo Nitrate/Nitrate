@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import json
+
 from six.moves import http_client
 
 from django import test
@@ -15,7 +17,6 @@ from tcms.management.models import TCMSEnvGroup
 from tcms.management.models import TCMSEnvGroupPropertyMap
 from tcms.management.models import TCMSEnvProperty
 from tcms.testplans.models import TestPlan, _listen, _disconnect_signals
-from tests import json_loads
 from tests import remove_perm_from_user
 from tests import user_should_have_perm
 from tests.factories import ProductFactory
@@ -157,24 +158,24 @@ class TestAddGroup(TestCase):
         response = self.client.get(self.group_add_url,
                                    {'action': 'add', 'name': self.new_group_name})
         self.assertEqual({'rc': 1, 'response': 'Permission denied.'},
-                         json_loads(response.content))
+                         json.loads(response.content))
 
     def test_missing_group_name(self):
         self.client.login(username=self.tester, password='password')
 
         response = self.client.get(self.group_add_url, {'action': 'add'})
         self.assertEqual({'rc': 1, 'response': 'Environment group name is required.'},
-                         json_loads(response.content))
+                         json.loads(response.content))
 
         response = self.client.get(self.group_add_url, {'action': 'add', 'name': ''})
         self.assertEqual({'rc': 1, 'response': 'Environment group name is required.'},
-                         json_loads(response.content))
+                         json.loads(response.content))
 
     def test_add_a_new_group(self):
         self.client.login(username=self.tester, password='password')
         response = self.client.get(self.group_add_url,
                                    {'action': 'add', 'name': self.new_group_name})
-        response_data = json_loads(response.content)
+        response_data = json.loads(response.content)
 
         groups = TCMSEnvGroup.objects.filter(name=self.new_group_name)
         self.assertEqual(1, groups.count())
@@ -199,7 +200,7 @@ class TestAddGroup(TestCase):
 
         response = self.client.get(self.group_add_url,
                                    {'action': 'add', 'name': self.new_group_name})
-        response_data = json_loads(response.content)
+        response_data = json.loads(response.content)
         self.assertIn(
             "Environment group name '{}' already".format(self.new_group_name),
             response_data['response']
@@ -238,7 +239,7 @@ class TestDeleteGroup(TestCase):
         response = self.client.get(self.group_delete_url,
                                    {'action': 'del', 'id': self.group_nitrate.pk})
 
-        self.assertEqual({'rc': 0, 'response': 'ok'}, json_loads(response.content))
+        self.assertEqual({'rc': 0, 'response': 'ok'}, json.loads(response.content))
 
         self.assertFalse(
             TCMSEnvGroup.objects.filter(pk=self.group_nitrate.pk).exists())
@@ -248,7 +249,7 @@ class TestDeleteGroup(TestCase):
         response = self.client.get(self.group_delete_url,
                                    {'action': 'del', 'id': self.group_nitrate.pk})
         self.assertEqual({'rc': 1, 'response': 'Permission denied.'},
-                         json_loads(response.content))
+                         json.loads(response.content))
 
     def test_delete_group_by_non_manager(self):
         user_should_have_perm(self.tester, self.permission)
@@ -257,7 +258,7 @@ class TestDeleteGroup(TestCase):
         response = self.client.get(self.group_delete_url,
                                    {'action': 'del', 'id': self.group_fedora.pk})
 
-        self.assertEqual({'rc': 0, 'response': 'ok'}, json_loads(response.content))
+        self.assertEqual({'rc': 0, 'response': 'ok'}, json.loads(response.content))
 
         self.assertFalse(
             TCMSEnvGroup.objects.filter(pk=self.group_fedora.pk).exists())
@@ -295,7 +296,7 @@ class TestModifyGroup(TestCase):
                                     'id': self.group_nitrate.pk,
                                     'status': 0})
         self.assertEqual({'rc': 1, 'response': 'Permission denied.'},
-                         json_loads(response.content))
+                         json.loads(response.content))
 
     def test_refuse_invalid_status_value(self):
         user_should_have_perm(self.tester, self.permission)
@@ -308,7 +309,7 @@ class TestModifyGroup(TestCase):
                                         'id': self.group_nitrate.pk,
                                         'status': invalid_status})
             self.assertEqual({'rc': 1, 'response': 'Argument illegel.'},
-                             json_loads(response.content))
+                             json.loads(response.content))
 
     def test_404_if_group_pk_not_exist(self):
         user_should_have_perm(self.tester, self.permission)
@@ -473,19 +474,19 @@ class TestAddProperty(TestCase):
         response = self.client.get(self.group_properties_url, {'action': 'add'})
 
         self.assertEqual({'rc': 1, 'response': 'Permission denied'},
-                         json_loads(response.content))
+                         json.loads(response.content))
 
     def test_refuse_if_missing_property_name(self):
         self.client.login(username=self.tester.username, password='password')
 
         response = self.client.get(self.group_properties_url, {'action': 'add'})
         self.assertEqual({'rc': 1, 'response': 'Property name is required'},
-                         json_loads(response.content))
+                         json.loads(response.content))
 
         response = self.client.get(self.group_properties_url,
                                    {'action': 'add', 'name': ''})
         self.assertEqual({'rc': 1, 'response': 'Property name is required'},
-                         json_loads(response.content))
+                         json.loads(response.content))
 
     def test_refuse_to_create_duplicate_property(self):
         self.client.login(username=self.tester.username, password='password')
@@ -501,7 +502,7 @@ class TestAddProperty(TestCase):
             'response': "Environment property named '{}' already exists, "
                         "please select another name.".format(self.duplicate_property.name)
         }
-        self.assertEqual(expected_result, json_loads(response.content))
+        self.assertEqual(expected_result, json.loads(response.content))
 
     def test_add_new_property(self):
         self.client.login(username=self.tester.username, password='password')
@@ -518,7 +519,7 @@ class TestAddProperty(TestCase):
         new_property = TCMSEnvProperty.objects.get(name=new_property_name)
         self.assertEqual({'rc': 0, 'response': 'ok',
                           'name': new_property_name, 'id': new_property.pk},
-                         json_loads(response.content))
+                         json.loads(response.content))
 
 
 class TestEditProperty(TestCase):
@@ -547,7 +548,7 @@ class TestEditProperty(TestCase):
         response = self.client.get(self.group_properties_url,
                                    {'action': 'edit', 'id': self.property.pk})
         self.assertEqual({'rc': 1, 'response': 'Permission denied'},
-                         json_loads(response.content))
+                         json.loads(response.content))
 
     def test_refuse_if_missing_property_id(self):
         self.client.login(username=self.tester.username, password='password')
@@ -555,7 +556,7 @@ class TestEditProperty(TestCase):
         response = self.client.get(self.group_properties_url, {'action': 'edit'})
 
         self.assertEqual({'rc': 1, 'response': 'ID is required'},
-                         json_loads(response.content))
+                         json.loads(response.content))
 
     def test_refuse_if_property_id_not_exist(self):
         self.client.login(username=self.tester.username, password='password')
@@ -564,7 +565,7 @@ class TestEditProperty(TestCase):
                                    {'action': 'edit', 'id': 999999999})
 
         self.assertEqual({'rc': 1, 'response': 'ID does not exist.'},
-                         json_loads(response.content))
+                         json.loads(response.content))
 
     def test_edit_a_property(self):
         self.client.login(username=self.tester.username, password='password')
@@ -575,7 +576,7 @@ class TestEditProperty(TestCase):
                                     'id': self.property.pk,
                                     'name': new_property_name})
 
-        self.assertEqual({'rc': 0, 'response': 'ok'}, json_loads(response.content))
+        self.assertEqual({'rc': 0, 'response': 'ok'}, json.loads(response.content))
 
         property = TCMSEnvProperty.objects.get(pk=self.property.pk)
         self.assertEqual(new_property_name, property.name)

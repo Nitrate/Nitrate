@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import json
 import os
 
 from datetime import timedelta
@@ -33,7 +34,6 @@ from tests.factories import UserFactory
 from tests.factories import VersionFactory
 from tests import BaseCaseRun
 from tests import BasePlanCase
-from tests import json_loads
 from tests import user_should_have_perm
 
 
@@ -722,26 +722,26 @@ class TestAJAXSearchRuns(BaseCaseRun):
     def test_search_all_runs(self):
         response = self.client.get(self.search_url)
 
-        search_result = json_loads(response.content)
+        search_result = json.loads(response.content)
         self.assert_found_runs(TestRun.objects.order_by('pk'), search_result)
 
     def test_empty_search_result(self):
         response = self.client.get(self.search_url, {'build': 9999})
 
-        search_result = json_loads(response.content)
+        search_result = json.loads(response.content)
         self.assert_found_runs([], search_result)
 
     def test_search_by_summary(self):
         response = self.client.get(self.search_url, {'summary': 'run'})
 
-        search_result = json_loads(response.content)
+        search_result = json.loads(response.content)
         self.assert_found_runs([self.test_run, self.test_run_1], search_result)
 
     def test_search_by_product(self):
         response = self.client.get(self.search_url,
                                    {'product': self.product_issuetracker.pk})
 
-        search_result = json_loads(response.content)
+        search_result = json.loads(response.content)
         self.assert_found_runs(
             [self.run_hotfix, self.run_release, self.run_daily],
             search_result)
@@ -753,7 +753,7 @@ class TestAJAXSearchRuns(BaseCaseRun):
         }
         response = self.client.get(self.search_url, query_criteria)
 
-        search_result = json_loads(response.content)
+        search_result = json.loads(response.content)
         self.assert_found_runs([self.run_release], search_result)
 
     def test_search_by_product_and_build(self):
@@ -763,7 +763,7 @@ class TestAJAXSearchRuns(BaseCaseRun):
         }
         response = self.client.get(self.search_url, query_criteria)
 
-        search_result = json_loads(response.content)
+        search_result = json.loads(response.content)
         self.assert_found_runs(
             [self.run_hotfix, self.run_release, self.run_daily],
             search_result)
@@ -775,13 +775,13 @@ class TestAJAXSearchRuns(BaseCaseRun):
         }
         response = self.client.get(self.search_url, query_criteria)
 
-        search_result = json_loads(response.content)
+        search_result = json.loads(response.content)
         self.assert_found_runs([], search_result)
 
     def test_search_by_plan_name(self):
         response = self.client.get(self.search_url, {'plan': 'Issue'})
 
-        search_result = json_loads(response.content)
+        search_result = json.loads(response.content)
         self.assert_found_runs(
             [self.run_hotfix, self.run_release, self.run_daily],
             search_result)
@@ -789,47 +789,47 @@ class TestAJAXSearchRuns(BaseCaseRun):
     def test_search_by_empty_plan_name(self):
         response = self.client.get(self.search_url, {'plan': ''})
 
-        search_result = json_loads(response.content)
+        search_result = json.loads(response.content)
         self.assert_found_runs(TestRun.objects.order_by('pk'), search_result)
 
     def test_search_by_plan_id(self):
         response = self.client.get(self.search_url, {'plan': self.plan.pk})
 
-        search_result = json_loads(response.content)
+        search_result = json.loads(response.content)
         self.assert_found_runs([self.test_run, self.test_run_1], search_result)
 
     def test_search_by_manager_or_default_tester(self):
         response = self.client.get(self.search_url, {'people_type': 'people',
                                                      'people': self.run_tester})
-        search_result = json_loads(response.content)
+        search_result = json.loads(response.content)
         self.assert_found_runs(
             [self.run_hotfix, self.run_release, self.run_daily],
             search_result)
 
         response = self.client.get(self.search_url, {'people_type': 'people',
                                                      'people': self.tester})
-        search_result = json_loads(response.content)
+        search_result = json.loads(response.content)
         self.assert_found_runs(TestRun.objects.order_by('pk'), search_result)
 
     def test_search_by_manager(self):
         response = self.client.get(self.search_url,
                                    {'people_type': 'manager',
                                     'people': self.tester.username})
-        search_result = json_loads(response.content)
+        search_result = json.loads(response.content)
         self.assert_found_runs(TestRun.objects.order_by('pk'), search_result)
 
     def test_search_by_non_existing_manager(self):
         response = self.client.get(self.search_url,
                                    {'people_type': 'manager',
                                     'people': 'nonexisting-manager'})
-        search_result = json_loads(response.content)
+        search_result = json.loads(response.content)
         self.assert_found_runs([], search_result)
 
     def test_search_by_default_tester(self):
         response = self.client.get(self.search_url,
                                    {'people_type': 'default_tester',
                                     'people': self.run_tester.username})
-        search_result = json_loads(response.content)
+        search_result = json.loads(response.content)
         self.assert_found_runs(
             [self.run_hotfix, self.run_release, self.run_daily],
             search_result)
@@ -838,22 +838,22 @@ class TestAJAXSearchRuns(BaseCaseRun):
         response = self.client.get(self.search_url,
                                    {'people_type': 'default_tester',
                                     'people': 'nonexisting-default-tester'})
-        search_result = json_loads(response.content)
+        search_result = json.loads(response.content)
         self.assert_found_runs([], search_result)
 
     def test_search_running_runs(self):
         response = self.client.get(self.search_url, {'status': 'running'})
-        search_result = json_loads(response.content)
+        search_result = json.loads(response.content)
         self.assert_found_runs(TestRun.objects.order_by('pk'), search_result)
 
     def test_search_finished_runs(self):
         response = self.client.get(self.search_url, {'status': 'finished'})
-        search_result = json_loads(response.content)
+        search_result = json.loads(response.content)
         self.assert_found_runs([], search_result)
 
     def test_search_by_tag(self):
         response = self.client.get(self.search_url, {'tag__name__in': 'rhel'})
-        search_result = json_loads(response.content)
+        search_result = json.loads(response.content)
         self.assert_found_runs([self.run_hotfix, self.run_daily],
                                search_result)
 
@@ -971,7 +971,7 @@ class TestEnvValue(BaseCaseRun):
         })
 
         self.assertEqual({'rc': 1, 'response': 'Unrecognizable actions'},
-                         json_loads(response.content))
+                         json.loads(response.content))
 
     def test_add_env_value(self):
         self.login_tester()

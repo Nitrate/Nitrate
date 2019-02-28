@@ -3,7 +3,6 @@
 import json
 import re
 import six
-import sys
 
 from six.moves import http_client
 from six.moves.urllib_parse import urlparse, parse_qs
@@ -31,18 +30,6 @@ __all__ = (
     'BaseCaseRun',
     'encode_if_py3',
 )
-
-
-# This is for running tests under Python 3.4 and 3.5, where json_loads needs
-# passed-in string should be decoded to str in UTF-8.
-# This is safe for removing support of these older Python versions. But, remove
-# calls to json_loads would be nice obviously.
-if sys.version_info.major == 3 and sys.version_info.minor in (4, 5):
-    def json_loads(s):
-        return json.loads(s.decode('utf-8'))
-else:
-    def json_loads(s):
-        return json.loads(s)
 
 
 def encode_if_py3(s):
@@ -117,7 +104,7 @@ class HelperAssertions(object):
 
     def assertJsonResponse(self, response, expected, status_code=200):
         self.assertEqual(status_code, response.status_code)
-        self.assertEqual(expected, json_loads(response.content))
+        self.assertEqual(expected, json.loads(response.content))
 
     def assert_url(self, expected_url, url):
         """Check if two URL are same
