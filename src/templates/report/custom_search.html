@@ -1,17 +1,7 @@
 {% extends "tcms_master.html" %}
-
 {% load report_tags %}
-
 {% block subtitle %}Custom Report{% endblock %}
-
-{#{% block custom_stylesheet %}#}
-{#<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style/print.css" media="print" />#}
-{#<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style/dataTables/jquery.dataTables.css" />#}
-{#<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style/dataTables/jquery.dataTables_themeroller.css" />#}
-{#{% endblock %}#}
-
 {% block custom_javascript %}
-{#<script type="text/javascript" src="{{ STATIC_URL }}js/lib/jquery.dataTables.js"></script>#}
 <script type="text/javascript" src="{{ STATIC_URL }}js/report.js"></script>
 <script type="text/javascript">
 Nitrate.Utils.after_page_load(Nitrate.Report.CustomSearch.on_load);
@@ -27,23 +17,36 @@ Nitrate.Utils.after_page_load(Nitrate.Report.CustomSearch.on_load);
 	</nav>
 
 	<div class="row">
-		<div class="col-2">
-			<h2>Report Options</h2>
+		<div class="col-md-2">
 			<form id="id_form_search" action="{% url "report-custom" %}">
 				{% include "report/form/search.html" %}
 			</form>
 		</div>
-		<div class="col-10">
+		<div class="col-md-10">
 			{% if builds %}
-				<ul class="list-group list-group-horizontal justify-content-end">
-					<li class="list-group-item mr-auto border-0 pl-2"><b>{{ builds|length }} builds are selected</b></li>
-					<li class="list-group-item border-0 pl-2 pr-2">Plan: <span class="red">{{ total_plans_count }}</span></li>
-					<li class="list-group-item border-0 pl-2 pr-2">Run: <span class="red">{{ total_runs_count }}</span></li>
-					<li class="list-group-item border-0 pl-2 pr-2">Manual Cases: <span class="red">{{manual_count|percentage:total_count}}({{manual_count}}/{{total_count}})</span></li>
-					<li class="list-group-item border-0 pl-2 pr-2">Automated Cases: <span class="red">{{auto_count|percentage:total_count}}({{auto_count}}/{{total_count}})</span></li>
-					<li class="list-group-item border-0 pl-2 pr-2">Manual/Automated: <span class="red">{{both_count|percentage:total_count}}({{both_count}}/{{total_count}})</span></li>
+				<ul class="report-top-stats">
+					<li>
+						<b>{{ builds|length }} builds are selected</b>
+					</li>
+					<li>
+						Plan: <span class="red">{{ total_plans_count }}</span>
+					</li>
+					<li>
+						Run: <span class="red">{{ total_runs_count }}</span>
+					</li>
+					<li>
+						Manual Cases: <span class="red">{{manual_count|percentage:total_count}}({{manual_count}}/{{total_count}})</span>
+					</li>
+					<li>
+						Automated Cases: <span class="red">{{auto_count|percentage:total_count}}({{auto_count}}/{{total_count}})</span>
+					</li>
+					<li>
+						Manual/Automated: <span class="red">{{both_count|percentage:total_count}}({{both_count}}/{{total_count}})</span>
+					</li>
 				</ul>
-				<table id="report_table" class="table table-striped">
+
+
+				<table id="report_table" class="table table-striped table-bordered">
 					<thead>
 					<tr>
 						<th>Build</th>
@@ -94,7 +97,7 @@ Nitrate.Utils.after_page_load(Nitrate.Report.CustomSearch.on_load);
 					</tbody>
 				</table>
 			{% else %}
-				<table class="table table-striped">
+				<table class="table table-striped table-bordered">
 					<thead>
 					<tr>
 						<th>Build</th>

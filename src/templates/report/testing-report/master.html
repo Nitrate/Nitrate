@@ -3,6 +3,7 @@
 {% block subtitle %}Case Run Report{% endblock %}
 
 {% block custom_javascript %}
+<script type="text/javascript" src="{{ STATIC_URL }}js/lib/bootstrap-datepicker.min.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/advance_search.js"></script>
 {% endblock %}
 
@@ -17,9 +18,8 @@
 {% endblock %}
 
 <div class="row">
-	<div class="col-2">
+	<div class="col-md-2">
 		<form action="{% url "testing-report" %}" method="get">
-			<h2>Report Options</h2>
 			<div class="form-group">
 				<label for="{{ run_form.r_product.name }}">Product</label>
 				{{ run_form.r_product }}
@@ -29,9 +29,9 @@
 				{{ run_form.r_build }}
 			</div>
 			<div class="form-group">
-				<label for="{{ run_form.r_created_since.name }}">Execute Date:</label>
-				{{ run_form.r_created_since }}
-				{{ run_form.r_created_before }}
+				<label>Execute Date:</label><br />
+				<label for="{{ run_form.r_created_since.name }}">Since:</label> {{ run_form.r_created_since }}
+				<label for="{{ run_form.r_created_before.name }}">Before:</label> {{ run_form.r_created_before }}
 			</div>
 			<div class="form-group">
 				<label for="{{ run_form.r_version.name }}">Version:</label>
@@ -47,9 +47,18 @@
 		</form>
 		{% if errors %}<div>{{ errors }}</div>{% endif %}
 	</div>
-	<div class="col-10">
-        {% block report_content %}Put report content here{% endblock %}
+	<div class="col-md-10">
+		{% block report_content %}Put report content here{% endblock %}
 	</div>
 </div>
+
+<script>
+	jQ('.bootstrap-datepicker').datepicker({
+		autoclose: true,
+		todayBtn: "linked",
+		todayHighlight: true,
+		format: "yyyy-mm-dd"
+	});
+</script>
 
 {% endblock %}

@@ -1,14 +1,16 @@
 {% load comments %}
-<table class="table table-bordered">
-	<tr>
-		<th width="70">Case ID</th>
-		<th width="100">Case Run ID</th>
-		<th>Summary</th>
-		<th width="150">Category</th>
-		<th width="120">Tester</th>
-		<th width="120">Issues</th>
-		<th width="200">Lastest Execute Time</th>
-	</tr>
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th width="6%">Case ID</th>
+            <th width="6%">Case Run ID</th>
+            <th width="55%">Summary</th>
+            <th>Category</th>
+            <th>Tester</th>
+            <th>Issues</th>
+            <th width="10%">Lastest Execute Time</th>
+        </tr>
+    </thead>
 	{% for test_case_run in case_runs %}
 	<tr>
 		<td><a href="{{ test_case_run.case.get_absolute_url }}">{{ test_case_run.case.pk }}</a></td>

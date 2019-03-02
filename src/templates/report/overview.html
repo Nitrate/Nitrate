@@ -18,67 +18,67 @@ Nitrate.Utils.after_page_load(Nitrate.Report.List.on_load);
 			<li class="breadcrumb-item active" aria-current="page">Product - {{ product }}</li>
 		</ol>
 	</nav>
-	<div class="row">
-		<div class="col"></div>
-		<div class="col-8">
-			{% include 'report/nav.html' %}
-			<h4 class="pt-3">Testing Runs</h4>
-			<table class="table table-striped">
-				<tr>
-					<td>Finished</td>
-					<td>{{ runs_count.finished }}</td>
-					<td>{% groupby_result_percent runs_count "finished" %}%</td>
-				</tr>
-				<tr>
-					<td>Running</td>
-					<td>{{ runs_count.running }}</td>
-					<td>{% groupby_result_percent runs_count "running" %}%</td>
-				</tr>
-			</table>
-			<h4>Case Runs</h4>
-			<table class="table table-striped">
-				<tr>
-					<td>PASSED</td>
-					<td>{{ case_run_count.PASSED }}</td>
-					<td>{% groupby_result_percent case_run_count "PASSED" %}%</td>
-				</tr>
-				<tr>
-					<td>FAILED</td>
-					<td>{{ case_run_count.FAILED }}</td>
-					<td>{% groupby_result_percent case_run_count "FAILED" %}%</td>
-				</tr>
-				<tr>
-					<td>IDLE</td>
-					<td>{{ case_run_count.IDLE }}</td>
-					<td>{% groupby_result_percent case_run_count "IDLE" %}%</td>
-				</tr>
-				<tr>
-					<td>ERROR</td>
-					<td>{{ case_run_count.ERROR }}</td>
-					<td>{% groupby_result_percent case_run_count "ERROR" %}%</td>
-				</tr>
-				<tr>
-					<td>PAUSED</td>
-					<td>{{ case_run_count.PAUSED }}</td>
-					<td>{% groupby_result_percent case_run_count "PAUSED" %}%</td>
-				</tr>
-				<tr>
-					<td>BLOCKED</td>
-					<td>{{ case_run_count.BLOCKED }}</td>
-					<td>{% groupby_result_percent case_run_count "BLOCKED" %}%</td>
-				</tr>
-				<tr>
-					<td>RUNNING</td>
-					<td>{{ case_run_count.RUNNING }}</td>
-					<td>{% groupby_result_percent case_run_count "RUNNING" %}%</td>
-				</tr>
-				<tr>
-					<td>WAIVED</td>
-					<td>{{ case_run_count.WAIVED }}</td>
-					<td>{% groupby_result_percent case_run_count "WAIVED" %}%</td>
-				</tr>
-			</table>
+	<div class="container">
+		<div class="row">
+			<div>
+				{% include 'report/nav.html' %}
+				<h4 class="pt-3">Testing Runs</h4>
+				<table class="table table-striped">
+					<tr>
+						<td>Finished</td>
+						<td>{{ runs_count.finished }}</td>
+						<td>{% groupby_result_percent runs_count "finished" %}%</td>
+					</tr>
+					<tr>
+						<td>Running</td>
+						<td>{{ runs_count.running }}</td>
+						<td>{% groupby_result_percent runs_count "running" %}%</td>
+					</tr>
+				</table>
+				<h4>Case Runs</h4>
+				<table class="table table-striped">
+					<tr>
+						<td>PASSED</td>
+						<td>{{ case_run_count.PASSED }}</td>
+						<td>{% groupby_result_percent case_run_count "PASSED" %}%</td>
+					</tr>
+					<tr>
+						<td>FAILED</td>
+						<td>{{ case_run_count.FAILED }}</td>
+						<td>{% groupby_result_percent case_run_count "FAILED" %}%</td>
+					</tr>
+					<tr>
+						<td>IDLE</td>
+						<td>{{ case_run_count.IDLE }}</td>
+						<td>{% groupby_result_percent case_run_count "IDLE" %}%</td>
+					</tr>
+					<tr>
+						<td>ERROR</td>
+						<td>{{ case_run_count.ERROR }}</td>
+						<td>{% groupby_result_percent case_run_count "ERROR" %}%</td>
+					</tr>
+					<tr>
+						<td>PAUSED</td>
+						<td>{{ case_run_count.PAUSED }}</td>
+						<td>{% groupby_result_percent case_run_count "PAUSED" %}%</td>
+					</tr>
+					<tr>
+						<td>BLOCKED</td>
+						<td>{{ case_run_count.BLOCKED }}</td>
+						<td>{% groupby_result_percent case_run_count "BLOCKED" %}%</td>
+					</tr>
+					<tr>
+						<td>RUNNING</td>
+						<td>{{ case_run_count.RUNNING }}</td>
+						<td>{% groupby_result_percent case_run_count "RUNNING" %}%</td>
+					</tr>
+					<tr>
+						<td>WAIVED</td>
+						<td>{{ case_run_count.WAIVED }}</td>
+						<td>{% groupby_result_percent case_run_count "WAIVED" %}%</td>
+					</tr>
+				</table>
+			</div>
 		</div>
-		<div class="col"></div>
 	</div>
 {% endblock %}

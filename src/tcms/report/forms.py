@@ -183,7 +183,7 @@ class BasicTestingReportFormFields(forms.Form):
         widget=forms.TextInput(attrs={
             'id': 'r_created_since',
             'style': 'width:130px;',
-            'class': 'form-control vDateField',
+            'class': 'form-control bootstrap-datepicker',
         }))
 
     r_created_before = forms.DateField(
@@ -196,7 +196,7 @@ class BasicTestingReportFormFields(forms.Form):
         widget=forms.TextInput(attrs={
             'id': 'r_created_before',
             'style': 'width:130px;',
-            'class': 'form-control vDateField',
+            'class': 'form-control bootstrap-datepicker',
         }))
 
     def populate(self, product_id):

@@ -13,14 +13,14 @@
 {% block report_content %}
 {% if report_data %}
 	{% if queries %}
-	<ul class="list-group list-group-horizontal">
+	<ul class="testing-report-selected-options">
 		{% for k, v in queries.items %}
-		<li class="list-group-item border-0 pl-2 pr-2">
+        <li>
 			<strong>{{ k|title }}</strong>: {{ v|safe }};
 		</li>
 		{% endfor %}
 		{% if not report_data.builds_selected %}
-		<li class="list-group-item border-0 pl-2 pr-2">
+        <li>
 			<strong>Builds:</strong>
 			{% for b in report_data.builds %}{{ b }}, {% endfor %}
 		</li>
@@ -28,23 +28,23 @@
 	</ul>
 	{% endif %}
 
-	<ul class="list-group list-group-horizontal">
-		<li class="list-group-item mr-auto border-0 pl-2">
+	<ul class="report-top-stats">
+		<li>
 			Tester: <strong>All Testers</strong>
 		</li>
-		<li class="list-group-item border-0 pl-2 pr-2">
+		<li>
 			Plan: <span class="red">{{ report_data.plans_count }}</span>
 		</li>
-		<li class="list-group-item border-0 pl-2 pr-2">
+		<li>
 			Run: <span class="red">{{ report_data.runs_count }}</span>
 		</li>
-		<li class="list-group-item border-0 pl-2 pr-2">
+		<li>
 			Case Run: <span class="red">{{ report_data.caseruns_count }}</span>
 		</li>
 	</ul>
 
 	{% spaceless %}
-	<table class="table table-striped">
+	<table class="table table-striped table-bordered">
 		<thead>
 			<tr>
 				{% if report_data.builds_selected %}<th width="20%">Build</th>{% endif %}

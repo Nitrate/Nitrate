@@ -2,10 +2,6 @@
 
 {% block subtitle %}Reporting{% endblock %}
 
-{% block custom_stylesheet %}
-<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style/print.css" media="print" />
-{% endblock %}
-
 {% block custom_javascript %}
 <script type="text/javascript" src="{{ STATIC_URL }}js/report.js"></script>
 <script type="text/javascript">
@@ -20,36 +16,36 @@ Nitrate.Utils.after_page_load(Nitrate.Report.List.on_load);
 			<li class="breadcrumb-item active" aria-current="page">Reporting</li>
 		</ol>
 	</nav>
-	<div class="row">
-		<div class="col"></div>
-		<div class="col-6">
-			<table class="table table-striped">
-				<thead>
+	<div class="container">
+		<div class="row">
+			<div class="col-6">
+				<table class="table table-striped table-bordered">
+					<thead>
 					<tr>
 						<th>Product</th>
 						<th>Plans</th>
 						<th>Runs</th>
 						<th>Cases</th>
 					</tr>
-				</thead>
-				<tbody>
-				{% for product_id, product_name, plans_count, runs_count, cases_count in products %}
-					<tr class="{% cycle 'even' 'odd' %}">
-						<td>
-							{% if plans_count %}
-								<a href="{% url "report-overview" product_id %}">{{ product_name }}</a>
-							{% else %}
-								{{ product_name }}
-							{% endif %}
-						</td>
-						<td>{{ plans_count }}</td>
-						<td>{{ runs_count }}</td>
-						<td>{{ cases_count }}</td>
-					</tr>
-				{% endfor %}
-				</tbody>
-			</table>
+					</thead>
+					<tbody>
+					{% for product_id, product_name, plans_count, runs_count, cases_count in products %}
+						<tr class="{% cycle 'even' 'odd' %}">
+							<td>
+								{% if plans_count %}
+									<a href="{% url "report-overview" product_id %}">{{ product_name }}</a>
+								{% else %}
+									{{ product_name }}
+								{% endif %}
+							</td>
+							<td>{{ plans_count }}</td>
+							<td>{{ runs_count }}</td>
+							<td>{{ cases_count }}</td>
+						</tr>
+					{% endfor %}
+					</tbody>
+				</table>
+			</div>
 		</div>
-		<div class="col"></div>
 	</div>
 {% endblock %}

@@ -22,15 +22,15 @@ Nitrate.Utils.after_page_load(Nitrate.Report.List.on_load);
 			<li class="breadcrumb-item active" aria-current="page">Product - {{ product }}</li>
 		</ol>
 	</nav>
+	<div class="container">
 	<div class="row">
-		<div class="col"></div>
-		<div class="col-8">
+		<div>
 			{% include 'report/nav.html' %}
 			{% if version %}
 				<h2 class="pt-3">Version: {{ version }}</h2>
 				{% include "report/case_runs_status_subtotal.html" %}
 			{% endif %}
-			<table class="table table-striped" style="margin-top: 15px">
+			<table class="table table-striped table-bordered" style="margin-top: 15px">
 				<thead>
 				<tr>
 					<th>Version</th>
@@ -60,7 +60,7 @@ Nitrate.Utils.after_page_load(Nitrate.Report.List.on_load);
 						</td>
 						<td>
 							{% if version.failed_case_runs_count  %}
-								<span class="badge badge-danger">{{ version.failed_case_runs_count|default:'0' }} Failed</span>
+								<span class="label label-danger">{{ version.failed_case_runs_count|default:'0' }} Failed</span>
 							{% endif %}
 						</td>
 					</tr>
@@ -68,6 +68,6 @@ Nitrate.Utils.after_page_load(Nitrate.Report.List.on_load);
 				</tbody>
 			</table>
 		</div>
-		<div class="col"></div>
+		</div>
 	</div>
 {% endblock %}

@@ -18,17 +18,17 @@ Nitrate.Utils.after_page_load(Nitrate.Report.CustomDetails.on_load);
 		</ol>
 	</nav>
 
-	<div class="border-bottom pb-2">
+	<div class="border-bottom">
 		<form class="form-inline" action="{% url "report-custom-details" %}">
 			<div class="form-group">
-				<label class="my-1 mr-2" for="id_{{ form.product.name }}">Product</label>
+				<label class="" for="id_{{ form.product.name }}">Product</label>
 				{{ form.product }}
 			</div>
 			<div class="form-group">
-				<label class="my-1 mr-2 ml-3" for="id_{{ form.pk__in.name }}">Build</label>
+				<label class="" for="id_{{ form.pk__in.name }}">Build</label>
 				{{ form.pk__in }}
 			</div>
-			<button type="submit" class="btn btn-primary my-1 ml-3">Submit</button>
+			<button type="submit" class="btn btn-primary">Generate</button>
 		</form>
 
 		{% if report_errors %}
@@ -37,7 +37,7 @@ Nitrate.Utils.after_page_load(Nitrate.Report.CustomDetails.on_load);
 	</div>
 
 	{% if not report_errors %}
-	<table class="table" border="0">
+	<table border="0" width="100%" cellpadding="6">
 		{% for build in builds %}
 		<tr>
 			<td>
@@ -48,7 +48,7 @@ Nitrate.Utils.after_page_load(Nitrate.Report.CustomDetails.on_load);
 				Automated Cases: <span class="red">{{auto_count|percentage:total_count}} ({{auto_count}}/{{total_count}})</span>
 				Manual/Automated: <span class="red">{{both_count|percentage:total_count}} ({{both_count}}/{{total_count}})</span>
 			</td>
-			<td>
+			<td style="padding-right: 10px;">
 				<span>Passed Case-Run</span>
 				<div class="progress">
 					<div class="progress-bar" role="progressbar" style="width: {{ build.passed_case_runs_percent|floatformat:1 }}%;"
@@ -71,9 +71,9 @@ Nitrate.Utils.after_page_load(Nitrate.Report.CustomDetails.on_load);
 	</table>
 
 	{% include "report/custom_details_status_matrix.html" %}
-	<h5 style="color: #900;">All Failed Case-Run List</h5>
+	<h4 style="color: #900;">All Failed Case-Run List</h4>
 	{% include "report/custom_details_case_runs.html" with case_runs=failed_case_runs %}
-	<h5 style="color: #639;">All Blocked Case-Run List</h5>
+	<h4 style="color: #639;">All Blocked Case-Run List</h4>
 	{% include "report/custom_details_case_runs.html" with case_runs=blocked_case_runs %}
 	{% endif %} {# endif report_errors #}
 {% endblock %}

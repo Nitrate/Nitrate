@@ -1,4 +1,6 @@
+body {font-size: 14px;}
 .red {color: red;}
+
 .social-logins {padding: 0; margin: 0;}
 .social-logins li {display: inline; padding-right: 16px;}
 .progress {height: 21px; background-color: #858585;}
@@ -22,3 +24,23 @@
 .btn_running[disabled="True"]{background-position:0px -115px;}
 .btn_waived{background-position:0px 0px;}
 .btn_waived[disabled="True"]{background-position:0px -46px;}
+
+.navbar-nitrate li a {font-size: 14px;}
+
+/* Styles for Reports */
+
+/*.report_top_stats {margin: 0px; padding: 0px}*/
+/*.report_top_stats li {display: inline-block;}*/
+/*.report_top_stats li {padding: 6px 6px 6px 6px;}*/
+
+.testing-report-selected-options {
+    padding: 0px;
+}
+.testing-report-selected-options li {
+    display: inline-block;
+    padding-right: 10px;
+}
+
+.report-top-stats {padding: 0px;}
+.report-top-stats li {display: inline-block; padding-left: 10px;}
+.report-top-stats li:first-child {padding-left: 0px; padding-right: 20px;}

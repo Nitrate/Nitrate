@@ -13,44 +13,44 @@
 {% block report_content %}
 {% if report_data %}
 	{% if queries %}
-	<ul class="list-group list-group-horizontal">
+	<ul class="testing-report-selected-options">
 	{% for k, v in queries.items %}
-		<li class="list-group-item border-0 pl-2 pr-2">
+        <li>
 			<strong>{{ k|title }}</strong>: {{ v|safe }};
 		</li>
 	{% endfor %}
 	</ul>
 	{% endif %}
 
-	<ul class="list-group list-group-horizontal">
-		<li class="list-group-item border-0 pl-2 pr-2">
+	<ul class="report-top-stats">
+		<li style="padding-right: 0px">
 			Plan: <span class="red">{{ report_data.plans_count }}</span>
 		</li>
-		<li class="list-group-item border-0 pl-2 pr-2">
+		<li>
 			Run: <span class="red">{{ report_data.runs_count }}</span>
 		</li>
-		<li class="list-group-item border-0 pl-2 pr-2">
+		<li>
 			Case Run: <span class="red">{{ report_data.case_runs_count }}</span>
 		</li>
 	</ul>
 
 	{% for plan, builds_count, runs_count, caseruns_count, status_matrix in report_data.reports %}
-	<ul class="list-group list-group-horizontal">
-		<li class="list-group-item mr-auto border-0 pl-2">
+	<ul class="report-top-stats">
+		<li style="padding-right: 0px">
             Plan: <a href="{{ plan.get_absolute_url }}">{{ plan }}</a>
 		</li>
-		<li class="list-group-item border-0 pl-2 pr-2">
+		<li>
 			Builds: <span class="red">{{ builds_count }}</span>
 		</li>
-		<li class="list-group-item border-0 pl-2 pr-2">
+		<li>
 			Runs: <span class="red">{{ runs_count }}</span>
 		</li>
-		<li class="list-group-item border-0 pl-2 pr-2">
+		<li>
 			Case Runs: <span class="red">{{ caseruns_count }}</span>
 		</li>
 	</ul>
 
-	<table class="table table-striped">
+	<table class="table table-striped table-bordered">
 		<thead>
 			<tr>
 				<th width="15%">Build</th>
@@ -85,7 +85,7 @@
 		</tbody>
 	</table>
 	{% empty %}
-	<table class="table table-striped">
+	<table class="table table-striped table-bordered">
 		<thead>
 			<tr>
 				<th width="15%">Build</th>

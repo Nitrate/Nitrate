@@ -7,7 +7,8 @@
 
 	<link rel="Shortcut Icon" href="{{ STATIC_URL }}images/favicon.png" />
 	<link href="{{ STATIC_URL }}style/fontawesome.css" rel="stylesheet">
-	<link href="{{ STATIC_URL }}style/bootstrap/bootstrap.min.css" rel="stylesheet">
+	<link href="{{ STATIC_URL }}style/patternfly.min.css" rel="stylesheet">
+	<link href="{{ STATIC_URL }}style/patternfly-additions.min.css" rel="stylesheet">
 	<link href="{{ STATIC_URL }}style/nitrate.css" rel="stylesheet">
 
 	<style>
@@ -27,8 +28,9 @@
 		}
 	</style>
 
-	<script src="{{ STATIC_URL }}js/lib/jquery-3.3.1.min.js"></script>
-	<script src="{{ STATIC_URL }}js/lib/bootstrap/bootstrap.bundle.min.js"></script>
+	<script src="{{ STATIC_URL }}js/lib/jquery-3.2.1.min.js"></script>
+	<script src="{{ STATIC_URL }}js/lib/bootstrap/bootstrap-3.3.7.min.js"></script>
+	<script src="{{ STATIC_URL }}js/lib/patternfly.min.js"></script>
 
 	<script type="text/javascript" language="javascript" charset="utf-8">
 		jQuery.noConflict();
@@ -58,127 +60,198 @@
 	<title>Nitrate - {% block subtitle %}{% endblock %}</title>
 </head>
 <body>
-<nav class="navbar navbar-expand-md navbar-dark bg-dark">
-	<a class="navbar-brand" href="{% url "nitrate-index" %}">
-		<img src="{{ STATIC_URL }}images/logo_2.png" height="30px">
-	</a>
-	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault"
-		aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
-		<span class="navbar-toggler-icon"></span>
-	</button>
 
-	<div class="collapse navbar-collapse" id="nitrateNavBar">
-		<ul class="navbar-nav mr-auto">
-			<li class="nav-item dropdown {% ifequal module 'planning' %}active{% endifequal %}">
-				<a class="nav-link dropdown-toggle" href="#" id="navbarPlanning" data-toggle="dropdown"
-				   aria-haspopup="true" aria-expanded="false">PLANNING</a>
-				<div class="dropdown-menu" aria-labelledby="navbarPlanning">
-					<a class="dropdown-item {% ifequal sub_module 'search_plans' %}active{% endifequal %}"
-					   href="{% url "plans-all" %}">Search Plans</a>
+<nav class="navbar navbar-default navbar-inverse" role="navigation" style="margin-bottom: 0px">
+	<div class="navbar-header">
+		<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+		<span class="sr-only">Toggle navigation</span>
+		<span class="icon-bar"></span>
+		<span class="icon-bar"></span>
+		<span class="icon-bar"></span>
+		</button>
+		<a class="navbar-brand" href="#" style="padding: 8px 10px 6px 10px">
+			<img src="{{ STATIC_URL }}images/logo_2.png" height="30px">
+		</a>
+	</div>
+
+	<div class="collapse navbar-collapse" id="top-navbar">
+		<ul class="nav navbar-nav navbar-nitrate">
+			<li class="dropdown {% ifequal module 'planning' %}active{% endifequal %}">
+				<a class="dropdown-toggle" href="#" id="navbarPlanning" data-toggle="dropdown"
+					aria-haspopup="true" aria-expanded="false">
+					PLANNING
+					<span class="caret"></span>
+				</a>
+				<ul class="dropdown-menu">
+					<li>
+						<a class="dropdown-item {% ifequal sub_module 'search_plans' %}active{% endifequal %}"
+							href="{% url "plans-all" %}">Search Plans</a>
+					</li>
 					{% if user.is_authenticated %}
-					<a class="dropdown-item {% ifequal sub_module 'my_plans' %}active{% endifequal %}"
-					   href="{% url "plans-all" %}?author__email__startswith={{ user.email }}">My Plans</a>
-					<a class="dropdown-item {% ifequal sub_module 'new_plan' %}active{% endifequal %}"
-					   href="{% url "plans-new" %}">New Plan</a>
+					<li>
+						<a class="dropdown-item {% ifequal sub_module 'my_plans' %}active{% endifequal %}"
+							href="{% url "plans-all" %}?author__email__startswith={{ user.email }}">My Plans</a>
+					</li>
+					<li>
+						<a class="dropdown-item {% ifequal sub_module 'new_plan' %}active{% endifequal %}"
+							href="{% url "plans-new" %}">New Plan</a>
+					</li>
 					{% endif %}
-				</div>
+				</ul>
 			</li>
-			<li class="nav-item dropdown {% ifequal module "testing" %}active{% endifequal %}">
-				<a class="nav-link dropdown-toggle" href="#" id="navbarTesting" data-toggle="dropdown"
-				   aria-haspopup="true" aria-expanded="false">TESTING</a>
-				<div class="dropdown-menu" aria-labelledby="navbarReporting">
-					<a class="dropdown-item {% ifequal sub_module 'search_runs' %}active{% endifequal %}"
-					   href="{% url "runs-all" %}">Search Runs</a>
-					<a class="dropdown-item {% ifequal sub_module 'search_cases' %}active{% endifequal %}"
-					   href="{% url "cases-all" %}">Search Cases</a>
+
+			<li class="dropdown {% ifequal module "testing" %}active{% endifequal %}">
+				<a class="dropdown-toggle" href="#" id="navbarTesting" data-toggle="dropdown"
+					aria-haspopup="true" aria-expanded="false">
+					TESTING
+					<span class="caret"></span>
+				</a>
+				<ul class="dropdown-menu">
+					<li>
+						<a class="dropdown-item {% ifequal sub_module 'search_runs' %}active{% endifequal %}"
+							href="{% url "runs-all" %}">Search Runs</a>
+					</li>
+					<li>
+						<a class="dropdown-item {% ifequal sub_module 'search_cases' %}active{% endifequal %}"
+							href="{% url "cases-all" %}">Search Cases</a>
+					</li>
 					{% if user.is_authenticated %}
-					<a class="dropdown-item {% ifequal sub_module 'my_cases' %}active{% endifequal %}"
-					   href="{% url "runs-all" %}?people={{ user.email }}">My Runs</a>
-					<a class="dropdown-item {% ifequal sub_module 'new_case' %}active{% endifequal %}"
-					   href="{% url "cases-new" %}">New Case</a>
+					<li>
+						<a class="dropdown-item {% ifequal sub_module 'my_cases' %}active{% endifequal %}"
+							href="{% url "runs-all" %}?people={{ user.email }}">My Runs</a>
+					</li>
+					<li>
+						<a class="dropdown-item {% ifequal sub_module 'new_case' %}active{% endifequal %}"
+							href="{% url "cases-new" %}">New Case</a>
+					</li>
 					{% endif %}
-				</div>
+				</ul>
 			</li>
-			<li class="nav-item dropdown {% ifequal module "env" %}active{% endifequal %}">
+
+			<li class="dropdown {% ifequal module "env" %}active{% endifequal %}">
 				<a class="nav-link dropdown-toggle" href="#" id="navbarEnvironment" data-toggle="dropdown"
-				   aria-haspopup="true" aria-expanded="false">ENVIRONMENT</a>
-				<div class="dropdown-menu" aria-labelledby="navbarEnvironment">
-					<a class="dropdown-item {% ifequal sub_module "env_groups" %}active{% endifequal %}"
-					   href="{% url "management-env-groups" %}">Groups</a>
-					<a class="dropdown-item {% ifequal sub_module "env_properties" %}active{% endifequal %}"
-					   href="{% url "management-env-properties" %}">Properties</a>
-				</div>
+					aria-haspopup="true" aria-expanded="false">
+					ENVIRONMENT
+					<span class="caret"></span>
+				</a>
+				<ul class="dropdown-menu">
+					<li>
+						<a class="dropdown-item {% ifequal sub_module "env_groups" %}active{% endifequal %}"
+							href="{% url "management-env-groups" %}">Groups</a>
+					</li>
+					<li>
+						<a class="dropdown-item {% ifequal sub_module "env_properties" %}active{% endifequal %}"
+							href="{% url "management-env-properties" %}">Properties</a>
+					</li>
+				</ul>
 			</li>
-			<li class="nav-item dropdown {% ifequal module "report" %}active{% endifequal %}">
+
+			<li class="dropdown {% ifequal module "report" %}active{% endifequal %}">
 				<a class="nav-link dropdown-toggle" href="#" id="navbarReporting" data-toggle="dropdown"
-				   aria-haspopup="true" aria-expanded="false">REPORTING</a>
-				<div class="dropdown-menu" aria-labelledby="navbarReporting">
-					<a class="dropdown-item {% ifequal sub_module "overall_report" %}active{% endifequal %}"
-						href="{% url "report-overall" %}">Overall</a>
-					<a class="dropdown-item {% ifequal sub_module "custom_report" %}active{% endifequal %}"
-						href="{% url "report-custom" %}">Custom</a>
-					<a class="dropdown-item {% ifequal sub_module "testing_report" %}active{% endifequal %}"
-						href="{% url "testing-report" %}">Testing Report</a>
-				</div>
+					aria-haspopup="true" aria-expanded="false">
+					REPORTING
+					<span class="caret"></span>
+				</a>
+				<ul class="dropdown-menu">
+					<li>
+						<a class="dropdown-item {% ifequal sub_module "overall_report" %}active{% endifequal %}"
+							href="{% url "report-overall" %}">Overall</a>
+					</li>
+					<li>
+						<a class="dropdown-item {% ifequal sub_module "custom_report" %}active{% endifequal %}"
+							href="{% url "report-custom" %}">Custom</a>
+					</li>
+					<li>
+						<a class="dropdown-item {% ifequal sub_module "testing_report" %}active{% endifequal %}"
+							href="{% url "testing-report" %}">Testing Report</a>
+					</li>
+				</ul>
 			</li>
+
 			{% if user.is_staff %}
-			<li class="nav-item dropdown {% if not module %}active{% endif %}">
+			<li class="dropdown {% if not module %}active{% endif %}">
 				<a class="nav-link dropdown-toggle" href="#" id="navbarAdmin" data-toggle="dropdown"
-				   aria-haspopup="true" aria-expanded="false">ADMIN</a>
-				<div class="dropdown-menu" aria-labelledby="navbarAdmin">
-					{# FIXME: Is "products" a correct module name for Auth app? #}
-					<a class="dropdown-item {% ifequal sub_module "products" %}active{% endifequal %}"
-					   href="{% url "admin:app_list" "auth" %}">Auth</a>
-					{# FIXME: Is "environments" a correct module name for Auth app? #}
-					<a class="dropdown-item {% ifequal sub_module "environments" %}active{% endifequal %}"
-					   href="{% url "admin:app_list" "management" %}">Management</a>
-					<a class="dropdown-item {% ifequal sub_module "testplans" %}active{% endifequal %}"
-					   href="{% url "admin:app_list" "testplans" %}">Test Plans</a>
-					<a class="dropdown-item {% ifequal sub_module "testcases" %}active{% endifequal %}"
-					   href="{% url "admin:app_list" "testcases" %}">Test Cases</a>
-				</div>
-			</li>
-		{% endif %}
-		</ul>
-		<form class="form-inline my-2 my-lg-0" method="get" action="{% url "nitrate-search" %}">
-			<select name="search_type" class="form-control mr-sm-2">
-				<option value="plans" {% ifequal sub_module "testplans" %}selected{% endifequal %}>Test Plan</option>
-				<option value="runs" {% ifequal sub_module "testruns" %}selected{% endifequal %}>Test Run</option>
-				<option value="cases" {% ifequal sub_module "testcases" %}selected{% endifequal %}>Test Case</option>
-			</select>
-			<input class="form-control mr-sm-2" type="text" placeholder="Search by keyword" name="search_content"
-				aria-label="Search">
-			<button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-		</form>
-		<ul class="navbar-nav navbar-right">
-			{% if user.is_authenticated %}
-			<li class="nav-item p-2">
-				<a href="#" title="Bookmark this page"><i class="far fa-star"></i></a>
+					aria-haspopup="true" aria-expanded="false">
+					ADMIN
+					<span class="caret"></span>
+				</a>
+				<ul class="dropdown-menu">
+					<li>
+						{# FIXME: Is "products" a correct module name for Auth app? #}
+						<a class="dropdown-item {% ifequal sub_module "products" %}active{% endifequal %}"
+							href="{% url "admin:app_list" "auth" %}">Auth</a>
+					</li>
+					<li>
+						{# FIXME: Is "environments" a correct module name for Auth app? #}
+						<a class="dropdown-item {% ifequal sub_module "environments" %}active{% endifequal %}"
+							href="{% url "admin:app_list" "management" %}">Management</a>
+					</li>
+					<li>
+						<a class="dropdown-item {% ifequal sub_module "testplans" %}active{% endifequal %}"
+							href="{% url "admin:app_list" "testplans" %}">Test Plans</a>
+					</li>
+					<li>
+						<a class="dropdown-item {% ifequal sub_module "testcases" %}active{% endifequal %}"
+							href="{% url "admin:app_list" "testcases" %}">Test Cases</a>
+					</li>
+				</ul>
 			</li>
 			{% endif %}
-			<li class="nav-item">
-				<a class="nav-link" href="#">About</a>
-			</li>
-			<li class="nav-item {% if user.is_authenticated %}dropdown{% endif %}">
+
+			</ul>
+			<ul class="nav navbar-nav navbar-right navbar-nitrate">
+				<li>
+					<a href="#" title="Bookmark this page"><i class="far fa-star"></i></a>
+				</li>
+				<li class="dropdown">
+					<a href="#" id="dropdownHelp" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+						<i class="far fa-question-circle"></i>
+					</a>
+					<ul class="dropdown-menu" aria-labelledby="dropdownHelp">
+						<li>
+							<a href="#">About</a>
+						</li>
+						<li>
+							<a href="#">Help</a>
+						</li>
+					</ul>
+				</li>
+
+				<li class="{% if user.is_authenticated %}dropdown{% endif %}">
 				{% if user.is_authenticated %}
 					<a class="nav-link dropdown-toggle" href="#" id="navbarLoggedUser" data-toggle="dropdown"
-					   aria-haspopup="true" aria-expanded="false">Welcome, {{ user }}</a>
-					<div class="dropdown-menu" aria-labelledby="navbarLoggedUser">
-						<a class="dropdown-item" href="{% url "nitrate-logout" %}?next={{ request.path }}">Logout</a>
-					</div>
+						aria-haspopup="true" aria-expanded="false">
+						Welcome, {{ user }}
+						<span class="caret"></span>
+					</a>
+					<ul class="dropdown-menu">
+						<li>
+							<a href="{% url "nitrate-logout" %}?next={{ request.path }}">Logout</a>
+						</li>
+					</ul>
 				{% else %}
 					<a class="nav-link" href="{% url "nitrate-login" %}?next={{ request.path }}">Login</a>
 				{% endif %}
-			</li>
-		</ul>
+				</li>
+			</ul>
+
+			<form class="navbar-form navbar-right">
+				<div class="form-group">
+					<select name="search_type" class="form-control">
+						<option value="plans" {% ifequal sub_module "testplans" %}selected{% endifequal %}>Test Plan</option>
+						<option value="runs" {% ifequal sub_module "testruns" %}selected{% endifequal %}>Test Run</option>
+						<option value="cases" {% ifequal sub_module "testcases" %}selected{% endifequal %}>Test Case</option>
+					</select>
+					<input type="text" class="form-control" placeholder="Search"><button type="submit" class="btn btn-default"><span class="fa fa-search"></button>
+				</div>
+			</form>
+		</div>
 	</div>
 </nav>
 
-<main class="flex-shrink-0" role="main">
-	<div class="container-fluid">
-		{% block page_content %}{% endblock %}
-	</div>
-</main>
+<div class="container-fluid">
+    {% block page_content %}{% endblock %}
+</div>
 
 {% cache 600 footerbar%}
 <footer class="footer mt-auto py-3 fixed-bottom">

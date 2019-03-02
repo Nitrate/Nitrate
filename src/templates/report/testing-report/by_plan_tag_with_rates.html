@@ -13,28 +13,28 @@
 {% block report_content %}
 {% if report_data %}
 	{% if queries %}
-	<ul class="list-group list-group-horizontal">
+	<ul class="testing-report-selected-options">
 	{% for k, v in queries.items %}
-		<li class="list-group-item border-0 pl-2 pr-2">
+        <li>
 			<strong>{{ k|title }}</strong>: {{ v|safe }};
 		</li>
 	{% endfor %}
 	</ul>
 	{% endif %}
 
-	<ul class="list-group list-group-horizontal justify-content-end">
-		<li class="list-group-item mr-auto border-0 pl-2">
+	<ul class="report-top-stats">
+		<li>
 			<a href="{% url "testing-report" %}{{ request_path }}&report_type=per_plan_tag_report">Per Tag View</a>
 		</li>
-		<li class="list-group-item border-0 pl-2 pr-2">
+		<li>
 			Plan: <span class="red">{{ report_data.plans_count }}</span>
 		</li>
-		<li class="list-group-item border-0 pl-2 pr-2">
+		<li>
 			Run: <span class="red">{{ report_data.runs_count }}</span>
 		</li>
 	</ul>
 
-	<table class="table table-striped">
+	<table class="table table-striped table-bordered">
 		<thead>
 			<tr>
 				<th width="68%">Tag</th>

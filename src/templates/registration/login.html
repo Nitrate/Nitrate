@@ -2,12 +2,12 @@
 {% block subtitle %}Login{% endblock %}
 {% block page_content %}
 <div class="container">
-    <div class="row" style="min-height:60px"></div>
+	<div class="row" style="min-height:60px"></div>
 	<div class="row">
-        <div class="col-6 col-md-4"></div>
-        <div class="col-6 col-md-4">
-			<div class="d-flex justify-content-center">
-				<h4>Log In to Your Account</h4>
+		<div class="col-6 col-md-4"></div>
+		<div class="col-6 col-md-4">
+			<div style="text-align: center">
+				<h3>Log In to Your Account</h3>
 			</div>
 			<form action="{% url "nitrate-login" %}" method="POST">
 				{% csrf_token %}
@@ -30,28 +30,27 @@
 					Need an account? <a href="{% url "nitrate-register" %}?next={{ request.path }}">Sign up</a>
 				</div>
 			</form>
-			<div>
+			<div id="social-logins">
 				{% if social_auth_backends %}
-					<h5>Sign in with:</h5>
-{#					<ul class="social-logins">#}
-					<ul class="list-group list-group-horizontal-md">
-						{% for social_login_info in social_auth_backends %}
-							<li class="list-group-item border-0">
-							{% if social_login_info.icon %}
-								<a href="{{ social_login_info.social_begin_url }}" title="{{ social_login_info.title }}" class="social_auth_login">
-									<i class="fab fa-{{ social_login_info.icon }} fa-{{ social_login_info.icon_size }}"></i>
-								</a>
-							{% else %}
-								<a class="btn btn-outline-primary" href="{{ social_login_info.social_begin_url }}"
-									title="{{ social_login_info.title }}">{{ social_login_info.label }}</a>
-							{% endif %}
-							</li>
-						{% endfor %}
-					</ul>
+				<h4>Sign in with:</h4>
+				<ul class="nav nav-tabs" style="border-bottom: 0">
+					{% for social_login_info in social_auth_backends %}
+						<li>
+						{% if social_login_info.icon %}
+							<a href="{{ social_login_info.social_begin_url }}" title="{{ social_login_info.title }}" class="social_auth_login" style="border: 0">
+								<i class="fab fa-{{ social_login_info.icon }} fa-{{ social_login_info.icon_size }}"></i>
+							</a>
+						{% else %}
+							<a class="btn btn-outline-primary" href="{{ social_login_info.social_begin_url }}"
+								title="{{ social_login_info.title }}">{{ social_login_info.label }}</a>
+						{% endif %}
+						</li>
+					{% endfor %}
+				</ul>
 				{% endif %}
 			</div>
 		</div><!-- col -->
-        <div class="col-6 col-md-4"></div>
+		<div class="col-6 col-md-4"></div>
 	</div><!-- row -->
 </div>
 

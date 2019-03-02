@@ -1,17 +1,14 @@
-<ul class="nav nav-tabs justify-content-end">
-  <li class="mr-auto">
-	  <h3>Product: {{ product }}</h3>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link {% ifequal SUB_MODULE_NAME 'overview' %}active{% endifequal %}" href="{% url "report-overview" product.id %}">Overview</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link {% ifequal SUB_MODULE_NAME 'version' %}active{% endifequal %}" href="{% url "report-overall-product-version" product.id %}">Version</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link {% ifequal SUB_MODULE_NAME 'build' %}active{% endifequal %}" href="{% url "report-overall-product-build" product.id %}">Builds</a>
-  </li>
-  <li class="nav-item mr-3">
-    <a class="nav-link {% ifequal SUB_MODULE_NAME 'component' %}active{% endifequal %}" href="{% url "report-overall-product-component" product.id %}">Components</a>
-  </li>
+<ul class="nav nav-tabs">
+	<li class="{% ifequal SUB_MODULE_NAME 'overview' %}active{% endifequal %}">
+		<a href="{% url "report-overview" product.id %}">Overview</a>
+	</li>
+	<li class="{% ifequal SUB_MODULE_NAME 'version' %}active{% endifequal %}">
+		<a href="{% url "report-overall-product-version" product.id %}">Version</a>
+	</li>
+	<li class="{% ifequal SUB_MODULE_NAME 'build' %}active{% endifequal %}">
+		<a href="{% url "report-overall-product-build" product.id %}">Builds</a>
+	</li>
+	<li class="{% ifequal SUB_MODULE_NAME 'component' %}active{% endifequal %}">
+		<a href="{% url "report-overall-product-component" product.id %}">Components</a>
+	</li>
 </ul>
