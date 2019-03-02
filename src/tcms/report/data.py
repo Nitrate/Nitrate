@@ -5,6 +5,7 @@ from itertools import chain
 from operator import attrgetter
 from operator import itemgetter
 
+
 from django.contrib.auth.models import User
 from django.db.models import Count
 
@@ -14,6 +15,7 @@ from tcms.core.db import SQLExecution
 from tcms.core.db import workaround_single_value_for_in_clause
 from tcms.management.models import Priority
 from tcms.management.models import TestBuild
+from tcms.management.models import TestTag
 from tcms.report import sqls
 from tcms.testcases.models import TestCase
 from tcms.testplans.models import TestPlan
@@ -463,9 +465,7 @@ class TestingReportByCaseRunTesterData(TestingReportBaseData):
         tested_by_usernames = self.get_usernames(status_matrix.keys())
 
         def walk_status_matrix_rows():
-            tested_by_ids = sorted(status_matrix.iteritems(),
-                                   key=itemgetter(0))
-            for tested_by_id, status_subtotal in tested_by_ids:
+            for tested_by_id, status_subtotal in status_matrix.iteritems():
                 tested_by_username = tested_by_usernames.get(tested_by_id,
                                                              'None')
                 tested_by = None
@@ -712,13 +712,13 @@ class TestingReportByPlanTagsData(TestingReportBaseData):
 
     def get_tags_names(self, tag_ids):
         """Get tags names from status matrix"""
-        from tcms.management.models import TestTag
+        names = {
+            pk: name
+            for pk, name in TestTag.objects.filter(pk__in=tag_ids)
+                                           .values_list('pk', 'name')
+                                           .order_by('pk', 'name')
+        }
 
-        names = dict(
-            TestTag.objects.filter(pk__in=tag_ids)
-                           .values_list('pk', 'name')
-                           .iterator()
-        )
         # The existence of None tells us the fact that there are plans without
         # any tag. So, name it untagged.
         if None in tag_ids:
@@ -743,9 +743,7 @@ class TestingReportByPlanTagsDetailData(TestingReportByPlanTagsData):
 
         def walk_status_matrix():
             status_matrix.leaf_values_count(value_in_row=True)
-            ordered_builds = sorted(status_matrix.iteritems(),
-                                    key=itemgetter(0))
-            for tag_id, builds in ordered_builds:
+            for tag_id, builds in status_matrix.iteritems():
                 # Data on top of each status matrix under each tag
                 yield tags_names.get(tag_id, 'untagged'), \
                     plans_subtotal.get(tag_id, 0), \
@@ -760,8 +758,7 @@ class TestingReportByPlanTagsDetailData(TestingReportByPlanTagsData):
             'reports': walk_status_matrix(),
 
             # This is only used for displaying tags in report
-            'tags_names': (
-                tags_names[key] for key in sorted(tags_names.keys())),
+            'tags_names': list(tags_names.values())
         }
 
     def walk_status_matrix_rows(self, root_matrix):
