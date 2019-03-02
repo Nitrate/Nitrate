@@ -499,7 +499,7 @@ class TestingReportByCaseRunTesterData(TestingReportBaseData):
 
         # Get related tested_by's username. Don't need duplicated user ids.
         tested_by_ids = []
-        for build_id, tested_bys in status_matrix.items():
+        for build_id, tested_bys in status_matrix.iteritems():
             tested_by_ids += tested_bys.keys()
         tested_by_ids = set(tested_by_ids)
 
@@ -509,12 +509,9 @@ class TestingReportByCaseRunTesterData(TestingReportBaseData):
         def walk_status_matrix_rows():
             """For rendering template, walk through status matrix row by row"""
             prev_build = None
-            builds = sorted(status_matrix.items(), key=itemgetter(0))
-            for build_id, tested_by_ids in builds:
+            for build_id, tested_by_ids in status_matrix.iteritems():
                 build_rowspan = len(tested_by_ids)
-                tested_by_ids = sorted(tested_by_ids.items(),
-                                       key=itemgetter(0))
-                for tested_by_id, status_subtotal in tested_by_ids:
+                for tested_by_id, status_subtotal in tested_by_ids.iteritems():
                     if build_id not in runs_subtotal:
                         runs_count = 0
                     elif tested_by_id not in runs_subtotal[build_id]:

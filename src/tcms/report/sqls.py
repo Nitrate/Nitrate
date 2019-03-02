@@ -130,7 +130,9 @@ inner join test_runs on (test_builds.build_id = test_runs.build_id)
 inner join test_case_runs on (test_runs.run_id = test_case_runs.run_id)
 inner join test_case_run_status on (test_case_run_status.case_run_status_id = test_case_runs.case_run_status_id)
 where {0}
-group by test_builds.build_id, test_case_runs.tested_by_id, test_case_run_status.name'''
+group by test_builds.build_id, test_case_runs.tested_by_id, test_case_run_status.name
+order by test_builds.build_id, test_case_runs.tested_by_id, test_case_run_status.name
+'''
 
 by_case_run_tester_runs_subtotal_groupby_build = '''
 select build_id, tested_by_id, count(*) as total_count
