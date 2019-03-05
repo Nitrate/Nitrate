@@ -666,9 +666,7 @@ class TestingReportByPlanTagsData(TestingReportBaseData):
         tags_names = self.get_tags_names(status_matrix.keys())
 
         def walk_status_matrix_rows():
-            ordered_tags = sorted(status_matrix.iteritems(),
-                                  key=itemgetter(0))
-            for tag_id, status_subtotal in ordered_tags:
+            for tag_id, status_subtotal in status_matrix.iteritems():
                 yield tags_names.get(tag_id, ''), \
                     plans_subtotal.get(tag_id, 0), \
                     runs_subtotal.get(tag_id, 0), \
@@ -680,8 +678,7 @@ class TestingReportByPlanTagsData(TestingReportBaseData):
             'reports': walk_status_matrix_rows(),
 
             # This is only used for displaying tags in report
-            'tags_names': [tags_names[key]
-                           for key in sorted(tags_names.keys())],
+            'tags_names': list(tags_names.values()),
         }
 
     def plans_subtotal(self, form):

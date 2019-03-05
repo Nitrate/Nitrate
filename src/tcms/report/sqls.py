@@ -217,7 +217,9 @@ inner join test_case_run_status on (test_case_run_status.case_run_status_id = te
 inner join test_builds on (test_builds.build_id = test_runs.build_id)
 left join test_plan_tags on (test_plans.plan_id = test_plan_tags.plan_id)
 where test_case_run_status.name in ('PASSED', 'FAILED') and {0}
-group by test_plan_tags.tag_id, test_case_run_status.name'''
+group by test_plan_tags.tag_id, test_case_run_status.name
+order by test_plan_tags.tag_id, test_case_run_status.name
+'''
 
 ### Report data of details of By Plan Tags ###
 
