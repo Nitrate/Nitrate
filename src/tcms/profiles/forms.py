@@ -32,11 +32,64 @@ class UserProfileForm(forms.ModelForm):
             "This value may contain only letters, "
             "numbers and @/./+/-/_ characters.")},
     )
-    first_name = forms.CharField(max_length=128, required=False)
-    last_name = forms.CharField(max_length=128, required=False)
-    email = forms.EmailField(label=_("E-mail"), max_length=75)
-    im_type_id = forms.ChoiceField(choices=IM_CHOICES)
-    url = StripURLField(required=False)
+    first_name = forms.CharField(
+        max_length=128,
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                'class': 'form-control',
+                'placeholder': 'First Name',
+            })
+    )
+    last_name = forms.CharField(
+        max_length=128,
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                'class': 'form-control',
+                'placeholder': 'Last Name',
+            })
+    )
+    email = forms.EmailField(
+        label=_("E-mail"),
+        max_length=75,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+
+    im_type_id = forms.ChoiceField(
+        label='IM',
+        choices=IM_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+    im = forms.CharField(
+        max_length=128,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+
+    url = StripURLField(
+        label='Web',
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+    )
+
+    phone_number = forms.CharField(
+        label='Phone Number',
+        max_length=128,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+
+    address = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control'})
+    )
+
+    notes = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control'})
+    )
 
     class Meta:
         model = UserProfile

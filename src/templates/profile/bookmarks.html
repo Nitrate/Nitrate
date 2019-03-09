@@ -1,66 +1,91 @@
-{% extends "tcms_base.html" %}
+{% extends "tcms_master.html" %}
 
 {% block subtitle %}Bookmarks - {{ user_profile.user.username }}{% endblock %}
 
-{% block custom_stylesheet %}
-<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style/print.css" media="print" />
-<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style/dataTables/jquery.dataTables.css" />
-<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style/dataTables/jquery.dataTables_themeroller.css" />
+{% block jslib_before_patternfly %}
+<script type="text/javascript" src="{{ STATIC_URL }}js/lib/jquery.dataTables.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/lib/dataTables.bootstrap.min.js"></script>
 {% endblock %}
 
 {% block custom_javascript %}
-<script type="text/javascript" src="{{ STATIC_URL }}js/lib/jquery.dataTables.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/profiles.js"></script>
 <script type="text/javascript">
 Nitrate.Utils.after_page_load(Nitrate.Profiles.Bookmarks.on_load);
 </script>
 {% endblock %}
 
-{% block contents %}
-<div id="content">
-	<div class="sprites crumble profile_tab">
-		<ul>
-			<li><a href="{% url "user-profile" user.username %}">Basic Information</a></li>
-			{% ifequal user_profile.user user %}
-			<li  class="profile_tab_active"><a href="{% url "user-bookmark" user.username %}">Bookmarks</a></li>
-			<li><a href="{% url "user-recent" user.username %}">Recent</a></li>
-			{% endifequal %}
-		</ul>
+{% block page_content %}
+<nav aria-label="breadcrumb">
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item"><a href="{% url "nitrate-index" %}">Home</a></li>
+		<li class="breadcrumb-item active" aria-current="page">Profile</li>
+	</ol>
+</nav>
+
+<ul class="nav nav-tabs nav-tabs-bottom">
+	<li>
+		<a href="{% url "user-profile" user.username %}">Basic Information</a>
+	</li>
+	{% ifequal user_profile.user user %}
+	<li class="active">
+		<a href="{% url "user-bookmark" user.username %}">Bookmarks</a>
+	</li>
+	<li>
+		<a href="{% url "user-recent" user.username %}">Recent</a>
+	</li>
+	{% endifequal %}
+</ul>
+
+{% if bookmarks %}
+<div class="row toolbar-pf table-view-pf-toolbar" id="toolbar1">
+	<div class="col-sm-12">
+		<form id="bookmarkActionForm" class="toolbar-pf-actions" method="post" action="{% url "user-bookmark" user.username %}">
+			{% include "csrf.html" %}
+			<input type="hidden" name="a" value="remove">
+			<div class="form-group">
+				<button class="btn btn-default" type="button" id="removeSelectedBookmarks" disabled>Remove selected bookmarks</button>
+			</div>
+		</form>
 	</div>
-	<form id="id_form_bookmark" action="{% url "user-bookmark" user.username %}" method="post">
-		<div class="table_watchlist_toolbar">
-			<span>
-				{# <a href="#" class="sprites node_add">Add</a> #}
-				<input type="submit" value="Delete" class="sprites node_delete">
-			</span>
-		</div>
-		<div>
-			<input type="hidden" name="a" value="remove" />
-			<table id="id_table_bookmark" cellpadding="0" cellspacing="0" class="table_watchlist" >
-				<thead>
-					<tr>
-						<th width="30px" class="nosort"><div class="leftradius"></div><input id="id_check_all_bookmark" 	type="checkbox" /></th>
-						<th width="40px">Index</th>
-						<th>Name</th>
-						<th><div class="rightradius"></div>Description</th>
-						{# <th width="80">Operation</th> #}
-					</tr>
-				</thead>
-				<tbody>
-					{% for bookmark in bookmarks %}
-					<tr class="{% cycle 'odd' 'even' %}">
-						<td><input type="checkbox" name="pk" value="{{ bookmark.pk }}" /></td>
-						<td>{{ forloop.counter }}</td>
-						<td><a href='{{ bookmark.url }}'>
-						{%if bookmark.name%}{{ bookmark }}{%else%}{{bookmark.url}}{%endif%}</a></td>
-						<td>{{ bookmark.description|linebreaksbr }}</td>
-						{# <td><a href="#" class="sprites node_edit">Edit</a></td> #}
-					</tr>
-					{% endfor %}
-				</tbody>
-			</table>
-		</div>
-	</form>
-		
 </div>
+
+<table class="table table-striped table-bordered" id="bookmarks_table">
+	<thead>
+		<tr>
+			<th>
+				<label class="sr-only" for="selectAll">Select all rows</label>
+				<input type="checkbox" id="selectAll" name="selectAll">
+			</th>
+			<th width="6%">Index</th>
+			<th width="30%">Name</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for bookmark in bookmarks %}
+		<tr>
+			<td class="table-view-pf-select">
+				<label class="sr-only">Select bookmark {{ forloop.counter }}</label>
+				<input type="checkbox" id="bookmark_{{ forloop.counter }}" class="js-select-bookmark" name="bookmark_id" value="{{ bookmark.pk }}">
+			</td>
+			<td>{{ forloop.counter }}</td>
+			<td>
+				<a href='{{ bookmark.url }}'>{% if bookmark.name %}{{ bookmark }}{% else %}{{ bookmark.url }}{% endif %}</a>
+			</td>
+			<td>{{ bookmark.description|linebreaksbr }}</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+{% else %}
+<div class="blank-slate-pf table-view-pf-empty" id="emptyState1">
+	<div class="blank-slate-pf-icon">
+		<span class="pficon pficon pficon-add-circle-o"></span>
+	</div>
+	<h1>
+		No pages is bookmarked yet.
+	</h1>
+</div>
+{% endif %}
+
 {% endblock %}

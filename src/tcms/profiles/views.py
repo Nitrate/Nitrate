@@ -49,11 +49,11 @@ def bookmark(request, username, template_name='profile/bookmarks.html'):
             return http.JsonResponse(self.ajax_response)
 
         def remove(self):
-            pks = request.POST.getlist('pk')
+            pks = request.POST.getlist('bookmark_id')
             bks = Bookmark.objects.filter(pk__in=pks, user=request.user)
             bks.delete()
 
-            return http.JsonResponse(self.ajax_response)
+            return self.render()
 
         def render(self):
             if request.GET.get('category'):

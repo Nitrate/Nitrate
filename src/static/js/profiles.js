@@ -1,63 +1,47 @@
 Nitrate.Profiles = { Infos: {}, Bookmarks: {} };
 
 Nitrate.Profiles.Bookmarks.on_load = function() {
-  if (jQ('#id_table_bookmark').length) {
-    jQ('#id_table_bookmark').dataTable({
-      "aoColumnDefs":[{ "bSortable":false, "aTargets":[ 0 ] }],
-      "aaSorting": [[ 1, "asc" ]],
-      "sPaginationType": "full_numbers",
-      "bFilter": false,
-      "aLengthMenu": [[10, 20, 50, -1], [10, 20, 50, "All"]],
-      "iDisplayLength": 10,
-      "bProcessing": true,
-      "oLanguage": { "sEmptyTable": "No bookmark was found." }
-    });
-  }
 
-  if (jQ('#id_check_all_bookmark').length) {
-    jQ('#id_check_all_bookmark').bind('click', function(e) {
-      clickedSelectAll(this, jQ('#id_table_bookmark')[0], 'pk');
-    });
-  }
+	var bookmarksTable = jQ("#bookmarks_table").DataTable({
+		"columnDefs": [
+			{ "orderable": false, "targets": 0 }
+		],
+		dom: "ti",
+		language: {
+			zeroRecords: "No bookmark was found."
+		},
+    paging: false,
+    searching: false,
+		order: [[ 1, 'asc' ]],
+  });
 
-  jQ('#id_form_bookmark').bind('submit', function(e) {
-    e.stopPropagation();
-    e.preventDefault();
+  jQ('#selectAll').bind('click', function(e) {
+    var selectAll = e.target.checked;
+    jQ('.js-select-bookmark').prop('checked', selectAll);
+    jQ('#removeSelectedBookmarks').prop('disabled', !selectAll);
+  });
 
-    if (!window.confirm(default_messages.confirm.remove_bookmark)) {
-      return false;
-    }
+  jQ('.js-select-bookmark').bind('click', function(e) {
+    var checkedValues = jQ('.js-select-bookmark').map(function() {
+      return jQ(this).prop('checked');
+    }).get();
 
-    var callback = function(t) {
-      var returnobj = jQ.parseJSON(t.responseText);
+    jQ('#selectAll').prop('checked', checkedValues.reduce(function(a, b) {return a && b}));
+    jQ('#removeSelectedBookmarks').prop('disabled', checkedValues.indexOf(true) < 0);
+  });
 
-      if (returnobj.rc != 0) {
-        window.alert(returnobj.response);
-        return returnobj;
+  jQ('#removeSelectedBookmarks').bind('click', function(e) {
+    var form = jQ('#bookmarkActionForm');
+    jQ('#bookmarks_table .js-select-bookmark').each(function() {
+      var checkbox = jQ(this);
+      if (checkbox.prop('checked')) {
+        jQ('<input>').attr({
+          type: 'hidden',
+          value: checkbox.val(),
+          name: 'bookmark_id'
+        }).prependTo(form);
       }
-      // using location.reload will cause firefox(tested) remember the checking status
-      window.location = window.location;
-    };
-    var parameters = Nitrate.Utils.formSerialize(this);
-    if (!parameters['pk']) {
-      window.alert('No bookmark selected.');
-      return false;
-    }
-    removeBookmark(this.action, this.method, parameters, callback);
+    });
+    form.submit();
   });
 };
-
-function removeBookmark(url, method, parameters, callback) {
-  jQ.ajax({
-    'url': url,
-    'type': method,
-    'data': parameters,
-    'traditional': true,
-    'success': function (data, textStatus, jqXHR) {
-      callback(jqXHR);
-    },
-    'error': function (jqXHR, textStatus, errorThrown) {
-      json_failure(jqXHR);
-    }
-  });
-}
