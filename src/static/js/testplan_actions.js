@@ -599,6 +599,14 @@ Nitrate.TestPlans.Advance_Search_List.on_load = function() {
   });
 };
 
+Nitrate.TestPlans.List.getSelectedPlanIDs = function() {
+  var result = [];
+  jQ('#testplans_table tbody tr input[type=checkbox]:checked').each(function() {
+    result.push(this.value);
+  });
+  return result;
+};
+
 Nitrate.TestPlans.List.on_load = function() {
   if (jQ('#id_product').length) {
     bind_version_selector_to_product(true);
@@ -606,12 +614,16 @@ Nitrate.TestPlans.List.on_load = function() {
 
   if (jQ('#id_check_all_plans').length) {
     jQ('#id_check_all_plans').bind('click', function(e) {
-      clickedSelectAll(this, jQ('#plans_form')[0], 'plan');
-      if (this.checked) {
-        jQ('#plan_list_printable').attr('disabled', false);
-      } else {
-        jQ('#plan_list_printable').attr('disabled', true);
+      // Check/uncheck plan selectors in plans search result table.
+      var checkboxes = jQ('#testplans_table tbody tr input[type=checkbox]');
+      for (var i = 0; i < checkboxes.length; i++) {
+        var planSelector = checkboxes[i];
+        planSelector.checked = this.checked;
       }
+
+      jQ('#plan_list_printable').attr('disabled', !this.checked);
+      jQ('.js-clone-plans').attr('disabled', !this.checked);
+      jQ('.js-export-plans').attr('disabled', !this.checked);
     });
   }
 
@@ -640,18 +652,21 @@ Nitrate.TestPlans.List.on_load = function() {
     }
   });
 
-  var oTable;
+  var oTable = null;
+
   if (jQ('#testplans_table').length) {
     oTable = jQ('#testplans_table').dataTable({
       "iDisplayLength": 20,
       "sPaginationType": "full_numbers",
       "bFilter": false,
+      'dom': "<'row'<'col-sm-12't>>" +
+             "<'row'<'col-sm-5'i><'col-sm-7'p>>",
       // "bLengthChange": false,
-      "aLengthMenu": [[10, 20, 50, -1], [10, 20, 50, "All"]],
+      // "aLengthMenu": [[10, 20, 50, -1], [10, 20, 50, "All"]],
       "aaSorting": [[ 1, "desc" ]],
       "bProcessing": true,
       "bServerSide": true,
-      "sAjaxSource": "/plans/ajax/"+this.window.location.search,
+      "sAjaxSource": "/plans/ajax/" + this.window.location.search,
       "aoColumns": [
         {"bSortable": false },
         null,
@@ -666,26 +681,27 @@ Nitrate.TestPlans.List.on_load = function() {
         {"bSortable": false }
       ]
     });
+
+    jQ("#testplans_table").on("click", '.plan_selector', function() {
+      var has_checked = jQ("#testplans_table tbody tr input[type=checkbox]:checked").length > 0;
+
+      jQ('#plan_list_printable').attr('disabled', !has_checked);
+      jQ('.js-clone-plans').attr('disabled', !has_checked);
+      jQ('.js-export-plans').attr('disabled', !has_checked);
+    });
   }
-  jQ("#testplans_table tbody tr input[type=checkbox][name=plan]").live("click", function() {
-    if (jQ("input[type=checkbox][name=plan]:checked").length) {
-      jQ('#plan_list_printable').attr('disabled', false);
-    } else {
-      jQ('#plan_list_printable').attr('disabled', true);
-    }
-  });
 
   jQ('.js-new-plan').bind('click', function() {
     window.location = jQ(this).data('param');
   });
-  jQ('.js-clone-plan').bind('click', function() {
-    postToURL(jQ(this).data('param'), Nitrate.Utils.formSerialize(this.form), 'get');
+  jQ('.js-clone-plans').bind('click', function() {
+    postToURL(jQ(this).data('param'), {'plan': Nitrate.TestPlans.List.getSelectedPlanIDs()}, 'get');
   });
   jQ('#plan_list_printable').bind('click', function() {
-    postToURL(jQ(this).data('param'), Nitrate.Utils.formSerialize(this.form), 'get');
+    postToURL(jQ(this).data('param'), {'plan': Nitrate.TestPlans.List.getSelectedPlanIDs()}, 'get');
   });
-  jQ('.js-export-cases').bind('click', function() {
-    postToURL(jQ(this).data('param'), Nitrate.Utils.formSerialize(this.form), 'get');
+  jQ('.js-export-plans').bind('click', function() {
+    postToURL(jQ(this).data('param'), {'plan': Nitrate.TestPlans.List.getSelectedPlanIDs()}, 'get');
   });
 };
 

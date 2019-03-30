@@ -316,44 +316,73 @@ class SearchPlanForm(forms.Form):
     parent__pk = forms.IntegerField(required=False)
     search = forms.CharField(label="Search", required=False)
     plan_id = forms.IntegerField(label="Plan ID", required=False)
-    name__icontains = forms.CharField(label="Plan name", required=False)
+    name__icontains = forms.CharField(
+        label="Plan name",
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+    )
     product = forms.ModelChoiceField(
         label="Product",
         queryset=Product.objects.all(),
-        required=False
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
     product_version = forms.ModelChoiceField(
         label="Product Version",
         queryset=Version.objects.none(),
-        required=False
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
     type = forms.ModelChoiceField(
-        label="Type",
+        label="Plan Type",
         queryset=TestPlanType.objects.all(),
         required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
     env_group = forms.ModelChoiceField(
         label="Environment Group",
         queryset=TCMSEnvGroup.get_active().all(),
-        required=False
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
-    author__username__startswith = forms.CharField(required=False)
-    author__email__startswith = forms.CharField(required=False)
-    owner__username__startswith = forms.CharField(required=False)
+    author__username__startswith = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    author__email__startswith = forms.CharField(
+        label='Author',
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    owner__username__startswith = forms.CharField(
+        label='Owner',
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
     case__default_tester__username__startswith = forms.CharField(
-        required=False)
-    tag__name__in = forms.CharField(required=False)
-    is_active = forms.BooleanField(required=False)
+        label='Case Default Tester',
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    tag__name__in = forms.CharField(
+        label='Tag',
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    is_active = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'bootstrap-switch'})
+    )
     create_date__gte = forms.DateTimeField(
         label='Create after', required=False,
         widget=forms.DateInput(attrs={
-            'class': 'vDateField',
+            'class': 'form-control bootstrap-datepicker',
         })
     )
     create_date__lte = forms.DateTimeField(
         label='Create before', required=False,
         widget=forms.DateInput(attrs={
-            'class': 'vDateField',
+            'class': 'form-control bootstrap-datepicker',
         })
     )
 

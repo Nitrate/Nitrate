@@ -1240,7 +1240,7 @@ function getAjaxLoading(id) {
 function clickedSelectAll(checkbox, form, name) {
   var checkboxes = jQ(form).parent().find('input[name='+ name + ']');
   for (i = 0; i < checkboxes.length; i++) {
-	checkboxes[i].checked = checkbox.checked? true:false;
+    checkboxes[i].checked = checkbox.checked? true:false;
   }
 }
 
