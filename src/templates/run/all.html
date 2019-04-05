@@ -1,14 +1,13 @@
-{% extends "tcms_base.html" %}
+{% extends "tcms_master.html" %}
 
 {% block subtitle %}Test runs{% endblock %}
 
-{% block custom_stylesheet %}
-<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style/dataTables/jquery.dataTables.css" />
-<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style/dataTables/jquery.dataTables_themeroller.css" />
+{% block jslib_before_patternfly %}
+<script type="text/javascript" src="{{ STATIC_URL }}js/lib/jquery.dataTables.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/lib/dataTables.bootstrap.min.js"></script>
 {% endblock %}
 
 {% block custom_javascript %}
-<script type="text/javascript" src="{{ STATIC_URL }}js/lib/jquery.dataTables.js"></script>
 <script type="text/javascript" src='{{ STATIC_URL }}js/testrun_actions.js'></script>
 <script type="text/javascript" src='{{ STATIC_URL }}js/management_actions.js'></script>
 <script type="text/javascript">
@@ -16,43 +15,38 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.List.on_load);
 </script>
 {% endblock %}
 
-{% block contents %}
-
-<div id="content">
-	<div class="sprites crumble">
-		<a href="{% url "nitrate-index" %}">Home</a>
+{% block page_content %}
+<nav aria-label="breadcrumb">
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item"><a href="{% url "nitrate-index" %}">Home</a></li>
 		{% if query_result %}
-		>> <a href="{% url "runs-all" %}">Test Runs</a> >> Search result
+		<li class="breadcrumb-item"><a href="{% url "runs-all" %}">Test Runs</a></li>
+		<li class="breadcrumb-item active" aria-current="page">Search result</li>
 		{% else %}
-		>> Test Runs
+		<li class="breadcrumb-item active" aria-current="page">Test Runs</li>
+		{% endif %}
+	</ol>
+</nav>
+
+<div class="row">
+	<div class="col-md-2">
+		{% include 'run/form/search.html' %}
+	</div>
+	<div class="col-md-10">
+		{% if query_result %}
+		{% include "run/common/run_filtered.html" %}
+		{% else %}
+		<div class="blank-slate-pf table-view-pf-empty" id="emptyState1">
+			<div class="blank-slate-pf-icon">
+				<i class="fas fa-arrow-circle-left"></i>
+			</div>
+			<h1>
+				Select criteria to search test runs.
+			</h1>
+			<div class="blank-slate-pf-secondary-action">
+			</div>
+		</div>
 		{% endif %}
 	</div>
-	<form action="{% url "runs-all" %}" method="get">
-		<div id="itemSearch" class="itemSearch">
-			<input type="hidden" name="action" value="search" />
-			<div>
-				<h2>Search Run</h2>
-				{% include 'run/form/search.html' %}
-			</div>
-			<div class="bottom">
-				<input type="submit" size="7" value="Search" class="left_float" />
-				<input type="reset" size="7"  value="Reset" class="left_float" />
-				<div class="allSearch">
-					<a href="?summary=&plan=&product_id=&env_group_id=&manager=&status=">View All Runs</a><span>|</span><a href="/advance-search/">Advanced Search</a>
-				</div>
-			</div>
-			<div class="clear"></div>
-		</div>
-	</form>
-	<form id="runs_form">
-	{% if query_result %}
-	<div id="contentTab" class="mixbar">
-		{# <span class="tit">{{ test_runs.count }} Test Runs</span> #}
-		<span class="tit"><a href="{% url "runs-all" %}?case_run__assignee={{ user.email }}">View My Assigned Runs</a></span>
-		<input type="button" value="Clone" title="clone selected test runs" class="js-clone-testruns" data-param='{% url "runs-clone" %}' />
-	</div>
-	{% include "run/common/run_filtered.html" %}
-	{% endif %}
-	</form>
 </div>
 {% endblock %}

@@ -289,13 +289,16 @@ def all(request, template_name='run/all.html'):
 
     query_result = len(request.GET) > 0
 
-    if list(request.GET.items()):
+    if len(request.GET) > 0:
         search_form = SearchRunForm(request.GET)
-        if request.GET.get('product'):
-            search_form.populate(product_id=request.GET['product'])
-        else:
-            search_form.populate()
 
+        val = request.GET.get('product')
+        if val and val.isdigit():
+            product_id = int(val)
+        else:
+            product_id = None
+
+        search_form.populate(product_id=product_id)
         search_form.is_valid()
     else:
         search_form = SearchRunForm()

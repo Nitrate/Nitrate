@@ -12,13 +12,6 @@ Nitrate.TestRuns.List.on_load = function() {
   bind_version_selector_to_product(true, jQ('#id_product')[0]);
   bind_build_selector_to_product(true, jQ('#id_product')[0]);
 
-  Nitrate.Utils.enableShiftSelectOnCheckbox('run_selector');
-
-  if (jQ('#testruns_table').length) {
-    jQ('#id_check_all_runs').bind('click',function(e) {
-      clickedSelectAll(this, jQ('#testruns_table')[0], 'run');
-    });
-  }
   if (jQ('#id_people_type').length) {
     jQ('#id_search_people').attr('name', jQ('#id_people_type').val());
     jQ('#id_people_type').bind('change', function() {
@@ -45,7 +38,7 @@ Nitrate.TestRuns.List.on_load = function() {
       "bFilter": false,
       "bLengthChange": false,
       "aaSorting": [[ 1, "desc" ]],
-      "bProcessing": true,
+      "bProcessing": false,
       "bServerSide": true,
       "sAjaxSource": "/runs/ajax/" + this.window.location.search,
       "aoColumns": [
@@ -64,9 +57,27 @@ Nitrate.TestRuns.List.on_load = function() {
       ],
       "oLanguage": { "sEmptyTable": "No run was found." }
     });
+
+    jQ('#testruns_table').on('click', '.run_selector', function () {
+      var container = jQ('#testruns_table tbody');
+      jQ('.js-clone-testruns').prop(
+        'disabled',
+        container.find('input[type=checkbox]:checked').length < 1);
+    });
+
+    jQ('#id_check_all_runs').bind('click',function(e) {
+      var container = jQ('#testruns_table tbody');
+      container.find('input[type=checkbox]').prop('checked', e.target.checked);
+      jQ('.js-clone-testruns').prop(
+        'disabled',
+        container.find('input[type=checkbox]:checked').length < 1);
+    });
   }
+
   jQ('.js-clone-testruns').bind('click', function() {
-    postToURL(jQ(this).data('param'), Nitrate.Utils.formSerialize(this.form), 'get');
+    var checkedBoxes = jQ('#testruns_table tbody input[type=checkbox]:checked');
+    var selectedRunIDs = jQ.map(checkedBoxes, function (checkbox, index) {return checkbox.value;});
+    postToURL(jQ(this).data('param'), {'run': selectedRunIDs}, 'get');
   });
 };
 

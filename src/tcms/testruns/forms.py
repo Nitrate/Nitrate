@@ -25,7 +25,7 @@ BOOLEAN_STATUS_CHOICES = (
 PEOPLE_TYPE_CHOICES = (
     ('people', 'Manager | Tester'),
     ('manager', 'Manager'),
-    ('default_tester', 'Defaut tester')
+    ('default_tester', 'Default tester')
 )
 
 # =========== Forms for create/update ==============
@@ -190,35 +190,69 @@ class XMLRPCUpdateRunForm(XMLRPCNewRunForm):
 
 class SearchRunForm(forms.Form):
     search = forms.CharField(required=False)
-    summary = forms.CharField(required=False)
-    plan = forms.CharField(required=False)
+    summary = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    plan = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
     product = forms.ModelChoiceField(
         queryset=Product.objects.all(),
-        required=False
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
     product_version = forms.ModelChoiceField(
         queryset=Version.objects.none(),
-        required=False
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
     env_group = forms.ModelChoiceField(
         label='Environment Group',
         queryset=TCMSEnvGroup.get_active().all(),
-        required=False
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
     build = forms.ModelChoiceField(
         label='Build',
         queryset=TestBuild.objects.none(),
         required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
-    people_type = forms.ChoiceField(choices=PEOPLE_TYPE_CHOICES,
-                                    required=False)
-    people = UserField(required=False)
+    people_type = forms.ChoiceField(
+        choices=PEOPLE_TYPE_CHOICES,
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'form-control',
+            'style': 'float: left; width: 50%'
+        })
+    )
+    people = UserField(
+        label='Owner',
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'style': 'float: left; width: 50%'
+        })
+    )
     manager = UserField(required=False)
     default_tester = UserField(required=False)
-    status = forms.ChoiceField(choices=STATUS_CHOICES, required=False)
-    tag__name__in = forms.CharField(label='Tag', required=False)
+    status = forms.ChoiceField(
+        choices=STATUS_CHOICES,
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    tag__name__in = forms.CharField(
+        label='Tag',
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
 
-    case_run__assignee = UserField(required=False)
+    case_run__assignee = UserField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
 
     def clean_tag__name__in(self):
         return TestTag.string_to_list(self.cleaned_data['tag__name__in'])
