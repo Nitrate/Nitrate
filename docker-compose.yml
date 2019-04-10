@@ -21,7 +21,7 @@ services:
     build:
       context: .
       dockerfile: ./docker/released/Dockerfile
-    image: nitrate:4.3.1
+    image: nitrate:4.3.2
     ports:
     - "8001:80"
     volumes:
