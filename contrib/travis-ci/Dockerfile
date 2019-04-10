@@ -6,7 +6,7 @@ with a database image." \
       version="0.1"
 
 # Use mysql provided by mariadb to connect MySQL server or MariaDB server.
-RUN dnf install -y gcc redhat-rpm-config make mariadb python36 python3-devel graphviz-devel && \
+RUN dnf install -y gcc redhat-rpm-config make mariadb mariadb-devel python36 python3-devel graphviz-devel && \
     dnf clean all
 
 ADD . /code
