@@ -1,0 +1,25 @@
+.. _4.3.2:
+
+4.3.2
+=====
+
+*April 10, 2019*
+
+Highlighted
+-----------
+
+This release contains three backported patches from develop branch in order to
+build docker image for previous version ``4.3.1``. Refer to the changelog to
+see what are backported.
+
+Database Migration
+------------------
+
+No database migration.
+
+Change Log
+----------
+
+* Use mysqlclient from now on (Chenxiong Qi)
+* Fix release-image target to build release image (Chenxiong Qi)
+* Fix Dockerfile for released image (Chenxiong Qi)
