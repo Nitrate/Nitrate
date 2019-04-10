@@ -120,7 +120,7 @@ docker run --rm --name nitrate-testbox ${docker_run_opts[@]} \
     /bin/bash -c "
 set -e
 
-dnf install -y gcc redhat-rpm-config make mariadb python36 python3-virtualenv \
+dnf install -y gcc redhat-rpm-config make mariadb mariadb-devel python36 python3-virtualenv \
     python3-devel graphviz-devel postgresql-devel
 virtualenv --python=${py_bin} /testenv
 source /testenv/bin/activate

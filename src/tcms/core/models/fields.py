@@ -8,7 +8,7 @@ from django.db.models.fields import BooleanField
 from tcms.core.forms.fields import DurationField as DurationFormField
 
 try:
-    from pymysql.constants import FIELD_TYPE
+    from MySQLdb.constants import FIELD_TYPE
 except ImportError:
     # Refer to tcms/__init__.py for details.
     pass
