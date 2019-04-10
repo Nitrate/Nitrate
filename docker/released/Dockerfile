@@ -17,7 +17,7 @@ username and password are 'admin'." \
 # install virtualenv and libraries needed to build the python dependencies
 RUN dnf update -y && \
     dnf install -y gcc python3-devel graphviz-devel \
-    httpd mariadb python3-mod_wsgi && \
+    httpd mariadb python3-mod_wsgi mariadb-devel && \
     dnf clean all
 
 # Download released tarball and extract to /code

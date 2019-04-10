@@ -34,7 +34,7 @@ if sys.version_info.major < 3:
     ]
 
 extras_require = {
-    'mysql': ['PyMySQL == 0.9.2'],
+    'mysql': ['mysqlclient >= 1.2.3'],
     'pgsql': ['psycopg2 == 2.7.5'],
 
     # Required for tcms.auth.backends.KerberosBackend
