@@ -71,6 +71,6 @@ RUN rm -rf /code
 
 EXPOSE 80
 
-VOLUME ["/var/www", "/var/log/httpd"]
+VOLUME ["/var/www", "/var/log/httpd", "/var/nitrate/uploads"]
 
 CMD ["httpd", "-D", "FOREGROUND"]
