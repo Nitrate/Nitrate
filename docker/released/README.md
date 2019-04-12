@@ -29,9 +29,24 @@ docker run --link nitrate_db:mariadb -p 80:80 -e NITRATE_DB_NAME=nitrate \
 
 Before logging into Nitrate, you may need to complete following tasks:
 
-- have to create initial users in database manually. This initial user is
-  usually a superuser os that someone can log into Nitrate with this account to
-  manage service.
+- run database migrations if run Nitrate for the first time or there are
+  migrations included in a release.
+
+  ```
+  docker exec -i -t --env DJANGO_SETTINGS_MODULE=tcms.settings.product \
+      container_name /prodenv/bin/django-admin migrate
+  ```
+
+- create initial users in database manually. This initial user is usually a
+  superuser os that someone can log into Nitrate with this account to manage
+  service.
+
+  ```
+  docker exec -i -t --env DJANGO_SETTINGS_MODULE=tcms.settings.product \
+      container_name /prodenv/bin/django-admin createsuperuser \
+      --username admin --email address
+  ```
+
 - Set permissions to default groups. This is optional, but nice-to-have.
 
   ```

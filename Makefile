@@ -54,17 +54,24 @@ etags:
 	@ctags -R -e --languages=Python,Javascript --python-kinds=-im \
 		--exclude=build --exclude=tcms/static/js/lib --exclude=dist --exclude=.tox -f TAGS
 
-ifeq ($(DOCKER_ORG),)
-  DOCKER_ORG='nitrate'
-endif
+IMAGE_VERSION ?= latest
+DOCKER_ORG ?= quay.io/nitrate
+IMAGE_TAG = $(DOCKER_ORG)/nitrate:$(IMAGE_VERSION)
 
-NITRATE_VERSION=$(shell cat VERSION.txt | tr -d '\n')
+image:
+	@docker build -t $(IMAGE_TAG) -f ./docker/released/Dockerfile .
 
-release-image:
-	@docker build \
-		-t $(DOCKER_ORG)/nitrate:$(NITRATE_VERSION) \
-		-f ./docker/released/Dockerfile \
-		--build-arg VERSION=$(NITRATE_VERSION) .
+web-container-initconfig:
+	# Make sure web is up from docker-compose.yml already
+	# Database migrations
+	@docker exec -i -t --env DJANGO_SETTINGS_MODULE=tcms.settings.product nitrate_web_1 \
+		/prodenv/bin/django-admin migrate
+	# Create superuser admin
+	@docker exec -i -t --env DJANGO_SETTINGS_MODULE=tcms.settings.product nitrate_web_1 \
+		/prodenv/bin/django-admin createsuperuser --username admin --email admin@example.com
+	# Set permissions to default groups
+	@docker exec -i -t --env DJANGO_SETTINGS_MODULE=tcms.settings.product nitrate_web_1 \
+		/prodenv/bin/django-admin setdefaultperms
 
 dev-image:
 	@docker build -t nitrate:dev -f Dockerfile-dev .

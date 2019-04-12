@@ -1,7 +1,11 @@
 version: "2"
 
-# Please note that, this docker-compose is only for test prod docker image.
-# If you would like to launch nitrate for development purpose, please use
+# Please note that, this docker-compose is only for test latest image built
+# from development branch and prod image built from released version.
+# Before launching database and Nitrate images, make sure the image is built by
+# `make image' with proper tag.
+#
+# If you would like to launch Nitrate for development purpose, please use
 # `docker-compose-dev.yml`.
 
 services:
@@ -18,10 +22,7 @@ services:
     depends_on:
     - db
     restart: always
-    build:
-      context: .
-      dockerfile: ./docker/released/Dockerfile
-    image: nitrate/nitrate:4.3
+    image: quay.io/nitrate/nitrate:latest
     ports:
     - "8001:80"
     volumes:

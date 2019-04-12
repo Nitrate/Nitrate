@@ -1,9 +1,5 @@
 FROM registry.fedoraproject.org/fedora:28
-
-ARG VERSION
-
 ENV VCS_URL="https://github.com/Nitrate/Nitrate"
-
 LABEL version="$VERSION" \
       maintainer="Chenxiong Qi <qcxhome@gmail.com>" \
       description="Run Nitrate from a Python virtual environment behind \
@@ -16,28 +12,20 @@ username and password are 'admin'." \
 
 # install virtualenv and libraries needed to build the python dependencies
 RUN dnf update -y && \
-    dnf install -y gcc python3-devel graphviz-devel \
-    httpd mariadb python3-mod_wsgi mariadb-devel && \
+    dnf install -y --setopt=deltarpm=0 --setopt=install_weak_deps=false --setopt=tsflags=nodocs \
+      gcc python3-devel graphviz-devel httpd mariadb python3-mod_wsgi mariadb-devel && \
     dnf clean all
 
-# Download released tarball and extract to /code
-# Note that, archive tarball created by GitHub has prefix Nitrate-${version}.
-# For convenience, move all files under that prefix to /code.
-RUN mkdir /code && \
-    cd /tmp && \
-    curl -L -O ${VCS_URL}/archive/v${VERSION}.tar.gz && \
-    tar xf /tmp/v${VERSION}.tar.gz --directory /code && \
-    mv /code/Nitrate-${VERSION}/* /code && \
-    rm /tmp/v${VERSION}.tar.gz
+WORKDIR /code
+COPY . .
 
 # Hack: easier to set database password via environment variable
-COPY docker/released/product.py /code/src/tcms/settings/product.py
+COPY ./docker/released/product.py src/tcms/settings/product.py
 
 # Create a virtualenv for the application dependencies
 # Using --system-site-packages b/c Apache configuration
 # expects the tcms directory to be there!
-RUN python3 -m venv --system-site-packages /prodenv && \
-    /prodenv/bin/pip install --no-cache-dir /code[mysql]
+RUN python3 -m venv --system-site-packages /prodenv && /prodenv/bin/pip install --no-cache-dir .[mysql]
 
 COPY ./contrib/conf/nitrate-httpd.conf /etc/httpd/conf.d/
 
@@ -54,23 +42,18 @@ RUN sed -i -e 's/^#\(LoadModule mpm_prefork_module .\+\.so\)$/\1/' \
         /etc/httpd/conf.modules.d/00-mpm.conf
 
 # Create and configure directory to hold uploaded files
-RUN mkdir -p /var/nitrate/uploads && \
-    chown apache:apache /var/nitrate/uploads
+RUN mkdir -p /var/nitrate/uploads && chown apache:apache /var/nitrate/uploads
 
 # Install static files
 RUN mkdir -p /usr/share/nitrate/static && \
-    NITRATE_DB_ENGINE=sqlite /prodenv/bin/python /code/src/manage.py \
-        collectstatic --settings=tcms.settings.product --noinput
+    NITRATE_DB_ENGINE=sqlite /prodenv/bin/python src/manage.py collectstatic --settings=tcms.settings.product --noinput
 
 # Install templates
-RUN mkdir -p /usr/share/nitrate/templates && \
-    cp -r /code/src/templates/* /usr/share/nitrate/templates/
+RUN mkdir -p /usr/share/nitrate/templates && cp -r src/templates/* /usr/share/nitrate/templates/
 
 # All the things are installed already. No need to keep source code inside.
-RUN rm -rf /code
-
+# Don't worry, /code was set above as current working directory
+RUN rm -rf *
 EXPOSE 80
-
 VOLUME ["/var/www", "/var/log/httpd", "/var/nitrate/uploads"]
-
 CMD ["httpd", "-D", "FOREGROUND"]
