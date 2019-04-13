@@ -1,4 +1,4 @@
-version: "2"
+version: "3"
 
 # Please note that, this docker-compose is only for test latest image built
 # from development branch and prod image built from released version.
@@ -22,7 +22,7 @@ services:
     depends_on:
     - db
     restart: always
-    image: quay.io/nitrate/nitrate:latest
+    image: "${DOCKER_ORG:-quay.io/nitrate}/nitrate:${IMAGE_VERSION:-latest}"
     ports:
     - "8001:80"
     volumes:
