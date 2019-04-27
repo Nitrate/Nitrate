@@ -99,94 +99,162 @@ Nitrate.TestCases.AdvanceList.on_load = function() {
 Nitrate.TestCases.List.on_load = function() {
   bind_category_selector_to_product(true, true, jQ('#id_product')[0], jQ('#id_category')[0]);
   bind_component_selector_to_product(true, true, jQ('#id_product')[0], jQ('#id_component')[0]);
-  if (jQ('#id_checkbox_all_case')[0]) {
-    jQ('#id_checkbox_all_case').bind('click', function(e) {
-      clickedSelectAll(this, jQ(this).closest('table')[0], 'case');
-      if (this.checked) {
-        jQ('#case_list_printable').attr('disabled', false);
-      } else {
-        jQ('#case_list_printable').attr('disabled', true);
-      }
+
+  if (jQ('#testcases_table').length > 0) {
+    jQ('#testcases_table').dataTable({
+      "iDisplayLength": 20,
+      "sPaginationType": "full_numbers",
+      "bFilter": false,
+      "bLengthChange": false,
+      "aaSorting": [[ 2, "desc" ]],
+      "bProcessing": true,
+      "bServerSide": true,
+      "sAjaxSource": "/cases/ajax/" + this.window.location.search,
+      "aoColumns": [
+        {"bSortable": false,"sClass": "expandable" },
+        {"bSortable": false },
+        {"sType": "html","sClass": "expandable"},
+        {"sType": "html","sClass": "expandable"},
+        {"sType": "html","sClass": "expandable"},
+        {"sClass": "expandable"},
+        {"sClass": "expandable"},
+        {"sClass": "expandable"},
+        {"sClass": "expandable"},
+        {"sClass": "expandable"},
+        {"sClass": "expandable"}
+      ]
     });
   }
 
-  jQ('#id_blind_all_link').live('click', function(e) {
-    if (!jQ('div[id^="id_loading_"]').length) {
-      jQ(this).removeClass('locked');
-    }
-    if (jQ(this).is('.locked')) {
-      //To disable the 'expand all' until all case runs are expanded.
-      return false;
+  jQ(".js-btn-search-cases").click(function () {
+    jQ('.js-search-form').submit();
+  });
+
+  jQ('.js-expand-all-cases').on('click', function(e) {
+    var expandAllActionLink = jQ(this).find('span.fa')
+    if (expandAllActionLink.hasClass('fa-angle-right')) {
+      jQ.each(jQ("#testcases_table tbody tr td:first-child.expandable"), function () {
+        var tr = jQ(this).parent();
+        var possibleExpandedCaseContentRow = tr.next();
+        /* The row to show case content is added to DOM dynamically when click
+         * the angle on the left side of case row. And some of them might be
+         * expanded already.
+         * So, if the expanded case row is not shown yet, trigger the click
+         * event to show it.
+         */
+        if (!possibleExpandedCaseContentRow.hasClass('nt-case-content-row') ||
+          !possibleExpandedCaseContentRow.is(':visible'))
+          jQ(this).trigger('click');
+      });
+      expandAllActionLink.removeClass('fa-angle-right').addClass('fa-angle-down')
     } else {
-      jQ(this).addClass('locked');
-      var element = jQ(this).children()[0];
-      if (jQ(element).is('.collapse-all')) {
-        this.title = "Collapse all cases";
-        blinddownAllCases(element);
-      } else {
-        this.title = "Expand all cases";
-        blindupAllCases(element);
-      }
+      jQ("#testcases_table tbody tr td:first-child.expandable").trigger('click');
+      expandAllActionLink.removeClass('fa-angle-down').addClass('fa-angle-right')
     }
   });
 
-  if (window.location.hash === '#expandall') {
-    blinddownAllCases();
+  /*
+   * Event handlers to enable or disable action buttons according to the
+   * selection to cases.
+   */
+  var setActionButtonsStatus = function() {
+    var container = jQ("#testcases_table tbody");
+    var selectedCases = container.find("input[type=checkbox]:checked");
+    var disabled = selectedCases.length === 0;
+
+    jQ('.js-btn-clone').prop('disabled', disabled);
+    jQ('.js-btn-printable').prop('disabled', disabled);
+    jQ('.js-btn-export').prop('disabled', disabled);
+
+    jQ('#id_checkbox_all_case').prop(
+      'checked',
+      container.find('input[type=checkbox]:not(:checked)').length < 1);
+  };
+
+  if (jQ('#id_checkbox_all_case')[0]) {
+    jQ('#id_checkbox_all_case').bind('click', function(e) {
+      var container = jQ("#testcases_table tbody");
+      container.find('input[type=checkbox]').prop('checked', e.target.checked);
+      setActionButtonsStatus();
+    });
   }
 
-  var oTable;
-  oTable = jQ('#testcases_table').dataTable({
-    "iDisplayLength": 20,
-    "sPaginationType": "full_numbers",
-    "bFilter": false,
-    "bLengthChange": false,
-    "aaSorting": [[ 2, "desc" ]],
-    "bProcessing": true,
-    "bServerSide": true,
-    "sAjaxSource": "/cases/ajax/"+this.window.location.search,
-    "aoColumns": [
-      {"bSortable": false,"sClass": "expandable" },
-      {"bSortable": false },
-      {"sType": "html","sClass": "expandable"},
-      {"sType": "html","sClass": "expandable"},
-      {"sType": "html","sClass": "expandable"},
-      {"sClass": "expandable"},
-      {"sClass": "expandable"},
-      {"sClass": "expandable"},
-      {"sClass": "expandable"},
-      {"sClass": "expandable"},
-      {"sClass": "expandable"}
-    ]
+  jQ("#testcases_table tbody").on("click", "tr input[type=checkbox][name=case]", function() {
+    setActionButtonsStatus();
   });
-  jQ("#testcases_table tbody tr td.expandable").live("click", function() {
-    var tr = jQ(this).parent();
-    var caseRowContainer = tr;
-    var case_id = caseRowContainer.find('input[name="case"]').attr('value');
-    var detail_td = '<tr class="case_content hide" style="display: none;"><td colspan="11">' +
-      '<div id="id_loading_' + case_id + '" class="ajax_loading"></div></td></tr>';
-    if (!caseRowContainer.next().hasClass('hide')) {
+
+  /*
+   * Event handlers for action buttons.
+   */
+  var listParams = Nitrate.TestCases.List.Param;
+
+  var getSelectedCaseIDs = function() {
+    var container = jQ("#testcases_table tbody");
+    return jQ.map(
+      container.find('input[type=checkbox]:checked'),
+      function (checkbox, index) {return checkbox.value;});
+  };
+
+  // Clone selected cases
+  jQ('.js-btn-clone').bind('click', function() {
+    postToURL(jQ(this).data('url'), {'case': getSelectedCaseIDs()});
+  });
+
+  // Show printable page for selected cases
+  jQ('#case_list_printable').bind('click', function() {
+    postToURL(listParams.case_printable, {'case': getSelectedCaseIDs()});
+  });
+
+  // Export selected cases
+  jQ('#export_selected_cases').bind('click', function() {
+    postToURL(listParams.case_export, {'case': getSelectedCaseIDs()});
+  });
+
+  /**
+   * Expand a row below a case row to show case details
+   *
+   * @param caseRowContainer: the row containing the case to be expanded.
+   */
+  var showCaseDetails = function(caseRowContainer) {
+    var case_id = caseRowContainer.find('input[name="case"]').prop('value');
+    var detail_td = '<tr class="nt-case-content-row" style="display: none;">' +
+      '<td colspan="11">' +
+      '<div id="id_loading_' + case_id + '" class="ajax_loading"></div>' +
+      '</td></tr>';
+    if (!caseRowContainer.next().hasClass('nt-case-content-row')) {
       caseRowContainer.after(detail_td);
     }
 
-    toggleTestCasePane({ case_id: case_id, casePaneContainer: tr.next() });
-    toggleExpandArrow({ caseRowContainer: tr, expandPaneContainer: tr.next() });
+    toggleTestCasePane({
+      case_id: case_id,
+      casePaneContainer: caseRowContainer.next()
+    });
+    toggleAngle({
+      caseRowContainer: caseRowContainer,
+      expandPaneContainer: caseRowContainer.next()
+    });
+  };
+
+  // Expand an area to show case details
+  // Show a single row just under selected case.
+  jQ("#testcases_table tbody").on("click", "tr td.expandable", function(event) {
+    var tr = jQ(this).parent();
+    showCaseDetails(tr);
+
+    // var caseRowContainer = tr;
+    // var case_id = caseRowContainer.find('input[name="case"]').prop('value');
+    // var detail_td = '<tr class="nt-case-content-row" style="display: none;">' +
+    //   '<td colspan="11">' +
+    //   '<div id="id_loading_' + case_id + '" class="ajax_loading"></div>' +
+    //   '</td></tr>';
+    // if (!caseRowContainer.next().hasClass('nt-case-content-row')) {
+    //   caseRowContainer.after(detail_td);
+    // }
+    //
+    // toggleTestCasePane({ case_id: case_id, casePaneContainer: tr.next() });
+    // toggleAngle({ caseRowContainer: tr, expandPaneContainer: tr.next() });
   });
 
-  jQ("#testcases_table tbody tr input[type=checkbox][name=case]").live("click", function() {
-    if (jQ("input[type=checkbox][name=case]:checked").length) {
-      jQ("#case_list_printable").attr('disabled', false);
-    } else {
-      jQ("#case_list_printable").attr('disabled', true);
-    }
-  });
-
-  var listParams = Nitrate.TestCases.List.Param;
-  jQ('#case_list_printable').bind('click', function() {
-    postToURL(listParams.case_printable, Nitrate.Utils.formSerialize(this.form));
-  });
-  jQ('#export_selected_cases').bind('click', function() {
-    postToURL(listParams.case_export, Nitrate.Utils.formSerialize(this.form));
-  });
 };
 
 Nitrate.TestCases.Details.on_load = function() {
@@ -484,13 +552,25 @@ Nitrate.TestCases.Clone.on_load = function() {
  *                              information.
  */
 function toggleExpandArrow(options) {
-  var container = options.caseRowContainer;
-  var content_container = options.expandPaneContainer;
-  var blind_icon = container.find('img.blind_icon');
-  if (content_container.css('display') === 'none') {
-    blind_icon.removeClass('collapse').addClass('expand').attr('src', '/static/images/t1.gif');
+  var blind_icon = options.caseRowContainer.find('img.blind_icon');
+  if (options.expandPaneContainer.is(':visible')) {
+    blind_icon.prop('src', '/static/images/t2.gif');
   } else {
-    blind_icon.removeClass('expand').addClass('collapse').attr('src', '/static/images/t2.gif');
+    blind_icon.prop('src', '/static/images/t1.gif');
+  }
+}
+
+/**
+ * This is aimed to replace function toggleExpandArrow
+ *
+ * @param options
+ */
+function toggleAngle(options) {
+  var angle = options.caseRowContainer.find('span.fa');
+  if (options.expandPaneContainer.is(':visible')) {
+    angle.removeClass('fa-angle-right').addClass('fa-angle-down');
+  } else {
+    angle.removeClass('fa-angle-down').addClass('fa-angle-right');
   }
 }
 
@@ -1296,3 +1376,5 @@ function toggleCaseRunsByPlan(params, callback) {
     blind_icon.removeClass('expand').addClass('collapse').attr('src', '/static/images/t2.gif');
   }
 }
+
+// vim: ts=2 sw=2 ai:

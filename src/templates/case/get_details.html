@@ -1,7 +1,14 @@
 {% load comments %}
 
+{% comment %}
+This template might be reused for showing test cases. But, different container
+table could have different the number of columns. So, it would be good not to
+render the TD element from this template, and modify the relative JS and container
+templates to just fill the rendered result to TR/TD directly.
+{% endcomment %}
+
 <td id="id_case_text_{{ forloop.counter }}" colspan="12">
-	<table class="case_detail">
+	<table class="case_detail nt-table-border">
 		<tr>
 			<td valign="top">
 				<h4>Setup:</h4>
@@ -15,43 +22,43 @@
 				<h4><span class="title strong">Attachment:</span></h4>
 				<ul class="ul-no-format">
 					{% for attachment_file in attachments %}
-					<li>
-						<a href="{% url "check-file" attachment_file.attachment_id %}">
-							{{ attachment_file.file_name }}
-						</a>
-					</li>
+						<li>
+							<a href="{% url "check-file" attachment_file.attachment_id %}">
+								{{ attachment_file.file_name }}
+							</a>
+						</li>
 					{% empty %}
-					<li class="grey">No attachment found</li>
+						<li class="grey">No attachment found</li>
 					{% endfor %}
 				</ul>
 				<h4><span class="title strong">Component:</span></h4>
 				<ul class="ul-no-format">
 					{% for component in components %}
-					<li id="display_component" >{{ component.name }}</li>
+						<li id="display_component" >{{ component.name }}</li>
 					{% empty %}
-					<li class="grey">No component found</li>
+						<li class="grey">No component found</li>
 					{% endfor %}
 				</ul>
 				<h4><span class="title strong">Tag:</span></h4>
 				<ul class="ul-no-format">
 					{% for tag in tags %}
-					<li>{{ tag }}</li>
+						<li>{{ tag }}</li>
 					{% empty %}
-					<li class="grey">No tag found</li>
+						<li class="grey">No tag found</li>
 					{% endfor %}
 				</ul>
 				<h4><span class="title strong">Issue:</span></h4>
 				<ul class="ul-no-format">
 					{% for issue in test_case.get_issues %}
-					<li>
-						<a href="{{ issue.get_absolute_url }}">{{ issue.issue_key }}</a>
-						{% if issue.case_run_id %}
-						<span class="grey"> - From Run</span>
-						<a href="{% url "run-get" issue.case_run.run_id %}">{{ issue.case_run.run_id }}</a>
-						{% endif %}
-					</li>
+						<li>
+							<a href="{{ issue.get_absolute_url }}">{{ issue.issue_key }}</a>
+							{% if issue.case_run_id %}
+								<span class="grey"> - From Run</span>
+								<a href="{% url "run-get" issue.case_run.run_id %}">{{ issue.case_run.run_id }}</a>
+							{% endif %}
+						</li>
 					{% empty %}
-					<li class="grey">No issue found</li>
+						<li class="grey">No issue found</li>
 					{% endfor %}
 				</ul>
 			</td>
@@ -76,16 +83,16 @@
 			<td colspan="3" style="border:none; background:none">
 				<h4>Comments:</h4>
 				<ul class="comment ul-no-format">
-				{% for comment in case_comments %}
-					<li>
-						<span class="strong">#{{ forloop.counter }}</span>
-						<span class="strong">{{ comment.user.email }}</span>
-						<span class="grey">{{ comment.submit_date }}</span>
-						<br/>
-						{{ comment.comment|urlize|linebreaksbr }}
-					</li>
+					{% for comment in case_comments %}
+						<li>
+							<span class="strong">#{{ forloop.counter }}</span>
+							<span class="strong">{{ comment.user.email }}</span>
+							<span class="grey">{{ comment.submit_date }}</span>
+							<br/>
+							{{ comment.comment|urlize|linebreaksbr }}
+						</li>
 					{% endfor %}
-				<ul>
+					<ul>
 			</td>
 		</tr>
 	</table>

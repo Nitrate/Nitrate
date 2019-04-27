@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import re
 
 from django import forms
@@ -17,6 +18,7 @@ from tcms.management.models import Priority, Product, Component, TestTag
 from tcms.testplans.models import TestPlan
 from tcms.testruns.models import TestCaseRun
 
+log = logging.getLogger(__name__)
 
 AUTOMATED_CHOICES = (
     (0, 'Manual'),
@@ -358,39 +360,62 @@ class XMLRPCUpdateCaseForm(XMLRPCBaseCaseForm):
 
 
 class BaseCaseSearchForm(forms.Form):
-    summary = forms.CharField(required=False)
-    author = forms.CharField(required=False)
-    default_tester = forms.CharField(required=False)
-    tag__name__in = forms.CharField(required=False)
+    summary = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    author = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    default_tester = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    tag__name__in = forms.CharField(
+        label='Tag',
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
     category = forms.ModelChoiceField(
         label="Category",
         queryset=TestCaseCategory.objects.none(),
-        required=False
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'}),
     )
     priority = forms.ModelMultipleChoiceField(
         label="Priority",
         queryset=Priority.objects.all(),
-        widget=forms.CheckboxSelectMultiple(),
-        required=False
+        widget=forms.SelectMultiple(attrs={'class': 'form-control'}),
+        required=False,
     )
     case_status = forms.ModelMultipleChoiceField(
         label="Case status",
         queryset=TestCaseStatus.objects.all(),
-        widget=forms.CheckboxSelectMultiple(),
-        required=False
+        required=False,
+        widget=forms.SelectMultiple(attrs={'class': 'form-control'}),
     )
     component = forms.ModelChoiceField(
         label="Components",
         queryset=Component.objects.none(),
-        required=False
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'}),
     )
-    issue_key = IssueKeyField(label="Issue Key", required=False)
+    issue_key = IssueKeyField(
+        label="Issue Key",
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
     is_automated = forms.ChoiceField(
+        label='Is Automated',
         choices=AUTOMATED_SERCH_CHOICES,
         required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
     is_automated_proposed = forms.BooleanField(
-        label='Autoproposed', required=False
+        label='Autoproposed',
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-control bootstrap-switch'})
     )
     items_per_page = forms.ChoiceField(label='Items per page',
                                        required=False,
@@ -401,11 +426,17 @@ class BaseCaseSearchForm(forms.Form):
 
     def populate(self, product_id=None):
         """Limit the query to fit the plan"""
-        if product_id:
-            self.fields['category'].queryset = TestCaseCategory.objects.filter(
-                product__id=product_id)
-            self.fields['component'].queryset = Component.objects.filter(
-                product__id=product_id)
+        if product_id is not None:
+            try:
+                product_id = int(product_id)
+            except (ValueError, TypeError):
+                log.warning('Argument product_id is not a number. Skip to '
+                            'populate form.')
+            else:
+                self.fields['category'].queryset = TestCaseCategory.objects.filter(
+                    product__id=product_id)
+                self.fields['component'].queryset = Component.objects.filter(
+                    product__id=product_id)
 
 
 class CaseFilterForm(BaseCaseSearchForm):
@@ -414,11 +445,15 @@ class CaseFilterForm(BaseCaseSearchForm):
 
 class SearchCaseForm(BaseCaseSearchForm):
     search = forms.CharField(required=False)
-    plan = forms.CharField(required=False)
+    plan = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
     product = forms.ModelChoiceField(
         label="Product",
         queryset=Product.objects.all(),
-        required=False
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
 
     def clean_case_status(self):

@@ -1,55 +1,53 @@
-<div class="leftlistinfo">
-	<div class="listinfo">
-		<div class="title"><label for="id_summary">Case Summary&nbsp;:</label></div>
-		<div class="listinfo_input">{{ search_form.summary }}</div>
+<form id="id_search_plan_form" class="toolbar-pf-actions" method="get" action="{% url "cases-search" %}">
+	<div class="form-group">
+		<label for="id_{{ search_form.summary.name }}">{{ search_form.summary.label }}</label>
+		{{ search_form.summary }}
 	</div>
-	<div class="listinfo">
-		<div class="title"><label for="id_author">Author&nbsp;:</label></div>
-		<div class="listinfo_input">{{ search_form.author }}</div>
+	<div class="form-group">
+		<label for="id_{{ search_form.author.name }}">{{ search_form.author.label }}</label>
+		{{ search_form.author }}
 	</div>
-	<div class="listinfo">
-		<div class="title"><label for="id_product">Product&nbsp;:</label></div>
-		<div class="listinfo_input">{{ search_form.product }}</div>
+	<div class="form-group">
+		<label for="id_{{ search_form.product.name }}">{{ search_form.product.label }}</label>
+		{{ search_form.product }}
 	</div>
-	<div class="listinfo">
-		<div class="title"><label for="id_plan">Plan&nbsp;:</label></div>
-		<div class="listinfo_input">{{ search_form.plan }}</div>
+	<div class="form-group">
+		<label for="id_{{ search_form.plan.name }}">{{ search_form.plan.label }}</label>
+		{{ search_form.plan }}
 	</div>
-	<div class="listinfo">
-		<div class="title"><label for="id_priority">Priority&nbsp;:</label></div>
-		<div class="listinfo_input">{{ search_form.priority }}</div>
+	<div class="form-group">
+		<label for="id_{{ search_form.priority.name }}">{{ search_form.priority.label }}</label>
+		{{ search_form.priority }}
 	</div>
-	<div class="listinfo">
-		<div class="title">Automated&nbsp;:</div>
-		<div class="listinfo_input">
-			{{ search_form.is_automated }}
-			<div class="automatedlist">
-				{{ search_form.is_automated_proposed }}
-				<label>{{ search_form.is_automated_proposed.label }}</label>
-			</div>
-		</div>
+	<div class="form-group">
+		<label for="id_{{ search_form.is_automated.name }}">{{ search_form.is_automated.label }}</label>
+		{{ search_form.is_automated }}
 	</div>
-</div>
-<div class="rightlistinfo">
-	<div class="listinfo">
-		<div class="title"><label for="id_category">Category&nbsp;:</label></div>
-		<div class="listinfo_input">{{ search_form.category }}</div>
+	<div class="form-group">
+		<label for="id_{{ search_form.is_automated_proposed.name }}">{{ search_form.is_automated_proposed.label }}</label>
+		{{ search_form.is_automated_proposed }}
 	</div>
-	<div class="listinfo">
-		<div class="title"><label for="id_case_status">Status&nbsp;:</label></div>
-		<div class="listinfo_input">{{ search_form.case_status }}</div>
+	<div class="form-group">
+		<label for="id_{{ search_form.category.name }}">{{ search_form.category.label }}</label>
+		{{ search_form.category }}
 	</div>
-	<div class="listinfo">
-		<div class="title"><label for="id_component">Component&nbsp;:</label></div>
-		<div class="listinfo_input">{{ search_form.component }}</div>
+	<div class="form-group">
+		<label for="id_{{ search_form.case_status.name }}">{{ search_form.case_status.label }}</label>
+		{{ search_form.case_status }}
 	</div>
-	<div class="listinfo">
-		<div class="title"><label for="id_issue_key">Issue Key&nbsp;:</label></div>
-		<div class="listinfo_input">{{ search_form.issue_key }}</div>
+	<div class="form-group">
+		<label for="id_{{ search_form.component.name }}">{{ search_form.component.label }}</label>
+		{{ search_form.component }}
 	</div>
-	<div class="listinfo">
-		<div class="title"><label for="id_tag">Tag&nbsp;:</label></div>
-		<div class="listinfo_input">{{ search_form.tag__name__in }}</div>
+	<div class="form-group">
+		<label for="id_{{ search_form.issue_key.name }}">{{ search_form.issue_key.label }}</label>
+		{{ search_form.issue_key }}
 	</div>
-</div>
-<div class="clear"></div>
+	<div class="form-group">
+		<label for="id_{{ search_form.tag__name__in.name }}">{{ search_form.tag__name__in.label }}</label>
+		{{ search_form.tag__name__in }}
+	</div>
+	<div class="form-group">
+		<button type="submit" name="a" value="search" name="searchCases" title="Search test cases" class="btn btn-primary">Search</button>
+	</div>
+</form>

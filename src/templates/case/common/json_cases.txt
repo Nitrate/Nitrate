@@ -3,23 +3,23 @@
     "iTotalRecords": {{iTotalRecords}},
     "iTotalDisplayRecords": {{iTotalDisplayRecords}},
     "aaData":[
-        {% for test_case in querySet %}
+        {% for case in querySet %}
         [
-            "<img class='expand blind_icon' src='{{ STATIC_URL }}images/t1.gif' border='0' alt=''>",
-            "<input type='checkbox' name='case' value='{{ test_case.case_id }}'>",
-            "<a href='{% url "case-get" test_case.case_id %}'>{{ test_case.case_id }}</a>",
-            "<a id='link_{{ test_case.case_id }}' href='{% url "case-get" test_case.case_id %}'>{{ test_case.summary }}</a>",
-            "<a href='{% url "user-profile" test_case.author.username %}'>{{ test_case.author }}</a>",
-            {% if test_case.default_tester_id %}
-                "<a href='{% url "user-profile" test_case.default_tester.username %}'>{{ test_case.default_tester }}</a>"
+            "<span class='fa fa-angle-right js-expand-case'></span>",
+            "<input type='checkbox' name='case' value='{{ case.case_id }}'>",
+            "<a href='{% url "case-get" case.case_id %}'>{{ case.case_id }}</a>",
+            "<a id='link_{{ case.case_id }}' href='{% url "case-get" case.case_id %}'>{{ case.summary }}</a>",
+            "<a href='{% url "user-profile" case.author.username %}'>{{ case.author }}</a>",
+            {% if case.default_tester_id %}
+                "<a href='{% url "user-profile" case.default_tester.username %}'>{{ case.default_tester }}</a>"
             {% else %}
                 "None"
             {% endif %},
-            "{{ test_case.get_is_automated_status }}",
-            "{{ test_case.case_status }}",
-            "{{ test_case.category }}",
-            "{{ test_case.priority }}",
-            "{{ test_case.create_date }}"
+            "{{ case.get_is_automated_status }}",
+            "{{ case.case_status }}",
+            "{{ case.category }}",
+            "{{ case.priority }}",
+            "{{ case.create_date }}"
         ]
         {% if not forloop.last %}
         ,

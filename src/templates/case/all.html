@@ -1,53 +1,204 @@
-{% extends "tcms_base.html" %}
-
+{% extends "tcms_master.html" %}
 {% load extra_filters %}
-
 {% block subtitle %}Test cases{% endblock %}
 
-{% block custom_stylesheet %}
-<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style/dataTables/jquery.dataTables.css" />
-<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style/dataTables/jquery.dataTables_themeroller.css" />
+{% block jslib_before_patternfly %}
+	<script type="text/javascript" src="{{ STATIC_URL }}js/lib/jquery.dataTables.js"></script>
+	<script type="text/javascript" src="{{ STATIC_URL }}js/lib/dataTables.bootstrap.min.js"></script>
 {% endblock %}
+
 {% block custom_javascript %}
-<script type="text/javascript" src="{{ STATIC_URL }}js/lib/jquery.dataTables.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/lib/bootstrap-switch.min.js"></script>
 <script type="text/javascript" src='{{ STATIC_URL }}js/testplan_actions.js'></script>
 <script type="text/javascript" src='{{ STATIC_URL }}js/testcase_actions.js'></script>
+
 <script type="text/javascript">
-	Nitrate.TestCases.List.Param = {
-		'case_printable': '{% url "cases-printable" %}',
-		'case_export':'{% url "cases-export" %}'
-	};
+Nitrate.TestCases.List.Param = {
+	'case_printable': '{% url "cases-printable" %}',
+	'case_export':'{% url "cases-export" %}'
+};
 Nitrate.Utils.after_page_load(Nitrate.TestCases.List.on_load);
 </script>
 {% endblock %}
-{% block contents %}
-<div id="content">
-	<div class="sprites crumble">
-		<a href="{% url "nitrate-index" %}">Home</a> >>
+
+{% block page_content %}
+<nav aria-label="breadcrumb">
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item"><a href="{% url "nitrate-index" %}">Home</a></li>
 		{% if query_result %}
-		<a href="{% url "cases-search" %}">Search Cases</a> >> Search result
+			<li class="breadcrumb-item"><a href="{% url "cases-search" %}">Search Cases</a></li>
+			<li class="breadcrumb-item active" aria-current="page">Search result</li>
 		{% else %}
-		Search Cases
+			<li class="breadcrumb-item active" aria-current="page">Search Cases</li>
 		{% endif %}
-	</div>
-	<form action="{% url "cases-search" %}" method="get">
-		<div id="itemSearch" class="itemSearch">
-			<h2>Search Case</h2>
-			{% include "case/form/search.html" %}
-			<div class='clear'></div>
-			<div class="errors">{{ search_form.errors }}</div>
-			<div class="bottom" >
-				<input type="submit" size="7" name="a" value="search" name="" title="Search test case" class="left_float" />
-				<input type="reset" size="7" value="Reset" name="" title="Reset the search keyword" class="left_float" />
-				<div class="allSearch">
-					<a href="/advance-search/">Advanced Search</a>
-				</div>
+	</ol>
+</nav>
+
+<div class="row">
+	<div class="col-md-12">
+		<div class="row toolbar-pf table-view-pf-toolbar" id="toolbar1">
+			<div class="col-sm-12">
+				<form id="cases_form" class="toolbar-pf-actions">
+					<div class="form-group toolbar-pf-find">
+						<button type="button" class="btn btn-link btn-find" data-toggle="modal" data-target="#searchCasesModal">
+							<span class="fa fa-search"></span>
+						</button>
+					</div>
+					<div class="form-group">
+						{% if perms.testcases.add_testcase %}
+							<button type="button" title="Clone selected test plans" class="btn btn-default js-btn-clone" data-url="{% url "cases-clone" %}" disabled>
+								<i class="far fa-clone"></i> Clone
+							</button>
+						{% endif %}
+						<button type="button" disabled id="case_list_printable" title="Create the printable copy for selected cases." class="btn btn-default js-btn-printable">
+							<i class="fas fa-print"></i> Printable Copy
+						</button>
+						<button type="button" id="export_selected_cases" title="Export the cases for selected cases." class="btn btn-default js-btn-export" disabled>
+							<i class="fas fa-file-export"></i> Export
+						</button>
+					</div>
+					<div class="toolbar-pf-action-right">
+						<div class="form-group">
+							<a class="btn btn-default" href="{% url "advance_search" %}">Advanced Search</a>
+						</div>
+					</div>
+				</form>
 			</div>
 		</div>
-	</form>
-	<!--case list-->
-    {% if search_criterias %}
-	    {% include "case/common/case_filtered.html" %}
-    {% endif %}
+
+		{% if search_request %}
+			<div id="table1_wrapper" class="dataTables_wrapper no-footer">
+				<table id="testcases_table" class="table table-bordered table-hover dataTable no-footer">
+					<thead>
+					<tr>
+						<th class="col-expansion">
+							<a id="id_blind_all_link" class="js-expand-all-cases" title="Expand all cases">
+								<span class='fa fa-angle-right'></span>
+							</a>
+						</th>
+						<th class="col-case-selector">
+							<input type="checkbox" id="id_checkbox_all_case" title="Select all/Select none">
+						</th>
+						<th class="col-case-id">ID</th>
+						<th class="col-case-summary">Summary</th>
+						<th class="col-case-author">Author</th>
+						<th class="col-case-default-tester">Default Tester</th>
+						<th class="col-case-automated">Automated</th>
+						<th class="col-case-status">Status</th>
+						<th class="col-case-category">Category</th>
+						<th class="col-case-priority">Priority</th>
+						<th class="col-case-created-date">Created</th>
+					</tr>
+					</thead>
+					<tbody>
+					</tbody>
+				</table>
+			</div>
+		{% else %}
+			<div class="blank-slate-pf table-view-pf-empty" id="emptyState1">
+				<div class="blank-slate-pf-icon">
+					<i class="fas fa-search"></i>
+				</div>
+				<h1>
+					Select criteria to search test cases.
+				</h1>
+				<div class="blank-slate-pf-main-action">
+					<button type="button" class="btn btn-primary btn-lg btn-find" data-toggle="modal" data-target="#searchCasesModal">
+						Search Test Cases
+					</button>
+				</div>
+			</div>
+		{% endif %}
+	</div>
 </div>
+
+<div class="modal fade" id="searchCasesModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+					<span class="pficon pficon-close"></span>
+				</button>
+				<h4 class="modal-title" id="myModalLabel">Search Test Cases</h4>
+			</div>
+			<div class="modal-body">
+				<form class="form-horizontal js-search-form" action="{% url "cases-search" %}">
+					<input type="hidden" name="a" value="search">
+					<div class="form-group">
+						<label class="col-sm-3 control-label" for="id_{{ search_form.summary.name }}">
+							{{ search_form.summary.label }}
+						</label>
+						<div class="col-sm-9">{{ search_form.summary }}</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 control-label" for="id_{{ search_form.author.name }}">
+							{{ search_form.author.label }}
+						</label>
+						<div class="col-sm-9">{{ search_form.author }}</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 control-label" for="id_{{ search_form.product.name }}">
+							{{ search_form.product.label }}
+						</label>
+						<div class="col-sm-9">{{ search_form.product }}</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 control-label" for="id_{{ search_form.plan.name }}">
+							{{ search_form.plan.label }}
+						</label>
+						<div class="col-sm-9">{{ search_form.plan }}</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 control-label" for="id_{{ search_form.priority.name }}">
+							{{ search_form.priority.label }}
+						</label>
+						<div class="col-sm-9">{{ search_form.priority }}</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 control-label" for="id_{{ search_form.is_automated.name }}">
+							{{ search_form.is_automated.label }}
+						</label>
+						<div class="col-sm-9">{{ search_form.is_automated }}</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 control-label" for="id_{{ search_form.is_automated_proposed.name }}">
+							{{ search_form.is_automated_proposed.label }}
+						</label>
+						<div class="col-sm-9">{{ search_form.is_automated_proposed }}</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 control-label" for="id_{{ search_form.category.name }}">{{ search_form.category.label }}</label>
+						<div class="col-sm-9">{{ search_form.category }}</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 control-label" for="id_{{ search_form.case_status.name }}">{{ search_form.case_status.label }}</label>
+						<div class="col-sm-9">{{ search_form.case_status }}</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 control-label" for="id_{{ search_form.component.name }}">{{ search_form.component.label }}</label>
+						<div class="col-sm-9">{{ search_form.component }}</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 control-label" for="id_{{ search_form.issue_key.name }}">{{ search_form.issue_key.label }}</label>
+						<div class="col-sm-9">{{ search_form.issue_key }}</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 control-label" for="id_{{ search_form.tag__name__in.name }}">{{ search_form.tag__name__in.label }}</label>
+						<div class="col-sm-9">{{ search_form.tag__name__in }}</div>
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+				<button type="button" class="btn btn-primary js-btn-search-cases">Search</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+  jQ(document).ready(function() {
+	jQ(".bootstrap-switch").bootstrapSwitch();
+  });
+</script>
 {% endblock %}
