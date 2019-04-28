@@ -287,7 +287,7 @@ def all(request, template_name='run/all.html'):
     """Read the test runs from database and display them."""
     SUB_MODULE_NAME = "runs"
 
-    query_result = len(request.GET) > 0
+    search_request = len(request.GET) > 0
 
     if len(request.GET) > 0:
         search_form = SearchRunForm(request.GET)
@@ -306,7 +306,7 @@ def all(request, template_name='run/all.html'):
     context_data = {
         'module': MODULE_NAME,
         'sub_module': SUB_MODULE_NAME,
-        'query_result': query_result,
+        'search_request': search_request,
         'search_form': search_form,
     }
     return render(request, template_name, context=context_data)

@@ -1,0 +1,25 @@
+{# Template for content of test plans, cases and runs search page #}
+
+<div class="row">
+	<div class="col-md-12">
+		<div class="row toolbar-pf table-view-pf-toolbar" id="toolbar1">
+			<div class="col-sm-12">
+				{% block toolbar_actions %}
+				{% endblock %}
+			</div>
+		</div>
+
+		{% if search_request %}
+			<div id="table1_wrapper" class="dataTables_wrapper no-footer">
+			{% block search_result_table %}
+			{% endblock %}
+			</div>
+		{% else %}
+			{% block empty_notify %}
+			{% endblock %}
+		{% endif %}
+	</div>
+</div>
+
+{% block search_criteria_dialog %}
+{% endblock %}

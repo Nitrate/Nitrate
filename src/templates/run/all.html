@@ -28,25 +28,5 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.List.on_load);
 	</ol>
 </nav>
 
-<div class="row">
-	<div class="col-md-2">
-		{% include 'run/form/search.html' %}
-	</div>
-	<div class="col-md-10">
-		{% if query_result %}
-		{% include "run/common/run_filtered.html" %}
-		{% else %}
-		<div class="blank-slate-pf table-view-pf-empty" id="emptyState1">
-			<div class="blank-slate-pf-icon">
-				<i class="fas fa-arrow-circle-left"></i>
-			</div>
-			<h1>
-				Select criteria to search test runs.
-			</h1>
-			<div class="blank-slate-pf-secondary-action">
-			</div>
-		</div>
-		{% endif %}
-	</div>
-</div>
+{% include "run/runs_search_content.html" %}
 {% endblock %}

@@ -198,7 +198,7 @@ def all(request, template_name='plan/all.html'):
     # need here. All of it will be removed in the future.
     # If it's not a search the page will be blank
     tps = TestPlan.objects.none()
-    query_result = False
+    search_request = False
     order_by = request.GET.get('order_by', 'create_date')
     asc = bool(request.GET.get('asc', None))
     # if it's a search request the page will be fill
@@ -217,7 +217,7 @@ def all(request, template_name='plan/all.html'):
                 if author == request.user.username or author == request.user.email:
                     SUB_MODULE_NAME = "my_plans"
 
-            query_result = True
+            search_request = True
             # build a QuerySet:
             tps = TestPlan.list(search_form.cleaned_data)
             tps = tps.select_related('author', 'type', 'product')
@@ -287,7 +287,7 @@ def all(request, template_name='plan/all.html'):
         'module': MODULE_NAME,
         'sub_module': SUB_MODULE_NAME,
         'test_plans': tps,
-        'query_result': query_result,
+        'search_request': search_request,
         'search_plan_form': search_form,
         'query_url': query_url,
         'query_url_page_type': query_url_page_type,

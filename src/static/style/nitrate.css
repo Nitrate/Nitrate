@@ -82,3 +82,25 @@ table#testcases_table th.col-case-status {width: 140px;}
 table#testcases_table th.col-case-category {width: 160px;}
 table#testcases_table th.col-case-priority {width: 80px;}
 table#testcases_table th.col-case-created-date {width: 200px;}
+
+table#testplans_table th.col-plan-selector {width: 30px;}
+table#testplans_table th.col-plan-id {width: 80px;}
+/*Not set width for "table#testplans_table th.col-plan-name" to let Browser set it automatically */
+table#testplans_table th.col-plan-author {width: 140px;}
+table#testplans_table th.col-plan-owner {width: 140px;}
+table#testplans_table th.col-plan-product {width: 200px;}
+table#testplans_table th.col-plan-type {width: 120px;}
+table#testplans_table th.col-plan-cases-count {width: 80px;}
+table#testplans_table th.col-plan-runs-count {width: 80px;}
+table#testplans_table th.col-plan-actions {width: 80px;}
+
+table#testruns_table th.col-run-selector {width: 30px;}
+table#testruns_table th.col-run-id {width: 80px;}
+table#testruns_table th.col-run-manager {width: 140px;}
+table#testruns_table th.col-run-default-tester {width: 140px;}
+table#testruns_table th.col-run-product {width: 200px;}
+table#testruns_table th.col-run-product-version {width: 140px;}
+table#testruns_table th.col-run-environment {width: 120px;}
+table#testruns_table th.col-run-cases {width: 80px;}
+table#testruns_table th.col-run-status {width: 60px;}
+table#testruns_table th.col-run-completed-progress {width: 180px;}

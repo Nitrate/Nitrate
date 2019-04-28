@@ -1,0 +1,169 @@
+{% extends "search_content.html" %}
+
+{% block toolbar_actions %}
+	<form id="plans_form" class="toolbar-pf-actions">
+		<div class="form-group toolbar-pf-find">
+			<button type="button" class="btn btn-link btn-find" data-toggle="modal" data-target="#searchPlansModal">
+				<span class="fa fa-search"></span>
+			</button>
+		</div>
+		<div class="form-group">
+			<button type="button" title="Create new test plan" value="New Test Plan"
+					class="btn btn-default js-new-plan"
+					data-param="{% url "plans-new" %}"><i class="fas fa-plus"></i> New Test Plan</button>
+		</div>
+		<div class="form-group">
+			<div class="btn-group">
+				{% if perms.testplans.add_testplan %}
+					<button type="button" value="Clone" title="clone selected test plans."
+							class="btn btn-default js-clone-plans" disabled
+							data-param="{% url "plans-clone" %}"><i class="far fa-clone"></i> Clone</button>
+				{% endif %}
+				<button type="button" id="plan_list_printable" disabled value="Printable copy"
+						class="btn btn-default"
+						title="Create the printable copy for selected plans." data-param="{% url "plans-printable" %}"><i class="fas fa-print"></i> Printable Copy</button>
+				<button type="button" value="Export" title="Export the cases for selected plans."
+						class="btn btn-default js-export-plans" disabled
+						data-param="{% url "plans-export" %}"><i class="fas fa-file-export"></i> Export</button>
+			</div>
+		</div>
+		<div class="toolbar-pf-action-right">
+			<div class="form-group">
+				<a title="List all the plans" class="btn btn-default" href="?name=&author=&product_id=&env_group_id=&is_active=on">View All Plans</a>
+				<a class="btn btn-default" href="{% url "advance_search" %}">Advanced Search</a>
+			</div>
+		</div>
+	</form>
+{% endblock %}
+
+{% block search_result_table %}
+	<table id="testplans_table" class="table table-striped table-bordered table-hover dataTable no-footer">
+		<thead>
+		<tr>
+			<th class="col-plan-selector"><input id="id_check_all_plans" type="checkbox" title="Select all/Select none" /></th>
+			<th title="Sort by plan ID" class="col-plan-id">ID</th>
+			<th title="Sort by plan name">Name</th>
+			<th title="Sort by author" class="col-plan-author">Author</th>
+			<th title="Sort by owner" class="col-plan-owner">Owner</th>
+			<th title="Sort by product name" id="col_product_head" class="col-plan-product">Product</th>
+			<th title="Sort by product version" style="display:none" id="col_product_version_head"><span></span>Product Version</th>
+			<th title="Sort by plan type" class="col-plan-type">Type</th>
+			<th title="Sort by number of test cases" class="col-plan-cases-count">Cases</th>
+			<th title="Sort by number of test runs" class="col-plan-runs-count">Runs</th>
+			<th class="col-plan-actions">Actions</th>
+		</tr>
+		</thead>
+		<tbody>
+		</tbody>
+	</table>
+{% endblock %}
+
+{% block empty_notify %}
+	<div class="blank-slate-pf table-view-pf-empty" id="emptyState1">
+		<div class="blank-slate-pf-icon">
+			<i class="fas fa-search"></i>
+		</div>
+		<h1>
+			Select criteria to search test plans.
+		</h1>
+		<div class="blank-slate-pf-secondary-action">
+			<button type="button" class="btn btn-primary btn-lg btn-find" data-toggle="modal" data-target="#searchPlansModal">
+				Search Test Plans
+			</button>
+		</div>
+	</div>
+{% endblock %}
+
+{% block search_criteria_dialog %}
+	<div class="modal fade" id="searchPlansModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+						<span class="pficon pficon-close"></span>
+					</button>
+					<h4 class="modal-title" id="myModalLabel">Search Test Plans</h4>
+				</div>
+				<div class="modal-body">
+					<form class="form-horizontal js-search-form" method="get" action="{% url "plans-all" %}">
+						<input type="hidden" name="a" value="search">
+						<div class="form-group">
+							<label class="col-sm-3 control-label" for="id_{{ search_plan_form.product.name }}">
+								{{ search_plan_form.product.label }}
+							</label>
+							<div class="col-sm-9">{{ search_plan_form.product }}</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label" for="id_{{ search_plan_form.product_version.name }}">
+								{{ search_plan_form.product_version.label }}
+							</label>
+							<div class="col-sm-9">{{ search_plan_form.product_version }}</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label" for="id_{{ search_plan_form.name__icontains.name }}">
+								{{ search_plan_form.name__icontains.label }}
+							</label>
+							<div class="col-sm-9">{{ search_plan_form.name__icontains }}</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label" for="id_{{ search_plan_form.author__email__startswith.name }}">
+								{{ search_plan_form.author__email__startswith.label }}
+							</label>
+							<div class="col-sm-9">{{ search_plan_form.author__email__startswith }}</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label" for="id_{{ search_plan_form.owner__username__startswith.name }}">
+								{{ search_plan_form.owner__username__startswith.label }}
+							</label>
+							<div class="col-sm-9">{{ search_plan_form.owner__username__startswith }}</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label" for="id_{{ search_plan_form.type.name }}">
+								{{ search_plan_form.type.label }}
+							</label>
+							<div class="col-sm-9">{{ search_plan_form.type }}</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label" for="id_{{ search_plan_form.tag__name__in.name }}">
+								{{ search_plan_form.tag__name__in.label }}
+							</label>
+							<div class="col-sm-9">{{ search_plan_form.tag__name__in }}</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label" for="id_{{ search_plan_form.case__default_tester__username__startswith.name }}">
+								{{ search_plan_form.case__default_tester__username__startswith.label }}
+							</label>
+							<div class="col-sm-9">{{ search_plan_form.case__default_tester__username__startswith }}</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label" for="id_is_active">Active</label>
+							<div class="col-sm-9">{{ search_plan_form.is_active }}</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label" for="id_{{ search_plan_form.env_group.name }}">
+								{{ search_plan_form.env_group.label }}
+							</label>
+							<div class="col-sm-9">{{ search_plan_form.env_group }}</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label" for="id_{{ search_plan_form.create_date__gte.name }}">
+								{{ search_plan_form.create_date__gte.label }}
+							</label>
+							<div class="col-sm-9">{{ search_plan_form.create_date__gte }}</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label" for="id_{{ search_plan_form.create_date__lte.name }}">
+								{{ search_plan_form.create_date__lte.label }}
+							</label>
+							<div class="col-sm-9">{{ search_plan_form.create_date__lte }}</div>
+						</div>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					<button type="button" class="btn btn-primary js-btn-search-plans" onclick="jQ('.js-search-form').submit()">Search</button>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

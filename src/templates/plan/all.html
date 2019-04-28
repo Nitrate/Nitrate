@@ -30,33 +30,42 @@ Nitrate.Utils.after_page_load(Nitrate.TestPlans.List.on_load);
 	</ol>
 </nav>
 
-<div class="row">
-	<div class="col-md-2">
-		{% include "plan/form/search.html" %}
-	</div>
-	<div class="col-md-10">
-		{% if query_result %}
-		{% include 'plan/common/plans_filtered.html' %}
-		{% else %}
-		<div class="blank-slate-pf table-view-pf-empty" id="emptyState1">
-			<div class="blank-slate-pf-icon">
-				<i class="fas fa-arrow-circle-left"></i>
-			</div>
-			<h1>
-				Select criteria to search test plans.
-			</h1>
-			<div class="blank-slate-pf-secondary-action">
-				<a title="List all the plans" class="btn btn-primary btn-lg" href="?name=&author=&product_id=&env_group_id=&is_active=on">View All Plans</a>
-				<a class="btn btn-default btn-lg" href="/advance-search/">Advanced Search</a>
-			</div>
-		</div>
-		{% endif %}
-	</div>
-</div>
+{% include "plan/plans_search_content.html" %}
+
+{#<div class="row">#}
+{#	<div class="col-md-2">#}
+{#		{% include "plan/form/search.html" %}#}
+{#	</div>#}
+{#	<div class="col-md-10">#}
+{#		{% if query_result %}#}
+{#		{% include 'plan/common/plans_filtered.html' %}#}
+{#		{% else %}#}
+{#		<div class="blank-slate-pf table-view-pf-empty" id="emptyState1">#}
+{#			<div class="blank-slate-pf-icon">#}
+{#				<i class="fas fa-arrow-circle-left"></i>#}
+{#			</div>#}
+{#			<h1>#}
+{#				Select criteria to search test plans.#}
+{#			</h1>#}
+{#			<div class="blank-slate-pf-secondary-action">#}
+{#				<a title="List all the plans" class="btn btn-primary btn-lg" href="?name=&author=&product_id=&env_group_id=&is_active=on">View All Plans</a>#}
+{#				<a class="btn btn-default btn-lg" href="/advance-search/">Advanced Search</a>#}
+{#			</div>#}
+{#		</div>#}
+{#		{% endif %}#}
+{#	</div>#}
+{#</div>#}
 
 <script>
 jQ(document).ready(function() {
   jQ(".bootstrap-switch").bootstrapSwitch();
+
+  jQ('.bootstrap-datepicker').datepicker({
+    autoclose: true,
+    todayBtn: "linked",
+    todayHighlight: true,
+    format: "yyyy-mm-dd"
+  });
 });
 </script>
 {% endblock %}
