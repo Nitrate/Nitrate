@@ -581,9 +581,12 @@ class TestSearchRuns(BaseCaseRun):
 
         cls.search_runs_url = reverse('runs-all')
 
-    def test_only_show_search_form(self):
+    def test_no_search_request(self):
         response = self.client.get(self.search_runs_url)
-        self.assertContains(response, '<form id="runs_form"></form>', html=True)
+        self.assertContains(
+            response,
+            '<div class="blank-slate-pf-icon"><i class="fas fa-search"></i></div>',
+            html=True)
 
     def test_search_runs(self):
         search_criteria = {'summary': 'run'}
@@ -592,7 +595,7 @@ class TestSearchRuns(BaseCaseRun):
 
         self.assertContains(
             response,
-            '<input id="id_summary" name="summary" value="run" type="text">',
+            '<input id="id_summary" class="form-control" name="summary" value="run" type="text">',
             html=True)
 
         # Assert table with this ID exists. Because searching runs actually

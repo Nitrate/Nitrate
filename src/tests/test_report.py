@@ -121,12 +121,12 @@ class TestOverallProductByBuilds(BaseCaseRun):
 
         stats = (
             (f'<a href="?build_id={self.build.pk}">{self.build.name}</a>',
-             '<p>0/2</p>',
+             '0/2',
              '50.0',
-             '<div class="strong emphasize">2 Failed</div>'),
+             '<span class="label label-danger">2 Failed</span>'),
             ('<a href="?build_id={}">{}</a>'.format(
                 self.product.build.get(name='unspecified').pk, 'unspecified'),
-             '<p>0/0</p>',
+             '0/0',
              '0',
              ''),
         )
@@ -134,21 +134,21 @@ class TestOverallProductByBuilds(BaseCaseRun):
         for col_build, col_runs, col_case_runs, col_failed_case_runs in stats:
             self.assertContains(
                 resp,
-                '''\
+                f'''\
 <tr>
-    <td class="variety_0">{0}</td>
-    <td class="variety_1">{1}</td>
-    <td class="variety_4">
-        <div class="progress-bar">
-            <div class="progress-inner" style="width:{2}%">
-                <div class="percent">{2}%</div>
+    <td>{col_build}</td>
+    <td><p>{col_runs}</p></td>
+    <td>
+        <div class="progress">
+            <div class="progress-bar" role="progressbar" style="width: {col_case_runs}%"
+                aria-valuenow="{col_case_runs}" aria-valuemin="0" aria-valuemax="100">
+                <span class="pl-1">{col_case_runs}%</span>
             </div>
         </div>
     </td>
-    <td>{3}</td>
-</tr>
-'''.format(col_build, col_runs, col_case_runs, col_failed_case_runs),
-                html=True)
+    <td>{col_failed_case_runs}</td>
+</tr>''',
+            html=True)
 
     def test_show_case_runs_subtotal_by_one_build(self):
         resp = self.client.get(self.url, data={'build_id': self.build.pk})
@@ -167,8 +167,5 @@ class TestOverallProductByBuilds(BaseCaseRun):
         for status_name, count, percent in data:
             self.assertContains(
                 resp,
-                '<tr class="variety_{}">'
-                '<td>{}</td><td>{}</td><td>{}%</td></tr>'.format(
-                    status_name.lower(), status_name, count, percent
-                ),
+                f'<tr><td>{status_name}</td><td>{count}</td><td>{percent}%</td></tr>',
                 html=True)

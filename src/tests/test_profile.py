@@ -52,13 +52,15 @@ class TestOpenBookmarks(TestCase):
                       kwargs={'username': self.tester.username})
         response = self.client.get(url)
 
-        checkbox_fmt = '<input name="pk" value="{}" type="checkbox" />'
-
         for bookmark in (self.bookmark_1, self.bookmark_2, self.bookmark_3):
-            checkbox = checkbox_fmt.format(bookmark.pk)
-            self.assertContains(response, checkbox, html=True)
+            self.assertContains(
+                response,
+                f'<input type="checkbox" id="bookmark_{bookmark.pk}" '
+                f'class="js-select-bookmark" name="bookmark_id" value="{bookmark.pk}">',
+                html=True)
 
         self.assertContains(
             response,
-            '<input value="Delete" class="sprites node_delete" type="submit">',
+            '<button class="btn btn-default" type="button" id="removeSelectedBookmarks" disabled>'
+            'Remove selected bookmarks</button>',
             html=True)
