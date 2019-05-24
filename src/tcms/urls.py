@@ -17,8 +17,6 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
-    url(r'^social-login/', include('social_django.urls', namespace='social')),
-
     url(r'', include('tcms.core.urls')),
     url(r'', include('tcms.management.urls')),
 
