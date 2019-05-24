@@ -1,35 +1,37 @@
 # -*- coding: utf-8 -*-
 
 from django.contrib import admin
+
+from tcms import BaseModelAdmin
 from tcms.management import models
 
 
-class ClassificationAdmin(admin.ModelAdmin):
+class ClassificationAdmin(BaseModelAdmin):
     search_fields = ('name', 'id')
     list_display = ('id', 'name', 'description')
 
 
-class ProductsAdmin(admin.ModelAdmin):
+class ProductsAdmin(BaseModelAdmin):
     search_fields = ('name', 'id')
     list_display = ('id', 'name', 'classification', 'description')
-    list_filter = ('id', 'name', 'classification')
+    list_filter = ('name', 'classification')
     exclude = ('milestone_url', 'default_milestone', 'vote_super_user',
                'max_vote_super_bug')
 
 
-class PriorityAdmin(admin.ModelAdmin):
+class PriorityAdmin(BaseModelAdmin):
     search_fields = ('value', 'id')
     list_display = ('id', 'value', 'sortkey', 'is_active')
     list_filter = ('is_active', )
 
 
-class MilestoneAdmin(admin.ModelAdmin):
+class MilestoneAdmin(BaseModelAdmin):
     search_fields = (('name', 'pk',))
     list_display = ('id', 'value', 'product', 'sortkey')
     list_filter = ('product', )
 
 
-class ComponentAdmin(admin.ModelAdmin):
+class ComponentAdmin(BaseModelAdmin):
     search_fields = ('name', 'id')
     list_display = ('id', 'name', 'product', 'initial_owner', 'description')
     list_filter = ('product',)
@@ -39,20 +41,20 @@ class ComponentAdmin(admin.ModelAdmin):
         return qs.select_related('product', 'initial_owner')
 
 
-class VersionAdmin(admin.ModelAdmin):
+class VersionAdmin(BaseModelAdmin):
     search_fields = ('value', 'id')
     list_display = ('id', 'product', 'value')
     list_filter = ('product',)
 
 
-class BuildAdmin(admin.ModelAdmin):
+class BuildAdmin(BaseModelAdmin):
     search_fields = ('name', 'build_id')
     list_display = ('build_id', 'name', 'product', 'is_active')
     list_filter = ('product',)
     exclude = ('milestone',)
 
 
-class AttachmentAdmin(admin.ModelAdmin):
+class AttachmentAdmin(BaseModelAdmin):
     search_fields = ('file_name', 'attachment_id')
     list_display = ('attachment_id', 'file_name', 'submitter', 'description',
                     'create_date', 'mime_type')

@@ -1,0 +1,13 @@
+{% if show %}
+{#	<div class="xfull">#}
+		<div class="input-group">
+			<span class="input-group-addon" id="basic-addon1">Date</span>
+			<select id="date_hierarchy" class="form-control" onchange="window.location.href=this.value">
+				<option value="{{ back.link }}" selected>&lsaquo; {{ back.title }}</option>
+				{% for choice in choices %}
+					<option value="{{ choice.link }}" {% if choice.link %}selected{% endif %}>{{ choice.title }}</option>
+				{% endfor %}
+			</select>
+		</div>
+{#	</div>#}
+{% endif %}

@@ -1,17 +1,36 @@
+{% load i18n %}
 {% if results %}
-<table cellspacing="0" class="index">
-<thead>
-<tr>
-{% for header in result_headers %}<th{{ header.class_attrib }}>
-{% if header.sortable %}<a href="{{ header.url }}">{% endif %}
-{{ header.text|capfirst }}
-{% if header.sortable %}</a>{% endif %}</th>{% endfor %}
-</tr>
-</thead>
-<tbody>
-{% for result in results %}
-<tr class="{% cycle 'row1' 'row2' %}">{% for item in result %}{{ item }}{% endfor %}</tr>
-{% endfor %}
-</tbody>
-</table>
+{#	<table cellspacing="0" class="table table-bordered">#}
+	<table class="table table-striped table-bordered table-hover dataTable no-footer" id="search-result-table" role="grid">
+		<thead>
+		<tr>
+			{% for header in result_headers %}
+				<th{{ header.class_attrib }}>
+					{% if header.sortable %}<a href="{{ header.url }}">{% endif %}
+					{{ header.text|capfirst }}
+					{% if header.sortable %}</a>{% endif %}
+				</th>
+			{% endfor %}
+		</tr>
+		</thead>
+		<tbody>
+		{% for result in results %}
+			<tr>{% for item in result %}{{ item }}{% endfor %}</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+{% else %}
+	<div class="blank-slate-pf table-view-pf-empty" id="emptyState1">
+		<div class="blank-slate-pf-icon">
+			<i class="fas fa-plus-circle"></i>
+		</div>
+		<h1>
+			No {% blocktrans with cl.opts.verbose_name as name %}{{ name }}{% endblocktrans %} is created currently.
+		</h1>
+	</div>
+	<script type="text/javascript">
+	jQ(document).ready(function () {
+	  jQ('.js-admin-add-object').addClass('btn-primary')
+	});
+	</script>
 {% endif %}

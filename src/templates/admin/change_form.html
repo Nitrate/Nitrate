@@ -1,5 +1,5 @@
 {% extends "admin/base_site.html" %}
-{% load i18n admin_modify %}
+{% load i18n admin_modify static %}
 {% block extrahead %}{{ block.super }}
 <script type="text/javascript" src="../../../jsi18n/"></script>
 {{ media }}
@@ -12,55 +12,93 @@
 
 {% block bodyclass %}{{ opts.app_label }}-{{ opts.object_name.lower }} change-form{% endblock %}
 
+{% block page_content %}
+<nav aria-label="breadcrumb">
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item"><a href="{% url "nitrate-index" %}">Home</a></li>
+		<li><a href="{% url "admin:index" %}">Admin</a></li>
+		<li><a href="../../../">App: {{ app_label|capfirst|escape }}</a></li>
+		{% if has_change_permission %}
+			<li>
+				<a href="../../">{{ opts.verbose_name_plural|capfirst }}</a>
+			</li>
+		{% else %}
+			<li>{{ opts.verbose_name_plural|capfirst }}</li>
+		{% endif %}
+		{% if add %}
+			<li>{% trans "Add" %} {{ opts.verbose_name }}</li>
+		{% else %}
+			<li>{{ original|truncatewords:"18" }}</li>
+		{% endif %}
+	</ol>
+</nav>
 
-<div class="breadcrumbs">
+<div id="object-change-content" class="container">
 
-     <a href="../../../">{% trans "Home" %}</a> &rsaquo;
-     <a href="../../">{{ app_label|capfirst|escape }}</a> &rsaquo;
-     {% if has_change_permission %}<a href="../">{{ opts.verbose_name_plural|capfirst }}</a>{% else %}{{ opts.verbose_name_plural|capfirst }}{% endif %} &rsaquo;
-     {% if add %}{% trans "Add" %} {{ opts.verbose_name }}{% else %}{{ original|truncatewords:"18" }}{% endif %}
+	<div class="row">
+		<div class="col-md-1"></div>
+		<div class="col-md-10">
+			<h2>{% block subtitle %}{{ title }}{% endblock %}</h2>
+			<form {% if has_file_field %}enctype="multipart/form-data" {% endif %}action="{{ form_url }}" method="post" id="{{ opts.model_name }}_form" class="form-horizontal">
+				{% block form_top %}
+				{% endblock %}
+				{% if is_popup %}<input type="hidden" name="_popup" value="1" />{% endif %}
+				{% if save_on_top %}{% submit_row %}{% endif %}
+				{% if errors %}
+					{#				<ul>{% for error in adminform.form.non_field_errors %}<li>{{ error }}</li>{% endfor %}</ul>#}
+					{% for error in adminform.form.non_field_errors %}
+						<div class="toast-pf alert alert-danger alert-dismissable">
+							<button type="button" class="close" data-dismiss="alert" aria-hidden="true">
+								<span class="pficon pficon-close"></span>
+							</button>
+							<span class="pficon pficon-error-circle-o"></span>
+							{{ error }}
+						</div>
+					{% endfor %}
+				{% endif %}
+
+				{% for fieldset in adminform %}
+					{% include "admin/includes/fieldset.html" %}
+				{% endfor %}
+
+				{% block after_field_sets %}{% endblock %}
+
+				{% for inline_admin_formset in inline_admin_formsets %}
+					{% include inline_admin_formset.opts.template %}
+				{% endfor %}
+
+				{% block after_related_objects %}{% endblock %}
+
+				{% submit_row %}
+
+				{% if add %}
+					<script type="text/javascript"
+							id="django-admin-form-add-constants"
+							src="{% static 'admin/js/change_form.js' %}"
+							{% if adminform and add %}
+							data-model-name="{{ opts.model_name }}"
+							{% endif %}>
+					</script>
+				{% endif %}
+
+				{# JavaScript for prepopulated fields #}
+				{% prepopulated_fields_js %}
+
+				{% csrf_token %}
+			</form>
+		</div>
+		<div class="col-md-1"></div>
+	</div>
+
 </div>
-{% block contents %}
-<div id="content-main">
-     <div class="sprites crumble">
-        <a href="{% url "nitrate-index" %}">Home</a>
-        >> <a href="/admin/">Admin</a>
-        >>{{ title }}
-    </div>
 
-<h2>{% block subtitle %}{{ title }}{% endblock %}</h2>
-<form {% if has_file_field %}enctype="multipart/form-data" {% endif %}action="{{ form_url }}" method="post" id="{{ opts.module_name }}_form">
-{% block form_top %}
-{% endblock %}
-<div class="sub">
-{% if is_popup %}<input type="hidden" name="_popup" value="1" />{% endif %}
-{% if save_on_top %}{% submit_row %}{% endif %}
-{% if errors %}
-    <ul>{% for error in adminform.form.non_field_errors %}<li>{{ error }}</li>{% endfor %}</ul>
-{% endif %}
-
-{% for fieldset in adminform %}
-  {% include "admin/includes/fieldset.html" %}
-{% endfor %}
-
-{% block after_field_sets %}{% endblock %}
-
-{% for inline_admin_formset in inline_admin_formsets %}
-    {% include inline_admin_formset.opts.template %}
-{% endfor %}
-
-{% block after_related_objects %}{% endblock %}
-
-{% submit_row %}
-
-{% if add %}
-   <script type="text/javascript">document.getElementById("{{ adminform.first_field.auto_id }}").focus();</script>
-{% endif %}
-
-{# JavaScript for prepopulated fields #}
-{% prepopulated_fields_js %}
-
-</div>
-{% csrf_token %}
-</form></div>
+<script type="text/javascript">
+// This is another place to customize the widget inside inline form.
+jQ(document).ready(function () {
+  jQ('.js-inline-admin-formset input').addClass('form-control');
+  jQ('.js-inline-admin-formset select').addClass('form-control');
+  jQ('table#{{ opts.model_name }}_form input[type=checkbox]').addClass('bootstrap-switch');
+  jQ(".bootstrap-switch").bootstrapSwitch();
+});
+</script>
 {% endblock %}

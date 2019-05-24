@@ -35,8 +35,8 @@
 	<script src="{{ STATIC_URL }}js/lib/patternfly.min.js"></script>
 
 	<script type="text/javascript" language="javascript" charset="utf-8">
-		jQuery.noConflict();
-		var jQ = jQuery;
+      	var jQ = jQuery.noConflict();
+		{#var jQ = jQuery;#}
 		// Top level namespace
 		window.Nitrate = {};
 
@@ -263,5 +263,44 @@
 	</div>
 </footer>
 {% endcache %}
+
+<script type="text/javascript">
+  jQ(document).ready(function () {
+    // Once a page has these classes, datepicker or timepicker will be enabled.
+    // This is added originally for customizing admin site.
+    jQ('.bootstrap-datepicker').datetimepicker({
+      allowInputToggle: true,
+      showTodayButton: true,
+      showClear: true,
+      format: "YYYY-MM-DD",
+      useCurrent: false,
+      icons: {
+        previous: 'fa fa-angle-left',
+        next: 'fa fa-angle-right',
+        clear: 'fas fa-trash-alt',
+        today: 'far fa-calendar-check'
+      },
+      keyBinds: {
+        enter: function () {
+          this.hide();
+        }
+      }
+    });
+    jQ('.bootstrap-timepicker').datetimepicker({
+      format: 'LT',
+      allowInputToggle: true,
+      useCurrent: false,
+      icons: {
+        up: 'fa fa-angle-up',
+        down: 'fa fa-angle-down'
+      },
+      keyBinds: {
+        enter: function () {
+          this.hide();
+        }
+      }
+    });
+  });
+</script>
 </body>
 </html>

@@ -1,9 +1,9 @@
-{% extends "tcms_base.html" %}
+{% extends "tcms_master.html" %}
 {% load i18n %}
 {% block breadcrumbs %}
     <div class="sprites crumble">
         <a href="{% url "nitrate-index" %}">Home</a>
-        >> <a href="/admin/">Admin</a>
+        >> <a href="{% url "admin:index" %}">Admin</a>
         >>{{ title }}
     </div>
 {% endblock %}
@@ -15,12 +15,20 @@
 
 {% block nav-global %}{% endblock %}
 
+{% block jslib_before_patternfly %}
+<script type="text/javascript" src="{{ STATIC_URL }}js/lib/moment.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/lib/bootstrap-datetimepicker.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/lib/bootstrap-switch.min.js"></script>
+{% endblock %}
+
 {% block custom_javascript %}
-	<script type="text/javascript" src="/admin/jsi18n/"></script>
-	<script type="text/javascript" src="{{ STATIC_URL }}admin/js/core.js"></script>
-	<script type="text/javascript" src="{{ STATIC_URL }}admin/js/SelectFilter2.js"></script>
-	<script type="text/javascript" src="{{ STATIC_URL }}admin/js/SelectBox.js"></script>
-	<script type="text/javascript" src="{{ STATIC_URL }}admin/js/admin/RelatedObjectLookups.js"></script>
-	<script type="text/javascript" src="{{ STATIC_URL }}admin/js/calendar.js"></script>
-	<script type="text/javascript" src="{{ STATIC_URL }}admin/js/admin/DateTimeShortcuts.js"></script>
+<script type="text/javascript" src="/admin/jsi18n/"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}admin/js/jquery.init.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}admin/js/core.js"></script>
+{# Use custom SelectFilter2.js to add class for bootstrap and relayout buttons #}
+<script type="text/javascript" src="{{ STATIC_URL }}js/lib/django/SelectFilter2.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}admin/js/SelectBox.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}admin/js/admin/RelatedObjectLookups.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}admin/js/calendar.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}admin/js/admin/DateTimeShortcuts.js"></script>
 {% endblock %}

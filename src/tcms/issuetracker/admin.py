@@ -2,10 +2,12 @@
 
 from django import forms
 from django.contrib import admin
+
+from tcms import BaseModelAdmin
 from tcms.issuetracker import models
 
 
-class IssueTrackerProductAdmin(admin.ModelAdmin):
+class IssueTrackerProductAdmin(BaseModelAdmin):
     pass
 
 
@@ -16,7 +18,7 @@ class ProductIssueTrackerRelationshipInlineAdmin(admin.TabularInline):
     exclude = ['__str__']
 
 
-class IssueTrackerAdmin(admin.ModelAdmin):
+class IssueTrackerAdmin(BaseModelAdmin):
     list_display = ('enabled', 'name', 'tracker_product', 'service_url',
                     'credential_type')
     list_display_links = ('name',)
@@ -48,27 +50,29 @@ class IssueTrackerAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
         fields = form.base_fields
-        fields['service_url'].widget = forms.TextInput(attrs={'size': 30})
-        fields['api_url'].widget = forms.TextInput(attrs={'size': 30})
-        fields['description'].widget = forms.Textarea(attrs={'cols': 60})
-        fields['class_path'].widget = forms.TextInput(attrs={'size': 50})
-        fields['issue_url_fmt'].widget = forms.TextInput(attrs={'size': 50})
-        fields['issue_report_params'].widget = forms.Textarea(attrs={'cols': 60})
-        fields['issue_report_templ'].widget = forms.Textarea(attrs={'cols': 60})
-        fields['issue_report_endpoint'].widget = forms.TextInput(attrs={'size': 30})
+
+        # forms.TextInput is used for models.CharField to render the HTML. But,
+        # this field has property choices set, for which forms.Select is used.
+        # The BaseModuleAdmin does not handle this case. Customize the class
+        # for patterfly Form style here.
+        widget = fields['credential_type'].widget
+        if 'class' in widget.attrs:
+            widget.attrs['class'] += ' form-control'
+        else:
+            widget.attrs['class'] = 'form-control'
         return form
 
 
-class IssueAdmin(admin.ModelAdmin):
+class IssueAdmin(BaseModelAdmin):
     list_display = ('issue_key', 'tracker', 'case', 'case_run')
 
 
-class UserPwdCredentialAdmin(admin.ModelAdmin):
+class UserPwdCredentialAdmin(BaseModelAdmin):
     fields = ('issue_tracker', 'username', 'password', 'secret_file')
     list_display = ('__str__', 'issue_tracker')
 
 
-class TokenCredentialAdmin(admin.ModelAdmin):
+class TokenCredentialAdmin(BaseModelAdmin):
     fields = ('issue_tracker', 'token', 'until', 'secret_file')
     list_display = ('__str__', 'issue_tracker')
 

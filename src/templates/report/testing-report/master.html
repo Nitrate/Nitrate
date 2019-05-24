@@ -3,7 +3,8 @@
 {% block subtitle %}Case Run Report{% endblock %}
 
 {% block custom_javascript %}
-<script type="text/javascript" src="{{ STATIC_URL }}js/lib/bootstrap-datepicker.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/lib/moment.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/lib/bootstrap-datetimepicker.min.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/advance_search.js"></script>
 {% endblock %}
 
@@ -51,14 +52,5 @@
 		{% block report_content %}Put report content here{% endblock %}
 	</div>
 </div>
-
-<script>
-	jQ('.bootstrap-datepicker').datepicker({
-		autoclose: true,
-		todayBtn: "linked",
-		todayHighlight: true,
-		format: "yyyy-mm-dd"
-	});
-</script>
 
 {% endblock %}

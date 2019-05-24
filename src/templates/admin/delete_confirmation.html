@@ -4,32 +4,46 @@
 {% block custom_stylesheet %}
 {% endblock %}
 
-{% block breadcrumbs %}
-<div class="breadcrumbs">
-     <a href="../../../../">{% trans "Home" %}</a> &rsaquo;
-     <a href="../../../">{{ app_label|capfirst }}</a> &rsaquo; 
-     <a href="../../">{{ opts.verbose_name_plural|capfirst }}</a> &rsaquo;
-     <a href="../">{{ object|truncatewords:"18" }}</a> &rsaquo;
-     {% trans 'Delete' %}
-</div>
-{% endblock %}
+{# Customized below #}
+{#{% block breadcrumbs %}#}
+{#<div class="breadcrumbs">#}
+{#     <a href="../../../../">{% trans "Home" %}</a> &rsaquo;#}
+{#     <a href="../../../">{{ app_label|capfirst }}</a> &rsaquo; #}
+{#     <a href="../../">{{ opts.verbose_name_plural|capfirst }}</a> &rsaquo;#}
+{#     <a href="../">{{ object|truncatewords:"18" }}</a> &rsaquo;#}
+{#     {% trans 'Delete' %}#}
+{#</div>#}
+{#{% endblock %}#}
 
-{% block contents %}
-{% if perms_lacking %}
-    <p>{% blocktrans with object as escaped_object %}Deleting the {{ object_name }} '{{ escaped_object }}' would result in deleting related objects, but your account doesn't have permission to delete the following types of objects:{% endblocktrans %}</p>
-    <ul>
-    {% for obj in perms_lacking %}
-        <li>{{ obj }}</li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>{% blocktrans with object as escaped_object %}Are you sure you want to delete the {{ object_name }} "{{ escaped_object }}"? All of the following related items will be deleted:{% endblocktrans %}</p>
-    <ul>{{ deleted_objects|unordered_list }}</ul>
-    <form action="" method="post">
-    <div>
-    <input type="hidden" name="post" value="yes" />
-    <input type="submit" value="{% trans "Yes, I'm sure" %}" />
-    </div>
-    </form>
-{% endif %}
+{% block page_content %}
+<nav aria-label="breadcrumb">
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item"><a href="{% url "nitrate-index" %}">Home</a></li>
+		<li><a href="../../../../">{% trans "Admin" %}</a></li>
+		<li><a href="../../../">{{ app_label|capfirst }}</a></li>
+		<li><a href="../../">{{ opts.verbose_name_plural|capfirst }}</a></li>
+		<li><a href="../">{{ object|truncatewords:"18" }}</a></li>
+		<li>{% trans 'Delete' %}</li>
+	</ol>
+</nav>
+
+<div class="container">
+	{% if perms_lacking %}
+		<p>{% blocktrans with object as escaped_object %}Deleting the {{ object_name }} '{{ escaped_object }}' would result in deleting related objects, but your account doesn't have permission to delete the following types of objects:{% endblocktrans %}</p>
+		<ul>
+			{% for obj in perms_lacking %}
+				<li>{{ obj }}</li>
+			{% endfor %}
+		</ul>
+	{% else %}
+		<p>{% blocktrans with object as escaped_object %}Are you sure you want to delete the {{ object_name }} "{{ escaped_object }}"? All of the following related items will be deleted:{% endblocktrans %}</p>
+		<ul>{{ deleted_objects|unordered_list }}</ul>
+		<form action="" method="post">
+			<div>
+				<input type="hidden" name="post" value="yes" />
+				<button type="submit" class="btn btn-danger btn-lg">{% trans "Yes, I'm sure" %}</button>
+			</div>
+		</form>
+	{% endif %}
+</div>
 {% endblock %}

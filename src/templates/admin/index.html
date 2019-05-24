@@ -8,66 +8,94 @@
 
 {% block bodyclass %}dashboard{% endblock %}
 
-{% block contents %}
-<div id="content-main">
-    <div class="sprites crumble">
-        <a href="{% url "nitrate-index" %}">Home</a>
-        >> <a href="/admin/">Admin</a>
-        >>{{ title }}
-    </div>
-{% if app_list %}
-    {% for app in app_list %}
-        <div class="wrap module">
-        <div class="module-table">
-            <table class="index" summary="{% blocktrans with app.name as name %}Models available in the {{ name }} application.{% endblocktrans %}" cellspacing="0" cellspan="0">
-            <caption><a href="{{ app.app_url }}" class="section">{% blocktrans with app.name as name %}{{ name }}{% endblocktrans %}</a></caption>
-             {% for model in app.models %}
-                 <tr class="{% cycle "row1" "row2" %}">
-                {% if model.perms.change %}
-                    <th scope="row" align="left" width="70%"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>
-                {% else %}
-                    <th scope="row"  width="70%">{{ model.name }}</th>
-                {% endif %}
+{% block page_content %}
+<nav aria-label="breadcrumb">
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item"><a href="{% url "nitrate-index" %}">Home</a></li>
+		<li><a href="{% url "admin:index" %}">Admin</a></li>
+		<li>{{ title }}</li>
+	</ol>
+</nav>
 
-                {% if model.perms.add %}
-                    <td ><a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a></td>
-                {% else %}
-                    <td>&nbsp;</td>
-                {% endif %}
+<div class="container">
+	{% if app_list %}
+		{% for app in app_list %}
+			<div class="wrap module">
+				<div class="module-table">
+					<table class="table table-bordered" summary="{% blocktrans with app.name as name %}Models available in the {{ name }} application.{% endblocktrans %}">
+						<thead>
+						<tr>
+							<th colspan="3">
+								<a href="{{ app.app_url }}" class="section">
+									<h4>{% blocktrans with app.name as name %}{{ name }}{% endblocktrans %}</h4>
+								</a>
+							</th>
+						</tr>
+						</thead>
+						<tbody>
+						{% for model in app.models %}
+							<tr>
+								{% if model.perms.change %}
+									<th scope="row" align="left" style="width:80%"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>
+								{% else %}
+									<th scope="row" style="width:80%">{{ model.name }}</th>
+								{% endif %}
 
-                {% if model.perms.change %}
-                    <td ><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>
-                {% else %}
-                    <td>&nbsp;</td>
-                {% endif %}
-                </tr>
-            {% endfor %}
-            </table>
-        </div>
-        </div>
-    {% endfor %}
-{% else %}
-    <p>{% trans "You don't have permission to edit anything." %}</p>
-{% endif %}
+								{% if model.perms.add %}
+									<td ><a href="{{ model.admin_url }}add/"><i class="fas fa-plus"></i> {% trans 'Add' %}</a></td>
+								{% else %}
+									<td>&nbsp;</td>
+								{% endif %}
+
+								{% if model.perms.change %}
+									<td ><a href="{{ model.admin_url }}"><i class="far fa-edit"></i> {% trans 'Change' %}</a></td>
+								{% else %}
+									<td>&nbsp;</td>
+								{% endif %}
+							</tr>
+						{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		{% endfor %}
+	{% else %}
+		<div class="blank-slate-pf table-view-pf-empty" id="emptyState1">
+			<div class="blank-slate-pf-icon">
+				<i class="fas fa-ban" style="color: red"></i>
+			</div>
+			<h1>
+				{% trans "You don't have permission to edit anything." %}
+			</h1>
+			<p>
+				You probably need to log out and login again with a user
+				account which has proper permissions to manage these data.
+			</p>
+			<div class="blank-slate-pf-secondary-action">
+				<a href="{% url "nitrate-logout" %}" class="btn btn-primary btn-lg">Logout</a>
+			</div>
+		</div>
+	{% endif %}
 </div>
 {% endblock %}
 
+{# FIXME: sidebar #}
 {% block sidebar %}
 <div id="content-related">
     <div class="module" id="recent-actions-module">
         <h2>{% trans 'Recent Actions' %}</h2>
         <h3>{% trans 'My Actions' %}</h3>
-            {% load log %}
-            {% get_admin_log 10 as admin_log for_user user %}
-            {% if not admin_log %}
-            <p>{% trans 'None available' %}</p>
-            {% else %}
-            <ul class="actionlist">
-            {% for entry in admin_log %}
-            <li class="{% if entry.is_addition %}addlink{% endif %}{% if entry.is_change %}changelink{% endif %}{% if entry.is_deletion %}deletelink{% endif %}">{% if not entry.is_deletion %}<a href="{{ entry.get_admin_url }}">{% endif %}{{ entry.object_repr }}{% if not entry.is_deletion %}</a>{% endif %}<br /><span class="mini quiet">{% filter capfirst %}{% trans entry.content_type.name %}{% endfilter %}</span></li>
-            {% endfor %}
-            </ul>
-            {% endif %}
+		{% load log %}
+		{% get_admin_log 10 as admin_log for_user user %}
+		{% if not admin_log %}
+			<p>{% trans 'None available' %}</p>
+		{% else %}
+			<ul class="actionlist">
+				{% for entry in admin_log %}
+					<li class="{% if entry.is_addition %}addlink{% endif %}{% if entry.is_change %}changelink{% endif %}{% if entry.is_deletion %}deletelink{% endif %}">{% if not entry.is_deletion %}<a href="{{ entry.get_admin_url }}">{% endif %}{{ entry.object_repr }}{% if not entry.is_deletion %}</a>{% endif %}<br /><span class="mini quiet">{% filter capfirst %}{% trans entry.content_type.name %}{% endfilter %}</span></li>
+				{% endfor %}
+			</ul>
+		{% endif %}
     </div>
 </div>
 {% endblock %}

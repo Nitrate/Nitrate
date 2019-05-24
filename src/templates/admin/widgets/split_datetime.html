@@ -1,0 +1,14 @@
+<div class="row">
+    <div class="col-md-3">
+        {% with widget=widget.subwidgets.0 %}
+        <input type="text" class="form-control bootstrap-datepicker" {% if widget.value %}value="{{ widget.value }}"{% endif %}
+            name="{{ widget.name }}" placeholder="Date">
+        {% endwith %}
+    </div>
+    <div class="col-md-3">
+        {% with widget=widget.subwidgets.1 %}
+        <input type="text" class="form-control bootstrap-timepicker" {% if widget.value %}value="{{ widget.value }}"{% endif %}
+            name="{{ widget.name }}" placeholder="Time">
+        {% endwith %}
+    </div>
+</div>

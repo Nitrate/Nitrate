@@ -3,8 +3,10 @@ from django.contrib import admin
 
 from kobo.django.xmlrpc.models import XmlRpcLog
 
+from tcms import BaseModelAdmin
 
-class NitrateXmlRpcLogAdmin(admin.ModelAdmin):
+
+class NitrateXmlRpcLogAdmin(BaseModelAdmin):
     list_display = ('happened_on', 'user_username', 'method')
     list_per_page = 50
     list_filter = ('dt_inserted',)

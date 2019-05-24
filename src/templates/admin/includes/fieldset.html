@@ -1,21 +1,25 @@
 <div class="wrap">
-<fieldset class="module">
-  {% if fieldset.name %}<h2>{{ fieldset.name }}</h2>{% endif %}
-  {% if fieldset.description %}<div class="description">{{ fieldset.description|safe }}</div>{% endif %}
-  {% for line in fieldset %}
-      <div class="form-row{% if line.errors %} errors{% endif %} {% for field in line %}{{ field.field.name }} {% endfor %} ">
-      {{ line.errors }}
-      {% for field in line %}
-      <div{% if not line.fields|length_is:"1" %} class="field-box"{% endif %}>
-          {% if field.is_checkbox %}
-              {{ field.field }}{{ field.label_tag }}
-          {% else %}
-              {{ field.label_tag }}{{ field.field }}
-          {% endif %}
-          {% if field.field.field.help_text %}<p class="help">{{ field.field.field.help_text|safe }}</p>{% endif %}
-      </div>
-      {% endfor %}
-      </div>
-  {% endfor %}
-</fieldset>
+	<fieldset class="module">
+		{% if fieldset.name %}<h2>{{ fieldset.name }}</h2>{% endif %}
+		{% if fieldset.description %}<div class="description">{{ fieldset.description|safe }}</div>{% endif %}
+		{% for line in fieldset %}
+			<div class="form-group{% if line.errors %} errors{% endif %} {% for field in line %}{{ field.field.name }} {% endfor %} ">
+				{{ line.errors }}
+				{% for field in line %}
+					<div{% if not line.fields|length_is:"1" %} class="field-box"{% endif %}>
+						{% if field.is_checkbox %}
+							<label class="col-sm-2 control-label" for=id_{{ field.field.name }}>{{ field.field.label }}</label>
+							<div class="col-sm-10">{{ field.field }}</div>
+						{% else %}
+							<label class="col-sm-2 control-label {% if field.field.field.required %}required-pf{% endif %}" for=id_{{ field.field.name }}>{{ field.field.label }}</label>
+							<div class="col-sm-10">
+								{{ field.field }}
+								{% if field.field.field.help_text %}<p class="help-block">{{ field.field.field.help_text|safe }}</p>{% endif %}
+							</div>
+						{% endif %}
+					</div>
+				{% endfor %}
+			</div>
+		{% endfor %}
+	</fieldset>
 </div>

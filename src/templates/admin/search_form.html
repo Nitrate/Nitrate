@@ -1,0 +1,14 @@
+{% load i18n static %}
+{% if cl.search_fields %}
+<div class="form-group"><!-- DIV needed for valid HTML -->
+	<div class="input-group">
+		<input id="searchbar" name="{{ search_var }}" type="text" class="form-control" placeholder="Search for..." value="{{ cl.query }}" autocomplete="off">
+		<span class="input-group-btn">
+					<button class="btn btn-default" type="submit"><span class="pficon pficon-search"></span></button>
+				</span>
+	</div>
+	{% for pair in cl.params.items %}
+		{% if pair.0 != search_var %}<input type="hidden" name="{{ pair.0 }}" value="{{ pair.1 }}"/>{% endif %}
+	{% endfor %}
+</div>
+{% endif %}

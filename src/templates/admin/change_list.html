@@ -10,45 +10,75 @@
 
 {% block coltype %}flex{% endblock %}
 
-{% block contents %}
-<div id="content-main">
+{% block page_content %}
+<nav aria-label="breadcrumb">
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item"><a href="{% url "nitrate-index" %}">Home</a></li>
+		<li><a href="{% url "admin:index" %}">Admin</a></li>
+		<li>{{ title }}</li>
+	</ol>
+</nav>
 
-    <div class="sprites crumble">
-        <a href="{% url "nitrate-index" %}">Home</a>
-        >> <a href="/admin/">Admin</a>
-        >>{{ title }}
-    </div>
-
-<div class="module{% if cl.has_filters %} filtered{% endif %} wrap" id="changelist">
-{% block search %}{% search_form cl %}{% endblock %}
-{% block object-tools %}
-{% if has_add_permission %}
-<h2>{% block subtitle %}{{ title }}{% endblock %}</h2>
-<ul class="object-tools">
-    <li>
-        <a href="add/{% if is_popup %}?_popup=1{% endif %}" class="addlink">{% blocktrans with cl.opts.verbose_name as name %}Add {{ name }}{% endblocktrans %}</a>
-    </li>
-</ul>
-{% endif %}
-{% endblock %}
-
-{% block date_hierarchy %}{% date_hierarchy cl %}{% endblock %}
-
-{% block filters %}
-{% if cl.has_filters %}
-<div id="changelist-filter">
-<h2>{% trans 'Filter' %}</h2>
-{% for spec in cl.filter_specs %}
-   {% admin_list_filter cl spec %}
-{% endfor %}
+<div class="row toolbar-pf table-view-pf-toolbar" id="admin-change-list-toolbar">
+	<div class="col-sm-12">
+		<div class="toolbar-pf-actions">
+			{% block object-tools %}
+				{% if has_add_permission %}
+					<div class="form-group">
+						<a href="add/{% if is_popup %}?_popup=1{% endif %}" class="btn btn-default js-admin-add-object">
+							<i class="fas fa-plus"></i> {% blocktrans with cl.opts.verbose_name as name %}Add {{ name }}{% endblocktrans %}
+						</a>
+					</div>
+				{% endif %}
+			{% endblock %}
+			<div class="form-group">
+				<form method="get">
+					<label class="sr-only" for="filter">Search by keyword</label>
+					{% block search %}{% search_form cl %}{% endblock %}
+				</form>
+			</div>
+			<div class="form-group">
+				{% block date_hierarchy %}{% date_hierarchy cl %}{% endblock %}
+			</div>
+			{% block filters %}
+				{% if cl.has_filters %}
+					{% for spec in cl.filter_specs %}
+						{% admin_list_filter cl spec %}
+					{% endfor %}
+				{% endif %}
+			{% endblock %}
+			<div class="toolbar-pf-action-right">
+				<div class="form-group toolbar-pf-find">
+				</div>
+			</div>
+		</div>
+		{% comment %}
+		<!-- No need of this result row -->
+		<div class="row toolbar-pf-results">
+		</div>
+		{% endcomment %}
+	</div>
 </div>
-{% endif %}
-{% endblock %}
+
+<div id="search-result-table-wrapper" class="dataTables_wrapper no-footer">
+	{% block result_list %}{% result_list cl %}{% endblock %}
+</div>
+
 {% block pagination %}{% pagination cl %}{% endblock %}
-<div class="Admin_Detailform">
-{% block result_list %}{% result_list cl %}{% endblock %}
-</div>
 
-</div>
-</div>
+<script type="text/javascript">
+jQ(document).ready(function () {
+  var searchResultTable = jQ('table#search-result-table');
+  var selectAllCheckbox = searchResultTable.find('input[type=checkbox]:first');
+  selectAllCheckbox.click(function (e) {
+    searchResultTable.find('input[type=checkbox]:gt(0)').prop('checked', e.target.checked);
+  });
+  searchResultTable.on('click', 'input[type=checkbox]:gt(0)', function (e) {
+    selectAllCheckbox.prop(
+      'checked',
+	  searchResultTable.find('input[type=checkbox]:gt(0):not(:checked)').length === 0
+	);
+  });
+});
+</script>
 {% endblock %}
