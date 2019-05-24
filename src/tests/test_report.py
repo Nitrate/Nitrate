@@ -148,7 +148,7 @@ class TestOverallProductByBuilds(BaseCaseRun):
     </td>
     <td>{col_failed_case_runs}</td>
 </tr>''',
-            html=True)
+                html=True)
 
     def test_show_case_runs_subtotal_by_one_build(self):
         resp = self.client.get(self.url, data={'build_id': self.build.pk})
