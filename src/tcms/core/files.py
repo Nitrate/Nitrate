@@ -6,11 +6,12 @@ from datetime import datetime
 
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
-from django.views.decorators.http import require_POST, require_GET
-from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect, Http404
-from django.utils.encoding import smart_str
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.urls import reverse
+from django.utils.encoding import smart_str
+from django.views.decorators.http import require_POST, require_GET
 from six.moves.urllib_parse import unquote
 
 from tcms.core.views import Prompt
@@ -121,49 +122,35 @@ def upload_file(request):
 @require_GET
 def check_file(request, file_id):
     """Download attachment file"""
-    try:
-        attachment = TestAttachment.objects.get(attachment_id=file_id)
-    except TestAttachment.DoesNotExist:
-        raise Http404
+    attachment = get_object_or_404(TestAttachment, pk=file_id)
 
-    try:
-        # First try to read file content from database.
-        attachment = TestAttachment.objects.get(attachment_id=file_id)
+    attachment_data = TestAttachmentData.objects.filter(
+        attachment__attachment_id=file_id
+    ).first()
+
+    # First try to read file content from database.
+    if attachment_data:
         # File content is not written into TestAttachmentData in upload_file,
         # this code path is dead now. Think about if file content should be
         # written into database in the future.
-        attachment_data = TestAttachmentData.objects.get(
-            attachment__attachment_id=file_id
-        )
         contents = attachment_data.contents
-    except TestAttachmentData.DoesNotExist:
+    else:
         # File was not written into database, read it from configured file
         # system.
-        if attachment.stored_name:
-            stored_file_name = os.path.join(
-                settings.FILE_UPLOAD_DIR, unquote(attachment.stored_name)
-            ).replace('\\', '/')
-            stored_file_name = stored_file_name.encode('utf-8')
-            try:
-                with open(stored_file_name, 'rb') as f:
-                    contents = f.read()
-            except IOError as error:
-                raise Http404(error)
-        else:
-            stored_file_name = os.path.join(
-                settings.FILE_UPLOAD_DIR, unquote(attachment.file_name)
-            ).replace('\\', '/')
-            stored_file_name = stored_file_name.encode('utf-8')
-            try:
-                with open(stored_file_name, 'rb') as f:
-                    contents = f.read()
-            except IOError as error:
-                raise Http404(error)
+        stored_file_name = os.path.join(
+            settings.FILE_UPLOAD_DIR,
+            unquote(attachment.stored_name or attachment.file_name)
+        ).replace('\\', '/')
+
+        try:
+            with open(stored_file_name, 'rb') as f:
+                contents = f.read()
+        except IOError as error:
+            raise Http404(error)
 
     response = HttpResponse(contents, content_type=str(attachment.mime_type))
     file_name = smart_str(attachment.file_name)
-    response['Content-Disposition'] = \
-        'attachment; filename="%s"' % file_name
+    response['Content-Disposition'] = f'attachment; filename="{file_name}"'
     return response
 
 

@@ -286,6 +286,10 @@ class TestCheckFile(BasePlanCase):
         with open(os.path.join(cls.upload_dir, 'b.bin'), 'wb') as f:
             f.write(cls.binary_file_content)
 
+        cls.logo_png_content = b'\x00\x01\x10'
+        with open(os.path.join(cls.upload_dir, 'logo.png'), 'wb') as f:
+            f.write(cls.logo_png_content)
+
         cls.text_file = TestAttachment.objects.create(
             submitter_id=cls.tester.id,
             description='description',
@@ -301,6 +305,15 @@ class TestCheckFile(BasePlanCase):
             stored_name='b.bin',
             create_date=datetime.now(),
             mime_type='application/x-binary'
+        )
+        cls.logo_png = TestAttachment.objects.create(
+            submitter_id=cls.tester.id,
+            description='binary file',
+            file_name='logo.png',
+            # stored_name is not set, use file_name to find out attachment instead.
+            stored_name=None,
+            create_date=datetime.now(),
+            mime_type='image/png'
         )
 
     def test_file_id_does_not_exist(self):
@@ -323,3 +336,10 @@ class TestCheckFile(BasePlanCase):
         self.assertEqual('application/x-binary', resp['Content-Type'])
         self.assertEqual('attachment; filename="b.txt"', resp['Content-Disposition'])
         self.assertEqual(self.binary_file_content, resp.content)
+
+    def test_use_original_filename_to_find_out_attachment(self):
+        with patch.object(settings, 'FILE_UPLOAD_DIR', self.upload_dir):
+            resp = self.client.get(reverse('check-file', args=[self.logo_png.pk]))
+        self.assertEqual('image/png', resp['Content-Type'])
+        self.assertEqual('attachment; filename="logo.png"', resp['Content-Disposition'])
+        self.assertEqual(self.logo_png_content, resp.content)
