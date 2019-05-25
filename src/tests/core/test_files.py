@@ -5,10 +5,13 @@ import os
 import shutil
 import tempfile
 
-from mock import patch
+from datetime import datetime
 
-from django.urls import reverse
+from django.db.models import Max
 from django.test import RequestFactory
+from django.urls import reverse
+from django.conf import settings
+from mock import patch
 
 from tcms.core.files import able_to_delete_attachment
 from tcms.management.models import TestAttachment
@@ -264,3 +267,59 @@ class TestDeleteFileAuthorization(BasePlanCase):
         self.assertFalse(still_has)
         # TODO: skip because delete_file does not delete a TestAttachment object from database
         # self.assertFalse(TestAttachment.objects.filter(pk=self.case_attachment.pk).exists())
+
+
+class TestCheckFile(BasePlanCase):
+    """Test view method check_file to download an attachment file"""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+
+        cls.upload_dir = tempfile.mkdtemp()
+
+        cls.text_file_content = 'hello Nitrate'
+        with open(os.path.join(cls.upload_dir, 'a-1.txt'), 'w', encoding='utf-8') as f:
+            f.write(cls.text_file_content)
+
+        cls.binary_file_content = b'\x00\x01\x11\x10'
+        with open(os.path.join(cls.upload_dir, 'b.bin'), 'wb') as f:
+            f.write(cls.binary_file_content)
+
+        cls.text_file = TestAttachment.objects.create(
+            submitter_id=cls.tester.id,
+            description='description',
+            file_name='a.txt',
+            stored_name='a-1.txt',
+            create_date=datetime.now(),
+            mime_type='text/plain'
+        )
+        cls.binary_file = TestAttachment.objects.create(
+            submitter_id=cls.tester.id,
+            description='binary file',
+            file_name='b.txt',
+            stored_name='b.bin',
+            create_date=datetime.now(),
+            mime_type='application/x-binary'
+        )
+
+    def test_file_id_does_not_exist(self):
+        # Calculate a non-existing attachment id. If there is no attachment in
+        # database, 1 is expected.
+        file_id = (TestAttachment.objects.aggregate(max_id=Max('pk'))['max_id'] or 0) + 1
+        resp = self.client.get(reverse('check-file', args=[file_id]))
+        self.assert404(resp)
+
+    def test_download_text_file(self):
+        with patch.object(settings, 'FILE_UPLOAD_DIR', self.upload_dir):
+            resp = self.client.get(reverse('check-file', args=[self.text_file.pk]))
+        self.assertEqual('text/plain', resp['Content-Type'])
+        self.assertEqual('attachment; filename="a.txt"', resp['Content-Disposition'])
+        self.assertEqual(self.text_file_content, resp.content.decode('utf-8'))
+
+    def test_download_binary_file(self):
+        with patch.object(settings, 'FILE_UPLOAD_DIR', self.upload_dir):
+            resp = self.client.get(reverse('check-file', args=[self.binary_file.pk]))
+        self.assertEqual('application/x-binary', resp['Content-Type'])
+        self.assertEqual('attachment; filename="b.txt"', resp['Content-Disposition'])
+        self.assertEqual(self.binary_file_content, resp.content)
