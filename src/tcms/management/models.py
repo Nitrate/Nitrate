@@ -432,7 +432,7 @@ class TestAttachment(models.Model):
 
 class TestAttachmentData(models.Model):
     contents = models.BinaryField(blank=True)
-    attachment = models.ForeignKey(TestAttachment, on_delete=models.CASCADE)
+    attachment = models.OneToOneField(TestAttachment, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'test_attachment_data'

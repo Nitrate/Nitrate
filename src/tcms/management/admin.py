@@ -1,12 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.contrib import admin
-
-from tcms.management.models import Classification
-from tcms.management.models import Component, Version
-from tcms.management.models import Priority
-from tcms.management.models import Product
-from tcms.management.models import TestBuild
+from tcms.management import models
 
 
 class ClassificationAdmin(admin.ModelAdmin):
@@ -63,9 +58,15 @@ class AttachmentAdmin(admin.ModelAdmin):
                     'create_date', 'mime_type')
 
 
-admin.site.register(Classification, ClassificationAdmin)
-admin.site.register(Product, ProductsAdmin)
-admin.site.register(Priority, PriorityAdmin)
-admin.site.register(Component, ComponentAdmin)
-admin.site.register(Version, VersionAdmin)
-admin.site.register(TestBuild, BuildAdmin)
+class TestAttachmentDataAdmin(admin.ModelAdmin):
+    pass
+
+
+admin.site.register(models.Classification, ClassificationAdmin)
+admin.site.register(models.Product, ProductsAdmin)
+admin.site.register(models.Priority, PriorityAdmin)
+admin.site.register(models.Component, ComponentAdmin)
+admin.site.register(models.Version, VersionAdmin)
+admin.site.register(models.TestBuild, BuildAdmin)
+admin.site.register(models.TestAttachment, AttachmentAdmin)
+admin.site.register(models.TestAttachmentData, TestAttachmentDataAdmin)
