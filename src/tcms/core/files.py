@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import logging
 
 from datetime import datetime
 
@@ -18,6 +19,8 @@ from tcms.core.views import Prompt
 from tcms.testcases.models import TestCase, TestCaseAttachment
 from tcms.testplans.models import TestPlan, TestPlanAttachment
 from tcms.management.models import TestAttachment, TestAttachmentData
+
+log = logging.getLogger(__name__)
 
 
 @require_POST
@@ -142,11 +145,21 @@ def check_file(request, file_id):
             unquote(attachment.stored_name or attachment.file_name)
         ).replace('\\', '/')
 
+        if not os.path.exists(stored_file_name):
+            raise Http404(f'Attachment file {stored_file_name} does not exist.')
+
         try:
             with open(stored_file_name, 'rb') as f:
                 contents = f.read()
-        except IOError as error:
-            raise Http404(error)
+        except IOError:
+            msg = 'Cannot read attachment file from server.'
+            log.exception(msg)
+            return Prompt.render(
+                request=request,
+                info_type=Prompt.Alert,
+                info=msg,
+                next='javascript:window.history.go(-1);',
+            )
 
     response = HttpResponse(contents, content_type=str(attachment.mime_type))
     file_name = smart_str(attachment.file_name)

@@ -315,6 +315,14 @@ class TestCheckFile(BasePlanCase):
             create_date=datetime.now(),
             mime_type='image/png'
         )
+        cls.file_deleted = TestAttachment.objects.create(
+            submitter_id=cls.tester.id,
+            description='case plan',
+            file_name='case-plan.txt',
+            stored_name=None,
+            create_date=datetime.now(),
+            mime_type='text/plain'
+        )
 
     def test_file_id_does_not_exist(self):
         # Calculate a non-existing attachment id. If there is no attachment in
@@ -343,3 +351,8 @@ class TestCheckFile(BasePlanCase):
         self.assertEqual('image/png', resp['Content-Type'])
         self.assertEqual('attachment; filename="logo.png"', resp['Content-Disposition'])
         self.assertEqual(self.logo_png_content, resp.content)
+
+    def test_attachment_file_is_deleted_yet(self):
+        with patch.object(settings, 'FILE_UPLOAD_DIR', self.upload_dir):
+            resp = self.client.get(reverse('check-file', args=[self.file_deleted.pk]))
+        self.assert404(resp)
