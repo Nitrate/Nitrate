@@ -268,38 +268,42 @@
   jQ(document).ready(function () {
     // Once a page has these classes, datepicker or timepicker will be enabled.
     // This is added originally for customizing admin site.
-    jQ('.bootstrap-datepicker').datetimepicker({
-      allowInputToggle: true,
-      showTodayButton: true,
-      showClear: true,
-      format: "YYYY-MM-DD",
-      useCurrent: false,
-      icons: {
-        previous: 'fa fa-angle-left',
-        next: 'fa fa-angle-right',
-        clear: 'fas fa-trash-alt',
-        today: 'far fa-calendar-check'
-      },
-      keyBinds: {
-        enter: function () {
-          this.hide();
+	if (jQ('.bootstrap-datepicker').length > 0) {
+      jQ('.bootstrap-datepicker').datetimepicker({
+        allowInputToggle: true,
+        showTodayButton: true,
+        showClear: true,
+        format: "YYYY-MM-DD",
+        useCurrent: false,
+        icons: {
+          previous: 'fa fa-angle-left',
+          next: 'fa fa-angle-right',
+          clear: 'fas fa-trash-alt',
+          today: 'far fa-calendar-check'
+        },
+        keyBinds: {
+          enter: function () {
+            this.hide();
+          }
         }
-      }
-    });
-    jQ('.bootstrap-timepicker').datetimepicker({
-      format: 'LT',
-      allowInputToggle: true,
-      useCurrent: false,
-      icons: {
-        up: 'fa fa-angle-up',
-        down: 'fa fa-angle-down'
-      },
-      keyBinds: {
-        enter: function () {
-          this.hide();
+      });
+	}
+    if (jQ('.bootstrap-timepicker').length > 0) {
+      jQ('.bootstrap-timepicker').datetimepicker({
+        format: 'LT',
+        allowInputToggle: true,
+        useCurrent: false,
+        icons: {
+          up: 'fa fa-angle-up',
+          down: 'fa fa-angle-down'
+        },
+        keyBinds: {
+          enter: function () {
+            this.hide();
+          }
         }
-      }
-    });
+      });
+    }
   });
 </script>
 </body>
