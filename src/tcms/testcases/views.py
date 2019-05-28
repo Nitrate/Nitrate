@@ -1714,8 +1714,9 @@ def attachment(request, case_id, template_name='case/attachment.html'):
     context_data = {
         'module': request.GET.get('from_plan') and 'testplans' or MODULE_NAME,
         'sub_module': SUB_MODULE_NAME,
-        'testplan': tp,
-        'testcase': tc,
+        'test_plan': tp,
+        'target_name': 'case',
+        'target': tc,
         'limit': file_size_limit,
         'limit_readable': str(limit_readable) + "Mb",
     }

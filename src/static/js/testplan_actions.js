@@ -1169,11 +1169,16 @@ Nitrate.TestPlans.Attachment.on_load = function() {
       window.history.go(-1);
     });
 
-    jQ('.js-del-attach').bind('click', function() {
-      var params = jQ(this).data('params');
-      deleConfirm(params[0], params[1], params[2]);
-    });
+    jQ('#delete-confirm-dialog').on('show.bs.modal', function (event) {
+      var relatedTarget = event.relatedTarget;
+      var modal = jQ(this);
 
+      modal.find('.js-btn-confirm').on('click', function (event) {
+        modal.modal('hide');
+        var params = jQ(relatedTarget).data('params');
+        deleConfirm(params[0], params[1], params[2]);
+      });
+    });
   });
 };
 

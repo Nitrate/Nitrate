@@ -1,74 +1,20 @@
-{% extends "tcms_base.html" %}
+{% extends "common/attachment.html" %}
 
-{% block subtitle %}{{ testplan.title }}{% endblock %}
+{% block subtitle %}{{ target.summary }}{% endblock %}
 
-{% block custom_stylesheet %}
-<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style/print.css" media="print" />
-<style>
-#tab_testcases{ padding-left:5px;}
-#tab_testruns {padding-left:5px;}
-</style>
-{% endblock %}
-
-{% block custom_javascript %}
-<script type="text/javascript" src="{{ STATIC_URL }}js/testplan_actions.js"></script>
-<script type="text/javascript" src='{{ STATIC_URL }}js/testcase_actions.js'></script>
-<script type="text/javascript" src='{{ STATIC_URL }}js/deleconfirm.js'></script>
-<script type="text/javascript">
-Nitrate.Utils.after_page_load(Nitrate.TestPlans.Attachment.on_load);
-</script>
-{% endblock %}
-
-{% block contents %}
-
-<div id="content">
-	<div class="sprites crumble">
-		<a href="{% url "nitrate-index" %}">Home</a>
-		{% if testplan %}
-		>>Plan: <a href="{{ test_plan.get_absolute_url }}">[{{ testplan.plan_id}}]: {{ testplan.name }}</a>
-        >>Case: <a href="{% url "case-get" testcase.case_id %}?from_plan={{ testplan.plan_id }}">[{{ testcase.case_id }}]: {{ testcase.summary }}</a>
-		{% else %}
-		>>Case: <a href="{% url "case-get" testcase.case_id %}?from_plan={{ testplan.plan_id }}">[{{ testcase.case_id }}]: {{ testcase.summary }}</a>
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item"><a href="{% url "nitrate-index" %}">Home</a></li>
+        {% if test_plan %}
+		<li class="breadcrumb-item">
+			Plan: <a href="{{ test_plan.get_absolute_url }}">[{{ test_plan.pk }}]: {{ test_plan.name }}</a>
+		</li>
         {% endif %}
-		>> Manage Attachment
-	</div>
-	<h2>{{ testcase.summary }}</h2>
-	<div class="Detailform border-1">
-		<form action="{% url "upload-file" %}" method="POST" enctype="multipart/form-data" >
-			<div class="mixbar">
-				<span class="tit">Upload New Attachment</span>
-				<input type="hidden" name="to_case_id" value="{{ testcase.case_id }}" />
-				<input type="file" name="upload_file" id="upload_file" limit="{{ limit }}"/>
-				<input type="submit" value="Upload" />
-                <input type="button" class="js-back-button" value="Back" />
-				<span class="right-action">
-                    Note: Each attachment size limit is {{ limit_readable }}.
-                </span>
-			</div>
-		</form>
-		<table class="list" cellspacing="1" cellspan="0">
-			<thead>
-				<tr>
-					<th align="left">File name</th>
-					<th align="left" width="10%">Submitter</th>
-					<th align="left" width="20%">Create date</th>
-					<th align="left" width="20%">Mimetype</th>
-					<th align="left" width="10%">Action</th>
-				</tr>
-			</thead>
-			<tbody>
-				{% for attachment in testcase.attachment.all %}
-				<tr id="{{ attachment.attachment_id }}" class="{% cycle 'odd' 'even' %}">
-					<td><a href="{% url "check-file" attachment.attachment_id %}">{{ attachment.file_name }}</a></td>
-					<td>{{ attachment.submitter }}</td>
-					<td>{{ attachment.create_date }}</td>
-					<td>{{ attachment.mime_type }}</td>
-					<td><a href="{% url "check-file" attachment.attachment_id %}">View</a> | <a href="#" class="js-del-attach" data-params='[{{ attachment.attachment_id }}, "from_case", {{ testcase.case_id }}]'>Delete</a></td>
-				</tr>
-				{% endfor %}
-			</tbody>
-		</table>
-	</div>
-</div>
-
+		<li class="breadcrumb-item">
+			Case: <a href="{% url "case-get" target.pk %}?from_plan={{ testplan.pk }}">[{{ target.pk }}]: {{ target.summary }}</a>
+		</li>
+		<li class="breadcrumb-item active">Add Attachment</li>
+	</ol>
+</nav>
 {% endblock %}

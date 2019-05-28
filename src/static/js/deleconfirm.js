@@ -1,9 +1,5 @@
 function deleConfirm(attachment_id, home, plan_id) {
   var url = "/management/deletefile/" + attachment_id + "?" + home + "=" + plan_id;
-  var answer = window.confirm("Arey you sure to delete the attachment?");
-  if (!answer) {
-    return false;
-  }
 
   jQ.ajax({
     'url': url,

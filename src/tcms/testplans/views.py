@@ -776,7 +776,8 @@ def attachment(request, plan_id, template_name='plan/attachment.html'):
     context_data = {
         'module': MODULE_NAME,
         'sub_module': SUB_MODULE_NAME,
-        'test_plan': tp,
+        'target_name': 'plan',
+        'target': tp,
         'limit': file_size_limit,
         'limit_readable': str(limit_readable) + "Mb",
     }

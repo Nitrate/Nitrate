@@ -26,7 +26,10 @@ log = logging.getLogger(__name__)
 @require_POST
 @permission_required('management.add_testattachment')
 def upload_file(request):
-    if 'to_plan_id' not in request.POST and 'to_case_id' not in request.POST:
+    target = request.POST.get('target')
+    target_pk = int(request.POST.get('target_pk'))
+
+    if not target:
         return Prompt.render(
             request=request,
             info_type=Prompt.Alert,
@@ -94,32 +97,26 @@ def upload_file(request):
             mime_type=upload_file.content_type
         )
 
-        if request.POST.get('to_plan_id'):
+        if target == 'plan':
             TestPlanAttachment.objects.create(
-                plan_id=int(request.POST['to_plan_id']),
-                attachment_id=ta.attachment_id,
-            )
+                plan_id=target_pk,
+                attachment_id=ta.attachment_id)
             return HttpResponseRedirect(
-                reverse('plan-attachment', args=[request.POST['to_plan_id']])
-            )
+                reverse('plan-attachment', args=[target_pk]))
 
-        if request.POST.get('to_case_id'):
+        if target == 'case':
             TestCaseAttachment.objects.create(
                 attachment_id=ta.attachment_id,
-                case_id=int(request.POST['to_case_id'])
-            )
+                case_id=target_pk)
             return HttpResponseRedirect(
-                reverse('case-attachment', args=[request.POST['to_case_id']])
-            )
+                reverse('case-attachment', args=[target_pk]))
     else:
-        if 'to_plan_id' in request.POST:
+        if target == 'plan':
             return HttpResponseRedirect(
-                reverse('plan-attachment', args=[request.POST['to_plan_id']])
-            )
-        if 'to_case_id' in request.POST:
+                reverse('plan-attachment', args=[target_pk]))
+        if target == 'case':
             return HttpResponseRedirect(
-                reverse('case-attachment', args=[request.POST['to_case_id']])
-            )
+                reverse('case-attachment', args=[target_pk]))
 
 
 @require_GET
