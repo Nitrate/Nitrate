@@ -6,14 +6,18 @@
 <nav aria-label="breadcrumb">
 	<ol class="breadcrumb">
 		<li class="breadcrumb-item"><a href="{% url "nitrate-index" %}">Home</a></li>
-        {% if test_plan %}
-		<li class="breadcrumb-item">
-			Plan: <a href="{{ test_plan.get_absolute_url }}">[{{ test_plan.pk }}]: {{ test_plan.name }}</a>
-		</li>
-        {% endif %}
-		<li class="breadcrumb-item">
-			Case: <a href="{% url "case-get" target.pk %}?from_plan={{ testplan.pk }}">[{{ target.pk }}]: {{ target.summary }}</a>
-		</li>
+		{% if test_plan %}
+			<li class="breadcrumb-item">
+				Plan: <a href="{{ test_plan.get_absolute_url }}">[{{ test_plan.pk }}] {{ test_plan.name }}</a>
+			</li>
+			<li class="breadcrumb-item">
+				Case: <a href="{% url "case-get" target.pk %}?from_plan={{ test_plan.pk }}">[{{ target.pk }}] {{ target.summary }}</a>
+			</li>
+		{% else %}
+			<li class="breadcrumb-item">
+				Case: <a href="{% url "case-get" target.pk %}">[{{ target.pk }}] {{ target.summary }}</a>
+			</li>
+		{% endif %}
 		<li class="breadcrumb-item active">Add Attachment</li>
 	</ol>
 </nav>
