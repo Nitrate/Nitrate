@@ -1,4 +1,4 @@
-{% extends "tcms_base.html" %}
+{% extends "tcms_master.html" %}
 
 {% block subtitle %}Create new test plan{% endblock %}
 
@@ -11,111 +11,125 @@
 
 {% block custom_javascript %}
 <script type="text/javascript" src="{{ STATIC_URL }}js/testplan_actions.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}admin/js/jquery.init.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}admin/js/admin/RelatedObjectLookups.js"></script>
 <script type="text/javascript">
 Nitrate.Utils.after_page_load(Nitrate.TestPlans.Create.on_load);
 </script>
 {% endblock %}
 
-{% block contents %}
+{% block page_content %}
+<nav aria-label="breadcrumb">
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item"><a href="{% url "nitrate-index" %}">Home</a></li>
+		<li class="breadcrumb-item"><a href="{% url "plans-all" %}">Planning</a></li>
+		<li class="breadcrumb-item active">Create New Test Plan</li>
+	</ol>
+</nav>
 
-<div id="content">
-	<div class="sprites crumble">
-		<a href="{% url "nitrate-index" %}">Home</a>
-		>> <a href="{% url "plans-all" %}">Planning</a>
-		>> New Test Plan
-	</div>
-	<form method="post" action="{% url "plans-new" %}" enctype="multipart/form-data">
-		<h2>Create New Test Plan</h2>
-		<div class="Detailform border-1" >
-			<table class="editor" cellspan="0" cellspacing="0">
-				<tr>
-					<td width="20%" valign="top"><label class="lab strong" for="id_title">Plan Name</label><span >{{ form.attrib.errors }}</span></td>
-					<td width="80%">
-						<span class="name summary">{{ form.name }}</span>
-						<div >{{ form.name.errors }}</div>
-					</td>
-				</tr>
-				<tr>
-					<td width="20%" valign="top"><label class="lab strong" for="id_product_id">Product</label></td>
-					<td>
-						<span class="name" >{{ form.product }}</span>
-						<span >{{ form.product.errors }}</span>
-              <a id="add_id_product" href="{{ ADMIN_PREFIX }}/management/product/add/" class="addlink" >
-							Add Product
-						</a>
-						<span class="grey">After Add and Refresh page</span>
-					</td>
-				</tr>
-				<tr>
-					<td width="20%" valign="top"><label class="lab strong" for="id_version_id">Product Version</label></td>
-					<td>
-						<span>{{ form.product_version }}</span>
-						<span >{{ form.product_version.errors }}</span>
-                        <a id="add_id_product_version" href="{{ ADMIN_PREFIX }}/management/version/add/" class="addlink" >
-							Add Product Version
-						</a>
-						<span class="grey">After Add and Refresh page</span>
-					</td>
-				</tr>
-				<tr>
-					<td valign="top"><label class="lab strong" for="id_type_id">Type</label></td>
-					<td >
-						<span class="name"> {{ form.type }} </span>
-						<div > {{ form.type.errors }} </div>
-					</td>
-				</tr>
-				<tr>
-					<td valign="top"><label class="lab" for="id_parent">Parent ID</label></td>
-					<td >
-						<span class="name">{{ form.parent }}</span>
-						<div>{{ form.parent.errors }}</div>
-					</td>
-				</tr>
-				<tr>
-					<td valign="top"><label class="lab" for="id_summary">Plan Document: </label></td>
-					<td>
-						<div class="mec">{{ form.text }}</div>
-						<div >{{ form.text.errors }}</div>
-						<span>Or upload a plan document</span>
-						{{ form.upload_plan_text }}
-						<span class="grey">Html, Plain text or ODT is acceptable.</span>
-						<div >{{ form.upload_plan_text.errors }}</div>
-					</td>
-				</tr>
-				<tr>
-					<td valign="top"><label class="lab" for="id_env_group_id">Environment Group</label></td>
-					<td colspan="3">
-						<span class="name">{{ form.env_group }}{{ form.env_group.errors }}</span>
-						<span>
-							<a class="system_help" href="javascript:void(0)" title="" id="env_group_help_link">What is environment group?</a>
-							<div id="env_group_help" class="system_info" style="display:none">
-								<p>
-									Environment Group represent group of environment properties and all values of these properties. <br/>
-									Nitrate uses environment variables to define the test hardware setup. The Environment Group is the top level container object, it contains one or more Properties, each having a range of values. Properties can belong to more than one group.
-									<br/>
-									Then when creating test run , you can set one value of each property under this environment group as environment of run testing.
-									<br/>
-									<a href="javascript:void(0)" class="right-action" title="close the tip" id="env_group_help_close">Close</a>
-								</p>
-
-							</div>
-						</span>
-					</td>
-				</tr>
-				<tr>
-					<td valign="top"><label class="lab" for="id_extra_link">Reference Link:</label></td>
-					<td>
-						<div class="name summary">{{ form.extra_link }}</div>
-						<div >{{ form.extra_link.errors }}</div>
-					</td>
-				</tr>
-			</table>
-			<div class="submit-row" >
-				<input type="submit" value="Create test plan" />
-				<input type="button" value="Cancel" class="js-cancel-button" />
+<div class="container">
+	<div class="col-md-1"></div>
+	<div class="col-md-8">
+		<form method="post" action="{% url "plans-new" %}" enctype="multipart/form-data" class="form-horizontal" role="form">
+			<div class="form-group{% if form.name.errors %} has-error{% endif %}">
+				<label class="col-sm-3 control-label required-pf" for="id_{{ form.name.name }}">{{ form.name.label }}</label><span >{{ form.attrib.errors }}</span></td>
+				<div class="col-md-9">
+					{{ form.name }}
+				</div>
 			</div>
-		</div>
-	</form>
+			<div class="form-group{% if form.product.errors %} has-error{% endif %}">
+				<label class="col-sm-3 control-label required-pf" for="id_{{ form.product.name }}">{{ form.product.label }}</label>
+				<div class="col-md-9">
+					{{ form.product }}
+					<a id="add_id_product" href="{{ ADMIN_PREFIX }}/management/product/add/" class="addlink">
+						<i class="fas fa-plus"></i> Add Product
+					</a>
+				</div>
+			</div>
+			<div class="form-group{% if form.product_version.errors %} has-error{% endif %}">
+				<label class="col-sm-3 control-label required-pf" for="id_{{ form.product_version.name }}">{{ form.product_version.label }}</label>
+				<div class="col-md-9">
+					{{ form.product_version }}
+					<a id="add_id_product_version" href="{{ ADMIN_PREFIX }}/management/version/add/" class="addlink" >
+						<i class="fas fa-plus"></i> Add Product Version
+					</a>
+				</div>
+			</div>
+			<div class="form-group{% if form.type.errors %} has-error{% endif %}">
+				<label class="col-sm-3 control-label required-pf" for="id_{{ form.type.name }}">{{ form.type.label }}</label>
+				<div class="col-md-9">
+					{{ form.type }}
+				</div>
+			</div>
+			<div class="form-group{% if form.parent.errors %} has-error{% endif %}">
+				<label class="col-sm-3 control-label" for="id_{{ form.parent.name }}">{{ form.parent.label }}</label>
+				<div class="col-md-9">
+					{{ form.parent }}
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label" for="id_{{ form.text.name }}">{{ form.text.label }}</label>
+				<div class="col-md-9">
+					{{ form.text }}
+					<span>Or upload a plan document</span>
+					{{ form.upload_plan_text }}
+					<span class="help-block">Html, Plain text or ODT is acceptable.</span>
+				</div>
+			</div>
+			<div class="form-group{% if form.env_group.errors %} has-error{% endif %}">
+				<label class="col-sm-3 control-label" for="id_{{ form.env_group.name }}">
+					{{ form.env_group.label }}
+				</label>
+				<div class="col-md-9">
+					{{ form.env_group }}
+					<div>What is environment group?
+						<a tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-html="true" title=""
+							class="popover-pf-info" data-content="Environment Group represent group of environment properties and all values of these properties. <br/>Nitrate uses environment variables to define the test hardware setup. The Environment Group is the top level container object, it contains one or more Properties, each having a range of values. Properties can belong to more than one group.<br/>Then when creating test run , you can set one value of each property under this environment group as environment of run testing."
+							data-placement="right" data-original-title="">
+							<span class="pficon pficon-info"></span>
+						</a>
+					</div>
+				</div>
+			</div>
+			<div class="form-group{% if form.extra_link.errors %} has-error{% endif %}">
+				<label class="col-sm-3 control-label" for="id_{{ form.extra_link.name }}">{{ form.extra_link.label }}</label>
+				<div class="col-md-9">
+					{{ form.extra_link }}
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-3"></div>
+				<div class="col-sm-9">
+					<button type="submit" class="btn btn-primary">Create test plan</button>
+					<button type="button" class="btn btn-default js-cancel-button">Cancel</button>
+				</div>
+			</div>
+		</form>
+	</div>
+	<div class="col-md-3"></div>
 </div>
+
+<script>
+	jQ(document).ready(function() {
+		jQ('[data-toggle=popover]').popovers().on('hidden.bs.popover', function (e) {
+			$(e.target).data('bs.popover').inState.click = false;
+		});
+	});
+</script>
+
+{% if form.errors %}
+<div class="toast-notifications-list-pf">
+	<div class="toast-pf alert alert-danger alert-dismissable">
+		<button type="button" class="close" data-dismiss="alert" aria-hidden="true">
+			<span class="pficon pficon-close"></span>
+		</button>
+		<span class="pficon pficon-error-circle-o"></span>
+		{% for field_name, errors in form.errors.items %}
+		{% for error in errors %}
+		{{ error }}<br />
+		{% endfor %}
+		{% endfor %}
+	</div>
+</div>
+{% endif %}
 {% endblock %}

@@ -188,11 +188,15 @@ class PlanModelForm(forms.ModelForm):
 
 
 class BasePlanForm(forms.Form):
-    name = forms.CharField(label="Plan name")
+    name = forms.CharField(
+        label="Plan name",
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
     type = forms.ModelChoiceField(
         label="Type",
         queryset=TestPlanType.objects.all(),
         empty_label=None,
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
     text = forms.CharField(
         label="Plan Document",
@@ -203,23 +207,39 @@ class BasePlanForm(forms.Form):
         label="Product",
         queryset=Product.objects.all(),
         empty_label=None,
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
     product_version = forms.ModelChoiceField(
         label="Product Version",
         queryset=Version.objects.none(),
         empty_label=None,
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        error_messages={
+            'required': 'Missing product version. Please choose one.',
+        },
     )
     extra_link = StripURLField(
         label='Extra link',
         max_length=1024,
-        required=False
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        error_messages={
+            'invalid': 'Extra link must contain a valid URL.',
+        },
     )
     env_group = forms.ModelChoiceField(
         label="Environment Group",
         queryset=TCMSEnvGroup.get_active().all(),
-        required=False
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
-    parent = forms.IntegerField(required=False)
+    parent = forms.IntegerField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Parent plan ID'
+        })
+    )
 
     owner = forms.CharField(
         label="Plan Document",
@@ -227,12 +247,16 @@ class BasePlanForm(forms.Form):
     )
 
     def clean_parent(self):
-        try:
-            p = self.cleaned_data['parent']
-            if p:
-                return TestPlan.objects.get(pk=p)
-        except TestPlan.DoesNotExist:
-            raise forms.ValidationError('The plan does not exist in database.')
+        p = self.cleaned_data['parent']
+        if not p:
+             return
+        plan = TestPlan.objects.filter(pk=p).first()
+        if plan is None:
+            raise forms.ValidationError(
+                'Parent plan ID %(value)s does not exist yet.',
+                params={'value': p},
+                code='invalid')
+        return plan
 
     def populate(self, product_id):
         if product_id:
