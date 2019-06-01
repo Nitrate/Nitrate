@@ -141,23 +141,55 @@ class CaseModelForm(forms.ModelForm):
 # =========== Forms for create/update ==============
 
 class BaseCaseForm(forms.Form):
-    summary = forms.CharField(label="Summary", )
-    default_tester = UserField(label="Default tester", required=False)
-    requirement = forms.CharField(label="Requirement", required=False)
+    summary = forms.CharField(
+        label="Summary",
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    default_tester = UserField(
+        label="Default tester",
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    requirement = forms.CharField(
+        label="Requirement",
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
     is_automated = forms.MultipleChoiceField(
         choices=AUTOMATED_CHOICES,
-        widget=forms.CheckboxSelectMultiple(),
+        widget=forms.CheckboxSelectMultiple(attrs={'class': 'form-control bootstrap-switch'}),
+        error_messages={
+            'required': 'Please choose if new case is run manually, automatically or both.'
+        }
     )
     is_automated_proposed = forms.BooleanField(
-        label='Autoproposed', required=False
+        label='Autoproposed',
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-control bootstrap-switch'}),
     )
-    script = forms.CharField(label="Script", required=False)
-    arguments = forms.CharField(label="Arguments", required=False)
-    alias = forms.CharField(label="Alias", required=False)
+    script = forms.CharField(
+        label="Script",
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    arguments = forms.CharField(
+        label="Arguments",
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    alias = forms.CharField(
+        label="Alias",
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
     extra_link = StripURLField(
         label='Extra link',
         max_length=1024,
-        required=False
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        error_messages={
+            'invalid': 'Extra link has an invalid URL.',
+        }
     )
     # sortkey = forms.IntegerField(label = 'Sortkey', required = False)
     case_status = forms.ModelChoiceField(
@@ -170,16 +202,22 @@ class BaseCaseForm(forms.Form):
         label="Priority",
         queryset=Priority.objects.all(),
         empty_label=None,
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
     product = forms.ModelChoiceField(
         label="Product",
         queryset=Product.objects.all(),
         empty_label=None,
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
     category = forms.ModelChoiceField(
         label="Category",
         queryset=TestCaseCategory.objects.none(),
         empty_label=None,
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        error_messages={
+            'required': 'Category is required to create a new test case.',
+        }
     )
     component = forms.ModelMultipleChoiceField(
         label="Components",
@@ -188,10 +226,15 @@ class BaseCaseForm(forms.Form):
     )
     notes = forms.CharField(
         label='Notes',
-        widget=forms.Textarea,
-        required=False
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control'})
     )
-    estimated_time = DurationField(label='Estimated Time', initial='0m', required=False)
+    estimated_time = DurationField(
+        label='Estimated Time',
+        initial='0m',
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
     setup = forms.CharField(label="Setup", widget=TinyMCE(), required=False)
     action = forms.CharField(label="Actions", widget=TinyMCE(), required=False)
     effect = forms.CharField(label="Expect results", widget=TinyMCE(), required=False)
@@ -199,7 +242,8 @@ class BaseCaseForm(forms.Form):
 
     tag = forms.CharField(
         label="Tag",
-        required=False
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
     )
 
     def __init__(self, *args, **kwargs):

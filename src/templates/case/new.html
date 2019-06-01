@@ -1,6 +1,6 @@
-{% extends "tcms_base.html" %}
+{% extends "tcms_master.html" %}
 
-{% block subtitle %}Add new case{% endblock %}
+{% block subtitle %}Create New Case{% endblock %}
 
 {% block extra_head %}
 {{ form.media }}
@@ -12,164 +12,207 @@
 {% block custom_javascript %}
 <script type="text/javascript" src='{{ STATIC_URL }}js/testplan_actions.js'></script>
 <script type="text/javascript" src='{{ STATIC_URL }}js/testcase_actions.js'></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/lib/bootstrap-switch.min.js"></script>
 <script type="text/javascript" src="/jsi18n/"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}admin/js/jquery.init.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}admin/js/core.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}admin/js/SelectFilter2.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/lib/django/SelectFilter2.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}admin/js/admin/RelatedObjectLookups.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}admin/js/SelectBox.js"></script>
 <script type="text/javascript">
 Nitrate.Utils.after_page_load(Nitrate.TestCases.Create.on_load);
 </script>
 {% endblock %}
 
-{% block contents %}
-<!--add new case -->
-<div id="content">
-	<div class="sprites crumble">
-		<a href="{% url "nitrate-index" %}">Home</a>
+{% block page_content %}
+<nav aria-label="breadcrumb">
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item"><a href="{% url "nitrate-index" %}">Home</a></li>
 		{% if test_plan %}
-		>> <a href="{% url "plans-all" %}">Planning</a>
-		>> <a href="{{ test_plan.get_absolute_url }}">{{ test_plan.name }}</a>
+		<li class="breadcrumb-item"><a href="{% url "plans-all" %}">Planning</a></li>
+		<li class="breadcrumb-item">
+			<a href="{{ test_plan.get_absolute_url }}">{{ test_plan.name }}</a>
+		</li>
 		{% else %}
-		>> <a href="{% url "cases-search" %}">Testing</a>
+		<li class="breadcrumb-item">
+			<a href="{% url "cases-search" %}">Testing</a>
+		</li>
 		{% endif %}
-		>> Create new case
-	</div>
-	<form action="{% url "cases-new" %}{% if test_plan %}?from_plan={{ test_plan.plan_id }}{% endif %}" method="POST">
-		{% if test_plan %}
-		<input type="hidden" name="from_plan" value="{{ test_plan.plan_id }}" />
-		{% endif %}
-		<div id="newcase" class="Detailform border-1">
-			<div id="id_create_case_process" class="submit" style="display: none">
-				<img src="{{ STATIC_URL }}images/loading/ajax-button.gif" />
-			</div>
-			<fieldset class="no-border background-light-grey">
-				<div class="editor-side">
-					<div class="data_row">
-						<label id="item_title" class="strong">Summary</label>
-						<span id="form_title" class="name">{{ form.summary }}</span>
-							<div class="errors">
-								{{ form.summary.errors }}
-							</div>
-					</div>
-					<div class="data_row">
-						<label class="lab strong">Component</label>
-						<div class="component_select">{{ form.component }}</div>
-						<div class="errors">{{ form.component.errors }}</div>
-					</div>
-					<div class="data_row">
-						<label class="lab strong">Category</label>
-						{{ form.category }}
-						<a href="{{ ADMIN_PREFIX }}/testcases/testcasecategory/add/" class="addlink" id="id_addt_product_casecategory" target="_blank">Add Category</a><span class="grey">After Add and Refresh page</span><span class="errors">{{ form.category.errors }}</span>
-					</div>
-				</div>
-				<div class="editor-side">
-					<div class="data_row">
-						<label>Product </label>
-						<div id="display_product">{{ form.product }}</div>
-						<div id="errors">{{ form.product.errors }}</div>
-					</div>
-					<div class="data_row">
-						<label>Automated</label>
-						{{ form.is_automated }}
-                        <div class="automatedlist">
-						{{ form.is_automated_proposed }}
-						{{ form.is_automated_proposed.label }}
-						</div>
-                        <div class="errors">
-							{{ form.is_automated.errors }}
-							{{ form.is_automated_proposed.errors }}
-						</div>
-					</div>
-					<div class="data_row">
-						<label >Requirement</label>
-						{{ form.requirement }}
-						{{ form.requirement.errors }}
-					</div>
-					<div class="data_row">
-						<label >Script</label>
-						{{ form.script }}
-						<div class="errors">{{ form.script.errors }}</div>
-					</div>
-                    <div class="data_row">
-						<label >Alias</label>
-						{{ form.alias }}
-						<div class="errors">{{ form.alias.errors }}</div>
-					</div>
-					<div class="data_row">
-						<label >Default Tester:</label>
-						{{ form.default_tester }}<div class="errors">{{ form.default_tester.errors }}</div>
-					</div>
-					
-					<div class="data_row">
-						<label >Estimated Time</label>
-						<div class="time">
-							{{ form.estimated_time }}
-							<span class="grey">(eg. 3d 4h 30m)</span> 
-							<div class="errors">{{ form.estimated_time.errors }}</div>
-						</div>
-					</div>
-					<div class="data_row">
-						<label>Priority</label>
-						{{ form.priority }}<div class="errors">{{ form.priority.errors }}</div>
-					</div>
-                    <div class="data_row">
-						<label>Arguments</label>
-						{{ form.arguments }}<div class="errors">{{ form.arguments.errors }}</div>
-					</div>
-                    <div class="data_row">
-                        <label>Reference Link</label>
-                        {{ form.extra_link }}<div class="errors">{{ form.extra_link.errors }}</div>
-                    </div>
-					<div class="data_row">
-						<label class="lab">Tags</label>
-						{{ form.tag }}
-					</div>
-                    <div class="data_row">
-						<label>Notes</label>
-						{{ form.notes }}<div class="errors">{{ form.notes.errors }}</div>
-					</div>
-				</div>
-			</fieldset>
-			<fieldset class="no-border background-light-grey">
-				<div class="editor-side">
-					<div class="data_row">
-						<h4 >Setup</h4>
-						<div class="form">{{ form.setup }}</div>
-						<div class="errors">{{ form.setup.errors }}</div>
-					</div>
-					<div class="data_row">
-						<h4>Actions</h4>
-						<div class="form">{{ form.action }}</div>
-						<div class="errors">{{ form.action.errors }}</div>
-					</div>
-				</div>
-				<div class="editor-side">
+		<li class="breadcrumb-item active">Create New Test Case</li>
+	</ol>
+</nav>
 
-					<div class="data_row">
-						<h4>Breakdown</h4>
-						<div class="form">{{ form.breakdown }}</div>
-						<div class="errors">{{ form.breakdown.errors }}</div>
-					</div>
-					<div class="data_row">
-						<h4>Expected Results</h4>
-						<div class="form">{{ form.effect }}</div>
-						<div class="errors">{{ form.effect.errors }}</div>
-					</div>
+<form action="{% url "cases-new" %}{% if test_plan %}?from_plan={{ test_plan.plan_id }}{% endif %}" method="POST" class="form-horizontal">
+	{% if test_plan %}
+		<input type="hidden" name="from_plan" value="{{ test_plan.plan_id }}" />
+	{% endif %}
+	<div class="row">
+		<div class="col-md-6">
+			<div class="form-group{% if form.summary.errors %} has-error{% endif %}">
+				<label class="col-sm-2 control-label required-pf" for="id_{{ form.summary.name }}">{{ form.summary.label }}</label>
+				<div class="col-md-10">
+					{{ form.summary }}
 				</div>
-			</fieldset>
-			<div id="submit" class="submit-row">
-				
-				<input type="submit" value="Save" />
-				<input type="submit" name="_continue" value="Save and continue editing" />
-				{% if test_plan %}
-				<input type="submit" name="_addanother" value="Save and add another" />
-				<input type="submit" name="_returntoplan" value="Save and return to plan" />
-				<input type="button" value="Cancel" class="js-plan-cancel" data-param="{{ test_plan.get_absolute_url }}" />
-				{% else %}
-				<input type="button" value="cancel" class="js-case-cancel" >
-				{% endif %}
+			</div>
+			<div class="form-group{% if form.product.errors %} has-error{% endif %}">
+				<label class="col-sm-2 control-label required-pf" for="id_{{ form.product.name }}">{{ form.product.label }}</label>
+				<div class="col-md-10">
+					{{ form.product }}
+				</div>
+			</div>
+			<div class="form-group{% if form.category.errors %} has-error{% endif %}">
+				<label class="col-sm-2 control-label required-pf" for="id_{{ form.category.name }}">{{ form.category.label }}</label>
+				<div class="col-md-10">
+					{{ form.category }}
+					<a href="{{ ADMIN_PREFIX }}/testcases/testcasecategory/add/" class="addlink" id="add_case_category">
+						<i class="fas fa-plus"></i> Add Category
+					</a>
+					<span class="grey">After Add and Refresh page</span>
+				</div>
+			</div>
+			<div class="form-group{% if form.priority.errors %} has-error{% endif %}">
+				<label class="col-sm-2 control-label required-pf" for="id_{{ form.priority.name }}">{{ form.priority.label }}</label>
+				<div class="col-md-10">
+					{{ form.priority }}
+				</div>
+			</div>
+			<div class="form-group{% if form.component.errors %} has-error{% endif %}">
+				<label class="col-sm-2 control-label" for="id_{{ form.component.name }}">{{ form.component.label }}</label>
+				<div class="col-md-10">
+					{{ form.component }}
+				</div>
 			</div>
 		</div>
-	</form>
-</div>
+		<div class="col-md-6">
+			<div class="form-group{% if form.is_automated.errors %} has-error{% endif %}">
+				<label class="col-sm-2 control-label required-pf" for="id_{{ form.is_automated.name }}">{{ form.is_automated.label }}</label>
+				<div class="col-md-10">
+					{% for choice_item in form.is_automated %}
+					{{ choice_item }}&nbsp;
+					{% endfor %}
+				</div>
+			</div>
+			<div class="form-group{% if form.is_automated_proposed.errors %} has-error{% endif %}">
+				<label class="col-sm-2 control-label" for="id_{{ form.is_automated_proposed.name }}">{{ form.is_automated_proposed.label }}</label>
+				<div class="col-md-10">
+					{{ form.is_automated_proposed }}
+				</div>
+			</div>
+			<div class="form-group{% if form.requirement.errors %} has-error{% endif %}">
+				<label class="col-sm-2 control-label" for="id_{{ form.requirement.name }}">{{ form.requirement.label }}</label>
+				<div class="col-md-10">
+					{{ form.requirement }}
+				</div>
+			</div>
+			<div class="form-group{% if form.script.errors %} has-error{% endif %}">
+				<label class="col-sm-2 control-label" for="id_{{ form.script.name }}">{{ form.script.label }}</label>
+				<div class="col-md-10">
+					{{ form.script }}
+				</div>
+			</div>
+			<div class="form-group{% if form.alias.errors %} has-error{% endif %}">
+				<label class="col-sm-2 control-label" for="id_{{ form.alias.name }}">{{ form.alias.label }}</label>
+				<div class="col-md-10">
+					{{ form.alias }}
+				</div>
+			</div>
+			<div class="form-group{% if form.default_tester.errors %} has-error{% endif %}">
+				<label class="col-sm-2 control-label" for="id_{{ form.default_tester.name }}">{{ form.default_tester.label }}</label>
+				<div class="col-md-10">
+					{{ form.default_tester }}
+				</div>
+			</div>
+			<div class="form-group{% if form.estimated_time.errors %} has-error{% endif %}">
+				<label class="col-sm-2 control-label" for="id_{{ form.estimated_time.name }}">{{ form.estimated_time.label }}</label>
+				<div class="col-md-10">
+					{{ form.estimated_time }}
+					<span class="help-block">Eg. 3d 4h 30m</span>
+				</div>
+			</div>
+			<div class="form-group{% if form.arguments.errors %} has-error{% endif %}">
+				<label class="col-sm-2 control-label" for="id_{{ form.arguments.name }}">{{ form.arguments.label }}</label>
+				<div class="col-md-10">
+					{{ form.arguments }}
+				</div>
+			</div>
+			<div class="form-group{% if form.extra_link.errors %} has-error{% endif %}">
+				<label class="col-sm-2 control-label" for="id_{{ form.extra_link.name }}">{{ form.extra_link.label }}</label>
+				<div class="col-md-10">
+					{{ form.extra_link }}
+				</div>
+			</div>
+			<div class="form-group{% if form.tag.errors %} has-error{% endif %}">
+				<label class="col-sm-2 control-label" for="id_{{ form.tag.name }}">{{ form.tag.label }}</label>
+				<div class="col-md-10">
+					{{ form.tag }}
+				</div>
+			</div>
+			<div class="form-group{% if form.notes.errors %} has-error{% endif %}">
+				<label class="col-sm-2 control-label" for="id_{{ form.notes.name }}">{{ form.notes.label }}</label>
+				<div class="col-md-10">
+					{{ form.notes }}
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6">
+			<div class="form-group{% if form.setup.errors %} has-error{% endif %}">
+				<div class="col-md-12">
+					<label class="control-label" for="id_{{ form.setup.name }}" style="margin-bottom: 10px;">{{ form.setup.label }}</label>
+					{{ form.setup }}
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="form-group{% if form.action.errors %} has-error{% endif %}">
+				<div class="col-md-12">
+					<label class="control-label" for="id_{{ form.action.name }}" style="margin-bottom: 10px;">{{ form.action.label }}</label>
+					{{ form.action }}
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6">
+			<div class="form-group{% if form.breakdown.errors %} has-error{% endif %}">
+				<div class="col-md-12">
+					<label class="control-label" for="id_{{ form.breakdown.name }}" style="margin-bottom: 10px;">{{ form.breakdown.label }}</label>
+					{{ form.breakdown }}
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="form-group{% if form.effect.errors %} has-error{% endif %}">
+				<div class="col-md-12">
+					<label class="control-label" for="id_{{ form.effect.name }}" style="margin-bottom: 10px;">{{ form.effect.label }}</label>
+					{{ form.effect }}
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-4"></div>
+		<div class="col-md-4">
+			<button type="submit" class="btn btn-primary">Save</button>
+			<button type="submit" name="_continue" class="btn btn-default">Save and continue editing</button>
+			{% if test_plan %}
+				<button type="submit" name="_addanother" class="btn btn-default">Save and add another</button>
+				<button type="submit" name="_returntoplan" class="btn btn-default">Save and return to plan</button>
+				<button type="button" class="btn btn-default js-plan-cancel" data-param="{{ test_plan.get_absolute_url }}">Cancel</button>
+			{% else %}
+				<button type="button" class="btn btn-default" class="js-case-cancel">cancel</button>
+			{% endif %}
+		</div>
+		<div class="col-md-4"></div>
+	</div>
+</form>
+
+{% include "common/form-errors-toast-notification.html" %}
+
+<script type="text/javascript">
+	jQ(document).ready(function() {
+		jQ(".bootstrap-switch").bootstrapSwitch();
+	});
+</script>
 {% endblock %}

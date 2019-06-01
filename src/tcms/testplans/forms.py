@@ -8,6 +8,7 @@ from tinymce.widgets import TinyMCE
 from tcms.management.models import Component, Product, Version, TCMSEnvGroup, TestTag
 from tcms.testplans.importer import clean_xml_file
 from .models import TestPlan, TestPlanType
+from attr._make import attrs
 # ===========Plan Fields==============
 
 

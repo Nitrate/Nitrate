@@ -117,19 +117,5 @@ Nitrate.Utils.after_page_load(Nitrate.TestPlans.Create.on_load);
 	});
 </script>
 
-{% if form.errors %}
-<div class="toast-notifications-list-pf">
-	<div class="toast-pf alert alert-danger alert-dismissable">
-		<button type="button" class="close" data-dismiss="alert" aria-hidden="true">
-			<span class="pficon pficon-close"></span>
-		</button>
-		<span class="pficon pficon-error-circle-o"></span>
-		{% for field_name, errors in form.errors.items %}
-		{% for error in errors %}
-		{{ error }}<br />
-		{% endfor %}
-		{% endfor %}
-	</div>
-</div>
-{% endif %}
+{% include "common/form-errors-toast-notification.html" %}
 {% endblock %}

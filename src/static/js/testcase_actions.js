@@ -481,6 +481,10 @@ Nitrate.TestCases.Create.on_load = function() {
       window.location.href = jQ(this).data('param');
     });
   }
+
+  jQ('#add_case_category').bind('click', function() {
+    return popupAddAnotherWindow(this);
+  });
 };
 
 Nitrate.TestCases.Edit.on_load = function() {
