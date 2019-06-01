@@ -208,7 +208,6 @@ def new(request, template_name='case/new.html'):
             form.populate()
 
         if form.is_valid():
-            breakpoint()
             tc = create_testcase(request, form, tp)
 
             class ReturnActions:

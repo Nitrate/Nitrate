@@ -8,7 +8,6 @@ from tinymce.widgets import TinyMCE
 from tcms.management.models import Component, Product, Version, TCMSEnvGroup, TestTag
 from tcms.testplans.importer import clean_xml_file
 from .models import TestPlan, TestPlanType
-from attr._make import attrs
 # ===========Plan Fields==============
 
 
@@ -250,7 +249,7 @@ class BasePlanForm(forms.Form):
     def clean_parent(self):
         p = self.cleaned_data['parent']
         if not p:
-             return
+            return
         plan = TestPlan.objects.filter(pk=p).first()
         if plan is None:
             raise forms.ValidationError(

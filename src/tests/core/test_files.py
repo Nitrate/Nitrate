@@ -68,14 +68,16 @@ class TestUploadFile(BasePlanCase):
     def test_no_file_is_posted(self):
         self.client.login(username=self.user.username, password=self.password)
 
-        response = self.client.post(reverse('upload-file'),
-                                    {'to_plan_id': self.plan.pk})
+        response = self.client.post(
+            reverse('upload-file'),
+            {'target': 'plan', 'target_pk': self.plan.pk})
         self.assertRedirects(
             response,
             reverse('plan-attachment', args=[self.plan.pk]))
 
-        response = self.client.post(reverse('upload-file'),
-                                    {'to_case_id': self.case_1.pk})
+        response = self.client.post(
+            reverse('upload-file'),
+            {'target': 'case', 'target_pk': self.case_1.pk})
         self.assertRedirects(
             response,
             reverse('case-attachment', args=[self.case_1.pk]))
@@ -85,9 +87,11 @@ class TestUploadFile(BasePlanCase):
         self.client.login(username=self.user.username, password=self.password)
 
         with open(self.upload_filename, 'r') as upload_file:
-            response = self.client.post(self.upload_file_url,
-                                        {'to_plan_id': self.plan.pk,
-                                         'upload_file': upload_file})
+            response = self.client.post(self.upload_file_url, {
+                'target': 'plan',
+                'target_pk': self.plan.pk,
+                'upload_file': upload_file
+            })
 
         self.assertContains(response, 'You upload entity is too large')
 
@@ -97,9 +101,11 @@ class TestUploadFile(BasePlanCase):
         with patch('tcms.core.files.settings.FILE_UPLOAD_DIR',
                    new=self.file_upload_dir):
             with open(self.upload_filename, 'r') as upload_file:
-                response = self.client.post(self.upload_file_url,
-                                            {'to_plan_id': self.plan.pk,
-                                             'upload_file': upload_file})
+                response = self.client.post(self.upload_file_url, {
+                    'target': 'plan',
+                    'target_pk': self.plan.pk,
+                    'upload_file': upload_file
+                })
 
         self.assertRedirects(
             response,
@@ -122,9 +128,11 @@ class TestUploadFile(BasePlanCase):
         with patch('tcms.core.files.settings.FILE_UPLOAD_DIR',
                    new=self.file_upload_dir):
             with open(self.upload_filename, 'r') as upload_file:
-                response = self.client.post(self.upload_file_url,
-                                            {'to_case_id': self.case_1.pk,
-                                             'upload_file': upload_file})
+                response = self.client.post(self.upload_file_url, {
+                    'target': 'case',
+                    'target_pk': self.case_1.pk,
+                    'upload_file': upload_file
+                })
 
         self.assertRedirects(
             response,
