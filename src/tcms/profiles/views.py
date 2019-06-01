@@ -57,10 +57,12 @@ def bookmark(request, username, template_name='profile/bookmarks.html'):
 
         def render(self):
             if request.GET.get('category'):
-                bks = Bookmark.objects.filter(user=request.user,
-                                              category_id=request.GET['category'])
+                bks = Bookmark.objects.filter(
+                    user=request.user,
+                    category_id=request.GET['category']
+                ).order_by('pk')
             else:
-                bks = Bookmark.objects.filter(user=request.user)
+                bks = Bookmark.objects.filter(user=request.user).order_by('pk')
 
             context_data = {
                 'user_profile': up,
