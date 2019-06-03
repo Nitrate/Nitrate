@@ -1,6 +1,6 @@
-{% extends "tcms_base.html" %}
+{% extends "tcms_master.html" %}
 
-{% block subtitle %}Plan History{% endblock %}
+{% block subtitle %}Plan Document History{% endblock %}
 
 {% block custom_stylesheet %}
 {% endblock %}
@@ -10,49 +10,50 @@
 {% endblock %}
 
 {% block content_type %}
-	<input type="hidden" name="content_type" value="testplans.testplan" />
-	<input type="hidden" name="object_pk" value="{{ testplan.pk }}" />
-	<input type="hidden" name="name" value="{{ testplan.name }}" />
+<input type="hidden" name="content_type" value="testplans.testplan" />
+<input type="hidden" name="object_pk" value="{{ testplan.pk }}" />
+<input type="hidden" name="name" value="{{ testplan.name }}" />
 {% endblock %}
 
-{% block contents %}
-<div id="content">
-	<div class="sprites crumble">
-		<a href="{% url "nitrate-index" %}">Home</a>
-		>> <a href="{% url "plans-all" %}">Planning</a>
-		>> <a href="{{ testplan.get_absolute_url }}">{{ testplan.plan_id }}: {{ testplan.name }}</a>
-		>> Edit History
-	</div>
-	<h2>{{ testplan.name }}</h2>
-	<div class="Detailform border-1" >
-	<table cellpadding="0" cellspacing="0" class="list">
-		<tr class="titlelink">
-			<th width="5%">Text Version</th>
-			<th width="12%">Modified Date</th>
-			<th width="15%">Changed By</th>
-			<th width="78%">Document Preview</th>
-		</tr>
-		{% for plan_text in test_plan_texts %}
-		<tr class="{% cycle 'even' 'odd' %}">
-			<td><a href="{% url "plan-text-history" testplan.plan_id %}?plan_text_version={{ plan_text.plan_text_version }}">{{ plan_text.plan_text_version }}</a></td>
-			<td>{{ plan_text.create_date }}</td>
-			<td>{{ plan_text.author.email }}</td>
-			<td>
-				{{ plan_text.plan_text|striptags|truncatewords:"10" }}
-			</td>
-		</tr>
-		{% ifequal plan_text.plan_text_version select_plan_text_version %}
-		<tr class="hide">
-			<td>
-			<td colspan="3">
-					<div class="content-wrap">
-					{{ plan_text.plan_text|safe }}
-					</div>
-			</td>
-		</tr>
-		{% endifequal %}
-		{% endfor %}
-	</table>
-	</div>
-</div>
+{% block page_content %}
+<nav aria-label="breadcrumb">
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item"><a href="{% url "nitrate-index" %}">Home</a></li>
+		<li class="breadcrumb-item"><a href="{% url "plans-all" %}">Planning</a></li>
+		<li class="breadcrumb-item"><a href="{{ testplan.get_absolute_url }}">{{ testplan.plan_id }}: {{ testplan.name }}</a></li>
+		<li class="breadcrumb-item active">Document Edit History</li>
+	</ol>
+</nav>
+
+<h2>{{ testplan.name }}</h2>
+
+<table class="table table-bordered">
+<thead>
+	<tr>
+		<th style="width:7%">Text Version</th>
+		<th style="width:12%">Modified Date</th>
+		<th style="width:15%">Changed By</th>
+		<th>Document Preview</th>
+	</tr>
+</thead>
+<tbody>
+	{% for plan_text in test_plan_texts %}
+	<tr {% ifequal plan_text.plan_text_version select_plan_text_version %}class="active"{% endifequal %}>
+		<td><a href="{% url "plan-text-history" testplan.plan_id %}?plan_text_version={{ plan_text.plan_text_version }}">{{ plan_text.plan_text_version }}</a></td>
+		<td>{{ plan_text.create_date }}</td>
+		<td>{{ plan_text.author.email }}</td>
+		<td>
+			{{ plan_text.plan_text|striptags|truncatewords:"10" }}
+		</td>
+	</tr>
+	{% ifequal plan_text.plan_text_version select_plan_text_version %}
+	<tr>
+		<td colspan="4">
+			{{ plan_text.plan_text|safe }}
+		</td>
+	</tr>
+	{% endifequal %}
+	{% endfor %}
+</tbody>
+</table>
 {% endblock %}
