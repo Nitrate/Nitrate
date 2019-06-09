@@ -3,12 +3,14 @@
 import json
 
 from django import test
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core import serializers
 from django.urls import reverse
 from django_comments.models import Comment
 import http.client
 
+from tcms.logs.models import TCMSLogModel
 from tcms.management.models import Priority
 from tcms.management.models import TCMSEnvGroup
 from tcms.management.models import TCMSEnvProperty
@@ -21,6 +23,7 @@ from tests import BaseCaseRun
 from tests import BasePlanCase
 from tests import remove_perm_from_user
 from tests import user_should_have_perm
+from tests import factories as f
 from tests.factories import TCMSEnvGroupFactory
 from tests.factories import TCMSEnvGroupPropertyMapFactory
 from tests.factories import TCMSEnvPropertyFactory
@@ -203,6 +206,50 @@ class TestUpdateObject(BasePlanCase):
         self.assertEqual({'rc': 0, 'response': 'ok'}, json.loads(response.content))
         plan = TestPlan.objects.get(pk=self.plan.pk)
         self.assertFalse(plan.is_active)
+
+
+class TestAddPlanParent(test.TestCase):
+    """
+    Another case of ajax.update by adding a parent plan to a plan which does
+    not have one yet
+
+    This test expects to ensure log_action succeeds by setting original_value
+    properly.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.product = f.ProductFactory()
+        cls.product_version = f.VersionFactory(value='1.0', product=cls.product)
+        cls.plan = f.TestPlanFactory(
+            product=cls.product,
+            product_version=cls.product_version)
+        cls.parent = f.TestPlanFactory(
+            product=cls.product,
+            product_version=cls.product_version)
+        cls.tester = User.objects.create_user(username='tester', email='tester@example.com')
+        cls.tester.set_password('password')
+        cls.tester.save()
+
+    def test_set_plan_parent_for_the_first_time(self):
+        user_should_have_perm(self.tester, 'testplans.change_testplan')
+        self.client.login(username=self.tester.username, password='password')
+
+        self.client.post(reverse('ajax-update'), {
+            'content_type': 'testplans.testplan',
+            'object_pk': self.plan.pk,
+            'field': 'parent',
+            'value': self.parent.pk,
+            'value_type': 'int'
+        })
+
+        plan = TestPlan.objects.get(pk=self.plan.pk)
+        assert self.parent.pk == plan.parent.pk
+
+        log = TCMSLogModel.objects.first()
+        assert log.field == 'parent'
+        assert log.original_value == 'None'
+        assert log.new_value == str(self.parent.pk)
 
 
 class TestUpdateCaseRunStatus(BaseCaseRun):

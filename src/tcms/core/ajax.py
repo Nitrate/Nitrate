@@ -421,11 +421,15 @@ def update(request):
     if hasattr(targets[0], 'log_action'):
         for t in targets:
             try:
-                t.log_action(
-                    who=request.user,
-                    field=field,
-                    original_value=getattr(t, field),
-                    new_value=value)
+                log_info = {
+                    'who': request.user,
+                    'field': field,
+                    'new_value': value,
+                }
+                original_value = getattr(t, field)
+                if original_value is None:
+                    log_info['original_value'] = 'None'
+                t.log_action(**log_info)
             except (AttributeError, User.DoesNotExist):
                 pass
     objects_update(targets, **{field: value})
