@@ -28,7 +28,7 @@ such as:
 Nitrate works with:
 
 * Python: ``3.6`` and ``3.7``.
-* Django: ``1.11``, ``2.0`` and ``2.1``.
+* Django: ``2.0`` and ``2.1``.
 * Following database versions are tested with:
 
   * MariaDB: ``10.2.21``.

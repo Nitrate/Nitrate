@@ -4,11 +4,6 @@ services:
 - docker
 matrix:
   include:
-  # Matrix of Python 3.6, 3.7 and Django 1.11.x
-  - python: "3.6"
-    env: DJANGO_REL="django>=1.11,<2.0"
-  - python: "3.7"
-    env: DJANGO_REL="django>=1.11,<2.0"
   # Matrix of Python 3.6, 3.7 and Django 2.0.x
   - python: "3.6"
     env: DJANGO_REL="django>=2.0,<2.1"
