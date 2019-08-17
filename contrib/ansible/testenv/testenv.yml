@@ -1,6 +1,0 @@
----
-- name: Provision development environment for Nitrate
-  hosts: all
-  roles:
-    - { role: system, become: true, become_method: sudo }
-    - { role: devenv }
