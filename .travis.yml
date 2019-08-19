@@ -11,15 +11,20 @@ matrix:
     env: DJANGO_REL="django>=2.0,<2.1"
   # Matrix of Python 3.6, 3.7 and Django 2.1.x
   - python: "3.6"
-    env: DJANGO_REL="django>=2.1,<3.0"
+    env: DJANGO_REL="django>=2.1,<2.2"
   - python: "3.6"
-    env: DJANGO_REL="django>=2.1,<3.0" NITRATE_DB=mysql
+    env: DJANGO_REL="django>=2.1,<2.2" NITRATE_DB=mysql
   - python: "3.6"
-    env: DJANGO_REL="django>=2.1,<3.0" NITRATE_DB=mariadb
+    env: DJANGO_REL="django>=2.1,<2.2" NITRATE_DB=mariadb
   - python: "3.6"
-    env: DJANGO_REL="django>=2.1,<3.0" NITRATE_DB=postgres
+    env: DJANGO_REL="django>=2.1,<2.2" NITRATE_DB=postgres
   - python: "3.7"
-    env: DJANGO_REL="django>=2.1,<3.0"
+    env: DJANGO_REL="django>=2.1,<2.2"
+  # Matrix of Python 3.6, 3.7 and Django 2.2.x
+  - python: "3.6"
+    env: DJANGO_REL="django>=2.2,<2.3"
+  - python: "3.7"
+    env: DJANGO_REL="django>=2.2,<2.3"
 before_install:
 - docker pull mysql:5.7
 - docker pull mariadb:10.2.21
