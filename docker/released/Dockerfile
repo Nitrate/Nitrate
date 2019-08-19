@@ -1,4 +1,4 @@
-FROM registry.fedoraproject.org/fedora:28
+FROM registry.fedoraproject.org/fedora:30
 ENV VCS_URL="https://github.com/Nitrate/Nitrate"
 LABEL version="$VERSION" \
       maintainer="Chenxiong Qi <qcxhome@gmail.com>" \
@@ -13,7 +13,7 @@ username and password are 'admin'." \
 # install virtualenv and libraries needed to build the python dependencies
 RUN dnf update -y && \
     dnf install -y --setopt=deltarpm=0 --setopt=install_weak_deps=false --setopt=tsflags=nodocs \
-      gcc python3-devel graphviz-devel httpd mariadb python3-mod_wsgi mariadb-devel && \
+      gcc python3-devel graphviz-devel httpd python3-mod_wsgi mariadb mariadb-devel && \
     dnf clean all
 
 WORKDIR /code

@@ -1,4 +1,4 @@
-FROM registry.fedoraproject.org/fedora:28
+FROM registry.fedoraproject.org/fedora:30
 
 LABEL maintainer="Chenxiong Qi <qcxhome@gmail.com>" \
       version="dev" \
@@ -8,7 +8,7 @@ current branch, generally it is the develop branch." \
       io.github.nitrate.vcs-url="https://github.com/Nitrate/Nitrate"
 
 RUN dnf update -y && \
-    dnf install -y gcc redhat-rpm-config mariadb python3 python3-devel graphviz-devel && \
+    dnf install -y gcc redhat-rpm-config mariadb mariadb-devel python3 python3-devel graphviz-devel && \
     dnf clean all
 
 ADD . /code
