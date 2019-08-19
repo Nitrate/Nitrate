@@ -55,5 +55,5 @@ RUN mkdir -p /usr/share/nitrate/templates && cp -r src/templates/* /usr/share/ni
 # Don't worry, /code was set above as current working directory
 RUN rm -rf *
 EXPOSE 80
-VOLUME ["/var/www", "/var/log/httpd", "/var/nitrate/uploads"]
+VOLUME ["/var/log/httpd", "/var/nitrate/uploads"]
 CMD ["httpd", "-D", "FOREGROUND"]
