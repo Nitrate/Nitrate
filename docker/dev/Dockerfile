@@ -25,4 +25,4 @@ EXPOSE 8000
 # devel settings sets this directory to store uploaded files.
 VOLUME ["/code/uploads"]
 
-CMD ["/code/entrypoint.sh"]
+ENTRYPOINT "/code/entrypoint.sh"
