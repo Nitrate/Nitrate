@@ -58,8 +58,27 @@ IMAGE_VERSION ?= latest
 DOCKER_ORG ?= quay.io/nitrate
 IMAGE_TAG = $(DOCKER_ORG)/nitrate:$(IMAGE_VERSION)
 
-image:
+release-image:
 	@docker build -t $(IMAGE_TAG) -f ./docker/released/Dockerfile .
+
+dev-image:
+	@docker build -t $(IMAGE_TAG:$(IMAGE_VERSION)=dev) -f ./docker/dev/Dockerfile .
+
+# By default, released image is pulled from remote registry.
+# For the purpose of testing released image locally, execute target
+# `release-image' manually before this up.
+up-release-container:
+	@docker-compose -f docker-compose.yml up
+
+clear-release-container:
+	@docker-compose -f docker-compose.yml rm
+
+# Depends on dev-image
+up-dev-container:
+	@docker-compose -f docker-compose-dev.yml up
+
+clear-dev-container:
+	@docker-compose -f docker-compose-dev.yml rm
 
 web-container-initconfig:
 	# Make sure web is up from docker-compose.yml already
@@ -72,9 +91,6 @@ web-container-initconfig:
 	# Set permissions to default groups
 	@docker exec -i -t --env DJANGO_SETTINGS_MODULE=tcms.settings.product nitrate_web_1 \
 		/prodenv/bin/django-admin setdefaultperms
-
-dev-image:
-	@docker build -t nitrate:dev -f Dockerfile-dev .
 
 # ./manage.py runserver with default SQLite database
 runserver:
