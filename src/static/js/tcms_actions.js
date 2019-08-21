@@ -419,15 +419,11 @@ function getBuildsByProductId(allow_blank, product_field, build_field, is_active
   var success = function(t) {
     returnobj = jQ.parseJSON(t.responseText);
 
-    debug_output('Get builds succeed get ready to replace the select widget inner html');
-
     set_up_choices(
       build_field,
       returnobj.map(function(o) { return [o.pk, o.fields.name]; }),
       allow_blank
     );
-
-    debug_output('Update builds completed');
 
     if (jQ('#value_sub_module').length && jQ('#value_sub_module').val() === 'new_run') {
       if(jQ(build_field).html() === '') {
@@ -476,8 +472,6 @@ function getEnvsByProductId(allow_blank, product_field) {
 
   var success = function(t) {
     returnobj = jQ.parseJSON(t.responseText);
-
-    debug_output('Get environments succeed get ready to replace the select widget inner html');
 
     set_up_choices(
       jQ('#id_env_id')[0],
@@ -535,8 +529,6 @@ function getVersionsByProductId(allow_blank, product_field, version_field) {
 
   var success = function(t) {
     returnobj = jQ.parseJSON(t.responseText);
-
-    debug_output('Get versions succeed get ready to replace the select widget inner html');
 
     set_up_choices(
       version_field,
@@ -648,8 +640,6 @@ function getCategorisByProductId(allow_blank, product_field, category_field) {
     }
   }
 
-  debug_output('Get categories from product ' + product_id);
-
   if (product_id === '') {
     jQ(category_field).html('<option value="">---------</option>');
     return true;
@@ -665,8 +655,6 @@ function getCategorisByProductId(allow_blank, product_field, category_field) {
       }),
       allow_blank
     );
-
-    debug_output('Get categories succeed get ready to replace the select widget inner html');
   };
 
   var failure = function(t) { alert("Update category failed"); };
@@ -1053,16 +1041,10 @@ function previewPlan(parameters, action, callback, notice, s, c) {
 }
 
 function getInfo(parameters, callback, container, allow_blank, format) {
-  debug_output('Get info ' + parameters);
-
   var success = function(t) {
     if (callback) {
-      debug_output("Starting GetInfo callback");
       callback(t, allow_blank, container);
-      debug_output("GetInfo callback completed");
     }
-
-    debug_output("GetInfo " + parameters.info_type + " successful");
   };
 
   var failure = function(t) {
