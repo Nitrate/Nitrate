@@ -3,7 +3,7 @@ var Nitrate = window.Nitrate || {}; // Ironically, this global name is not respe
 window.Nitrate = Nitrate;
 
 Nitrate.Utils = {};
-var short_string_length = 100;
+var SHORT_STRING_LENGTH = 100;
 var nil;
 
 /*
@@ -328,60 +328,65 @@ function splitString(str, num) {
     Set up the <option> children of the given <select> element.
     Preserving the existing selection (if any).
 
-    @element: a <select> element
-    @values: a list of (id, name) pairs
-    @allow_blank: boolean.  If true, prepend a "blank" option
+    @elemSelect: an HTMLSelectElement.
+    @values: a list of (id, name) pairs.
+    @addBlankOption: boolean. If true, prepend a "blank" option.
 */
-function set_up_choices(element, values, allow_blank) {
-  var innerHTML = "";
-  var selected_ids = [];
+function set_up_choices(elemSelect, values, addBlankOption) {
+  // Convert HTMLOptionsCollection to Array in order to handle it conveniently later.
+  var elemOptions = [];
+  for (var i=0; i < elemSelect.options.length; i++) {
+    elemOptions.push(elemSelect.options.item(i));
+  }
 
-  if (!element.multiple) {
+  elemOptions.forEach(function (item) {
+    item.remove();
+  });
+
+  var selectedIds = null;
+
+  if (!elemSelect.multiple) {
     // Process the single select box
-    selected_ids.push(parseInt(element.value));
+    selectedIds = [parseInt(elemSelect.value)];
   } else {
     // Process the select box with multiple attribute
-    for (var i = 0; (node = element.options[i]); i++) {
-      if (node.selected) {
-        selected_ids.push(node.value);
+    selectedIds = elemOptions.filter(function (item) {
+      if (item.selected) {
+        return parseInt(item.value);
       }
-    }
+    });
   }
 
-  // Set up blank option, if there is one:
-  if (allow_blank) {
-    innerHTML += '<option value="">---------</option>';
+  var newElemOption = null;
+
+  if (addBlankOption) {
+    newElemOption = document.createElement('option');
+    newElemOption.text = '---------';
+    elemSelect.add(newElemOption);
   }
 
-  // Add an <option> for each value:
-  values.forEach( function(item) {
-    var item_id = item[0];
-    var item_name = item[1];
-    var optionHTML = '<option value="' + item_id + '"';
+  values.forEach(function (item) {
+    var optionValue = item[0];
+    var optionText = item[1];
 
-    var display_item_name = item_name;
-    var cut_for_short = false;
-    if (item_name.length > short_string_length) {
-      display_item_name = splitString(item_name, short_string_length);
-      var cut_for_short = true;
+    newElemOption = document.createElement('option');
+    newElemOption.value = optionValue;
+
+    if (optionText.length > SHORT_STRING_LENGTH) {
+      newElemOption.title = optionText;
+      newElemOption.text = splitString(optionText, SHORT_STRING_LENGTH);
+    } else {
+      newElemOption.text = optionText;
     }
 
-    selected_ids.forEach(function(i) {
-      if (i === item_id) {
-        optionHTML += ' selected="selected"';
+    selectedIds.forEach(function (id) {
+      if (id === optionValue) {
+        newElemOption.selected = true;
       }
     });
 
-    if (cut_for_short) {
-      optionHTML += ' title="' + item_name + '"';
-    }
-
-    optionHTML += '>' + display_item_name + '</option>';
-    innerHTML += optionHTML;
+    elemSelect.add(newElemOption);
   });
-
-  // Copy it up to the element in the DOM:
-  element.innerHTML = innerHTML;
 }
 
 function getBuildsByProductId(allow_blank, product_field, build_field, is_active) {
