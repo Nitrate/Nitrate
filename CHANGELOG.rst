@@ -1,6 +1,10 @@
 Change Log
 ==========
 
+Please refer to `release notes`_ to check change logs of each released version.
+
+.. _release notes: https://nitrate.readthedocs.io/en/latest/releases/index.html
+
 4.1 (2018-03-03)
 ----------------
 

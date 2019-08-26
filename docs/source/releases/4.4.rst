@@ -1,0 +1,87 @@
+.. _4.4:
+
+4.4
+===
+
+*August 26, 2019*
+
+Highlighted
+-----------
+
+Python 3 Only
+~~~~~~~~~~~~~
+
+Nitrate now works with Python 3 only. Special thanks to Hugo.
+
+Django Version Changes
+~~~~~~~~~~~~~~~~~~~~~~
+
+Django 1.11 is dropped. Django 2.2 is added to Travis-CI to ensure code works
+well with this version.
+
+Database Migration
+------------------
+
+Run Django ``migrate`` command to apply database migrations.
+
+Change Log
+----------
+
+* Use DOM API to construct select option elements - `#414`_ (Chenxiong Qi)
+* Remove debug info from JS (Chenxiong Qi)
+* Update requirements.txt (Chenxiong Qi)
+* Add Django 2.2 to Travis-CI - `#432`_ (Chenxiong Qi)
+* Fix python site-package directory in release image (Chenxiong Qi)
+* Clean Makefile for building, up and clear release and dev containers (Chenxiong Qi)
+* Use ENTRYPOINT rather than CMD in dev image (Chenxiong Qi)
+* Release image actually does not use a volume /var/www (Chenxiong Qi)
+* Upgrade base image to Fedora 30 (Chenxiong Qi)
+* Drop Django 1.11 - `#399`_ (Chenxiong Qi)
+* Rewrite Vagrant machine provision - `#435`_ (Chenxiong Qi)
+* Save log action properly if original value is None (Chenxiong Qi)
+* Raise descriptive message if attachment does not exist in server (Chenxiong Qi)
+* Show TestAttachment and TestAttachmentData in admin site (Chenxiong Qi)
+* Use one to one relationship between attachment and its binary data (Chenxiong Qi)
+* Massive refactor of check_file view method (Chenxiong Qi)
+* Fix check_file view method for downloading attachment (Chenxiong Qi)
+* Parametrize image tag in docker-compose.yml (Chenxiong Qi)
+* Allow building image from version branch (Chenxiong Qi)
+* Expose volumn for uploads in release docker image (Chenxiong Qi)
+* Use mysqlclient from now on (Chenxiong Qi)
+* Fix app name of add_comment perm (Chenxiong Qi)
+* Fix testing report By Plan's Tag (Chenxiong Qi)
+* Fix error when select a build to generate report By Case-Run Tester (Chenxiong Qi)
+* Fix incorrect comparison with int and None for sort - `#394`_ (Chenxiong Qi)
+* The future is now (Hugo)
+* Replace six.moves and remove six dependency (Hugo)
+* Replace six.moves.http_client (Hugo)
+* Replace six.StringIO (Hugo)
+* Remove six.PY3 (Hugo)
+* Upgrade Python syntax with pyupgrade --py36-plus (Hugo)
+* Upgrade Python syntax with pyupgrade --py3-plus (Hugo)
+* Upgrade Python syntax with pyupgrade (Hugo)
+* Replace json_loads with json.loads (Hugo)
+* Drop support for legacy Python 2.7 (Hugo)
+* Remove wrong TESTOPIA_XML_VERSION from product.py - `#410`_ (Chenxiong Qi)
+* Fix incorrect docker-exec commands in docker.rst (Chenxiong Qi)
+* Fix error while typing new tag to get tag info - `#387`_ (Chenxiong Qi)
+* Remove deprecated parameter context from Field.from_db_value - `#388`_ (Chenxiong Qi)
+* Quay.io badge should link to the repo (Chenxiong Qi)
+* Add quay.io/nitrate repository badge in README (Chenxiong Qi)
+* Fix to image README (Chenxiong Qi)
+* Add doc for setdefaultperms in release image README (Chenxiong Qi)
+* Fix dev image (Chenxiong Qi)
+* Fix ansible playbook to work with new src layout (Chenxiong Qi)
+* Fix release-image target to build release image (Chenxiong Qi)
+* Update doc for running Nitrate (Chenxiong Qi)
+* Fix Dockerfile for released image (Chenxiong Qi)
+* Minimize default configuration in product.py (Chenxiong Qi)
+
+.. _#387: https://github.com/Nitrate/Nitrate/issues/387
+.. _#388: https://github.com/Nitrate/Nitrate/issues/388
+.. _#394: https://github.com/Nitrate/Nitrate/issues/394
+.. _#399: https://github.com/Nitrate/Nitrate/issues/399
+.. _#410: https://github.com/Nitrate/Nitrate/issues/410
+.. _#414: https://github.com/Nitrate/Nitrate/issues/414
+.. _#432: https://github.com/Nitrate/Nitrate/issues/432
+.. _#435: https://github.com/Nitrate/Nitrate/issues/435
