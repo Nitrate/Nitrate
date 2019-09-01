@@ -29,6 +29,25 @@ default file. Following these steps:
 Run inside Container
 ~~~~~~~~~~~~~~~~~~~~
 
+Deploy a released version
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Each released version has a docker image which is available in Quay.io.
+Essentially, you could get a specific version of Nitrate by ``docker pull``,
+for example to get version ``4.4`` image::
+
+    docker pull quay.io/nitrate/nitrate:4.4
+
+To deploy a Nitrate image, you need an orchestration tool to organize Nitrate
+image and database image and volumes to store data.
+
+For running a specific version quickly in local system, you could run::
+
+    IMAGE_VERSION=4.4 docker-compose up
+
+Run a development instance locally
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 Running inside container requires ``docker-compose`` and ``docker`` to be
 installed firstly. Then, simply run::
 
