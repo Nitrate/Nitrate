@@ -1,14 +1,15 @@
 FROM registry.fedoraproject.org/fedora:30
-ENV VCS_URL="https://github.com/Nitrate/Nitrate"
-LABEL version="$VERSION" \
+ARG version
+ARG vcs_url="https://github.com/Nitrate/Nitrate"
+LABEL version="${version}" \
       maintainer="Chenxiong Qi <qcxhome@gmail.com>" \
       description="Run Nitrate from a Python virtual environment behind \
 httpd. Authentication is not special. Common username and password \
 authentication is used by default. A default superuser is created, both \
 username and password are 'admin'." \
       io.github.nitrate.url="https://nitrate.readthedocs.io/" \
-      io.github.nitrate.vcs-url="${VCS_URL}" \
-      io.github.nitrate.issues-url="${VCS_URL}/issues/"
+      io.github.nitrate.vcs-url="${vcs_url}" \
+      io.github.nitrate.issues-url="${vcs_url}/issues/"
 
 # install virtualenv and libraries needed to build the python dependencies
 RUN dnf update -y && \

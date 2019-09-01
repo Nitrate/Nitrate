@@ -59,7 +59,7 @@ DOCKER_ORG ?= quay.io/nitrate
 IMAGE_TAG = $(DOCKER_ORG)/nitrate:$(IMAGE_VERSION)
 
 release-image:
-	@docker build -t $(IMAGE_TAG) -f ./docker/released/Dockerfile .
+	@docker build -t $(IMAGE_TAG) -f ./docker/released/Dockerfile --build-arg version=$(IMAGE_VERSION) .
 
 dev-image:
 	@docker build -t $(IMAGE_TAG:$(IMAGE_VERSION)=dev) -f ./docker/dev/Dockerfile .
