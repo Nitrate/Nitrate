@@ -15,7 +15,7 @@ def get_long_description():
 install_requires = [
     'beautifulsoup4 >= 4.1.1',
     'django >= 2.0,<3.0',
-    'django-contrib-comments == 1.8.0',
+    'django-contrib-comments == 1.9.1',
     'django-tinymce == 2.7.0',
     'django-uuslug == 1.1.8',
     'html2text',
