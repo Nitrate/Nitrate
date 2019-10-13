@@ -43,9 +43,11 @@ case $py_version in
     3.6)
         py_bin=python3.6
         install_extra_deps="${install_extra_deps},async"
+        testenv_image=quay.io/nitrate/testenv-py36
         ;;
     3.7)
         py_bin=python3.7
+        testenv_image=quay.io/nitrate/testenv-py37
         ;;
 esac
 
@@ -116,13 +118,10 @@ esac
 # Refer to tcms/settings/test.py
 
 docker run --rm --name nitrate-testbox ${docker_run_opts[@]} \
-    -v "$project_dir":/code:Z -i -t registry.fedoraproject.org/fedora:29 \
+    -v "$project_dir":/code:Z -i -t ${testenv_image} \
     /bin/bash -c "
 set -e
 
-dnf install -y gcc redhat-rpm-config make mariadb mariadb-devel python36 python3-virtualenv \
-    python3-devel graphviz-devel postgresql-devel
-virtualenv --python=${py_bin} /testenv
 source /testenv/bin/activate
 pip install \"${django_rel}\"
 pip install -e /code[${install_extra_deps}]

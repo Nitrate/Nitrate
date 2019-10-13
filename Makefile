@@ -104,6 +104,30 @@ runserver-pgsql:
 	@echo "CREATE DATABASE nitrate" | psql -U postgres || true
 	@NITRATE_DB_ENGINE=pgsql NITRATE_DB_NAME=nitrate NITRATE_DB_USER=postgres ./src/manage.py runserver
 
+testenv_pybin ?= python3.6
+ifeq ($(testenv_pybin), python3.6)
+  testenv_image_tag = $(DOCKER_ORG)/testenv-py36
+  testenv_dockerfile = Dockerfile-py36
+else ifeq ($(testenv_pybin), python3.7)
+  testenv_image_tag = $(DOCKER_ORG)/testenv-py37
+  testenv_dockerfile = Dockerfile-py37
+else
+  $(error Unsupported Python version $(testenv_pybin))
+endif
+
+.PHONY: remove-testenv-image
+remove-testenv-image:
+	@docker rmi $(testenv_image_tag)
+
+.PHONY: testenv-image
+testenv-image: remove-testenv-image
+	@docker build -t $(testenv_image_tag) -f contrib/travis-ci/$(testenv_dockerfile) .
+
+.PHONY: push-testenv-image
+push-testenv-image: $(if $(force_push),,testenv-image)
+	@docker login quay.io
+	@docker push $(testenv_image_tag)
+
 .PHONY: help
 help:
 	@echo 'Usage: make [command]'
