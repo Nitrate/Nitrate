@@ -54,19 +54,20 @@ etags:
 	@ctags -R -e --languages=Python,Javascript --python-kinds=-im \
 		--exclude=build --exclude=tcms/static/js/lib --exclude=dist --exclude=.tox -f TAGS
 
-IMAGE_VERSION ?= latest
+RELEASE_VERSION ?= latest
 DOCKER_ORG ?= quay.io/nitrate
-IMAGE_TAG = $(DOCKER_ORG)/nitrate:$(IMAGE_VERSION)
+IMAGE_TAG = $(DOCKER_ORG)/nitrate:$(RELEASE_VERSION)
 
 release-image:
-	@docker build -t $(IMAGE_TAG) -f ./docker/released/Dockerfile --build-arg version=$(IMAGE_VERSION) .
+	docker build -t $(IMAGE_TAG) -f ./docker/released/Dockerfile --build-arg version=$(RELEASE_VERSION) .
 
 dev-image:
-	@docker build -t $(IMAGE_TAG:$(IMAGE_VERSION)=dev) -f ./docker/dev/Dockerfile .
+	docker build -t $(IMAGE_TAG:$(RELEASE_VERSION)=dev) -f ./docker/dev/Dockerfile .
 
 # By default, released image is pulled from remote registry.
 # For the purpose of testing released image locally, execute target
 # `release-image' manually before this up.
+up-release-container: export IMAGE_VERSION = $(RELEASE_VERSION)
 up-release-container:
 	@docker-compose -f docker-compose.yml up
 
