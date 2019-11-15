@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import hashlib
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import factory
 
@@ -367,6 +367,8 @@ class TestCaseFactory(DjangoModelFactory):
         model = 'testcases.TestCase'
 
     summary = factory.Sequence(lambda n: 'Test case summary %d' % n)
+    estimated_time = timedelta(0)
+
     case_status = factory.LazyFunction(lambda: TestCaseStatus.objects.all()[0:1][0])
     priority = factory.LazyFunction(lambda: Priority.objects.all()[0:1][0])
     category = factory.SubFactory(TestCaseCategoryFactory)

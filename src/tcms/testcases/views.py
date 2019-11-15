@@ -38,8 +38,7 @@ from tcms.search.order import order_case_queryset
 from tcms.testcases import actions
 from tcms.testcases import data
 from tcms.testcases import sqls
-from tcms.testcases.models import TestCase, TestCaseStatus, \
-    TestCaseAttachment, TestCasePlan
+from tcms.testcases.models import TestCase, TestCaseStatus, TestCasePlan
 from tcms.management.models import Priority, TestTag
 from tcms.testcases.models import TestCaseComponent
 from tcms.testplans.models import TestPlan
@@ -1345,6 +1344,7 @@ def text_history(request, case_id, template_name='case/history.html'):
 @permission_required('testcases.add_testcase')
 def clone(request, template_name='case/clone.html'):
     """Clone one case or multiple case into other plan or plans"""
+
     SUB_MODULE_NAME = 'cases'
 
     request_data = getattr(request, request.method)
@@ -1357,160 +1357,58 @@ def clone(request, template_name='case/clone.html'):
             next='javascript:window.history.go(-1)'
         )
 
-    tp_src = plan_from_request_or_none(request)
-    tp = None
-    search_plan_form = SearchPlanForm()
-
     # Do the clone action
     if request.method == 'POST':
         clone_form = CloneCaseForm(request.POST)
         clone_form.populate(case_ids=request.POST.getlist('case'))
 
         if clone_form.is_valid():
-            tcs_src = clone_form.cleaned_data['case']
-            for tc_src in tcs_src:
-                if clone_form.cleaned_data['copy_case']:
-                    tc_dest = TestCase.objects.create(
-                        is_automated=tc_src.is_automated,
-                        is_automated_proposed=tc_src.is_automated_proposed,
-                        script=tc_src.script,
-                        arguments=tc_src.arguments,
-                        extra_link=tc_src.extra_link,
-                        summary=tc_src.summary,
-                        requirement=tc_src.requirement,
-                        alias=tc_src.alias,
-                        estimated_time=tc_src.estimated_time,
-                        case_status=TestCaseStatus.get('PROPOSED'),
-                        category=tc_src.category,
-                        priority=tc_src.priority,
-                        notes=tc_src.notes,
-                        author=clone_form.cleaned_data[
-                            'maintain_case_orignal_author'] and
-                        tc_src.author or request.user,
-                        default_tester=clone_form.cleaned_data[
-                            'maintain_case_orignal_default_tester'] and
-                        tc_src.author or request.user,
-                    )
+            form_data = clone_form.cleaned_data
+            copy_case = form_data['copy_case']
+            src_cases = form_data['case']
+            dest_plans = form_data['plan']
+            keep_orig_author = form_data['maintain_case_orignal_author']
+            keep_orig_default_tester = form_data['maintain_case_orignal_default_tester']
 
-                    for tp in clone_form.cleaned_data['plan']:
-                        # copy a case and keep origin case's sortkey
-                        if tp_src:
-                            try:
-                                tcp = TestCasePlan.objects.get(plan=tp_src,
-                                                               case=tc_src)
-                                sortkey = tcp.sortkey
-                            except ObjectDoesNotExist:
-                                sortkey = tp.get_case_sortkey()
-                        else:
-                            sortkey = tp.get_case_sortkey()
+            src_plan = plan_from_request_or_none(request)
+            dest_case = None
 
-                        tp.add_case(tc_dest, sortkey)
+            for src_case in src_cases:
+                author = None if keep_orig_author else request.user
+                default_tester = None if keep_orig_default_tester else request.user
 
-                    tc_dest.add_text(
-                        author=clone_form.cleaned_data[
-                            'maintain_case_orignal_author'] and
-                        tc_src.author or request.user,
-                        create_date=tc_src.latest_text().create_date,
-                        action=tc_src.latest_text().action,
-                        effect=tc_src.latest_text().effect,
-                        setup=tc_src.latest_text().setup,
-                        breakdown=tc_src.latest_text().breakdown
-                    )
+                if copy_case:
+                    dest_case = src_case.clone(
+                        dest_plans,
+                        author=author,
+                        default_tester=default_tester,
+                        source_plan=src_plan,
+                        copy_attachment=form_data['copy_attachment'],
+                        copy_component=form_data['copy_component'],
+                        component_initial_owner=request.user)
 
-                    for tag in tc_src.tag.all():
-                        tc_dest.add_tag(tag=tag)
-
-                    if clone_form.cleaned_data['copy_attachment']:
-                        for attachment in tc_src.attachment.all():
-                            TestCaseAttachment.objects.create(
-                                case=tc_dest,
-                                attachment=attachment,
-                            )
                 else:
-                    tc_dest = tc_src
-                    tc_dest.author = \
-                        clone_form.cleaned_data[
-                            'maintain_case_orignal_author'] \
-                        and tc_src.author or request.user
-                    tc_dest.default_tester = \
-                        clone_form.cleaned_data[
-                            'maintain_case_orignal_default_tester'] \
-                        and tc_src.author or request.user
-                    tc_dest.save()
-                    for tp in clone_form.cleaned_data['plan']:
-                        # create case link and keep origin plan's sortkey
-                        if tp_src:
-                            try:
-                                tcp = TestCasePlan.objects.get(plan=tp_src,
-                                                               case=tc_dest)
-                                sortkey = tcp.sortkey
-                            except ObjectDoesNotExist:
-                                sortkey = tp.get_case_sortkey()
-                        else:
-                            sortkey = tp.get_case_sortkey()
-
-                        try:
-                            tp.add_case(tc_dest, sortkey)
-                        except Exception:
-                            pass
-
-                # Add the cases to plan
-                for tp in clone_form.cleaned_data['plan']:
-                    # Clone the categories to new product
-                    if clone_form.cleaned_data['copy_case']:
-                        try:
-                            tc_category = tp.product.category.get(
-                                name=tc_src.category.name
-                            )
-                        except ObjectDoesNotExist:
-                            tc_category = tp.product.category.create(
-                                name=tc_src.category.name,
-                                description=tc_src.category.description,
-                            )
-
-                        tc_dest.category = tc_category
-                        tc_dest.save()
-                        del tc_category
-
-                    # Clone the components to new product
-                    if clone_form.cleaned_data['copy_component'] and \
-                            clone_form.cleaned_data['copy_case']:
-                        for component in tc_src.component.all():
-                            try:
-                                new_c = tp.product.component.get(
-                                    name=component.name
-                                )
-                            except ObjectDoesNotExist:
-                                new_c = tp.product.component.create(
-                                    name=component.name,
-                                    initial_owner=request.user,
-                                    description=component.description,
-                                )
-
-                            try:
-                                tc_dest.add_component(new_c)
-                            except Exception:
-                                pass
+                    dest_case = src_case.transition_to_plans(
+                        dest_plans,
+                        author=author,
+                        default_tester=default_tester,
+                        source_plan=src_plan)
 
             # Detect the number of items and redirect to correct one
-            cases_count = len(clone_form.cleaned_data['case'])
-            plans_count = len(clone_form.cleaned_data['plan'])
+            cases_count = len(src_cases)
+            plans_count = len(dest_plans)
 
             if cases_count == 1 and plans_count == 1:
-                return HttpResponseRedirect('{}?from_plan={}'.format(
-                    reverse('case-get', args=[tc_dest.pk]),
-                    tp.pk
-                ))
+                url = reverse('case-get', args=[dest_case.pk])
+                return HttpResponseRedirect(f'{url}?from_plan={dest_plans[0].pk}')
 
             if cases_count == 1:
                 return HttpResponseRedirect(
-                    reverse('case-get', args=[tc_dest.pk, ])
-                )
+                    reverse('case-get', args=[dest_case.pk]))
 
             if plans_count == 1:
                 return HttpResponseRedirect(
-                    reverse('plan-get', args=[tp.pk, ])
-                )
+                    reverse('plan-get', args=[dest_plans[0].pk]))
 
             # Otherwise it will prompt to user the clone action is successful.
             return Prompt.render(
@@ -1524,6 +1422,7 @@ def clone(request, template_name='case/clone.html'):
         selected_cases = get_selected_testcases(request)
         # Initial the clone case form
         clone_form = CloneCaseForm(initial={
+            # FIXME: reduce query result size of cases
             'case': selected_cases,
             'copy_case': False,
             'maintain_case_orignal_author': False,
@@ -1532,6 +1431,9 @@ def clone(request, template_name='case/clone.html'):
             'copy_attachment': True,
         })
         clone_form.populate(case_ids=selected_cases)
+
+    tp = None
+    search_plan_form = SearchPlanForm()
 
     # Generate search plan form
     if request_data.get('from_plan'):

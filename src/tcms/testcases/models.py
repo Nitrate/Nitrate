@@ -411,7 +411,7 @@ class TestCase(TCMSActionModel):
             setup,
             breakdown,
             author=None,
-            create_date=datetime.now(),
+            create_date=None,
             case_text_version=1,
             action_checksum=None,
             effect_checksum=None,
@@ -435,7 +435,7 @@ class TestCase(TCMSActionModel):
             latest_text = TestCaseText.objects.create(
                 case=self,
                 case_text_version=case_text_version,
-                create_date=create_date,
+                create_date=create_date or datetime.now(),
                 author=author,
                 action=action,
                 effect=effect,
@@ -444,8 +444,7 @@ class TestCase(TCMSActionModel):
                 action_checksum=action_checksum or new_action_checksum,
                 effect_checksum=effect_checksum or new_effect_checksum,
                 setup_checksum=setup_checksum or new_setup_checksum,
-                breakdown_checksum=breakdown_checksum or
-                new_breakdown_checksum)
+                breakdown_checksum=breakdown_checksum or new_breakdown_checksum)
         else:
             latest_text = self.latest_text()
 
@@ -528,10 +527,10 @@ class TestCase(TCMSActionModel):
         return self.text.exists()
 
     def text_checksum(self):
-        qs = self.text.order_by('-case_text_version').only('action_checksum',
-                                                           'effect_checksum',
-                                                           'setup_checksum',
-                                                           'breakdown_checksum')[0:1]
+        qs = self.text.order_by('-case_text_version').only(
+            'action_checksum', 'effect_checksum',
+            'setup_checksum', 'breakdown_checksum'
+        )[0:1]
         if len(qs) == 0:
             return None, None, None, None
         else:
@@ -607,6 +606,149 @@ class TestCase(TCMSActionModel):
             return TestCaseEmailSettings.objects.create(case=self)
 
     emailing = property(_get_email_conf)
+
+    def clone(self, to_plans, author=None, default_tester=None,
+              source_plan=None, copy_attachment=True, copy_component=True,
+              component_initial_owner=None):
+        """Clone this case to plans
+
+        :param to_plans: list of test plans this case will be cloned to.
+        :type to_plans: list[TestPlan]
+        :param author: set the author for the cloned test case. If omitted,
+            original author will be used.
+        :type author: django.contrib.auth.models.User or None
+        :param default_tester: set the default tester for the cloned test case.
+            If omitted, original author will be used.
+        :type default_tester: django.contrib.auth.models.User or None
+        :param source_plan: a test plan this case belongs to. If set, sort key
+            of the relationship between this case and this plan will be set to
+            the new relationship of cloned case and destination plan.
+            Otherwise, new sort key will be calculated from the destination
+            plan.
+        :type source_plan: TestPlan or None
+        :param bool copy_attachment: whether to copy attachments.
+        :param bool copy_component: whether to copy components.
+        :param component_initial_owner: the initial owner of copied component.
+            This argument is only used when ``copy_component`` is set to True.
+        :type component_initial_owner: django.contrib.auth.models.User or None
+        :return: the cloned test case
+        :rtype: TestCase
+        """
+        cloned_case = TestCase.objects.create(
+            is_automated=self.is_automated,
+            is_automated_proposed=self.is_automated_proposed,
+            script=self.script,
+            arguments=self.arguments,
+            extra_link=self.extra_link,
+            summary=self.summary,
+            requirement=self.requirement,
+            alias=self.alias,
+            estimated_time=self.estimated_time,
+            case_status=TestCaseStatus.get('PROPOSED'),
+            category=self.category,
+            priority=self.priority,
+            notes=self.notes,
+            author=author or self.author,
+            default_tester=default_tester or self.author,
+        )
+
+        src_latest_text = self.latest_text()
+        cloned_case.add_text(
+            author=author,
+            create_date=src_latest_text.create_date,
+            action=src_latest_text.action,
+            effect=src_latest_text.effect,
+            setup=src_latest_text.setup,
+            breakdown=src_latest_text.breakdown
+        )
+
+        # The original tags are not copied actually. They are just
+        # linked to the new cloned test case.
+        for tag in self.tag.all():
+            cloned_case.add_tag(tag=tag)
+
+        # The original attachments are not copied actually. They
+        # are just linked to the new cloned test case.
+        if copy_attachment:
+            TestCaseAttachment.objects.bulk_create([
+                TestCaseAttachment(case=cloned_case, attachment=item)
+                for item in self.attachment.all()
+            ])
+
+        rel = TestCasePlan.objects.filter(plan=source_plan, case=self).first()
+
+        for plan in to_plans:
+            if source_plan is None:
+                sort_key = plan.get_case_sortkey()
+            else:
+                sort_key = rel.sortkey if rel else plan.get_case_sortkey()
+            plan.add_case(cloned_case, sort_key)
+
+            # Clone the categories to new product
+            categories = plan.product.category
+            try:
+                tc_category = categories.get(name=self.category.name)
+            except ObjectDoesNotExist:
+                tc_category = categories.create(
+                    name=self.category.name,
+                    description=self.category.description,
+                )
+            cloned_case.category = tc_category
+            cloned_case.save()
+
+            # Clone the components to new product
+            if copy_component:
+                components = plan.product.component
+                for component in self.component.all():
+                    try:
+                        new_c = components.get(name=component.name)
+                    except ObjectDoesNotExist:
+                        new_c = components.create(
+                            name=component.name,
+                            initial_owner=component_initial_owner,
+                            description=component.description,
+                        )
+
+                    cloned_case.add_component(new_c)
+
+        return cloned_case
+
+    def transition_to_plans(
+            self, to_plans, author=None, default_tester=None, source_plan=None):
+        """Transition this case to other plans
+
+        This method will link this case to specified test plans and no change
+        to the original relationship between this case and other test plans it
+        was associated with.
+
+        :param to_plans: the test plans this case is transitioned to.
+        :type to_plans: list[TestPlan]
+        :param author: same as the argument ``author`` of :meth:`TestCase.clone`.
+        :type author: django.contrib.auth.models.User or None
+        :param default_tester: same as the argument ``default_tester`` of
+            :meth:`TestCase.clone`.
+        :type default_tester: django.contrib.auth.models.User or None
+        :param source_plan: same as the argument ``source_plan`` of
+            :meth:`TestCase.clone`.
+        :type source_plan: TestPlan or None
+        :return: the updated version of this case.
+        :rtype: TestCase
+        """
+        dest_case = self
+        dest_case.author = author or self.author
+        dest_case.default_tester = default_tester or self.author
+        dest_case.save()
+
+        rel = TestCasePlan.objects.filter(plan=source_plan, case=self).first()
+
+        for plan in to_plans:
+            if source_plan is None:
+                sort_key = plan.get_case_sortkey()
+            else:
+                sort_key = rel.sortkey if rel else plan.get_case_sortkey()
+            plan.add_case(dest_case, sortkey=sort_key)
+
+        return dest_case
 
 
 class TestCaseText(TCMSActionModel):

@@ -959,6 +959,59 @@ class TestCloneCase(BasePlanCase):
     def setUpTestData(cls):
         super().setUpTestData()
 
+        cls.orphan_plan = f.TestPlanFactory(
+            name='Orphan plan for test below',
+            author=cls.tester,
+            owner=cls.tester,
+            product=cls.product,
+            product_version=cls.version)
+
+        cls.plan_test_clone = f.TestPlanFactory(
+            name='Plan for testing clone cases',
+            author=cls.tester,
+            owner=cls.tester,
+            product=cls.product,
+            product_version=cls.version)
+
+        cls.plan_test_clone_more = f.TestPlanFactory(
+            name='Plan for testing more clone cases',
+            author=cls.tester,
+            owner=cls.tester,
+            product=cls.product,
+            product_version=cls.version)
+
+        cls.tag_1 = f.TestTagFactory(name='tag1')
+        cls.tag_2 = f.TestTagFactory(name='tag2')
+
+        f.TestCaseTagFactory(case=cls.case, tag=cls.tag_1)
+        f.TestCaseTagFactory(case=cls.case, tag=cls.tag_2)
+
+        # Add attachments to cls.case
+
+        cls.attachment_1 = f.TestAttachmentFactory(submitter=cls.tester)
+        cls.attachment_2 = f.TestAttachmentFactory(submitter=cls.tester)
+
+        f.TestCaseAttachmentFactory(case=cls.case, attachment=cls.attachment_1)
+        f.TestCaseAttachmentFactory(case=cls.case, attachment=cls.attachment_2)
+
+        # Add components to cls.case
+
+        cls.component_1 = f.ComponentFactory(name='db', product=cls.product)
+        # This component belongs to a different product than cls.product.
+        # When copy a case, it should be added to cls.product.
+        cls.component_2 = f.ComponentFactory(name='web')
+
+        f.TestCaseComponentFactory(case=cls.case, component=cls.component_1)
+        f.TestCaseComponentFactory(case=cls.case, component=cls.component_2)
+
+        cls.case_author = f.UserFactory(username='clone_case_author')
+        cls.case_test_clone = f.TestCaseFactory(
+            author=cls.case_author,
+            default_tester=None,
+            reviewer=cls.tester,
+            case_status=cls.case_status_confirmed,
+            plan=[cls.plan])
+
         user_should_have_perm(cls.tester, 'testcases.add_testcase')
         cls.clone_url = reverse('cases-clone')
 
@@ -1013,6 +1066,249 @@ class TestCloneCase(BasePlanCase):
             'type="checkbox" value="{}"> {}</label>'.format(
                 self.case_1.pk, self.case_1.summary),
             html=True)
+
+    def test_clone_one_case_to_a_plan(self):
+        self._clone_cases([self.plan_test_clone], [self.case])
+
+    def test_clone_one_case_to_several_plans(self):
+        self._clone_cases([self.plan_test_clone, self.plan_test_clone_more],
+                          [self.case])
+
+    def test_clone_some_cases_to_a_plan(self):
+        self._clone_cases([self.plan_test_clone], [self.case, self.case_1])
+
+    def test_clone_some_cases_to_several_plans(self):
+        self._clone_cases([self.plan_test_clone, self.plan_test_clone_more],
+                          [self.case, self.case_1])
+
+    def test_link_one_case_to_a_plan(self):
+        self._clone_cases([self.plan_test_clone], [self.case],
+                          copy_case=False)
+
+    def test_link_one_case_to_several_plans(self):
+        self._clone_cases([self.plan_test_clone, self.plan_test_clone_more],
+                          [self.case],
+                          copy_case=False)
+
+    def test_link_some_cases_to_a_plan(self):
+        self._clone_cases([self.plan_test_clone], [self.case, self.case_1],
+                          copy_case=False)
+
+    def test_link_some_cases_to_several_plans(self):
+        self._clone_cases([self.plan_test_clone, self.plan_test_clone_more],
+                          [self.case, self.case_1],
+                          copy_case=False)
+
+    def assert_cloned_case(self, orig_case, cloned_case,
+                           copy_case=True,
+                           keep_original_author=False,
+                           keep_original_default_tester=False,
+                           copy_component=False,
+                           copy_attachment=None):
+        # Ensure this is a copy
+        if copy_case:
+            self.assertNotEqual(orig_case.pk, cloned_case.pk)
+
+            self.assertEqual(orig_case.summary, cloned_case.summary)
+            self.assertEqual(orig_case.is_automated, cloned_case.is_automated)
+            self.assertEqual(orig_case.is_automated_proposed,
+                             cloned_case.is_automated_proposed)
+            self.assertEqual(orig_case.script, cloned_case.script)
+            self.assertEqual(orig_case.arguments, cloned_case.arguments)
+            self.assertEqual(orig_case.extra_link, cloned_case.extra_link)
+            self.assertEqual(orig_case.requirement, cloned_case.requirement)
+            self.assertEqual(orig_case.alias, cloned_case.alias)
+            self.assertEqual(orig_case.estimated_time,
+                             cloned_case.estimated_time)
+            self.assertEqual(orig_case.category.name,
+                             cloned_case.category.name)
+            self.assertEqual(orig_case.priority.value,
+                             cloned_case.priority.value)
+            self.assertEqual(orig_case.notes, cloned_case.notes)
+
+            # Assert text
+            orig_case_text = orig_case.latest_text()
+            cloned_case_text = cloned_case.latest_text()
+
+            if keep_original_author:
+                self.assertEqual(orig_case.author, cloned_case_text.author)
+            else:
+                self.assertEqual(self.tester, cloned_case_text.author)
+
+            self.assertEqual(orig_case_text.action, cloned_case_text.action)
+            self.assertEqual(orig_case_text.effect, cloned_case_text.effect)
+            self.assertEqual(orig_case_text.setup, cloned_case_text.setup)
+            self.assertEqual(orig_case_text.breakdown,
+                             cloned_case_text.breakdown)
+
+            # Assert tags
+            tags = cloned_case.tag.all()
+            tags_from_orig_cases = orig_case.tag.all()
+            self.assertSetEqual({item.pk for item in tags_from_orig_cases},
+                                {item.pk for item in tags})
+
+            # Assert attachments
+            if copy_attachment:
+                orig_attachments = orig_case.attachment.order_by('pk')
+                cloned_attachments = cloned_case.attachment.order_by('pk')
+                self.assertListEqual(list(orig_attachments),
+                                     list(cloned_attachments))
+
+            if copy_component:
+                expected_components = [self.component_1.name, self.component_2.name]
+
+                self.assertListEqual(
+                    expected_components,
+                    [c.name for c in cloned_case.component.order_by('name')])
+
+                for plan in cloned_case.plan.all():
+                    self.assertListEqual(
+                        expected_components,
+                        [c.name for c in plan.product.component.order_by('name')])
+
+        else:
+            self.assertEqual(orig_case.pk, cloned_case.pk)
+
+        if keep_original_author:
+            self.assertEqual(orig_case.author, cloned_case.author)
+        else:
+            self.assertEqual(self.tester, cloned_case.author)
+
+        if keep_original_default_tester:
+            self.assertEqual(orig_case.author, cloned_case.default_tester)
+        else:
+            self.assertEqual(self.tester, cloned_case.default_tester)
+
+    def _clone_cases(self, plans, orig_cases,
+                     orig_plan=None,
+                     copy_case=True,
+                     keep_original_author=False,
+                     keep_original_default_tester=False,
+                     copy_component=False,
+                     copy_attachment=False):
+        self.login_tester()
+
+        post_data = {
+            'plan': [item.pk for item in plans],
+            'case': [item.pk for item in orig_cases],
+            'copy_case': copy_case,
+            'maintain_case_orignal_author': keep_original_author,
+            'maintain_case_orignal_default_tester': keep_original_default_tester,
+            'copy_component': copy_component,
+            'copy_attachment': copy_attachment,
+        }
+
+        if orig_plan:
+            post_data['from_plan'] = orig_plan.pk
+
+        resp = self.client.post(self.clone_url, post_data)
+
+        plans_count = len(plans)
+        orig_cases_count = len(orig_cases)
+
+        # Assert response from view
+
+        if plans_count == 1 and orig_cases_count == 1:
+            cloned_case = plans[0].case.first()
+            self.assertRedirects(resp, '{}?from_plan={}'.format(
+                reverse('case-get', args=[cloned_case.pk]),
+                plans[0].pk
+            ))
+        elif orig_cases_count == 1:
+            cloned_case = plans[0].case.first()
+            self.assertRedirects(
+                resp, reverse('case-get', args=[cloned_case.pk]))
+        elif plans_count == 1:
+            self.assertRedirects(
+                resp, reverse('plan-get', args=[plans[0].pk]),
+                fetch_redirect_response=False)
+        else:
+            self.assertContains(resp, 'Test case successful to clone')
+
+        # Assert cases are cloned or linked correctly
+
+        for plan in plans:
+            cloned_cases = plan.case.order_by('pk')
+
+            self.assertEqual(len(orig_cases), len(cloned_cases))
+
+            for orig_case, cloned_case in zip(orig_cases, cloned_cases):
+                self.assert_cloned_case(
+                    orig_case, cloned_case,
+                    copy_case=copy_case,
+                    copy_component=copy_component,
+                    copy_attachment=copy_attachment,
+                    keep_original_author=keep_original_author,
+                    keep_original_default_tester=keep_original_default_tester
+                )
+
+            # Assert sort key in test case plan relationship
+
+            if orig_plan is None:
+                for rel in TestCasePlan.objects.filter(plan=plan):
+                    # In the test case, destination plan does not have any
+                    # cases, so when any cases are associated with the plan,
+                    # sortkey should be None.
+                    self.assertIsNone(rel.sortkey)
+            else:
+                tcp_filter = TestCasePlan.objects.filter
+                for rel in tcp_filter(plan=plan):
+                    orig_rel = tcp_filter(plan=orig_plan, case=orig_case).first()
+                    if orig_rel:
+                        self.assertEqual(orig_rel.sortkey, rel.sortkey)
+                    else:
+                        # Same as above, the original plan has no cases
+                        # associated. So, sortkey should be None.
+                        self.assertIsNone(rel.sortkey)
+
+    def test_keep_original_author(self):
+        self._clone_cases([self.plan_test_clone],
+                          [self.case],
+                          copy_case=True,
+                          keep_original_author=True)
+
+    def test_keep_original_default_tester(self):
+        self._clone_cases([self.plan_test_clone],
+                          [self.case],
+                          copy_case=True,
+                          keep_original_default_tester=True)
+
+    def test_copy_components(self):
+        # copy_components only works when copying cases.
+        self._clone_cases([self.plan_test_clone, self.plan_test_clone_more],
+                          [self.case],
+                          copy_case=True,
+                          copy_component=True)
+
+    def test_copy_attachments(self):
+        self._clone_cases([self.plan_test_clone],
+                          [self.case, self.case_1],
+                          copy_case=True,
+                          copy_attachment=True)
+
+    def test_set_sort_key_for_cloned_case_by_using_orig_plan(self):
+        self._clone_cases([self.plan_test_clone, self.plan_test_clone_more],
+                          [self.case],
+                          orig_plan=self.case.plan.first(),
+                          copy_case=True)
+
+    def test_set_sort_key_for_linked_case_by_using_orig_plan(self):
+        self._clone_cases([self.plan_test_clone, self.plan_test_clone_more],
+                          [self.case],
+                          orig_plan=self.case.plan.first(),
+                          copy_case=False)
+
+    def test_create_new_plan_case_rel_sort_key_for_copy(self):
+        self._clone_cases([self.plan_test_clone, self.plan_test_clone_more],
+                          [self.case],
+                          orig_plan=self.orphan_plan,
+                          copy_case=True)
+
+    def test_create_new_plan_case_rel_sort_key_for_link(self):
+        self._clone_cases([self.plan_test_clone, self.plan_test_clone_more],
+                          [self.case],
+                          orig_plan=self.orphan_plan,
+                          copy_case=False)
 
 
 class TestSearchCases(BasePlanCase):
