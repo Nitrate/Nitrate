@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import http.client
+import http
 import json
 import re
 
@@ -99,7 +99,7 @@ class HelperAssertions:
     """Helper assertion methods"""
 
     def assert404(self, response):
-        self.assertEqual(http.client.NOT_FOUND, response.status_code)
+        self.assertEqual(http.HTTPStatus.NOT_FOUND, response.status_code)
 
     def assertJsonResponse(self, response, expected, status_code=200):
         self.assertEqual(status_code, response.status_code)

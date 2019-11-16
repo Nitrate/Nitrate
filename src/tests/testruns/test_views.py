@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import http
 import json
 import os
 
@@ -7,7 +8,6 @@ from datetime import timedelta
 from operator import attrgetter
 
 from mock import patch
-import http.client
 from xml.etree import ElementTree
 
 from django.utils import formats
@@ -84,13 +84,13 @@ class TestGetRun(BaseCaseRun):
     def test_404_if_non_existing_pk(self):
         url = reverse('run-get', args=[99999999])
         response = self.client.get(url)
-        self.assertEqual(http.client.NOT_FOUND, response.status_code)
+        self.assertEqual(http.HTTPStatus.NOT_FOUND, response.status_code)
 
     def test_get_a_run(self):
         url = reverse('run-get', args=[self.test_run.pk])
         response = self.client.get(url)
 
-        self.assertEqual(http.client.OK, response.status_code)
+        self.assertEqual(http.HTTPStatus.OK, response.status_code)
 
         for i, case_run in enumerate(
                 (self.case_run_1, self.case_run_2, self.case_run_3), 1):
@@ -517,7 +517,7 @@ class TestStartCloneRunFromRunsSearchPage(CloneRunBaseTest):
                 response,
                 reverse('run-get', args=[cloned_runs[0].pk]))
         else:
-            self.assertEqual(http.client.FOUND, response.status_code)
+            self.assertEqual(http.HTTPStatus.FOUND, response.status_code)
 
         # Currently, runs are not cloned by the order of passed-in runs id. So,
         # ordering by summary to assert equality.
@@ -1121,7 +1121,7 @@ class TestIssueActions(BaseCaseRun):
 
         response = self.client.get(self.run_issues_url, post_data)
         self.assertJsonResponse(
-            response, {'messages': ['Unrecognizable actions']}, http.client.BAD_REQUEST)
+            response, {'messages': ['Unrecognizable actions']}, http.HTTPStatus.BAD_REQUEST)
 
     def test_remove_issue_from_case_run(self):
         self.login_tester()

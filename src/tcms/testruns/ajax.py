@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import http
 import logging
 
 from operator import attrgetter
-import http.client
 
 from django import forms
 from django.contrib.auth.decorators import permission_required
@@ -41,13 +41,14 @@ def manage_case_run_issues(request, run_id):
             # TODO: make a migration for the permission
             if not self.request.user.has_perm('issuetracker.add_issue'):
                 return JsonResponse({'messages': ['Permission denied.']},
-                                    status=http.client.FORBIDDEN)
+                                    status=http.HTTPStatus.FORBIDDEN)
 
             form = CaseRunIssueForm(request.GET)
 
             if not form.is_valid():
                 msgs = form_error_messags_to_list(form)
-                return JsonResponse({'messages': msgs}, status=http.client.BAD_REQUEST)
+                return JsonResponse(
+                    {'messages': msgs}, status=http.HTTPStatus.BAD_REQUEST)
 
             service = find_service(form.cleaned_data['tracker'])
             issue_key = form.cleaned_data['issue_key']
@@ -60,7 +61,7 @@ def manage_case_run_issues(request, run_id):
                     {'messages': [
                         f'Not all case runs belong to run {self.run.pk}.'
                     ]},
-                    status=http.client.BAD_REQUEST)
+                    status=http.HTTPStatus.BAD_REQUEST)
 
             try:
                 for case_run in case_runs:
@@ -72,14 +73,15 @@ def manage_case_run_issues(request, run_id):
                 logger.exception(
                     'Failed to add issue to case run %s. Error reported: %s',
                     form.case_run.pk, str(e))
-                return JsonResponse({'messages': [str(e)]}, status=http.client.BAD_REQUEST)
+                return JsonResponse(
+                    {'messages': [str(e)]}, status=http.HTTPStatus.BAD_REQUEST)
 
             return self.run_issues_info(case_runs)
 
         def remove(self):
             if not self.request.user.has_perm('issuetracker.delete_issue'):
                 return JsonResponse({'messages': ['Permission denied.']},
-                                    status=http.client.FORBIDDEN)
+                                    status=http.HTTPStatus.FORBIDDEN)
 
             class RemoveIssueForm(forms.Form):
                 issue_key = forms.CharField()
@@ -93,8 +95,9 @@ def manage_case_run_issues(request, run_id):
 
             form = RemoveIssueForm(request.GET)
             if not form.is_valid():
-                return JsonResponse({'messages': form_error_messags_to_list(form)},
-                                    status=http.client.BAD_REQUEST)
+                return JsonResponse(
+                    {'messages': form_error_messags_to_list(form)},
+                    status=http.HTTPStatus.BAD_REQUEST)
 
             issue_key = form.cleaned_data['issue_key']
             case_runs = form.cleaned_data['case_run']
@@ -106,7 +109,7 @@ def manage_case_run_issues(request, run_id):
                         issue_key, case_run.pk)
                     logger.exception(msg)
                     return JsonResponse(
-                        {'messages': [msg]}, status=http.client.BAD_REQUEST)
+                        {'messages': [msg]}, status=http.HTTPStatus.BAD_REQUEST)
 
             return self.run_issues_info(case_runs)
 
@@ -126,13 +129,13 @@ def manage_case_run_issues(request, run_id):
     except Http404:
         return JsonResponse(
             {'messages': [f'Test run {run_id} does not exist.']},
-            status=http.client.NOT_FOUND)
+            status=http.HTTPStatus.NOT_FOUND)
 
     crba = CaseRunIssueActions(request=request, run=run)
 
     if not request.GET.get('a') in crba.__all__:
         return JsonResponse({'messages': ['Unrecognizable actions']},
-                            status=http.client.BAD_REQUEST)
+                            status=http.HTTPStatus.BAD_REQUEST)
 
     func = getattr(crba, request.GET['a'])
     return func()

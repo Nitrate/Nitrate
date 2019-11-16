@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import http
 import sys
 import unittest
 from mock import patch
@@ -260,12 +261,13 @@ class VariousResponsesTest(unittest.TestCase):
 
     def test_json_response_badrequest(self):
         response = responses.JsonResponseBadRequest({})
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(http.HTTPStatus.BAD_REQUEST, response.status_code)
         self.assertEqual(response['Content-Type'], 'application/json')
 
     def test_json_response_servererror(self):
         response = responses.JsonResponseServerError({})
-        self.assertEqual(500, response.status_code)
+        self.assertEqual(http.HTTPStatus.INTERNAL_SERVER_ERROR,
+                         response.status_code)
         self.assertEqual(response['Content-Type'], 'application/json')
 
 
