@@ -8,7 +8,9 @@ import traceback
 from functools import wraps
 from xmlrpc.client import Fault
 
-import django
+import django.core.exceptions
+import django.db.models
+import django.db.utils
 from django.conf import settings
 
 
