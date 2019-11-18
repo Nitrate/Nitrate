@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import http
 import sys
 import unittest
 from mock import patch
@@ -15,7 +14,9 @@ from tcms.core.db import GroupByResult
 from tcms.core.utils import string_to_list
 from tcms.core.task import AsyncTask
 from tcms.core.task import Task
+from tests import HelperAssertions
 from tests.factories import TestPlanFactory
+
 
 PY37 = sys.version_info[:2] == (3, 7)
 
@@ -256,18 +257,18 @@ class GroupByResultLevelTest(unittest.TestCase):
         self.assertEqual(value_leaf_count, 2)
 
 
-class VariousResponsesTest(unittest.TestCase):
+class VariousResponsesTest(HelperAssertions, unittest.TestCase):
     """Test HttpJSONResponse"""
 
     def test_json_response_badrequest(self):
         response = responses.JsonResponseBadRequest({})
-        self.assertEqual(http.HTTPStatus.BAD_REQUEST, response.status_code)
+
+        self.assert400(response)
         self.assertEqual(response['Content-Type'], 'application/json')
 
     def test_json_response_servererror(self):
         response = responses.JsonResponseServerError({})
-        self.assertEqual(http.HTTPStatus.INTERNAL_SERVER_ERROR,
-                         response.status_code)
+        self.assert500(response)
         self.assertEqual(response['Content-Type'], 'application/json')
 
 

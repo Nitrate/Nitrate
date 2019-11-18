@@ -2,10 +2,6 @@
 
 import unittest
 
-from http.client import BAD_REQUEST
-from http.client import FORBIDDEN
-from http.client import NOT_FOUND
-from http.client import NOT_IMPLEMENTED
 from datetime import datetime
 
 from tcms.issuetracker.models import Issue
@@ -50,7 +46,8 @@ class TestCaseRunCreate(XmlrpcAPIBaseTest):
     def test_create_with_no_args(self):
         bad_args = (None, [], {}, (), 1, 0, -1, True, False, '', 'aaaa', object)
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.create, self.admin_request, arg)
+            self.assertXmlrpcFaultBadRequest(
+                testcaserun.create, self.admin_request, arg)
 
     def test_create_with_no_required_fields(self):
         values = [
@@ -74,7 +71,8 @@ class TestCaseRunCreate(XmlrpcAPIBaseTest):
             },
         ]
         for value in values:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.create, self.admin_request, value)
+            self.assertXmlrpcFaultBadRequest(
+                testcaserun.create, self.admin_request, value)
 
     def test_create_with_required_fields(self):
         tcr = testcaserun.create(self.admin_request, {
@@ -129,7 +127,8 @@ class TestCaseRunCreate(XmlrpcAPIBaseTest):
             },
         ]
         for value in values:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.create, self.admin_request, value)
+            self.assertXmlrpcFaultBadRequest(
+                testcaserun.create, self.admin_request, value)
 
     def test_create_with_chinese(self):
         tcr = testcaserun.create(self.admin_request, {
@@ -185,7 +184,8 @@ class TestCaseRunCreate(XmlrpcAPIBaseTest):
             "sortkey": 2,
             "case_run_status": self.case_run_status.pk,
         }
-        self.assertRaisesXmlrpcFault(FORBIDDEN, testcaserun.create, self.staff_request, values)
+        self.assertXmlrpcFaultForbidden(
+            testcaserun.create, self.staff_request, values)
 
 
 class TestCaseRunAddComment(XmlrpcAPIBaseTest):
@@ -249,7 +249,8 @@ class TestCaseRunAttachIssue(XmlrpcAPIBaseTest):
             tracker_product=cls.tracker_product)
 
     def test_attach_issue_with_no_perm(self):
-        self.assertRaisesXmlrpcFault(FORBIDDEN, testcaserun.attach_issue, self.staff_request, {})
+        self.assertXmlrpcFaultForbidden(
+            testcaserun.attach_issue, self.staff_request, {})
 
     @unittest.skip('TODO: not implemented yet.')
     def test_attach_issue_with_incorrect_type_value(self):
@@ -270,8 +271,8 @@ class TestCaseRunAttachIssue(XmlrpcAPIBaseTest):
             },
         ]
         for value in values:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.attach_issue,
-                                         self.admin_request, value)
+            self.assertXmlrpcFaultBadRequest(
+                testcaserun.attach_issue, self.admin_request, value)
 
     def test_attach_issue_with_required_args(self):
         bug = testcaserun.attach_issue(self.admin_request, {
@@ -334,8 +335,7 @@ class TestCaseRunAttachIssue(XmlrpcAPIBaseTest):
             "issue_key": '2',
             "tracker": self.tracker.pk,
         }
-        self.assertRaisesXmlrpcFault(
-            BAD_REQUEST,
+        self.assertXmlrpcFaultBadRequest(
             testcaserun.attach_issue, self.admin_request, value)
 
     def test_attach_issue_with_non_existing_issue_tracker(self):
@@ -344,8 +344,7 @@ class TestCaseRunAttachIssue(XmlrpcAPIBaseTest):
             "issue_key": '2',
             "tracker": 111111111,
         }
-        self.assertRaisesXmlrpcFault(
-            BAD_REQUEST,
+        self.assertXmlrpcFaultBadRequest(
             testcaserun.attach_issue, self.admin_request, value)
 
     def test_attach_issue_with_chinese(self):
@@ -385,18 +384,21 @@ class TestCaseRunAttachLog(XmlrpcAPIBaseTest):
         pass
 
     def test_attach_log_with_not_enough_args(self):
-        self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.attach_log, None, '', '')
-        self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.attach_log, None, '')
-        self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.attach_log, None)
-        self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.attach_log, None, '', '', '')
+        self.assertXmlrpcFaultBadRequest(testcaserun.attach_log, None, '', '')
+        self.assertXmlrpcFaultBadRequest(testcaserun.attach_log, None, '')
+        self.assertXmlrpcFaultBadRequest(testcaserun.attach_log, None)
+        self.assertXmlrpcFaultBadRequest(
+            testcaserun.attach_log, None, '', '', '')
 
     def test_attach_log_with_non_exist_id(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, testcaserun.attach_log, None, 5523533, '', '')
+        self.assertXmlrpcFaultNotFound(
+            testcaserun.attach_log, None, 5523533, '', '')
 
     @unittest.skip('TODO: code should be fixed to make this test pass')
     def test_attach_log_with_invalid_url(self):
-        self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.attach_log,
-                                     None, self.case_run.pk, "UT test logs", 'aaaaaaaaa')
+        self.assertXmlrpcFaultBadRequest(
+            testcaserun.attach_log,
+            None, self.case_run.pk, "UT test logs", 'aaaaaaaaa')
 
     def test_attach_log(self):
         url = "http://127.0.0.1/test/test-log.log"
@@ -411,17 +413,20 @@ class TestCaseRunCheckStatus(XmlrpcAPIBaseTest):
     def test_check_status_with_no_args(self):
         bad_args = (None, [], {}, ())
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.check_case_run_status, None, arg)
+            self.assertXmlrpcFaultBadRequest(
+                testcaserun.check_case_run_status, None, arg)
 
     @unittest.skip('TODO: fix code to make this test pass.')
     def test_check_status_with_empty_name(self):
-        self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.check_case_run_status, None, '')
+        self.assertXmlrpcFaultBadRequest(
+            testcaserun.check_case_run_status, None, '')
 
     @unittest.skip('TODO: fix code to make this test pass.')
     def test_check_status_with_non_basestring(self):
         bad_args = (True, False, 1, 0, -1, [1], (1,), dict(a=1), 0.7)
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.check_case_run_status, None, arg)
+            self.assertXmlrpcFaultBadRequest(
+                testcaserun.check_case_run_status, None, arg)
 
     def test_check_status_with_name(self):
         status = testcaserun.check_case_run_status(None, "IDLE")
@@ -430,7 +435,8 @@ class TestCaseRunCheckStatus(XmlrpcAPIBaseTest):
         self.assertEqual(status['name'], "IDLE")
 
     def test_check_status_with_non_exist_name(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, testcaserun.check_case_run_status, None, "ABCDEFG")
+        self.assertXmlrpcFaultNotFound(
+            testcaserun.check_case_run_status, None, "ABCDEFG")
 
 
 class TestCaseRunDetachIssue(XmlrpcAPIBaseTest):
@@ -484,10 +490,11 @@ class TestCaseRunDetachIssue(XmlrpcAPIBaseTest):
     def test_detach_issue_with_no_args(self):
         bad_args = (None, [], {}, ())
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.detach_issue,
-                                         self.admin_request, arg, '12345')
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.detach_issue,
-                                         self.admin_request, self.case_run.pk, arg)
+            self.assertXmlrpcFaultBadRequest(
+                testcaserun.detach_issue, self.admin_request, arg, '12345')
+            self.assertXmlrpcFaultBadRequest(
+                testcaserun.detach_issue,
+                self.admin_request, self.case_run.pk, arg)
 
     def test_detach_issue_with_non_exist_id(self):
         original_links_count = self.case_run.case.issues.count()
@@ -511,14 +518,15 @@ class TestCaseRunDetachIssue(XmlrpcAPIBaseTest):
     def test_detach_issue_with_illegal_args(self):
         bad_args = ("AAAA", ['A', 'B', 'C'], dict(A=1, B=2), True, False, (1, 2, 3, 4), -100)
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.detach_issue,
-                                         self.admin_request, arg, self.bz_bug)
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.detach_issue,
-                                         self.admin_request, self.case_run.pk, arg)
+            self.assertXmlrpcFaultBadRequest(
+                testcaserun.detach_issue, self.admin_request, arg, self.bz_bug)
+            self.assertXmlrpcFaultBadRequest(
+                testcaserun.detach_issue,
+                self.admin_request, self.case_run.pk, arg)
 
     def test_detach_issue_with_no_perm(self):
-        self.assertRaisesXmlrpcFault(
-            FORBIDDEN, testcaserun.detach_issue,
+        self.assertXmlrpcFaultForbidden(
+            testcaserun.detach_issue,
             self.staff_request, self.case_run.pk, self.bz_bug)
 
 
@@ -541,18 +549,20 @@ class TestCaseRunDetachLog(XmlrpcAPIBaseTest):
     def test_detach_log_with_no_args(self):
         bad_args = (None, [], {}, ())
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.detach_log,
-                                         None, arg, self.link.pk)
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.detach_log,
-                                         None, self.case_run.pk, arg)
+            self.assertXmlrpcFaultBadRequest(
+                testcaserun.detach_log, None, arg, self.link.pk)
+            self.assertXmlrpcFaultBadRequest(
+                testcaserun.detach_log, None, self.case_run.pk, arg)
 
     def test_detach_log_with_not_enough_args(self):
-        self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.detach_log, None, '')
-        self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.detach_log, None)
-        self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.detach_log, None, '', '', '')
+        self.assertXmlrpcFaultBadRequest(testcaserun.detach_log, None, '')
+        self.assertXmlrpcFaultBadRequest(testcaserun.detach_log, None)
+        self.assertXmlrpcFaultBadRequest(
+            testcaserun.detach_log, None, '', '', '')
 
     def test_detach_log_with_non_exist_id(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, testcaserun.detach_log, None, 9999999, self.link.pk)
+        self.assertXmlrpcFaultNotFound(
+            testcaserun.detach_log, None, 9999999, self.link.pk)
 
     def test_detach_log_with_non_exist_log(self):
         testcaserun.detach_log(None, self.case_run.pk, 999999999)
@@ -563,10 +573,10 @@ class TestCaseRunDetachLog(XmlrpcAPIBaseTest):
     def test_detach_log_with_invalid_type_args(self):
         bad_args = ("", "AAA", (1,), [1], dict(a=1), True, False)
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.detach_log,
-                                         None, arg, self.link.pk)
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.detach_log,
-                                         None, self.case_run.pk, arg)
+            self.assertXmlrpcFaultBadRequest(
+                testcaserun.detach_log, None, arg, self.link.pk)
+            self.assertXmlrpcFaultBadRequest(
+                testcaserun.detach_log, None, self.case_run.pk, arg)
 
     def test_detach_log(self):
         testcaserun.detach_log(None, self.case_run.pk, self.link.pk)
@@ -598,16 +608,16 @@ class TestCaseRunGet(XmlrpcAPIBaseTest):
     def test_get_with_no_args(self):
         bad_args = (None, [], {}, ())
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.get, None, arg)
+            self.assertXmlrpcFaultBadRequest(testcaserun.get, None, arg)
 
     @unittest.skip('TODO: fix function get to make this test pass.')
     def test_get_with_non_integer(self):
         non_integer = (True, False, '', 'aaaa', self, [1], (1,), dict(a=1), 0.7)
         for arg in non_integer:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.get, None, arg)
+            self.assertXmlrpcFaultBadRequest(testcaserun.get, None, arg)
 
     def test_get_with_non_exist_id(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, testcaserun.get, None, 11111111)
+        self.assertXmlrpcFaultNotFound(testcaserun.get, None, 11111111)
 
     def test_get_with_id(self):
         tcr = testcaserun.get(None, self.case_run.pk)
@@ -636,41 +646,40 @@ class TestCaseRunGetSet(XmlrpcAPIBaseTest):
     def test_get_with_no_args(self):
         bad_args = (None, [], (), {})
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(
-                BAD_REQUEST, testcaserun.get_s,
+            self.assertXmlrpcFaultBadRequest(
+                testcaserun.get_s,
                 None, arg, self.case_run.run.pk, self.case_run.build.pk, 0)
-            self.assertRaisesXmlrpcFault(
-                BAD_REQUEST, testcaserun.get_s,
+            self.assertXmlrpcFaultBadRequest(
+                testcaserun.get_s,
                 None, self.case_run.case.pk, arg, self.case_run.build.pk, 0)
-            self.assertRaisesXmlrpcFault(
-                BAD_REQUEST, testcaserun.get_s,
+            self.assertXmlrpcFaultBadRequest(
+                testcaserun.get_s,
                 None, self.case_run.case.pk, self.case_run.run.pk, arg, 0)
-            self.assertRaisesXmlrpcFault(
-                BAD_REQUEST, testcaserun.get_s,
-                None, self.case_run.case.pk, self.case_run.run.pk, self.case_run.build.pk, arg)
+            self.assertXmlrpcFaultBadRequest(
+                testcaserun.get_s,
+                None, self.case_run.case.pk, self.case_run.run.pk,
+                self.case_run.build.pk, arg)
 
     def test_get_with_non_exist_run(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, testcaserun.get_s,
-                                     None, self.case_run.case.pk, 1111111, self.case_run.build.pk,
-                                     0)
+        self.assertXmlrpcFaultNotFound(
+            testcaserun.get_s,
+            None, self.case_run.case.pk, 1111111, self.case_run.build.pk, 0)
 
     def test_get_with_non_exist_case(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, testcaserun.get_s,
-                                     None, 11111111, self.case_run.run.pk, self.case_run.build.pk,
-                                     0)
+        self.assertXmlrpcFaultNotFound(
+            testcaserun.get_s,
+            None, 11111111, self.case_run.run.pk, self.case_run.build.pk, 0)
 
     def test_get_with_non_exist_build(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, testcaserun.get_s,
-                                     None, self.case_run.case.pk, self.case_run.run.pk, 1111111,
-                                     0)
+        self.assertXmlrpcFaultNotFound(
+            testcaserun.get_s,
+            None, self.case_run.case.pk, self.case_run.run.pk, 1111111, 0)
 
     def test_get_with_non_exist_env(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, testcaserun.get_s,
-                                     None,
-                                     self.case_run.case.pk,
-                                     self.case_run.run.pk,
-                                     self.case_run.build.pk,
-                                     999999)
+        self.assertXmlrpcFaultNotFound(
+            testcaserun.get_s,
+            None, self.case_run.case.pk, self.case_run.run.pk,
+            self.case_run.build.pk, 999999)
 
     def test_get_with_no_env(self):
         tcr = testcaserun.get_s(None,
@@ -710,15 +719,15 @@ class TestCaseRunGetIssues(XmlrpcAPIBaseTest):
 
     def test_get_issues_with_no_args(self):
         for bad_arg in [None, [], {}, ()]:
-            self.assertRaisesXmlrpcFault(
-                BAD_REQUEST, testcaserun.get_issues, None, bad_arg)
+            self.assertXmlrpcFaultBadRequest(
+                testcaserun.get_issues, None, bad_arg)
 
     @unittest.skip('TODO: fix function get_issues to make this test pass.')
     def test_get_issues_with_non_integer(self):
         non_integer = (True, False, '', 'aaaa', self, [1], (1,), dict(a=1), 0.7)
         for arg in non_integer:
-            self.assertRaisesXmlrpcFault(
-                BAD_REQUEST, testcaserun.get_issues, None, arg)
+            self.assertXmlrpcFaultBadRequest(
+                testcaserun.get_issues, None, arg)
 
     def test_get_issues_with_non_exist_id(self):
         issues = testcaserun.get_issues(None, 11111111)
@@ -755,15 +764,13 @@ class TestCaseRunGetIssuesSet(XmlrpcAPIBaseTest):
     def test_get_issue_set_with_no_args(self):
         bad_args = (None, [], (), {})
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(
-                BAD_REQUEST,
+            self.assertXmlrpcFaultBadRequest(
                 testcaserun.get_issues_s,
                 None, arg, self.case_run.case.pk, self.case_run.build.pk, 0)
-            self.assertRaisesXmlrpcFault(
-                BAD_REQUEST, testcaserun.get_issues_s,
+            self.assertXmlrpcFaultBadRequest(
+                testcaserun.get_issues_s,
                 None, self.case_run.run.pk, arg, self.case_run.build.pk, 0)
-            self.assertRaisesXmlrpcFault(
-                BAD_REQUEST,
+            self.assertXmlrpcFaultBadRequest(
                 testcaserun.get_issues_s,
                 None, self.case_run.run.pk, self.case_run.case.pk, arg, 0)
 
@@ -771,12 +778,10 @@ class TestCaseRunGetIssuesSet(XmlrpcAPIBaseTest):
     def test_get_issue_set_with_invalid_environment_value(self):
         bad_args = (None, [], (), {})
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.get_issues_s,
-                                         None,
-                                         self.case_run.run.pk,
-                                         self.case_run.case.pk,
-                                         self.case_run.build.pk,
-                                         arg)
+            self.assertXmlrpcFaultBadRequest(
+                testcaserun.get_issues_s,
+                None, self.case_run.run.pk, self.case_run.case.pk,
+                self.case_run.build.pk, arg)
 
     def test_get_issue_set_with_non_exist_run(self):
         issues = testcaserun.get_issues_s(
@@ -857,10 +862,12 @@ class TestCaseRunGetStatus(XmlrpcAPIBaseTest):
     def test_get_status_with_no_args(self):
         bad_args = ([], {}, (), "", "AAAA", self)
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.get_case_run_status, None, arg)
+            self.assertXmlrpcFaultBadRequest(
+                testcaserun.get_case_run_status, None, arg)
 
     def test_get_status_with_non_exist_id(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, testcaserun.get_case_run_status, None, 999999)
+        self.assertXmlrpcFaultNotFound(
+            testcaserun.get_case_run_status, None, 999999)
 
     def test_get_status_with_id(self):
         status = testcaserun.get_case_run_status(None, self.status_running.pk)
@@ -869,7 +876,8 @@ class TestCaseRunGetStatus(XmlrpcAPIBaseTest):
         self.assertEqual(status['name'], "RUNNING")
 
     def test_get_status_with_name(self):
-        self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.get_case_run_status, None, 'PROPOSED')
+        self.assertXmlrpcFaultBadRequest(
+            testcaserun.get_case_run_status, None, 'PROPOSED')
 
 
 @unittest.skip('not implemented yet.')
@@ -886,15 +894,16 @@ class TestCaseRunGetCompletionTimeSet(XmlrpcAPIBaseTest):
 class TestCaseRunGetHistory(XmlrpcAPIBaseTest):
 
     def test_get_history(self):
-        self.assertRaisesXmlrpcFault(NOT_IMPLEMENTED, testcaserun.get_history, None, None)
+        self.assertXmlrpcFaultNotImplemented(
+            testcaserun.get_history, None, None)
 
 
 @unittest.skip('not implemented yet.')
 class TestCaseRunGetHistorySet(XmlrpcAPIBaseTest):
 
     def test_get_history(self):
-        self.assertRaisesXmlrpcFault(NOT_IMPLEMENTED, testcaserun.get_history_s,
-                                     None, None, None, None)
+        self.assertXmlrpcFaultNotImplemented(
+            testcaserun.get_history_s, None, None, None, None)
 
 
 class TestCaseRunGetLogs(XmlrpcAPIBaseTest):
@@ -909,16 +918,16 @@ class TestCaseRunGetLogs(XmlrpcAPIBaseTest):
     def test_get_logs_with_no_args(self):
         bad_args = (None, [], (), {}, "")
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.get_logs, None, arg)
+            self.assertXmlrpcFaultBadRequest(testcaserun.get_logs, None, arg)
 
     @unittest.skip('TODO: fix method to make this test pass.')
     def test_get_logs_with_non_integer(self):
         bad_args = (True, False, "AAA", 0.7, -1)
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.get_logs, None, arg)
+            self.assertXmlrpcFaultBadRequest(testcaserun.get_logs, None, arg)
 
     def test_get_logs_with_non_exist_id(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, testcaserun.get_logs, None, 99999999)
+        self.assertXmlrpcFaultNotFound(testcaserun.get_logs, None, 99999999)
 
     def test_get_empty_logs(self):
         logs = testcaserun.get_logs(None, self.case_run_2.pk)
@@ -955,10 +964,11 @@ class TestCaseRunUpdate(XmlrpcAPIBaseTest):
     def test_update_with_no_args(self):
         bad_args = (None, [], (), {}, "")
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.update,
-                                         self.admin_request, arg, {})
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.update,
-                                         self.admin_request, self.case_run_1.pk, arg)
+            self.assertXmlrpcFaultBadRequest(
+                testcaserun.update, self.admin_request, arg, {})
+            self.assertXmlrpcFaultBadRequest(
+                testcaserun.update,
+                self.admin_request, self.case_run_1.pk, arg)
 
     def test_update_with_single_caserun(self):
         tcr = testcaserun.update(self.admin_request, self.case_run_1.pk, {
@@ -997,17 +1007,19 @@ class TestCaseRunUpdate(XmlrpcAPIBaseTest):
         self.assertEqual(tcr[0]['sortkey'], tcr[1]['sortkey'])
 
     def test_update_with_non_exist_build(self):
-        self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.update,
-                                     self.admin_request, self.case_run_1.pk, {"build": 1111111})
+        self.assertXmlrpcFaultBadRequest(
+            testcaserun.update,
+            self.admin_request, self.case_run_1.pk, {"build": 1111111})
 
     def test_update_with_non_exist_assignee(self):
-        self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.update,
-                                     self.admin_request, self.case_run_1.pk, {"assignee": 1111111})
+        self.assertXmlrpcFaultBadRequest(
+            testcaserun.update,
+            self.admin_request, self.case_run_1.pk, {"assignee": 1111111})
 
     def test_update_with_non_exist_status(self):
-        self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaserun.update,
-                                     self.admin_request, self.case_run_1.pk,
-                                     {"case_run_status": 1111111})
+        self.assertXmlrpcFaultBadRequest(
+            testcaserun.update,
+            self.admin_request, self.case_run_1.pk, {"case_run_status": 1111})
 
     def test_update_by_ignoring_undoced_fields(self):
         case_run = testcaserun.update(self.admin_request, self.case_run_1.pk, {
@@ -1018,5 +1030,6 @@ class TestCaseRunUpdate(XmlrpcAPIBaseTest):
         self.assertEqual('AAAA', case_run[0]['notes'])
 
     def test_update_with_no_perm(self):
-        self.assertRaisesXmlrpcFault(FORBIDDEN, testcaserun.update,
-                                     self.staff_request, self.case_run_1.pk, {"notes": "AAAA"})
+        self.assertXmlrpcFaultForbidden(
+            testcaserun.update,
+            self.staff_request, self.case_run_1.pk, {"notes": "AAAA"})

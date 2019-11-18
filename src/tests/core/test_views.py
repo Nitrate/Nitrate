@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import http
 import json
+from http import HTTPStatus
 
 from django import test
 from django.contrib.auth.models import User
@@ -19,8 +19,7 @@ from tcms.testcases.forms import TestCase
 from tcms.testplans.models import TestPlan
 from tcms.testruns.models import TestCaseRun
 from tcms.testruns.models import TestCaseRunStatus
-from tests import BaseCaseRun
-from tests import BasePlanCase
+from tests import BaseCaseRun, BasePlanCase
 from tests import remove_perm_from_user
 from tests import user_should_have_perm
 from tests import factories as f
@@ -43,7 +42,7 @@ class TestQuickSearch(BaseCaseRun):
         self.assertRedirects(
             response,
             reverse('plan-get', args=[self.plan.pk]),
-            target_status_code=http.HTTPStatus.MOVED_PERMANENTLY)
+            target_status_code=HTTPStatus.MOVED_PERMANENTLY)
 
     def test_goto_case(self):
         response = self.client.get(
@@ -96,7 +95,7 @@ class TestQuickSearch(BaseCaseRun):
         response = self.client.get(
             self.search_url,
             {'search_type': 'unknown type', 'search_content': self.plan.pk})
-        self.assertEqual(http.HTTPStatus.NOT_FOUND, response.status_code)
+        self.assert404(response)
 
 
 class TestCommentCaseRuns(BaseCaseRun):

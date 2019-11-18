@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from http.client import FORBIDDEN
-from http.client import NOT_FOUND
-
 from django.contrib.auth.models import User
 from django.test import TestCase
 
@@ -85,7 +82,8 @@ class TestUserGet(XmlrpcAPIBaseTest):
         self.assertEqual(data['email'], test_user.email)
 
     def test_get_not_exist(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, XUser.get, self.http_req, self.http_req.user.pk + 1)
+        self.assertXmlrpcFaultNotFound(
+            XUser.get, self.http_req, self.http_req.user.pk + 1)
 
 
 class TestUserGetMe(TestCase):
@@ -122,12 +120,13 @@ class TestUserJoin(XmlrpcAPIBaseTest):
         self.assertTrue(user_added_to_group, 'User should be added to group.')
 
     def test_join_nonexistent_user(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, XUser.join,
-                                     self.http_req, 'nonexistent user', 'whatever group name')
+        self.assertXmlrpcFaultNotFound(
+            XUser.join,
+            self.http_req, 'nonexistent user', 'whatever group name')
 
     def test_join_nonexistent_group(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, XUser.join,
-                                     self.http_req, self.username, 'nonexistent group name')
+        self.assertXmlrpcFaultNotFound(
+            XUser.join, self.http_req, self.username, 'nonexistent group name')
 
 
 class TestUserUpdate(XmlrpcAPIBaseTest):
@@ -163,8 +162,8 @@ class TestUserUpdate(XmlrpcAPIBaseTest):
 
     def test_update_other_missing_permission(self):
         new_values = {'some_attr': 'xxx'}
-        self.assertRaisesXmlrpcFault(FORBIDDEN, XUser.update,
-                                     self.http_req, new_values, self.another_user.pk)
+        self.assertXmlrpcFaultForbidden(
+            XUser.update, self.http_req, new_values, self.another_user.pk)
 
     def test_update_other_with_proper_permission(self):
         user_should_have_perm(self.http_req.user, 'auth.change_user')
@@ -186,12 +185,12 @@ class TestUserUpdate(XmlrpcAPIBaseTest):
         new_password = 'new password'
         user_new_attrs['password'] = new_password
 
-        self.assertRaisesXmlrpcFault(FORBIDDEN, XUser.update,
-                                     self.http_req, user_new_attrs, test_user.pk)
+        self.assertXmlrpcFaultForbidden(
+            XUser.update, self.http_req, user_new_attrs, test_user.pk)
 
         user_new_attrs['old_password'] = 'invalid old password'
-        self.assertRaisesXmlrpcFault(FORBIDDEN, XUser.update,
-                                     self.http_req, user_new_attrs, test_user.pk)
+        self.assertXmlrpcFaultForbidden(
+            XUser.update, self.http_req, user_new_attrs, test_user.pk)
 
         user_new_attrs['old_password'] = test_user.username
         data = XUser.update(self.http_req, user_new_attrs, test_user.pk)

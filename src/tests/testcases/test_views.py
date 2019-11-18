@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import http
 import json
 import unittest
 import xml.etree.ElementTree
@@ -322,7 +321,7 @@ class TestAddIssueToCase(BasePlanCase):
         }
         response = self.client.get(self.case_issue_url, request_data)
 
-        self.assertEqual(http.HTTPStatus.OK, response.status_code)
+        self.assert200(response)
         self.assertFalse(self.case_1.issues.filter(issue_key='123456').exists())
 
 
@@ -565,7 +564,7 @@ class TestEditCase(BasePlanCase):
     def test_show_edit_page(self):
         self.login_tester()
         response = self.client.get(self.case_edit_url)
-        self.assertEqual(http.HTTPStatus.OK, response.status_code)
+        self.assert200(response)
 
     def test_edit_a_case(self):
         self.login_tester()
@@ -1140,7 +1139,7 @@ class TestAddComponent(BasePlanCase):
             'o_component': [self.component_db.pk],
         })
 
-        self.assertEqual(http.HTTPStatus.OK, resp.status_code)
+        self.assert200(resp)
 
         components = self.case_1.component.all()
         self.assertEqual(1, len(components))
@@ -1153,7 +1152,7 @@ class TestAddComponent(BasePlanCase):
             'o_component': [self.component_db.pk, self.component_cli.pk],
         })
 
-        self.assertEqual(http.HTTPStatus.OK, resp.status_code)
+        self.assert200(resp)
 
         components = self.case_1.component.order_by('name')
         self.assertEqual(2, len(components))
@@ -1170,7 +1169,7 @@ class TestAddComponent(BasePlanCase):
             'o_component': [self.component_doc.pk, self.component_cli.pk],
         })
 
-        self.assertEqual(http.HTTPStatus.OK, resp.status_code)
+        self.assert200(resp)
 
         components = self.case_1.component.order_by('name')
         self.assertEqual(2, len(components))
@@ -1218,7 +1217,7 @@ class TestIssueManagement(BaseCaseRun):
             'case_run': self.case_run_1.pk,
         })
 
-        self.assertEqual(http.HTTPStatus.BAD_REQUEST, resp.status_code)
+        self.assert400(resp)
         self.assertIn('Missing issue key to delete.', resp.json()['messages'])
 
     def test_bad_case_run_to_remove(self):
@@ -1231,7 +1230,7 @@ class TestIssueManagement(BaseCaseRun):
             'case_run': 1000,
         })
 
-        self.assertEqual(http.HTTPStatus.BAD_REQUEST, resp.status_code)
+        self.assert400(resp)
         self.assertIn('Test case run does not exists.', resp.json()['messages'])
 
     def test_bad_case_run_case_rel_to_remove(self):
@@ -1244,7 +1243,7 @@ class TestIssueManagement(BaseCaseRun):
             'case_run': self.case_run_2.pk,
         })
 
-        self.assertEqual(http.HTTPStatus.BAD_REQUEST, resp.status_code)
+        self.assert400(resp)
         self.assertIn(
             'Case run {} is not associated with case {}.'.format(
                 self.case_run_2.pk, self.case_1.pk),
@@ -1259,8 +1258,7 @@ class TestIssueManagement(BaseCaseRun):
             'issue_key': '123456',
             'tracker': self.issue_tracker.pk,
         })
-
-        self.assertEqual(http.HTTPStatus.FORBIDDEN, resp.status_code)
+        self.assert403(resp)
 
     def test_no_permission_to_remove(self):
         # Note that, no permission is set for self.tester.
@@ -1270,8 +1268,7 @@ class TestIssueManagement(BaseCaseRun):
             'issue_key': '123456',
             'case_run': self.case_run_1.pk,
         })
-
-        self.assertEqual(http.HTTPStatus.FORBIDDEN, resp.status_code)
+        self.assert403(resp)
 
     def test_add_an_issue(self):
         user_should_have_perm(self.tester, 'issuetracker.add_issue')
@@ -1283,7 +1280,7 @@ class TestIssueManagement(BaseCaseRun):
             'tracker': self.issue_tracker.pk,
         })
 
-        self.assertEqual(http.HTTPStatus.OK, resp.status_code)
+        self.assert200(resp)
 
         added_issue = Issue.objects.filter(
             issue_key='123456', case=self.case_1, case_run__isnull=True
@@ -1306,7 +1303,7 @@ class TestIssueManagement(BaseCaseRun):
             'case': self.case_2.pk,
         })
 
-        self.assertEqual(http.HTTPStatus.OK, resp.status_code)
+        self.assert200(resp)
 
         removed_issue = Issue.objects.filter(
             issue_key='67890', case=self.case_2, case_run__isnull=True

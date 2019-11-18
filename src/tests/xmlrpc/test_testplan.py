@@ -2,10 +2,6 @@
 
 import unittest
 
-from http.client import BAD_REQUEST
-from http.client import NOT_FOUND
-from http.client import INTERNAL_SERVER_ERROR
-
 from django import test
 
 from tcms.testcases.models import TestCase
@@ -107,8 +103,9 @@ class TestAddTag(XmlrpcAPIBaseTest):
 
     def test_single_id(self):
         """Test with singal plan id and tag id"""
-        self.assertRaisesXmlrpcFault(INTERNAL_SERVER_ERROR, XmlrpcTestPlan.add_tag,
-                                     self.http_req, self.plans[0].pk, self.tag1.pk)
+        self.assertXmlrpcFaultInternalServerError(
+            XmlrpcTestPlan.add_tag,
+            self.http_req, self.plans[0].pk, self.tag1.pk)
 
         XmlrpcTestPlan.add_tag(self.http_req, self.plans[0].pk, self.tag1.name)
         tag_exists = TestPlan.objects.filter(pk=self.plans[0].pk, tag__pk=self.tag1.pk).exists()
@@ -159,8 +156,8 @@ class TestAddComponent(XmlrpcAPIBaseTest):
         self.assertTrue(component_exists)
 
     def test_ids_in_array(self):
-        self.assertRaisesXmlrpcFault(BAD_REQUEST, XmlrpcTestPlan.add_component,
-                                     self.http_req, [1, 2])
+        self.assertXmlrpcFaultBadRequest(
+            XmlrpcTestPlan.add_component, self.http_req, [1, 2])
 
         plans_ids = [plan.pk for plan in self.plans]
         components_ids = [self.component1.pk, self.component2.pk]
@@ -179,7 +176,8 @@ class TestPlanTypeMethods(XmlrpcAPIBaseTest):
         cls.plan_type = TestPlanTypeFactory(name='xmlrpc plan type', description='')
 
     def test_check_plan_type(self):
-        self.assertRaisesXmlrpcFault(BAD_REQUEST, XmlrpcTestPlan.check_plan_type, self.http_req)
+        self.assertXmlrpcFaultBadRequest(
+            XmlrpcTestPlan.check_plan_type, self.http_req)
 
         result = XmlrpcTestPlan.check_plan_type(self.http_req, self.plan_type.name)
         self.assertEqual(self.plan_type.name, result['name'])
@@ -192,8 +190,10 @@ class TestPlanTypeMethods(XmlrpcAPIBaseTest):
         self.assertEqual(self.plan_type.description, result['description'])
         self.assertEqual(self.plan_type.pk, result['id'])
 
-        self.assertRaisesXmlrpcFault(NOT_FOUND, XmlrpcTestPlan.get_plan_type, self.http_req, 0)
-        self.assertRaisesXmlrpcFault(NOT_FOUND, XmlrpcTestPlan.get_plan_type, self.http_req, -2)
+        self.assertXmlrpcFaultNotFound(
+            XmlrpcTestPlan.get_plan_type, self.http_req, 0)
+        self.assertXmlrpcFaultNotFound(
+            XmlrpcTestPlan.get_plan_type, self.http_req, -2)
 
 
 class TestGetProduct(XmlrpcAPIBaseTest):
@@ -217,7 +217,8 @@ class TestGetProduct(XmlrpcAPIBaseTest):
         self.assertEqual(self.plan.product.classification.name, result['classification'])
 
     def test_get_product(self):
-        # self.assertRaisesXmlrpcFault(NOT_FOUND, XmlrpcTestPlan.get_product, self.http_req, 0)
+        # self.assertXmlrpcFaultNotFound(
+        #     XmlrpcTestPlan.get_product, self.http_req, 0)
 
         result = XmlrpcTestPlan.get_product(self.http_req, str(self.plan.pk))
         self._verify_serialize_result(result)
@@ -225,8 +226,8 @@ class TestGetProduct(XmlrpcAPIBaseTest):
         result = XmlrpcTestPlan.get_product(self.http_req, self.plan.pk)
         self._verify_serialize_result(result)
 
-        self.assertRaisesXmlrpcFault(BAD_REQUEST, XmlrpcTestPlan.get_product,
-                                     self.http_req, 'plan_id')
+        self.assertXmlrpcFaultBadRequest(
+            XmlrpcTestPlan.get_product, self.http_req, 'plan_id')
 
 
 @unittest.skip('TODO: test case is not implemented yet.')
@@ -274,15 +275,16 @@ class TestGetTestCases(XmlrpcAPIBaseTest):
 
     @unittest.skip('TODO: fix get_test_cases to make this test pass.')
     def test_different_argument_type(self):
-        self.assertRaisesXmlrpcFault(BAD_REQUEST, XmlrpcTestPlan.get_test_cases,
-                                     self.http_req, str(self.plan.pk))
+        self.assertXmlrpcFaultBadRequest(
+            XmlrpcTestPlan.get_test_cases, self.http_req, str(self.plan.pk))
 
     def test_404_when_plan_nonexistent(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, XmlrpcTestPlan.get_test_cases, self.http_req, 0)
+        self.assertXmlrpcFaultNotFound(
+            XmlrpcTestPlan.get_test_cases, self.http_req, 0)
 
         plan_id = TestPlan.objects.order_by('-pk')[:1][0].pk + 1
-        self.assertRaisesXmlrpcFault(NOT_FOUND, XmlrpcTestPlan.get_test_cases,
-                                     self.http_req, plan_id)
+        self.assertXmlrpcFaultNotFound(
+            XmlrpcTestPlan.get_test_cases, self.http_req, plan_id)
 
     def test_plan_has_no_cases(self):
         result = XmlrpcTestPlan.get_test_cases(self.http_req, self.another_plan.pk)

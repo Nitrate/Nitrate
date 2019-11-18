@@ -2,10 +2,6 @@
 
 import unittest
 
-from http.client import BAD_REQUEST
-from http.client import FORBIDDEN
-from http.client import NOT_FOUND
-
 from django.test import TestCase
 
 from tcms.xmlrpc.api import build
@@ -37,14 +33,16 @@ class TestBuildCreate(XmlrpcAPIBaseTest):
     def test_build_create_with_no_args(self):
         bad_args = (self.admin_request, [], (), {})
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, build.create, self.admin_request, arg)
+            self.assertXmlrpcFaultBadRequest(
+                build.create, self.admin_request, arg)
 
     def test_build_create_with_no_perms(self):
-        self.assertRaisesXmlrpcFault(FORBIDDEN, build.create, self.staff_request, {})
+        self.assertXmlrpcFaultForbidden(build.create, self.staff_request, {})
 
     def test_build_create_with_no_required_fields(self):
         def _create(data):
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, build.create, self.admin_request, data)
+            self.assertXmlrpcFaultBadRequest(
+                build.create, self.admin_request, data)
 
         values = {
             "description": "Test Build",
@@ -66,7 +64,8 @@ class TestBuildCreate(XmlrpcAPIBaseTest):
             "name": "B7",
             "milestone": "aaaaaaaa"
         }
-        self.assertRaisesXmlrpcFault(BAD_REQUEST, build.create, self.admin_request, values)
+        self.assertXmlrpcFaultBadRequest(
+            build.create, self.admin_request, values)
 
     def test_build_create_with_non_exist_product(self):
         values = {
@@ -75,10 +74,12 @@ class TestBuildCreate(XmlrpcAPIBaseTest):
             "description": "Test Build",
             "is_active": False
         }
-        self.assertRaisesXmlrpcFault(NOT_FOUND, build.create, self.admin_request, values)
+        self.assertXmlrpcFaultNotFound(
+            build.create, self.admin_request, values)
 
         values['product'] = "AAAAAAAAAA"
-        self.assertRaisesXmlrpcFault(NOT_FOUND, build.create, self.admin_request, values)
+        self.assertXmlrpcFaultNotFound(
+            build.create, self.admin_request, values)
 
     def test_build_create_with_chinese(self):
         values = {
@@ -130,35 +131,41 @@ class TestBuildUpdate(XmlrpcAPIBaseTest):
     def test_build_update_with_no_args(self):
         bad_args = (None, [], (), {})
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, build.update, self.admin_request, arg, {})
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, build.update,
-                                         self.admin_request, self.build_1.pk, {})
+            self.assertXmlrpcFaultBadRequest(
+                build.update, self.admin_request, arg, {})
+            self.assertXmlrpcFaultBadRequest(
+                build.update, self.admin_request, self.build_1.pk, {})
 
     def test_build_update_with_no_perms(self):
-        self.assertRaisesXmlrpcFault(FORBIDDEN, build.update,
-                                     self.staff_request, self.build_1.pk, {})
+        self.assertXmlrpcFaultForbidden(
+            build.update, self.staff_request, self.build_1.pk, {})
 
     def test_build_update_with_multi_id(self):
         builds = (self.build_1.pk, self.build_2.pk, self.build_3.pk)
-        self.assertRaisesXmlrpcFault(BAD_REQUEST, build.update, self.admin_request, builds, {})
+        self.assertXmlrpcFaultBadRequest(
+            build.update, self.admin_request, builds, {})
 
     @unittest.skip('TODO: fix update to make this test pass.')
     def test_build_update_with_non_integer(self):
         bad_args = (True, False, (1,), dict(a=1), -1, 0.7, "", "AA")
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, build.update, self.admin_request, arg, {})
+            self.assertXmlrpcFaultBadRequest(
+                build.update, self.admin_request, arg, {})
 
     def test_build_update_with_non_exist_build(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, build.update, self.admin_request, 999, {})
+        self.assertXmlrpcFaultNotFound(
+            build.update, self.admin_request, 999, {})
 
     def test_build_update_with_non_exist_product_id(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, build.update,
-                                     self.admin_request, self.build_1.pk, {"product": 9999})
+        self.assertXmlrpcFaultNotFound(
+            build.update,
+            self.admin_request, self.build_1.pk, {"product": 9999})
 
     def test_build_update_with_non_exist_product_name(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, build.update,
-                                     self.admin_request, self.build_1.pk,
-                                     {"product": "AAAAAAAAAAAAAA"})
+        self.assertXmlrpcFaultNotFound(
+            build.update,
+            self.admin_request, self.build_1.pk, {"product": "AAAAAAAAAAAAAA"}
+        )
 
     def test_build_update(self):
         b = build.update(self.admin_request, self.build_3.pk, {
@@ -183,16 +190,16 @@ class TestBuildGet(XmlrpcAPIBaseTest):
     def test_build_get_with_no_args(self):
         bad_args = (None, [], (), {})
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, build.get, None, arg)
+            self.assertXmlrpcFaultBadRequest(build.get, None, arg)
 
     @unittest.skip('TODO: fix get to make this test pass.')
     def test_build_get_with_non_integer(self):
         bad_args = (True, False, (1,), dict(a=1), -1, 0.7, "", "AA")
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, build.get, None, arg)
+            self.assertXmlrpcFaultBadRequest(build.get, None, arg)
 
     def test_build_get_with_non_exist_id(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, build.get, None, 9999)
+        self.assertXmlrpcFaultNotFound(build.get, None, 9999)
 
     def test_build_get_with_id(self):
         b = build.get(None, self.build.pk)
@@ -218,16 +225,16 @@ class TestBuildGetCaseRuns(XmlrpcAPIBaseTest):
     def test_build_get_with_no_args(self):
         bad_args = (None, [], (), {})
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, build.get_caseruns, None, arg)
+            self.assertXmlrpcFaultBadRequest(build.get_caseruns, None, arg)
 
     @unittest.skip('TODO: fix get_caseruns to make this test pass.')
     def test_build_get_with_non_integer(self):
         bad_args = (True, False, (1,), dict(a=1), -1, 0.7, "", "AA")
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, build.get_caseruns, None, arg)
+            self.assertXmlrpcFaultBadRequest(build.get_caseruns, None, arg)
 
     def test_build_get_with_non_exist_id(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, build.get_caseruns, None, 9999)
+        self.assertXmlrpcFaultNotFound(build.get_caseruns, None, 9999)
 
     def test_build_get_with_id(self):
         b = build.get_caseruns(None, self.build.pk)
@@ -251,16 +258,16 @@ class TestBuildGetRuns(XmlrpcAPIBaseTest):
     def test_build_get_with_no_args(self):
         bad_args = (None, [], (), {})
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, build.get_runs, None, arg)
+            self.assertXmlrpcFaultBadRequest(build.get_runs, None, arg)
 
     @unittest.skip('TODO: fix get_runs to make this test pass.')
     def test_build_get_with_non_integer(self):
         bad_args = (True, False, (1,), dict(a=1), -1, 0.7, "", "AA")
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, build.get_runs, None, arg)
+            self.assertXmlrpcFaultBadRequest(build.get_runs, None, arg)
 
     def test_build_get_with_non_exist_id(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, build.get_runs, None, 9999)
+        self.assertXmlrpcFaultNotFound(build.get_runs, None, 9999)
 
     def test_build_get_with_id(self):
         b = build.get_runs(None, self.build.pk)
@@ -290,30 +297,35 @@ class TestBuildCheck(XmlrpcAPIBaseTest):
     def test_build_get_with_no_args(self):
         bad_args = (None, [], (), {})
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, build.check_build, None, arg, self.product.pk)
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, build.check_build, None, "B5", arg)
+            self.assertXmlrpcFaultBadRequest(
+                build.check_build, None, arg, self.product.pk)
+            self.assertXmlrpcFaultBadRequest(
+                build.check_build, None, "B5", arg)
 
     def test_build_get_with_non_exist_build_name(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, build.check_build,
-                                     None, "AAAAAAAAAAAAAA", self.product.pk)
+        self.assertXmlrpcFaultNotFound(
+            build.check_build, None, "AAAAAAAAAAAAAA", self.product.pk)
 
     def test_build_get_with_non_exist_product_id(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, build.check_build, None, "B5", 9999999)
+        self.assertXmlrpcFaultNotFound(build.check_build, None, "B5", 9999999)
 
     def test_build_get_with_non_exist_product_name(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, build.check_build, None, "B5", "AAAAAAAAAAAAAAAA")
+        self.assertXmlrpcFaultNotFound(
+            build.check_build, None, "B5", "AAAAAAAAAAAAAAAA")
 
     @unittest.skip('TODO: fix check_build to make this test pass.')
     def test_build_get_with_empty(self):
-        self.assertRaisesXmlrpcFault(BAD_REQUEST, build.check_build, None, "", self.product.pk)
-        self.assertRaisesXmlrpcFault(BAD_REQUEST, build.check_build,
-                                     None, "         ", self.product.pk)
+        self.assertXmlrpcFaultBadRequest(
+            build.check_build, None, "", self.product.pk)
+        self.assertXmlrpcFaultBadRequest(
+            build.check_build, None, "         ", self.product.pk)
 
     @unittest.skip('TODO: fix check_build to make this test pass.')
     def test_build_get_with_illegal_args(self):
         bad_args = (self, 0.7, False, True, 1, -1, 0, (1,), dict(a=1))
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, build.check_build, None, arg, self.product.pk)
+            self.assertXmlrpcFaultBadRequest(
+                build.check_build, None, arg, self.product.pk)
 
     def test_build_get(self):
         b = build.check_build(None, self.build.name, self.product.pk)

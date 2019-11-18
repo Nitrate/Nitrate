@@ -2,9 +2,6 @@
 
 import unittest
 
-from http.client import BAD_REQUEST
-from http.client import NOT_FOUND
-
 from tcms.xmlrpc.api import testcaseplan
 from tests.factories import TestCaseFactory
 from tests.factories import TestCasePlanFactory
@@ -31,32 +28,40 @@ class TestCasePlanGet(XmlrpcAPIBaseTest):
     def test_get_with_no_args(self):
         bad_args = (None, [], (), {})
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaseplan.get, None, arg, self.plan.pk)
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaseplan.get, None, self.case.pk, arg)
+            self.assertXmlrpcFaultBadRequest(
+                testcaseplan.get, None, arg, self.plan.pk)
+            self.assertXmlrpcFaultBadRequest(
+                testcaseplan.get, None, self.case.pk, arg)
 
     def test_get_with_no_exist_case(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, testcaseplan.get, None, 10000, self.plan.pk)
+        self.assertXmlrpcFaultNotFound(
+            testcaseplan.get, None, 10000, self.plan.pk)
 
     def test_get_with_no_exist_plan(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, testcaseplan.get, None, self.case.pk, 10000)
+        self.assertXmlrpcFaultNotFound(
+            testcaseplan.get, None, self.case.pk, 10000)
 
     @unittest.skip('TODO: fix get to make this test pass.')
     def test_get_with_non_integer_case_id(self):
         bad_args = ("A", "1", "", True, False, self, (1,))
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaseplan.get, None, arg, self.plan.pk)
+            self.assertXmlrpcFaultBadRequest(
+                testcaseplan.get, None, arg, self.plan.pk)
 
     @unittest.skip('TODO: fix get to make this test pass.')
     def test_get_with_non_integer_plan_id(self):
         bad_args = ("A", "1", "", True, False, self, (1,))
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST, testcaseplan.get, None, self.case.pk, arg)
+            self.assertXmlrpcFaultBadRequest(
+                testcaseplan.get, None, self.case.pk, arg)
 
     def test_get_with_negative_plan_id(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, testcaseplan.get, None, self.case.pk, -1)
+        self.assertXmlrpcFaultNotFound(
+            testcaseplan.get, None, self.case.pk, -1)
 
     def test_get_with_negative_case_id(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, testcaseplan.get, None, -1, self.plan.pk)
+        self.assertXmlrpcFaultNotFound(
+            testcaseplan.get, None, -1, self.plan.pk)
 
 
 class TestCasePlanUpdate(XmlrpcAPIBaseTest):
@@ -76,38 +81,42 @@ class TestCasePlanUpdate(XmlrpcAPIBaseTest):
     def test_update_with_no_args(self):
         bad_args = (None, [], (), {})
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST,
-                                         testcaseplan.update, None, arg, self.plan.pk, 100)
-            self.assertRaisesXmlrpcFault(BAD_REQUEST,
-                                         testcaseplan.update, None, self.case.pk, arg, 100)
-            self.assertRaisesXmlrpcFault(BAD_REQUEST,
-                                         testcaseplan.update, None, self.case.pk, self.plan.pk, arg)
+            self.assertXmlrpcFaultBadRequest(
+                testcaseplan.update, None, arg, self.plan.pk, 100)
+            self.assertXmlrpcFaultBadRequest(
+                testcaseplan.update, None, self.case.pk, arg, 100)
+            self.assertXmlrpcFaultBadRequest(
+                testcaseplan.update, None, self.case.pk, self.plan.pk, arg)
 
     def test_update_with_no_exist_case(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, testcaseplan.update, None, 10000, self.plan.pk, 100)
+        self.assertXmlrpcFaultNotFound(
+            testcaseplan.update, None, 10000, self.plan.pk, 100)
 
     def test_update_with_no_exist_plan(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, testcaseplan.update, None, self.case.pk, 10000, 100)
+        self.assertXmlrpcFaultNotFound(
+            testcaseplan.update, None, self.case.pk, 10000, 100)
 
     @unittest.skip('TODO: fix update to make this test pass.')
     def test_update_with_non_integer_case_id(self):
         bad_args = ("A", "1", "", True, False, self, (1,))
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST,
-                                         testcaseplan.update, None, arg, self.plan.pk, 100)
+            self.assertXmlrpcFaultBadRequest(
+                testcaseplan.update, None, arg, self.plan.pk, 100)
 
     @unittest.skip('TODO: fix update to make this test pass.')
     def test_update_with_non_integer_plan_id(self):
         bad_args = ("A", "1", "", True, False, self, (1,))
         for arg in bad_args:
-            self.assertRaisesXmlrpcFault(BAD_REQUEST,
-                                         testcaseplan.update, None, self.case.pk, arg, 100)
+            self.assertXmlrpcFaultBadRequest(
+                testcaseplan.update, None, self.case.pk, arg, 100)
 
     def test_update_with_negative_plan_id(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, testcaseplan.update, None, self.case.pk, -1, 100)
+        self.assertXmlrpcFaultNotFound(
+            testcaseplan.update, None, self.case.pk, -1, 100)
 
     def test_update_with_negative_case_id(self):
-        self.assertRaisesXmlrpcFault(NOT_FOUND, testcaseplan.update, None, -1, self.plan.pk, 100)
+        self.assertXmlrpcFaultNotFound(
+            testcaseplan.update, None, -1, self.plan.pk, 100)
 
     def test_update_with_non_integer_sortkey(self):
         original_sortkey = self.case_plan.sortkey

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from http import HTTPStatus
 from xmlrpc.client import Fault
 
 from django import test
@@ -35,6 +36,30 @@ class XmlrpcAPIBaseTest(test.TestCase):
         else:
             self.fail('Expect to raise Fault error with faultCode {}, '
                       'but no exception is raised.'.format(faultCode))
+
+    def assertXmlrpcFaultNotFound(self, func, *args, **kwargs):
+        self.assertRaisesXmlrpcFault(
+            HTTPStatus.NOT_FOUND, func, *args, **kwargs)
+
+    def assertXmlrpcFaultBadRequest(self, func, *args, **kwargs):
+        self.assertRaisesXmlrpcFault(
+            HTTPStatus.BAD_REQUEST, func, *args, **kwargs)
+
+    def assertXmlrpcFaultForbidden(self, func, *args, **kwargs):
+        self.assertRaisesXmlrpcFault(
+            HTTPStatus.FORBIDDEN, func, *args, **kwargs)
+
+    def assertXmlrpcFaultNotImplemented(self, func, *args, **kwargs):
+        self.assertRaisesXmlrpcFault(
+            HTTPStatus.NOT_IMPLEMENTED, func, *args, **kwargs)
+
+    def assertXmlrpcFaultConflict(self, func, *args, **kwargs):
+        self.assertRaisesXmlrpcFault(
+            HTTPStatus.CONFLICT, func, *args, **kwargs)
+
+    def assertXmlrpcFaultInternalServerError(self, func, *args, **kwargs):
+        self.assertRaisesXmlrpcFault(
+            HTTPStatus.INTERNAL_SERVER_ERROR, func, *args, **kwargs)
 
 
 class FakeHTTPRequest:

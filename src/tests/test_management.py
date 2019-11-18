@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import http
 import json
 
 from django import test
@@ -16,6 +15,7 @@ from tcms.management.models import TCMSEnvGroup
 from tcms.management.models import TCMSEnvGroupPropertyMap
 from tcms.management.models import TCMSEnvProperty
 from tcms.testplans.models import TestPlan, _listen, _disconnect_signals
+from tests import HelperAssertions
 from tests import remove_perm_from_user
 from tests import user_should_have_perm
 from tests.factories import ProductFactory
@@ -206,7 +206,7 @@ class TestAddGroup(TestCase):
         )
 
 
-class TestDeleteGroup(TestCase):
+class TestDeleteGroup(HelperAssertions, TestCase):
     """Test case for deleting a group"""
 
     @classmethod
@@ -267,10 +267,10 @@ class TestDeleteGroup(TestCase):
                           password='password')
         response = self.client.get(self.group_delete_url,
                                    {'action': 'del', 'id': 9999999999})
-        self.assertEqual(http.HTTPStatus.NOT_FOUND, response.status_code)
+        self.assert404(response)
 
 
-class TestModifyGroup(TestCase):
+class TestModifyGroup(HelperAssertions, TestCase):
     """Test case for modifying a group"""
 
     @classmethod
@@ -318,7 +318,7 @@ class TestModifyGroup(TestCase):
                                    {'action': 'modify',
                                     'id': 999999999,
                                     'status': 1})
-        self.assertEqual(http.HTTPStatus.NOT_FOUND, response.status_code)
+        self.assert404(response)
 
     def test_disable_a_group(self):
         user_should_have_perm(self.tester, self.permission)
@@ -333,7 +333,7 @@ class TestModifyGroup(TestCase):
         self.assertFalse(group.is_active)
 
 
-class TestVisitEnvironmentGroupPage(TestCase):
+class TestVisitEnvironmentGroupPage(HelperAssertions, TestCase):
     """Test case for visiting environment group page"""
 
     @classmethod
@@ -354,12 +354,12 @@ class TestVisitEnvironmentGroupPage(TestCase):
     def test_404_when_missing_group_id(self):
         self.client.login(username=self.tester.username, password='password')
         response = self.client.get(self.group_edit_url)
-        self.assertEqual(http.HTTPStatus.NOT_FOUND, response.status_code)
+        self.assert404(response)
 
     def test_404_if_group_id_not_exist(self):
         self.client.login(username=self.tester.username, password='password')
         response = self.client.get(self.group_edit_url, {'id': 9999999})
-        self.assertEqual(http.HTTPStatus.NOT_FOUND, response.status_code)
+        self.assert404(response)
 
     def test_visit_a_group(self):
         self.client.login(username=self.tester.username, password='password')
@@ -695,7 +695,7 @@ class TestEnableDisableProperty(TestCase):
                 group=self.group_nitrate, property=self.property_lang).exists())
 
 
-class TestDeleteProduct(test.TestCase):
+class TestDeleteProduct(HelperAssertions, test.TestCase):
     """Test deleting a product which has plans"""
 
     @classmethod
@@ -749,7 +749,7 @@ class TestDeleteProduct(test.TestCase):
             'product_version': product_version.pk,
             'type': plan_type.pk,
         }, follow=True)
-        self.assertEqual(http.HTTPStatus.OK, response.status_code)
+        self.assert200(response)
         # verify test plan was created
         self.assertContains(response, test_plan_name)
         self.assertEqual(previous_plans_count + 1, TestPlan.objects.count())
@@ -761,7 +761,7 @@ class TestDeleteProduct(test.TestCase):
                                                        product._meta.model_name)
         location = reverse(admin_delete_url, args=[product.pk])
         response = self.c.get(location)
-        self.assertEqual(http.HTTPStatus.OK, response.status_code)
+        self.assert200(response)
         self.assertContains(
             response,
             'Are you sure you want to delete the product "%s"' % product.name)
@@ -769,7 +769,7 @@ class TestDeleteProduct(test.TestCase):
 
         # confirm that we're sure we want to delete it
         response = self.c.post(location, {'post': 'yes'})
-        self.assertEqual(http.HTTPStatus.FOUND, response.status_code)
+        self.assert302(response)
         self.assertIn(
             '/admin/{}/{}/'.format(product._meta.app_label,
                                    product._meta.model_name),

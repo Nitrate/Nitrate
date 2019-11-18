@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import http
 import json
 import re
 
+from http import HTTPStatus
 from urllib.parse import urlparse, parse_qs
 
 from django import test
@@ -98,8 +98,27 @@ def create_request_user(username=None, password=None):
 class HelperAssertions:
     """Helper assertion methods"""
 
+    def assert200(self, response):
+        self.assertEqual(HTTPStatus.OK, response.status_code)
+
+    def assert301(self, response):
+        self.assertEqual(HTTPStatus.MOVED_PERMANENTLY, response.status_code)
+
+    def assert302(self, response):
+        self.assertEqual(HTTPStatus.FOUND, response.status_code)
+
+    def assert400(self, response):
+        self.assertEqual(HTTPStatus.BAD_REQUEST, response.status_code)
+
+    def assert403(self, response):
+        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
+
     def assert404(self, response):
-        self.assertEqual(http.HTTPStatus.NOT_FOUND, response.status_code)
+        self.assertEqual(HTTPStatus.NOT_FOUND, response.status_code)
+
+    def assert500(self, response):
+        self.assertEqual(
+            HTTPStatus.INTERNAL_SERVER_ERROR, response.status_code)
 
     def assertJsonResponse(self, response, expected, status_code=200):
         self.assertEqual(status_code, response.status_code)

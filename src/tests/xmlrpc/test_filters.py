@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import http
-
 from django.test import TestCase
 
 from tcms.xmlrpc.filters import wrap_exceptions
@@ -16,7 +14,7 @@ class TestFaultCode(XmlrpcAPIBaseTest):
             raise PermissionDenied()
 
         wrapper = wrap_exceptions(raise_exception)
-        self.assertRaisesXmlrpcFault(http.HTTPStatus.FORBIDDEN, wrapper)
+        self.assertXmlrpcFaultForbidden(wrapper)
 
     def test_404(self):
         def raise_exception(*args, **kwargs):
@@ -24,7 +22,7 @@ class TestFaultCode(XmlrpcAPIBaseTest):
             raise ObjectDoesNotExist()
 
         wrapper = wrap_exceptions(raise_exception)
-        self.assertRaisesXmlrpcFault(http.HTTPStatus.NOT_FOUND, wrapper)
+        self.assertXmlrpcFaultNotFound(wrapper)
 
     def test_400(self):
         exceptions = [v for k, v in locals().copy().items() if k != 'self']
@@ -35,7 +33,7 @@ class TestFaultCode(XmlrpcAPIBaseTest):
 
         wrapper = wrap_exceptions(raise_exception)
         for clazz in exceptions:
-            self.assertRaisesXmlrpcFault(http.HTTPStatus.BAD_REQUEST, wrapper, clazz)
+            self.assertXmlrpcFaultBadRequest(wrapper, clazz)
 
     def test_409(self):
         def raise_exception(*args, **kwargs):
@@ -43,21 +41,21 @@ class TestFaultCode(XmlrpcAPIBaseTest):
             raise IntegrityError()
 
         wrapper = wrap_exceptions(raise_exception)
-        self.assertRaisesXmlrpcFault(http.HTTPStatus.CONFLICT, wrapper)
+        self.assertXmlrpcFaultConflict(wrapper)
 
     def test_500(self):
         def raise_exception(*args, **kwargs):
             raise Exception()
 
         wrapper = wrap_exceptions(raise_exception)
-        self.assertRaisesXmlrpcFault(http.HTTPStatus.INTERNAL_SERVER_ERROR, wrapper)
+        self.assertXmlrpcFaultInternalServerError(wrapper)
 
     def test_501(self):
         def raise_exception(*args, **kwargs):
             raise NotImplementedError()
 
         wrapper = wrap_exceptions(raise_exception)
-        self.assertRaisesXmlrpcFault(http.HTTPStatus.NOT_IMPLEMENTED, wrapper)
+        self.assertXmlrpcFaultNotImplemented(wrapper)
 
 
 class TestAutoWrap(TestCase):

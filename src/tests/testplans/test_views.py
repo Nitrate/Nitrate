@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import http
 import json
 import os
 import xml.etree.ElementTree as et
 import urllib
+
+from http import HTTPStatus
 
 from django import test
 from django.contrib.auth.models import User
@@ -27,13 +28,13 @@ from tests.factories import TestPlanFactory
 from tests.factories import TestPlanTypeFactory
 from tests.factories import UserFactory
 from tests.factories import VersionFactory
-from tests import BasePlanCase
+from tests import BasePlanCase, HelperAssertions
 from tests import remove_perm_from_user
 from tests import user_should_have_perm
 from tests.testcases.test_views import PlanCaseExportTestHelper
 
 
-class PlanTests(test.TestCase):
+class PlanTests(HelperAssertions, test.TestCase):
 
     @classmethod
     def setUpTestData(cls):
@@ -62,38 +63,38 @@ class PlanTests(test.TestCase):
     def test_open_plans_search(self):
         location = reverse('plans-all')
         response = self.c.get(location)
-        self.assertEqual(response.status_code, http.HTTPStatus.OK)
+        self.assert200(response)
 
     def test_search_plans(self):
         location = reverse('plans-all')
         response = self.c.get(location, {'action': 'search', 'type': self.test_plan.type.pk})
-        self.assertEqual(response.status_code, http.HTTPStatus.OK)
+        self.assert200(response)
 
     def test_plan_new_get(self):
         location = reverse('plans-new')
         response = self.c.get(location, follow=True)
-        self.assertEqual(response.status_code, http.HTTPStatus.OK)
+        self.assert200(response)
 
     def test_plan_details(self):
         location = reverse('plan-get', args=[self.plan_id])
         response = self.c.get(location)
-        self.assertEqual(response.status_code, http.HTTPStatus.MOVED_PERMANENTLY)
+        self.assert301(response)
 
         response = self.c.get(location, follow=True)
-        self.assertEqual(response.status_code, http.HTTPStatus.OK)
+        self.assert200(response)
 
     def test_plan_delete(self):
         tp_pk = self.test_plan.pk
 
         location = reverse('plan-delete', args=[tp_pk])
         response = self.c.get(location)
-        self.assertEqual(response.status_code, http.HTTPStatus.OK)
+        self.assert200(response)
 
         response = self.c.get(location, {'sure': 'no'})
-        self.assertEqual(response.status_code, http.HTTPStatus.OK)
+        self.assert200(response)
 
         response = self.c.get(location, {'sure': 'yes'})
-        self.assertEqual(response.status_code, http.HTTPStatus.OK)
+        self.assert200(response)
         deleted = not TestPlan.objects.filter(pk=tp_pk).exists()
         self.assertTrue(
             deleted,
@@ -102,26 +103,26 @@ class PlanTests(test.TestCase):
     def test_plan_edit(self):
         location = reverse('plan-edit', args=[self.plan_id])
         response = self.c.get(location)
-        self.assertEqual(response.status_code, http.HTTPStatus.OK)
+        self.assert200(response)
 
     def test_plan_printable(self):
         location = reverse('plans-printable')
         response = self.c.get(location, {'plan_id': self.plan_id})
-        self.assertEqual(response.status_code, http.HTTPStatus.OK)
+        self.assert200(response)
 
     def test_plan_attachment(self):
         location = reverse('plan-attachment', args=[self.plan_id])
         response = self.c.get(location)
-        self.assertEqual(response.status_code, http.HTTPStatus.OK)
+        self.assert200(response)
 
     def test_plan_history(self):
         location = reverse('plan-text-history',
                            args=[self.plan_id])
         response = self.c.get(location)
-        self.assertEqual(response.status_code, http.HTTPStatus.OK)
+        self.assert200(response)
 
         response = self.c.get(location, {'plan_text_version': 1})
-        self.assertEqual(response.status_code, http.HTTPStatus.OK)
+        self.assert200(response)
 
 
 class TestPlanModel(test.TestCase):
@@ -379,7 +380,7 @@ class TestLinkCases(BasePlanCase):
         self.assertRedirects(
             response,
             reverse('plan-get', args=[self.plan.pk]),
-            target_status_code=http.HTTPStatus.MOVED_PERMANENTLY)
+            target_status_code=HTTPStatus.MOVED_PERMANENTLY)
 
         self.assertTrue(
             TestCasePlan.objects.filter(
@@ -569,7 +570,7 @@ class TestCloneView(BasePlanCase):
         self.assertRedirects(
             response,
             reverse('plan-get', args=[cloned_plan.pk]),
-            target_status_code=http.HTTPStatus.MOVED_PERMANENTLY)
+            target_status_code=HTTPStatus.MOVED_PERMANENTLY)
 
         self.verify_cloned_plan(self.third_plan, cloned_plan)
 
@@ -805,7 +806,7 @@ class TestExport(PlanCaseExportTestHelper, BasePlanCase):
     def test_export(self):
         location = reverse('plans-export')
         response = self.client.get(location, {'plan': self.plan_export.pk})
-        self.assertEqual(response.status_code, http.HTTPStatus.OK)
+        self.assert200(response)
 
         xmldoc = et.fromstring(response.content)
 
