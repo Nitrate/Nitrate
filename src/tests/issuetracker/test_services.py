@@ -5,14 +5,9 @@ import unittest
 from django import test
 from mock import Mock
 
-from tests.factories import IssueTrackerFactory
-from tests.factories import IssueTrackerProductFactory
-from tests.factories import ProductIssueTrackerRelationshipFactory
 from tcms.issuetracker import services
 from tcms.issuetracker.services import IssueTrackerService
-from tests.factories import ComponentFactory
-from tests.factories import TestCaseComponentFactory
-from tests import BaseCaseRun
+from tests import factories as f, BaseCaseRun
 
 
 class TestFindService(test.TestCase):
@@ -20,8 +15,8 @@ class TestFindService(test.TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.issue_tracker_1 = IssueTrackerFactory()
-        cls.issue_tracker_2 = IssueTrackerFactory()
+        cls.issue_tracker_1 = f.IssueTrackerFactory()
+        cls.issue_tracker_2 = f.IssueTrackerFactory()
 
     def test_class_path_must_be_set(self):
         self.issue_tracker_1.class_path = ''
@@ -41,10 +36,10 @@ class TestBaseIssueTrackerService(BaseCaseRun):
     def setUpTestData(cls):
         super().setUpTestData()
 
-        cls.tracker_product = IssueTrackerProductFactory()
+        cls.tracker_product = f.IssueTrackerProductFactory()
 
     def test_get_issue_report_url(self):
-        tracker = IssueTrackerFactory(
+        tracker = f.IssueTrackerFactory(
             service_url='http://localhost/',
             issue_report_endpoint='/enter_bug.cgi',
             tracker_product=self.tracker_product)
@@ -58,7 +53,7 @@ class TestBaseIssueTrackerService(BaseCaseRun):
             def get_extra_issue_report_url_args(self, case_run):
                 return {'body': 'content'}
 
-        fake_tracker = IssueTrackerFactory(
+        fake_tracker = f.IssueTrackerFactory(
             service_url='http://localhost/',
             tracker_product=self.tracker_product,
             issue_report_endpoint='/new_issue',
@@ -76,7 +71,7 @@ class TestBaseIssueTrackerService(BaseCaseRun):
             def get_extra_issue_report_url_args(self, case_run):
                 return {'body': 'content'}
 
-        fake_tracker = IssueTrackerFactory(
+        fake_tracker = f.IssueTrackerFactory(
             service_url='http://localhost/',
             tracker_product=self.tracker_product,
             issue_report_endpoint='/new_issue',
@@ -102,7 +97,7 @@ class TestBaseIssueTrackerService(BaseCaseRun):
                     'verbose': True,
                 }
 
-        fake_tracker = IssueTrackerFactory(
+        fake_tracker = f.IssueTrackerFactory(
             service_url='http://localhost/',
             tracker_product=self.tracker_product,
             issue_report_endpoint='/new_issue',
@@ -123,22 +118,22 @@ class TestMakeIssueReportURLForBugzilla(BaseCaseRun):
     def setUpTestData(cls):
         super().setUpTestData()
 
-        cls.cp_db = ComponentFactory(name='db')
-        cls.cp_docs = ComponentFactory(name='docs')
+        cls.cp_db = f.ComponentFactory(name='db')
+        cls.cp_docs = f.ComponentFactory(name='docs')
 
-        TestCaseComponentFactory(case=cls.case_1, component=cls.cp_db)
-        TestCaseComponentFactory(case=cls.case_1, component=cls.cp_docs)
+        f.TestCaseComponentFactory(case=cls.case_1, component=cls.cp_db)
+        f.TestCaseComponentFactory(case=cls.case_1, component=cls.cp_docs)
 
-        cls.tracker = IssueTrackerProductFactory(name='myissuetracker')
+        cls.tracker = f.IssueTrackerProductFactory(name='myissuetracker')
 
-        cls.issue_tracker_bz = IssueTrackerFactory(
+        cls.issue_tracker_bz = f.IssueTrackerFactory(
             service_url='http://bugs.example.com',
             tracker_product=cls.tracker,
             issue_report_endpoint='/enter_bug.cgi',
             issue_report_params='product:\ncomponent:\n',
             issue_report_templ='content:')
 
-        PITRF = ProductIssueTrackerRelationshipFactory
+        PITRF = f.ProductIssueTrackerRelationshipFactory
         cls.rel_bz_product = PITRF(product=cls.product,
                                    issue_tracker=cls.issue_tracker_bz)
 

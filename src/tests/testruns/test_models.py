@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from tests import BaseCaseRun
-from tests.factories import TestRunFactory
+from tests import factories as f, BaseCaseRun
 
 
 class TestRunGetIssuesCount(BaseCaseRun):
@@ -11,14 +10,16 @@ class TestRunGetIssuesCount(BaseCaseRun):
     def setUpTestData(cls):
         super().setUpTestData()
 
-        cls.empty_test_run = TestRunFactory(product_version=cls.version,
-                                            plan=cls.plan,
-                                            manager=cls.tester,
-                                            default_tester=cls.tester)
-        cls.test_run_no_issues = TestRunFactory(product_version=cls.version,
-                                                plan=cls.plan,
-                                                manager=cls.tester,
-                                                default_tester=cls.tester)
+        cls.empty_test_run = f.TestRunFactory(
+            product_version=cls.version,
+            plan=cls.plan,
+            manager=cls.tester,
+            default_tester=cls.tester)
+        cls.test_run_no_issues = f.TestRunFactory(
+            product_version=cls.version,
+            plan=cls.plan,
+            manager=cls.tester,
+            default_tester=cls.tester)
 
         cls.bz_tracker = cls.create_bz_tracker()
 

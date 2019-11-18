@@ -16,18 +16,7 @@ from tcms.testcases.models import TestCase
 from tcms.testcases.models import TestCaseCategory
 from tcms.testcases.models import TestCaseStatus
 from tcms.testcases.models import TestCaseText
-from tests.factories import ComponentFactory
-from tests.factories import IssueTrackerFactory
-from tests.factories import TestBuildFactory
-from tests.factories import TestCaseComponentFactory
-from tests.factories import TestCaseEmailSettingsFactory
-from tests.factories import TestCaseFactory
-from tests.factories import TestCaseRunFactory
-from tests.factories import TestCaseTagFactory
-from tests.factories import TestRunFactory
-from tests.factories import TestTagFactory
-from tests import BaseCaseRun
-from tests import BasePlanCase
+from tests import factories as f, BaseCaseRun, BasePlanCase
 
 
 class TestCaseRemoveIssue(BasePlanCase):
@@ -36,17 +25,19 @@ class TestCaseRemoveIssue(BasePlanCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.build = TestBuildFactory(product=cls.product)
-        cls.test_run = TestRunFactory(product_version=cls.version,
-                                      plan=cls.plan,
-                                      manager=cls.tester,
-                                      default_tester=cls.tester)
-        cls.case_run = TestCaseRunFactory(assignee=cls.tester,
-                                          tested_by=cls.tester,
-                                          case=cls.case,
-                                          run=cls.test_run,
-                                          build=cls.build)
-        cls.bz_tracker = IssueTrackerFactory(name='TestBZ')
+        cls.build = f.TestBuildFactory(product=cls.product)
+        cls.test_run = f.TestRunFactory(
+            product_version=cls.version,
+            plan=cls.plan,
+            manager=cls.tester,
+            default_tester=cls.tester)
+        cls.case_run = f.TestCaseRunFactory(
+            assignee=cls.tester,
+            tested_by=cls.tester,
+            case=cls.case,
+            run=cls.test_run,
+            build=cls.build)
+        cls.bz_tracker = f.IssueTrackerFactory(name='TestBZ')
 
     def setUp(self):
         self.issue_key_1 = '12345678'
@@ -104,19 +95,21 @@ class TestCaseRemoveComponent(BasePlanCase):
     def setUpTestData(cls):
         super().setUpTestData()
 
-        cls.component_1 = ComponentFactory(name='Application',
-                                           product=cls.product,
-                                           initial_owner=cls.tester,
-                                           initial_qa_contact=cls.tester)
-        cls.component_2 = ComponentFactory(name='Database',
-                                           product=cls.product,
-                                           initial_owner=cls.tester,
-                                           initial_qa_contact=cls.tester)
+        cls.component_1 = f.ComponentFactory(
+            name='Application',
+            product=cls.product,
+            initial_owner=cls.tester,
+            initial_qa_contact=cls.tester)
+        cls.component_2 = f.ComponentFactory(
+            name='Database',
+            product=cls.product,
+            initial_owner=cls.tester,
+            initial_qa_contact=cls.tester)
 
-        cls.cc_rel_1 = TestCaseComponentFactory(case=cls.case,
-                                                component=cls.component_1)
-        cls.cc_rel_2 = TestCaseComponentFactory(case=cls.case,
-                                                component=cls.component_2)
+        cls.cc_rel_1 = f.TestCaseComponentFactory(
+            case=cls.case, component=cls.component_1)
+        cls.cc_rel_2 = f.TestCaseComponentFactory(
+            case=cls.case, component=cls.component_2)
 
     def test_remove_a_component(self):
         self.case.remove_component(self.component_1)
@@ -140,8 +133,11 @@ class TestCaseRemovePlan(BasePlanCase):
     def setUpTestData(cls):
         super().setUpTestData()
 
-        cls.new_case = TestCaseFactory(author=cls.tester, default_tester=None, reviewer=cls.tester,
-                                       plan=[cls.plan])
+        cls.new_case = f.TestCaseFactory(
+            author=cls.tester,
+            default_tester=None,
+            reviewer=cls.tester,
+            plan=[cls.plan])
 
     def test_remove_plan(self):
         self.new_case.remove_plan(self.plan)
@@ -159,10 +155,12 @@ class TestCaseRemoveTag(BasePlanCase):
     def setUpTestData(cls):
         super().setUpTestData()
 
-        cls.tag_rhel = TestTagFactory(name='rhel')
-        cls.tag_fedora = TestTagFactory(name='fedora')
-        TestCaseTagFactory(case=cls.case, tag=cls.tag_rhel, user=cls.tester.pk)
-        TestCaseTagFactory(case=cls.case, tag=cls.tag_fedora, user=cls.tester.pk)
+        cls.tag_rhel = f.TestTagFactory(name='rhel')
+        cls.tag_fedora = f.TestTagFactory(name='fedora')
+        f.TestCaseTagFactory(
+            case=cls.case, tag=cls.tag_rhel, user=cls.tester.pk)
+        f.TestCaseTagFactory(
+            case=cls.case, tag=cls.tag_fedora, user=cls.tester.pk)
 
     def test_remove_tag(self):
         self.case.remove_tag(self.tag_rhel)
@@ -231,7 +229,7 @@ class TestSendMailOnCaseIsUpdated(BasePlanCase):
 
         cls.case.add_text('action', 'effect', 'setup', 'breakdown')
 
-        cls.email_setting = TestCaseEmailSettingsFactory(
+        cls.email_setting = f.TestCaseEmailSettingsFactory(
             case=cls.case,
             notify_on_case_update=True,
             auto_to_case_author=True)
@@ -269,8 +267,8 @@ class TestCreate(BasePlanCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.tag_fedora = TestTagFactory(name='fedora')
-        cls.tag_python = TestTagFactory(name='python')
+        cls.tag_fedora = f.TestTagFactory(name='fedora')
+        cls.tag_python = f.TestTagFactory(name='python')
 
     def test_create(self):
         values = {
@@ -304,11 +302,11 @@ class TestUpdateTags(test.TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.tag_fedora = TestTagFactory(name='fedora')
-        cls.tag_python = TestTagFactory(name='python')
-        cls.tag_perl = TestTagFactory(name='perl')
-        cls.tag_cpp = TestTagFactory(name='C++')
-        cls.case = TestCaseFactory(tag=[cls.tag_fedora, cls.tag_python])
+        cls.tag_fedora = f.TestTagFactory(name='fedora')
+        cls.tag_python = f.TestTagFactory(name='python')
+        cls.tag_perl = f.TestTagFactory(name='perl')
+        cls.tag_cpp = f.TestTagFactory(name='C++')
+        cls.case = f.TestCaseFactory(tag=[cls.tag_fedora, cls.tag_python])
 
     def test_add_and_remove_tags(self):
         # Tag fedora is removed.
@@ -323,8 +321,8 @@ class TestAddIssue(BaseCaseRun):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.issue_tracker = IssueTrackerFactory()
-        cls.issue_tracker_1 = IssueTrackerFactory()
+        cls.issue_tracker = f.IssueTrackerFactory()
+        cls.issue_tracker_1 = f.IssueTrackerFactory()
 
     def test_case_run_is_not_associated_with_case(self):
         # self.case_run_6 is not associated with self.case

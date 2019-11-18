@@ -13,22 +13,18 @@ from tcms.xmlrpc.serializer import do_nothing
 from tcms.xmlrpc.serializer import encode_utf8
 from tcms.xmlrpc.serializer import to_str
 
-from tests import encode
-from tests.factories import ComponentFactory
-from tests.factories import ProductFactory
-from tests.factories import TestCaseFactory
-from tests.factories import TestPlanFactory
-from tests.factories import UserFactory
-from tests.factories import TestAttachmentFactory
+from tests import encode, factories as f
 
 
 class TestXMLSerializer(test.TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.testcase = TestCaseFactory(component=[ComponentFactory(),
-                                                  ComponentFactory(),
-                                                  ComponentFactory()])
+        cls.testcase = f.TestCaseFactory(component=[
+            f.ComponentFactory(),
+            f.ComponentFactory(),
+            f.ComponentFactory()
+        ])
 
     def test_serializer(self):
         serializer = XMLRPCSerializer(model=self.testcase)
@@ -112,33 +108,46 @@ class TestQuerySetBasedSerializer(test.TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.case_author = UserFactory()
+        cls.case_author = f.UserFactory()
 
         cls.plans = [
-            TestPlanFactory(attachment=[TestAttachmentFactory(), TestAttachmentFactory()]),
-            TestPlanFactory(attachment=[TestAttachmentFactory()]),
-            TestPlanFactory(attachment=[TestAttachmentFactory(),
-                                        TestAttachmentFactory(),
-                                        TestAttachmentFactory()]),
+            f.TestPlanFactory(attachment=[
+                f.TestAttachmentFactory(),
+                f.TestAttachmentFactory()
+            ]),
+            f.TestPlanFactory(attachment=[
+                f.TestAttachmentFactory()
+            ]),
+            f.TestPlanFactory(attachment=[
+                f.TestAttachmentFactory(),
+                f.TestAttachmentFactory(),
+                f.TestAttachmentFactory()
+            ]),
         ]
-        TestCaseFactory(author=cls.case_author, default_tester=None, plan=[cls.plans[0]])
-        TestCaseFactory(author=cls.case_author, default_tester=None, plan=[cls.plans[0]])
-        TestCaseFactory(author=cls.case_author, default_tester=None, plan=[cls.plans[1]])
-        TestCaseFactory(author=cls.case_author, default_tester=None, plan=[cls.plans[2]])
-        TestCaseFactory(author=cls.case_author, default_tester=None, plan=[cls.plans[2]])
-        TestCaseFactory(author=cls.case_author, default_tester=None, plan=[cls.plans[2]])
+        f.TestCaseFactory(
+            author=cls.case_author, default_tester=None, plan=[cls.plans[0]])
+        f.TestCaseFactory(
+            author=cls.case_author, default_tester=None, plan=[cls.plans[0]])
+        f.TestCaseFactory(
+            author=cls.case_author, default_tester=None, plan=[cls.plans[1]])
+        f.TestCaseFactory(
+            author=cls.case_author, default_tester=None, plan=[cls.plans[2]])
+        f.TestCaseFactory(
+            author=cls.case_author, default_tester=None, plan=[cls.plans[2]])
+        f.TestCaseFactory(
+            author=cls.case_author, default_tester=None, plan=[cls.plans[2]])
         cls.plans = TestPlan.objects.filter(pk__in=[plan.pk for plan in cls.plans])
         cls.plan_serializer = MockTestPlanSerializer(TestPlan, cls.plans)
 
         cls.cases = [
-            TestCaseFactory(author=cls.case_author, default_tester=None),
-            TestCaseFactory(author=cls.case_author, default_tester=None),
-            TestCaseFactory(author=cls.case_author, default_tester=None),
+            f.TestCaseFactory(author=cls.case_author, default_tester=None),
+            f.TestCaseFactory(author=cls.case_author, default_tester=None),
+            f.TestCaseFactory(author=cls.case_author, default_tester=None),
         ]
         cls.cases = TestCase.objects.filter(pk__in=[case.pk for case in cls.cases])
         cls.case_serializer = MockTestCaseSerializer(TestCase, cls.cases)
 
-        cls.products = [ProductFactory(), ProductFactory(), ProductFactory()]
+        cls.products = [f.ProductFactory(), f.ProductFactory(), f.ProductFactory()]
         cls.products = Product.objects.filter(pk__in=[product.pk for product in cls.products])
         cls.product_serializer = MockProductSerializer(Product, cls.products)
 

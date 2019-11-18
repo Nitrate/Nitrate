@@ -23,9 +23,6 @@ from tests import BaseCaseRun, BasePlanCase
 from tests import remove_perm_from_user
 from tests import user_should_have_perm
 from tests import factories as f
-from tests.factories import TCMSEnvGroupFactory
-from tests.factories import TCMSEnvGroupPropertyMapFactory
-from tests.factories import TCMSEnvPropertyFactory
 
 
 class TestQuickSearch(BaseCaseRun):
@@ -366,19 +363,19 @@ class TestGetObjectInfo(BasePlanCase):
 
         cls.get_info_url = reverse('ajax-getinfo')
 
-        cls.group_nitrate = TCMSEnvGroupFactory(name='nitrate')
-        cls.group_new = TCMSEnvGroupFactory(name='NewGroup')
+        cls.group_nitrate = f.TCMSEnvGroupFactory(name='nitrate')
+        cls.group_new = f.TCMSEnvGroupFactory(name='NewGroup')
 
-        cls.property_os = TCMSEnvPropertyFactory(name='os')
-        cls.property_python = TCMSEnvPropertyFactory(name='python')
-        cls.property_django = TCMSEnvPropertyFactory(name='django')
+        cls.property_os = f.TCMSEnvPropertyFactory(name='os')
+        cls.property_python = f.TCMSEnvPropertyFactory(name='python')
+        cls.property_django = f.TCMSEnvPropertyFactory(name='django')
 
-        TCMSEnvGroupPropertyMapFactory(group=cls.group_nitrate,
-                                       property=cls.property_os)
-        TCMSEnvGroupPropertyMapFactory(group=cls.group_nitrate,
-                                       property=cls.property_python)
-        TCMSEnvGroupPropertyMapFactory(group=cls.group_new,
-                                       property=cls.property_django)
+        f.TCMSEnvGroupPropertyMapFactory(group=cls.group_nitrate,
+                                         property=cls.property_os)
+        f.TCMSEnvGroupPropertyMapFactory(group=cls.group_nitrate,
+                                         property=cls.property_python)
+        f.TCMSEnvGroupPropertyMapFactory(group=cls.group_new,
+                                         property=cls.property_django)
 
     def test_get_env_properties(self):
         response = self.client.get(self.get_info_url, {'info_type': 'env_properties'})

@@ -6,16 +6,7 @@ from django import test
 
 from tcms.xmlrpc.api import testrun as testrun_api
 from tcms.xmlrpc.serializer import datetime_to_str
-from tests.factories import IssueTrackerFactory
-from tests.factories import ProductFactory
-from tests.factories import TestBuildFactory
-from tests.factories import TestCaseFactory
-from tests.factories import TestCaseRunFactory
-from tests.factories import TestPlanFactory
-from tests.factories import TestRunFactory
-from tests.factories import TestTagFactory
-from tests.factories import UserFactory
-from tests.factories import VersionFactory
+from tests import factories as f
 from tests.xmlrpc.utils import make_http_request
 from tests.xmlrpc.utils import XmlrpcAPIBaseTest
 
@@ -25,21 +16,21 @@ class TestGet(test.TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.user = UserFactory()
+        cls.user = f.UserFactory()
         cls.http_req = make_http_request(user=cls.user)
 
-        cls.product = ProductFactory()
-        cls.version = VersionFactory(product=cls.product)
-        cls.build = TestBuildFactory(product=cls.product)
-        cls.plan = TestPlanFactory(
+        cls.product = f.ProductFactory()
+        cls.version = f.VersionFactory(product=cls.product)
+        cls.build = f.TestBuildFactory(product=cls.product)
+        cls.plan = f.TestPlanFactory(
             product=cls.product,
             product_version=cls.version,
         )
-        cls.plan_manager = UserFactory()
-        cls.plan_default_tester = UserFactory()
-        cls.tag_fedora = TestTagFactory(name='fedora')
-        cls.tag_python = TestTagFactory(name='automation')
-        cls.test_run = TestRunFactory(
+        cls.plan_manager = f.UserFactory()
+        cls.plan_default_tester = f.UserFactory()
+        cls.tag_fedora = f.TestTagFactory(name='fedora')
+        cls.tag_python = f.TestTagFactory(name='automation')
+        cls.test_run = f.TestRunFactory(
             plan_text_version=1,
             notes='Running tests ...',
             product_version=cls.version,
@@ -90,19 +81,19 @@ class TestGetIssues(XmlrpcAPIBaseTest):
     def setUpTestData(cls):
         super().setUpTestData()
 
-        cls.run_1 = TestRunFactory()
-        cls.case_1 = TestCaseFactory(plan=[cls.run_1.plan])
-        cls.case_2 = TestCaseFactory(plan=[cls.run_1.plan])
-        cls.case_run_1 = TestCaseRunFactory(case=cls.case_1, run=cls.run_1)
-        cls.case_run_2 = TestCaseRunFactory(case=cls.case_2, run=cls.run_1)
+        cls.run_1 = f.TestRunFactory()
+        cls.case_1 = f.TestCaseFactory(plan=[cls.run_1.plan])
+        cls.case_2 = f.TestCaseFactory(plan=[cls.run_1.plan])
+        cls.case_run_1 = f.TestCaseRunFactory(case=cls.case_1, run=cls.run_1)
+        cls.case_run_2 = f.TestCaseRunFactory(case=cls.case_2, run=cls.run_1)
 
-        cls.run_2 = TestRunFactory()
-        cls.case_3 = TestCaseFactory(plan=[cls.run_2.plan])
-        cls.case_4 = TestCaseFactory(plan=[cls.run_2.plan])
-        cls.case_run_3 = TestCaseRunFactory(case=cls.case_3, run=cls.run_2)
-        cls.case_run_4 = TestCaseRunFactory(case=cls.case_4, run=cls.run_2)
+        cls.run_2 = f.TestRunFactory()
+        cls.case_3 = f.TestCaseFactory(plan=[cls.run_2.plan])
+        cls.case_4 = f.TestCaseFactory(plan=[cls.run_2.plan])
+        cls.case_run_3 = f.TestCaseRunFactory(case=cls.case_3, run=cls.run_2)
+        cls.case_run_4 = f.TestCaseRunFactory(case=cls.case_4, run=cls.run_2)
 
-        cls.tracker = IssueTrackerFactory(
+        cls.tracker = f.IssueTrackerFactory(
             name='coolbz',
             service_url='http://localhost/',
             issue_report_endpoint='/enter_bug.cgi',

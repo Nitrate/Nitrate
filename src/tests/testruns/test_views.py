@@ -19,19 +19,7 @@ from tcms.testruns.models import TCMSEnvRunValueMap
 from tcms.testruns.models import TestCaseRun
 from tcms.testruns.models import TestCaseRunStatus
 from tcms.testruns.models import TestRun
-from tests.factories import IssueTrackerFactory
-from tests.factories import IssueTrackerProductFactory
-from tests.factories import ProductFactory, TCMSEnvGroupFactory
-from tests.factories import TCMSEnvPropertyFactory
-from tests.factories import TCMSEnvValueFactory
-from tests.factories import TestBuildFactory
-from tests.factories import TestCaseFactory
-from tests.factories import TestCaseRunFactory
-from tests.factories import TestPlanFactory
-from tests.factories import TestRunFactory
-from tests.factories import TestTagFactory
-from tests.factories import UserFactory
-from tests.factories import VersionFactory
+from tests import factories as f
 from tests import BaseCaseRun
 from tests import BasePlanCase
 from tests import user_should_have_perm
@@ -116,7 +104,7 @@ class TestCreateNewRun(BasePlanCase):
         user_should_have_perm(cls.tester, cls.permission)
 
         cls.url = reverse('run-new')
-        cls.build_fast = TestBuildFactory(name='fast', product=cls.product)
+        cls.build_fast = f.TestBuildFactory(name='fast', product=cls.product)
 
     def test_refuse_if_missing_plan_pk(self):
         self.client.login(username=self.tester.username, password='password')
@@ -362,14 +350,15 @@ class TestStartCloneRunFromRunsSearchPage(CloneRunBaseTest):
         cls.clone_url = reverse('runs-clone')
         cls.permission = 'testruns.add_testrun'
 
-        cls.origin_run = TestRunFactory(product_version=cls.version,
-                                        plan=cls.plan,
-                                        build=cls.build,
-                                        manager=cls.tester,
-                                        default_tester=cls.tester)
+        cls.origin_run = f.TestRunFactory(
+            product_version=cls.version,
+            plan=cls.plan,
+            build=cls.build,
+            manager=cls.tester,
+            default_tester=cls.tester)
 
         for tag_name in ('python', 'nitrate', 'django'):
-            cls.origin_run.add_tag(TestTagFactory(name=tag_name))
+            cls.origin_run.add_tag(f.TestTagFactory(name=tag_name))
 
         for cc in (User.objects.create_user(username='run_tester1',
                                             email='run_tester1@example.com'),
@@ -380,10 +369,10 @@ class TestStartCloneRunFromRunsSearchPage(CloneRunBaseTest):
                    ):
             cls.origin_run.add_cc(cc)
 
-        cls.property = TCMSEnvPropertyFactory(name='lang')
+        cls.property = f.TCMSEnvPropertyFactory(name='lang')
         for value in ('python', 'perl', 'ruby'):
             cls.origin_run.add_env_value(
-                TCMSEnvValueFactory(value=value, property=cls.property))
+                f.TCMSEnvValueFactory(value=value, property=cls.property))
 
         cls.case_2.add_text(action='action', effect='effect',
                             setup='setup', breakdown='breakdown')
@@ -391,10 +380,14 @@ class TestStartCloneRunFromRunsSearchPage(CloneRunBaseTest):
                             setup='setup2', breakdown='breakdown2')
 
         for case in (cls.case_1, cls.case_2):
-            TestCaseRunFactory(assignee=cls.tester, tested_by=cls.tester,
-                               build=cls.build, sortkey=10,
-                               case_run_status=cls.case_run_status_idle,
-                               run=cls.origin_run, case=case)
+            f.TestCaseRunFactory(
+                assignee=cls.tester,
+                tested_by=cls.tester,
+                build=cls.build,
+                sortkey=10,
+                case_run_status=cls.case_run_status_idle,
+                run=cls.origin_run,
+                case=case)
 
     def test_refuse_clone_without_selecting_runs(self):
         self.client.login(username=self.tester.username, password='password')
@@ -617,17 +610,19 @@ class TestAJAXSearchRuns(BaseCaseRun):
 
         # Add more test runs for testing different search criterias
 
-        cls.run_tester = UserFactory(username='run_tester',
-                                     email='runtester@example.com')
+        cls.run_tester = f.UserFactory(username='run_tester',
+                                       email='runtester@example.com')
 
-        cls.product_issuetracker = ProductFactory(name='issuetracker')
-        cls.version_issuetracker_0_1 = VersionFactory(
-            value='0.1', product=cls.product_issuetracker)
-        cls.version_issuetracker_1_2 = VersionFactory(
-            value='1.2', product=cls.product_issuetracker)
+        cls.product_issuetracker = f.ProductFactory(name='issuetracker')
+        cls.version_issuetracker_0_1 = f.VersionFactory(
+            value='0.1',
+            product=cls.product_issuetracker)
+        cls.version_issuetracker_1_2 = f.VersionFactory(
+            value='1.2',
+            product=cls.product_issuetracker)
 
-        cls.env_group_db = TCMSEnvGroupFactory(name='db')
-        cls.plan_issuetracker = TestPlanFactory(
+        cls.env_group_db = f.TCMSEnvGroupFactory(name='db')
+        cls.plan_issuetracker = f.TestPlanFactory(
             name='Test issue tracker releases',
             author=cls.tester,
             owner=cls.tester,
@@ -639,20 +634,20 @@ class TestAJAXSearchRuns(BaseCaseRun):
         # Probably need more cases as well in order to create case runs to
         # test statistcis in search result
 
-        cls.build_issuetracker_fast = TestBuildFactory(
+        cls.build_issuetracker_fast = f.TestBuildFactory(
             product=cls.product_issuetracker)
 
-        cls.run_hotfix = TestRunFactory(
+        cls.run_hotfix = f.TestRunFactory(
             summary='Fast verify hotfix',
             product_version=cls.version_issuetracker_0_1,
             plan=cls.plan_issuetracker,
             build=cls.build_issuetracker_fast,
             manager=cls.tester,
             default_tester=cls.run_tester,
-            tag=[TestTagFactory(name='fedora'),
-                 TestTagFactory(name='rhel')])
+            tag=[f.TestTagFactory(name='fedora'),
+                 f.TestTagFactory(name='rhel')])
 
-        cls.run_release = TestRunFactory(
+        cls.run_release = f.TestRunFactory(
             summary='Smoke test before release',
             product_version=cls.version_issuetracker_1_2,
             plan=cls.plan_issuetracker,
@@ -660,14 +655,14 @@ class TestAJAXSearchRuns(BaseCaseRun):
             manager=cls.tester,
             default_tester=cls.run_tester)
 
-        cls.run_daily = TestRunFactory(
+        cls.run_daily = f.TestRunFactory(
             summary='Daily test during sprint',
             product_version=cls.version_issuetracker_0_1,
             plan=cls.plan_issuetracker,
             build=cls.build_issuetracker_fast,
             manager=cls.tester,
             default_tester=cls.run_tester,
-            tag=[TestTagFactory(name='rhel')])
+            tag=[f.TestTagFactory(name='rhel')])
 
         cls.search_data = {
             'action': 'search',
@@ -867,12 +862,12 @@ class TestAddRemoveRunCC(BaseCaseRun):
 
         cls.cc_url = reverse('run-cc', args=[cls.test_run.pk])
 
-        cls.cc_user_1 = UserFactory(username='cc-user-1',
-                                    email='cc-user-1@example.com')
-        cls.cc_user_2 = UserFactory(username='cc-user-2',
-                                    email='cc-user-2@example.com')
-        cls.cc_user_3 = UserFactory(username='cc-user-3',
-                                    email='cc-user-3@example.com')
+        cls.cc_user_1 = f.UserFactory(username='cc-user-1',
+                                      email='cc-user-1@example.com')
+        cls.cc_user_2 = f.UserFactory(username='cc-user-2',
+                                      email='cc-user-2@example.com')
+        cls.cc_user_3 = f.UserFactory(username='cc-user-3',
+                                      email='cc-user-3@example.com')
 
         cls.test_run.add_cc(cls.cc_user_2)
         cls.test_run.add_cc(cls.cc_user_3)
@@ -947,13 +942,16 @@ class TestEnvValue(BaseCaseRun):
     def setUpTestData(cls):
         super().setUpTestData()
 
-        cls.property_os = TCMSEnvPropertyFactory(name='os')
-        cls.value_linux = TCMSEnvValueFactory(value='Linux',
-                                              property=cls.property_os)
-        cls.value_bsd = TCMSEnvValueFactory(value='BSD',
-                                            property=cls.property_os)
-        cls.value_mac = TCMSEnvValueFactory(value='Mac',
-                                            property=cls.property_os)
+        cls.property_os = f.TCMSEnvPropertyFactory(name='os')
+        cls.value_linux = f.TCMSEnvValueFactory(
+            value='Linux',
+            property=cls.property_os)
+        cls.value_bsd = f.TCMSEnvValueFactory(
+            value='BSD',
+            property=cls.property_os)
+        cls.value_mac = f.TCMSEnvValueFactory(
+            value='Mac',
+            property=cls.property_os)
 
         cls.test_run.add_env_value(cls.value_linux)
         cls.test_run_1.add_env_value(cls.value_linux)
@@ -1080,15 +1078,15 @@ class TestIssueActions(BaseCaseRun):
         user_should_have_perm(cls.tester, 'testruns.change_testrun')
         user_should_have_perm(cls.tester, 'issuetracker.delete_issue')
 
-        cls.bz_tracker_product = IssueTrackerProductFactory(name='BZ')
-        cls.bugzilla = IssueTrackerFactory(
+        cls.bz_tracker_product = f.IssueTrackerProductFactory(name='BZ')
+        cls.bugzilla = f.IssueTrackerFactory(
             service_url='http://localhost/',
             tracker_product=cls.bz_tracker_product,
             validate_regex=r'^\d+$',
             issue_report_endpoint='/enter_bug.cgi')
 
-        cls.jira_tracker_product = IssueTrackerProductFactory(name='ORGJIRA')
-        cls.orgjira = IssueTrackerFactory(
+        cls.jira_tracker_product = f.IssueTrackerProductFactory(name='ORGJIRA')
+        cls.orgjira = f.IssueTrackerFactory(
             service_url='http://localhost/',
             tracker_product=cls.jira_tracker_product,
             validate_regex=r'^[A-Z]+-\d+$',
@@ -1265,13 +1263,16 @@ class TestEditRun(BaseCaseRun):
         user_should_have_perm(cls.tester, 'testruns.change_testrun')
         cls.edit_url = reverse('run-edit', args=[cls.test_run.pk])
 
-        cls.new_product = ProductFactory(name='Nitrate Dev')
-        cls.new_build = TestBuildFactory(name='FastTest',
-                                         product=cls.new_product)
-        cls.new_version = VersionFactory(value='dev0.1',
-                                         product=cls.new_product)
-        cls.intern = UserFactory(username='intern',
-                                 email='intern@example.com')
+        cls.new_product = f.ProductFactory(name='Nitrate Dev')
+        cls.new_build = f.TestBuildFactory(
+            name='FastTest',
+            product=cls.new_product)
+        cls.new_version = f.VersionFactory(
+            value='dev0.1',
+            product=cls.new_product)
+        cls.intern = f.UserFactory(
+            username='intern',
+            email='intern@example.com')
 
     def test_404_if_edit_non_existing_run(self):
         self.login_tester()
@@ -1313,7 +1314,7 @@ class TestAddCasesToRun(BaseCaseRun):
     def setUpTestData(cls):
         super().setUpTestData()
 
-        cls.proposed_case = TestCaseFactory(
+        cls.proposed_case = f.TestCaseFactory(
             author=cls.tester,
             default_tester=None,
             reviewer=cls.tester,

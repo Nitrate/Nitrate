@@ -4,14 +4,10 @@ from django.conf import settings
 from django import test
 from mock import patch
 
+from tcms.testplans.helpers.email import get_plan_notification_recipients
 from tcms.testplans.models import _disconnect_signals
 from tcms.testplans.models import _listen
-from tests.factories import TestCaseFactory
-from tests.factories import TestPlanEmailSettingsFactory
-from tests.factories import TestPlanFactory
-from tests.factories import UserFactory
-
-from tcms.testplans.helpers.email import get_plan_notification_recipients
+from tests import factories as f
 
 
 class TestSendEmailOnPlanUpdated(test.TestCase):
@@ -19,9 +15,9 @@ class TestSendEmailOnPlanUpdated(test.TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.owner = UserFactory(username='owner', email='owner@example.com')
-        cls.plan = TestPlanFactory(owner=cls.owner, author=cls.owner)
-        TestPlanEmailSettingsFactory(
+        cls.owner = f.UserFactory(username='owner', email='owner@example.com')
+        cls.plan = f.TestPlanFactory(owner=cls.owner, author=cls.owner)
+        f.TestPlanEmailSettingsFactory(
             auto_to_plan_owner=True,
             auto_to_plan_author=True,
             notify_on_plan_update=True,
@@ -50,9 +46,9 @@ class TestSendEmailOnPlanDeleted(test.TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.owner = UserFactory(username='owner', email='owner@example.com')
-        cls.plan = TestPlanFactory(owner=cls.owner, author=cls.owner)
-        TestPlanEmailSettingsFactory(
+        cls.owner = f.UserFactory(username='owner', email='owner@example.com')
+        cls.plan = f.TestPlanFactory(owner=cls.owner, author=cls.owner)
+        f.TestPlanEmailSettingsFactory(
             auto_to_plan_owner=True,
             auto_to_plan_author=True,
             notify_on_plan_delete=True,
@@ -81,24 +77,24 @@ class TestGetPlanNotificationRecipients(test.TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.owner = UserFactory(username='user1', email='user1@example.com')
-        cls.plan = TestPlanFactory(owner=cls.owner, author=cls.owner)
-        cls.case_1 = TestCaseFactory(
-            author=UserFactory(username='user2', email='user2@example.com'),
-            default_tester=UserFactory(username='user3',
-                                       email='user3@example.com'),
+        cls.owner = f.UserFactory(username='user1', email='user1@example.com')
+        cls.plan = f.TestPlanFactory(owner=cls.owner, author=cls.owner)
+        cls.case_1 = f.TestCaseFactory(
+            author=f.UserFactory(username='user2', email='user2@example.com'),
+            default_tester=f.UserFactory(username='user3',
+                                         email='user3@example.com'),
             plan=[cls.plan])
-        cls.case_2 = TestCaseFactory(
-            author=UserFactory(username='user4', email='user4@example.com'),
-            default_tester=UserFactory(username='user5',
-                                       email='user5@example.com'),
+        cls.case_2 = f.TestCaseFactory(
+            author=f.UserFactory(username='user4', email='user4@example.com'),
+            default_tester=f.UserFactory(username='user5',
+                                         email='user5@example.com'),
             plan=[cls.plan])
-        cls.case_3 = TestCaseFactory(
-            author=UserFactory(username='user6', email='user6@example.com'),
-            default_tester=UserFactory(username='user7', email=''),
+        cls.case_3 = f.TestCaseFactory(
+            author=f.UserFactory(username='user6', email='user6@example.com'),
+            default_tester=f.UserFactory(username='user7', email=''),
             plan=[cls.plan])
 
-        TestPlanEmailSettingsFactory(
+        f.TestPlanEmailSettingsFactory(
             auto_to_plan_owner=True,
             auto_to_plan_author=True,
             auto_to_case_owner=True,

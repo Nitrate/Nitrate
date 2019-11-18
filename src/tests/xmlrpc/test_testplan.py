@@ -11,15 +11,7 @@ from tcms.testplans.models import TestPlan
 from tcms.xmlrpc.api import testplan as XmlrpcTestPlan
 from tcms.xmlrpc.api.testplan import import_case_via_XML
 from tcms.xmlrpc.serializer import datetime_to_str
-from tests.factories import ComponentFactory
-from tests.factories import ProductFactory
-from tests.factories import TCMSEnvGroupFactory
-from tests.factories import TestCaseFactory
-from tests.factories import TestPlanFactory
-from tests.factories import TestPlanTypeFactory
-from tests.factories import TestTagFactory
-from tests.factories import UserFactory
-from tests.factories import VersionFactory
+from tests import factories as f
 from tests.testplans.test_importer import xml_file_without_error
 from tests.xmlrpc.utils import make_http_request
 from tests.xmlrpc.utils import XmlrpcAPIBaseTest
@@ -45,26 +37,30 @@ class TestFilter(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.product = ProductFactory()
-        cls.version = VersionFactory(product=cls.product)
-        cls.tester = UserFactory()
-        cls.plan_type = TestPlanTypeFactory(name='manual smoking')
-        cls.plan_1 = TestPlanFactory(product_version=cls.version,
-                                     product=cls.product,
-                                     author=cls.tester,
-                                     type=cls.plan_type)
-        cls.plan_2 = TestPlanFactory(product_version=cls.version,
-                                     product=cls.product,
-                                     author=cls.tester,
-                                     type=cls.plan_type)
-        cls.case_1 = TestCaseFactory(author=cls.tester,
-                                     default_tester=None,
-                                     reviewer=cls.tester,
-                                     plan=[cls.plan_1])
-        cls.case_2 = TestCaseFactory(author=cls.tester,
-                                     default_tester=None,
-                                     reviewer=cls.tester,
-                                     plan=[cls.plan_1])
+        cls.product = f.ProductFactory()
+        cls.version = f.VersionFactory(product=cls.product)
+        cls.tester = f.UserFactory()
+        cls.plan_type = f.TestPlanTypeFactory(name='manual smoking')
+        cls.plan_1 = f.TestPlanFactory(
+            product_version=cls.version,
+            product=cls.product,
+            author=cls.tester,
+            type=cls.plan_type)
+        cls.plan_2 = f.TestPlanFactory(
+            product_version=cls.version,
+            product=cls.product,
+            author=cls.tester,
+            type=cls.plan_type)
+        cls.case_1 = f.TestCaseFactory(
+            author=cls.tester,
+            default_tester=None,
+            reviewer=cls.tester,
+            plan=[cls.plan_1])
+        cls.case_2 = f.TestCaseFactory(
+            author=cls.tester,
+            default_tester=None,
+            reviewer=cls.tester,
+            plan=[cls.plan_1])
 
     def test_filter_plans(self):
         plans = XmlrpcTestPlan.filter(None, {'pk__in': [self.plan_1.pk, self.plan_2.pk]})
@@ -87,18 +83,20 @@ class TestAddTag(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.user = UserFactory()
+        cls.user = f.UserFactory()
         cls.http_req = make_http_request(user=cls.user,
                                          user_perm='testplans.add_testplantag')
 
-        cls.product = ProductFactory()
+        cls.product = f.ProductFactory()
         cls.plans = [
-            TestPlanFactory(author=cls.user, owner=cls.user, product=cls.product),
-            TestPlanFactory(author=cls.user, owner=cls.user, product=cls.product),
+            f.TestPlanFactory(
+                author=cls.user, owner=cls.user, product=cls.product),
+            f.TestPlanFactory(
+                author=cls.user, owner=cls.user, product=cls.product),
         ]
 
-        cls.tag1 = TestTagFactory(name='xmlrpc_test_tag_1')
-        cls.tag2 = TestTagFactory(name='xmlrpc_test_tag_2')
+        cls.tag1 = f.TestTagFactory(name='xmlrpc_test_tag_1')
+        cls.tag2 = f.TestTagFactory(name='xmlrpc_test_tag_2')
         cls.tag_name = 'xmlrpc_tag_name_1'
 
     def test_single_id(self):
@@ -129,25 +127,29 @@ class TestAddComponent(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.user = UserFactory()
+        cls.user = f.UserFactory()
         cls.http_req = make_http_request(user=cls.user,
                                          user_perm='testplans.add_testplancomponent')
 
-        cls.product = ProductFactory()
+        cls.product = f.ProductFactory()
         cls.plans = [
-            TestPlanFactory(author=cls.user, owner=cls.user, product=cls.product),
-            TestPlanFactory(author=cls.user, owner=cls.user, product=cls.product),
+            f.TestPlanFactory(
+                author=cls.user, owner=cls.user, product=cls.product),
+            f.TestPlanFactory(
+                author=cls.user, owner=cls.user, product=cls.product),
         ]
-        cls.component1 = ComponentFactory(name='xmlrpc test component 1',
-                                          description='xmlrpc test description',
-                                          product=cls.product,
-                                          initial_owner=None,
-                                          initial_qa_contact=None)
-        cls.component2 = ComponentFactory(name='xmlrpc test component 2',
-                                          description='xmlrpc test description',
-                                          product=cls.product,
-                                          initial_owner=None,
-                                          initial_qa_contact=None)
+        cls.component1 = f.ComponentFactory(
+            name='xmlrpc test component 1',
+            description='xmlrpc test description',
+            product=cls.product,
+            initial_owner=None,
+            initial_qa_contact=None)
+        cls.component2 = f.ComponentFactory(
+            name='xmlrpc test component 2',
+            description='xmlrpc test description',
+            product=cls.product,
+            initial_owner=None,
+            initial_qa_contact=None)
 
     def test_single_id(self):
         XmlrpcTestPlan.add_component(self.http_req, self.plans[0].pk, self.component1.pk)
@@ -173,7 +175,8 @@ class TestPlanTypeMethods(XmlrpcAPIBaseTest):
     @classmethod
     def setUpTestData(cls):
         cls.http_req = make_http_request()
-        cls.plan_type = TestPlanTypeFactory(name='xmlrpc plan type', description='')
+        cls.plan_type = f.TestPlanTypeFactory(
+            name='xmlrpc plan type', description='')
 
     def test_check_plan_type(self):
         self.assertXmlrpcFaultBadRequest(
@@ -201,9 +204,10 @@ class TestGetProduct(XmlrpcAPIBaseTest):
     @classmethod
     def setUpTestData(cls):
         cls.http_req = make_http_request()
-        cls.user = UserFactory()
-        cls.product = ProductFactory()
-        cls.plan = TestPlanFactory(author=cls.user, owner=cls.user, product=cls.product)
+        cls.user = f.UserFactory()
+        cls.product = f.ProductFactory()
+        cls.plan = f.TestPlanFactory(
+            author=cls.user, owner=cls.user, product=cls.product)
 
     def _verify_serialize_result(self, result):
         self.assertEqual(self.plan.product.name, result['name'])
@@ -247,19 +251,27 @@ class TestGetTestCases(XmlrpcAPIBaseTest):
     def setUpTestData(cls):
         cls.http_req = make_http_request()
 
-        cls.tester = UserFactory(username='tester')
-        cls.reviewer = UserFactory(username='reviewer')
-        cls.product = ProductFactory()
-        cls.plan = TestPlanFactory(author=cls.tester, owner=cls.tester, product=cls.product)
+        cls.tester = f.UserFactory(username='tester')
+        cls.reviewer = f.UserFactory(username='reviewer')
+        cls.product = f.ProductFactory()
+        cls.plan = f.TestPlanFactory(
+            author=cls.tester, owner=cls.tester, product=cls.product)
         cls.cases = [
-            TestCaseFactory(author=cls.tester, default_tester=None, reviewer=cls.reviewer,
-                            plan=[cls.plan]),
-            TestCaseFactory(author=cls.tester, default_tester=None, reviewer=cls.reviewer,
-                            plan=[cls.plan]),
-            TestCaseFactory(author=cls.tester, default_tester=None, reviewer=cls.reviewer,
-                            plan=[cls.plan]),
+            f.TestCaseFactory(author=cls.tester,
+                              default_tester=None,
+                              reviewer=cls.reviewer,
+                              plan=[cls.plan]),
+            f.TestCaseFactory(author=cls.tester,
+                              default_tester=None,
+                              reviewer=cls.reviewer,
+                              plan=[cls.plan]),
+            f.TestCaseFactory(author=cls.tester,
+                              default_tester=None,
+                              reviewer=cls.reviewer,
+                              plan=[cls.plan]),
         ]
-        cls.another_plan = TestPlanFactory(author=cls.tester, owner=cls.tester, product=cls.product)
+        cls.another_plan = f.TestPlanFactory(
+            author=cls.tester, owner=cls.tester, product=cls.product)
 
     def test_get_test_cases(self):
         serialized_cases = XmlrpcTestPlan.get_test_cases(self.http_req, self.plan.pk)
@@ -311,26 +323,28 @@ class TestUpdate(test.TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.user = UserFactory()
+        cls.user = f.UserFactory()
         cls.http_req = make_http_request(user=cls.user,
                                          user_perm='testplans.change_testplan')
 
-        cls.env_group_1 = TCMSEnvGroupFactory()
-        cls.env_group_2 = TCMSEnvGroupFactory()
-        cls.product = ProductFactory()
-        cls.version = VersionFactory(product=cls.product)
-        cls.tester = UserFactory()
-        cls.plan_type = TestPlanTypeFactory(name='manual smoking')
-        cls.plan_1 = TestPlanFactory(product_version=cls.version,
-                                     product=cls.product,
-                                     author=cls.tester,
-                                     type=cls.plan_type,
-                                     env_group=(cls.env_group_1,))
-        cls.plan_2 = TestPlanFactory(product_version=cls.version,
-                                     product=cls.product,
-                                     author=cls.tester,
-                                     type=cls.plan_type,
-                                     env_group=(cls.env_group_1,))
+        cls.env_group_1 = f.TCMSEnvGroupFactory()
+        cls.env_group_2 = f.TCMSEnvGroupFactory()
+        cls.product = f.ProductFactory()
+        cls.version = f.VersionFactory(product=cls.product)
+        cls.tester = f.UserFactory()
+        cls.plan_type = f.TestPlanTypeFactory(name='manual smoking')
+        cls.plan_1 = f.TestPlanFactory(
+            product_version=cls.version,
+            product=cls.product,
+            author=cls.tester,
+            type=cls.plan_type,
+            env_group=(cls.env_group_1,))
+        cls.plan_2 = f.TestPlanFactory(
+            product_version=cls.version,
+            product=cls.product,
+            author=cls.tester,
+            type=cls.plan_type,
+            env_group=(cls.env_group_1,))
 
     def test_update_env_group(self):
         # plan_1 and plan_2 point to self.env_group_1
@@ -358,8 +372,8 @@ class TestImportCaseViaXML(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.author = UserFactory(username='user', email='user@example.com')
-        cls.plan = TestPlanFactory(author=cls.author, owner=cls.author)
+        cls.author = f.UserFactory(username='user', email='user@example.com')
+        cls.plan = f.TestPlanFactory(author=cls.author, owner=cls.author)
         cls.http_req = make_http_request(user=cls.author)
 
     def test_succeed_to_import_cases(self):
@@ -377,16 +391,16 @@ class TestGet(test.TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.author = UserFactory(username='user', email='user@example.com')
+        cls.author = f.UserFactory(username='user', email='user@example.com')
         cls.http_req = make_http_request(user=cls.author)
 
-        cls.product = ProductFactory()
-        cls.version = VersionFactory(product=cls.product)
-        cls.type = TestPlanTypeFactory(name='temp')
-        cls.tag_fedora = TestTagFactory(name='fedora')
-        cls.tag_centos = TestTagFactory(name='centos')
+        cls.product = f.ProductFactory()
+        cls.version = f.VersionFactory(product=cls.product)
+        cls.type = f.TestPlanTypeFactory(name='temp')
+        cls.tag_fedora = f.TestTagFactory(name='fedora')
+        cls.tag_centos = f.TestTagFactory(name='centos')
 
-        cls.plan = TestPlanFactory(
+        cls.plan = f.TestPlanFactory(
             is_active=True,
             extra_link=None,
             product=cls.product,

@@ -26,15 +26,7 @@ from tcms.testcases.models import TestCaseComponent
 from tcms.testcases.models import TestCasePlan
 from tcms.testcases.models import TestCaseTag
 from tcms.testcases.views import ajax_response
-from tests.factories import ComponentFactory
-from tests.factories import IssueTrackerFactory
-from tests.factories import IssueTrackerProductFactory
-from tests.factories import TestCaseCategoryFactory
-from tests.factories import TestCaseComponentFactory
-from tests.factories import TestCaseFactory
-from tests.factories import TestCaseTagFactory
-from tests.factories import TestPlanFactory
-from tests.factories import TestTagFactory
+from tests import factories as f
 from tests import BaseCaseRun
 from tests import BasePlanCase
 from tests import remove_perm_from_user
@@ -92,13 +84,13 @@ class CaseTagFormTest(test.TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.tag_1 = TestTagFactory(name='tag one')
-        cls.tag_2 = TestTagFactory(name='tag two')
-        cls.tag_3 = TestTagFactory(name='tag three')
+        cls.tag_1 = f.TestTagFactory(name='tag one')
+        cls.tag_2 = f.TestTagFactory(name='tag two')
+        cls.tag_3 = f.TestTagFactory(name='tag three')
 
         cls.cases = []
         for i in range(5):
-            case = TestCaseFactory(summary='test_case_number_%d' % i)
+            case = f.TestCaseFactory(summary='test_case_number_%d' % i)
             case.add_tag(cls.tag_1)
             if i % 2 == 0:
                 case.add_tag(cls.tag_2)
@@ -128,25 +120,29 @@ class TestOperateComponentView(BasePlanCase):
     def setUpTestData(cls):
         super().setUpTestData()
 
-        cls.comp_application = ComponentFactory(name='Application',
-                                                product=cls.product,
-                                                initial_owner=cls.tester,
-                                                initial_qa_contact=cls.tester)
-        cls.comp_database = ComponentFactory(name='Database',
-                                             product=cls.product,
-                                             initial_owner=cls.tester,
-                                             initial_qa_contact=cls.tester)
-        cls.comp_cli = ComponentFactory(name='CLI',
-                                        product=cls.product,
-                                        initial_owner=cls.tester,
-                                        initial_qa_contact=cls.tester)
-        cls.comp_api = ComponentFactory(name='API',
-                                        product=cls.product,
-                                        initial_owner=cls.tester,
-                                        initial_qa_contact=cls.tester)
+        cls.comp_application = f.ComponentFactory(
+            name='Application',
+            product=cls.product,
+            initial_owner=cls.tester,
+            initial_qa_contact=cls.tester)
+        cls.comp_database = f.ComponentFactory(
+            name='Database',
+            product=cls.product,
+            initial_owner=cls.tester,
+            initial_qa_contact=cls.tester)
+        cls.comp_cli = f.ComponentFactory(
+            name='CLI',
+            product=cls.product,
+            initial_owner=cls.tester,
+            initial_qa_contact=cls.tester)
+        cls.comp_api = f.ComponentFactory(
+            name='API',
+            product=cls.product,
+            initial_owner=cls.tester,
+            initial_qa_contact=cls.tester)
 
-        TestCaseComponentFactory(case=cls.case_1, component=cls.comp_cli)
-        TestCaseComponentFactory(case=cls.case_1, component=cls.comp_api)
+        f.TestCaseComponentFactory(case=cls.case_1, component=cls.comp_cli)
+        f.TestCaseComponentFactory(case=cls.case_1, component=cls.comp_api)
 
         user_should_have_perm(cls.tester, 'testcases.add_testcasecomponent')
 
@@ -240,8 +236,12 @@ class TestOperateCategoryView(BasePlanCase):
     def setUpTestData(cls):
         super().setUpTestData()
 
-        cls.case_cat_full_auto = TestCaseCategoryFactory(name='Full Auto', product=cls.product)
-        cls.case_cat_full_manual = TestCaseCategoryFactory(name='Full Manual', product=cls.product)
+        cls.case_cat_full_auto = f.TestCaseCategoryFactory(
+            name='Full Auto',
+            product=cls.product)
+        cls.case_cat_full_manual = f.TestCaseCategoryFactory(
+            name='Full Manual',
+            product=cls.product)
 
         user_should_have_perm(cls.tester, 'testcases.add_testcasecomponent')
 
@@ -300,7 +300,7 @@ class TestAddIssueToCase(BasePlanCase):
         user_should_have_perm(cls.plan_tester, 'issuetracker.change_issue')
 
         cls.case_issue_url = reverse('case-issue', args=[cls.case_1.pk])
-        cls.issue_tracker = IssueTrackerFactory(name='TestBZ')
+        cls.issue_tracker = f.IssueTrackerFactory(name='TestBZ')
 
     def test_add_and_remove_a_issue(self):
         user_should_have_perm(self.plan_tester, 'issuetracker.add_issue')
@@ -336,18 +336,21 @@ class TestOperateCasePlans(BasePlanCase):
         # also needs other cases in order to list multiple plans of a case and
         # remove a plan from a case.
 
-        cls.plan_test_case_plans = TestPlanFactory(author=cls.tester,
-                                                   owner=cls.tester,
-                                                   product=cls.product,
-                                                   product_version=cls.version)
-        cls.plan_test_add = TestPlanFactory(author=cls.tester,
-                                            owner=cls.tester,
-                                            product=cls.product,
-                                            product_version=cls.version)
-        cls.plan_test_remove = TestPlanFactory(author=cls.tester,
-                                               owner=cls.tester,
-                                               product=cls.product,
-                                               product_version=cls.version)
+        cls.plan_test_case_plans = f.TestPlanFactory(
+            author=cls.tester,
+            owner=cls.tester,
+            product=cls.product,
+            product_version=cls.version)
+        cls.plan_test_add = f.TestPlanFactory(
+            author=cls.tester,
+            owner=cls.tester,
+            product=cls.product,
+            product_version=cls.version)
+        cls.plan_test_remove = f.TestPlanFactory(
+            author=cls.tester,
+            owner=cls.tester,
+            product=cls.product,
+            product_version=cls.version)
 
         cls.case_1.add_to_plan(cls.plan_test_case_plans)
         cls.case_1.add_to_plan(cls.plan_test_remove)
@@ -437,15 +440,15 @@ class TestOperateCaseTag(BasePlanCase):
     def setUpTestData(cls):
         super().setUpTestData()
 
-        cls.tag_fedora = TestTagFactory(name='fedora')
-        cls.tag_rhel = TestTagFactory(name='rhel')
-        cls.tag_python = TestTagFactory(name='python')
+        cls.tag_fedora = f.TestTagFactory(name='fedora')
+        cls.tag_rhel = f.TestTagFactory(name='rhel')
+        cls.tag_python = f.TestTagFactory(name='python')
 
-        TestCaseTagFactory(case=cls.case_1, tag=cls.tag_fedora)
-        TestCaseTagFactory(case=cls.case_1, tag=cls.tag_rhel)
-        TestCaseTagFactory(case=cls.case_1, tag=cls.tag_python)
-        TestCaseTagFactory(case=cls.case_3, tag=cls.tag_rhel)
-        TestCaseTagFactory(case=cls.case_3, tag=cls.tag_python)
+        f.TestCaseTagFactory(case=cls.case_1, tag=cls.tag_fedora)
+        f.TestCaseTagFactory(case=cls.case_1, tag=cls.tag_rhel)
+        f.TestCaseTagFactory(case=cls.case_1, tag=cls.tag_python)
+        f.TestCaseTagFactory(case=cls.case_3, tag=cls.tag_rhel)
+        f.TestCaseTagFactory(case=cls.case_3, tag=cls.tag_python)
 
         cls.cases_tag_url = reverse('cases-tag')
 
@@ -515,7 +518,7 @@ class TestEditCase(BasePlanCase):
     def setUpTestData(cls):
         super().setUpTestData()
 
-        cls.proposed_case = TestCaseFactory(
+        cls.proposed_case = f.TestCaseFactory(
             author=cls.tester,
             default_tester=None,
             reviewer=cls.tester,
@@ -1122,9 +1125,9 @@ class TestAddComponent(BasePlanCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.component_db = ComponentFactory(name='db', product=cls.product)
-        cls.component_doc = ComponentFactory(name='doc', product=cls.product)
-        cls.component_cli = ComponentFactory(name='cli', product=cls.product)
+        cls.component_db = f.ComponentFactory(name='db', product=cls.product)
+        cls.component_doc = f.ComponentFactory(name='doc', product=cls.product)
+        cls.component_cli = f.ComponentFactory(name='cli', product=cls.product)
 
     def setUp(self):
         user_should_have_perm(self.tester, 'testcases.add_testcasecomponent')
@@ -1187,8 +1190,8 @@ class TestIssueManagement(BaseCaseRun):
         user_should_have_perm(cls.tester, 'issuetracker.change_issue')
         cls.issue_manage_url = reverse('case-issue', args=[cls.case_1.pk])
 
-        cls.tracker_product = IssueTrackerProductFactory(name='BZ')
-        cls.issue_tracker = IssueTrackerFactory(
+        cls.tracker_product = f.IssueTrackerProductFactory(name='BZ')
+        cls.issue_tracker = f.IssueTrackerFactory(
             service_url='http://localhost/',
             issue_report_endpoint='/enter_bug.cgi',
             tracker_product=cls.tracker_product,

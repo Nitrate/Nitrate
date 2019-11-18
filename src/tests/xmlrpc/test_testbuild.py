@@ -6,13 +6,7 @@ from django.test import TestCase
 
 from tcms.xmlrpc.api import build
 
-from tests import encode
-from tests.factories import ProductFactory
-from tests.factories import TestBuildFactory
-from tests.factories import TestCaseRunFactory
-from tests.factories import TestRunFactory
-from tests.factories import UserFactory
-from tests.factories import VersionFactory
+from tests import encode, factories as f
 from tests.xmlrpc.utils import make_http_request
 from tests.xmlrpc.utils import XmlrpcAPIBaseTest
 
@@ -21,13 +15,13 @@ class TestBuildCreate(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.admin = UserFactory()
+        cls.admin = f.UserFactory()
         cls.admin_request = make_http_request(user=cls.admin, user_perm='management.add_testbuild')
 
-        cls.staff = UserFactory()
+        cls.staff = f.UserFactory()
         cls.staff_request = make_http_request(user=cls.staff)
 
-        cls.product = ProductFactory(name='Nitrate')
+        cls.product = f.ProductFactory(name='Nitrate')
 
     @unittest.skip('TODO: fix create to make this test pass.')
     def test_build_create_with_no_args(self):
@@ -114,18 +108,18 @@ class TestBuildUpdate(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.admin = UserFactory()
+        cls.admin = f.UserFactory()
         cls.admin_request = make_http_request(user=cls.admin, user_perm='management.change_testbuild')
 
-        cls.staff = UserFactory()
+        cls.staff = f.UserFactory()
         cls.staff_request = make_http_request(user=cls.staff)
 
-        cls.product = ProductFactory()
-        cls.another_product = ProductFactory()
+        cls.product = f.ProductFactory()
+        cls.another_product = f.ProductFactory()
 
-        cls.build_1 = TestBuildFactory(product=cls.product)
-        cls.build_2 = TestBuildFactory(product=cls.product)
-        cls.build_3 = TestBuildFactory(product=cls.product)
+        cls.build_1 = f.TestBuildFactory(product=cls.product)
+        cls.build_2 = f.TestBuildFactory(product=cls.product)
+        cls.build_3 = f.TestBuildFactory(product=cls.product)
 
     @unittest.skip('TODO: fix update to make this test pass.')
     def test_build_update_with_no_args(self):
@@ -183,8 +177,9 @@ class TestBuildGet(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.product = ProductFactory()
-        cls.build = TestBuildFactory(description='for testing', product=cls.product)
+        cls.product = f.ProductFactory()
+        cls.build = f.TestBuildFactory(
+            description='for testing', product=cls.product)
 
     @unittest.skip('TODO: fix get to make this test pass.')
     def test_build_get_with_no_args(self):
@@ -215,11 +210,11 @@ class TestBuildGetCaseRuns(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.product = ProductFactory(name='Nitrate')
-        cls.build = TestBuildFactory(product=cls.product)
-        cls.user = UserFactory()
-        cls.case_run_1 = TestCaseRunFactory(assignee=cls.user, build=cls.build)
-        cls.case_run_2 = TestCaseRunFactory(assignee=cls.user, build=cls.build)
+        cls.product = f.ProductFactory(name='Nitrate')
+        cls.build = f.TestBuildFactory(product=cls.product)
+        cls.user = f.UserFactory()
+        cls.case_run_1 = f.TestCaseRunFactory(assignee=cls.user, build=cls.build)
+        cls.case_run_2 = f.TestCaseRunFactory(assignee=cls.user, build=cls.build)
 
     @unittest.skip('TODO: fix get_caseruns to make this test pass.')
     def test_build_get_with_no_args(self):
@@ -247,12 +242,12 @@ class TestBuildGetRuns(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.product = ProductFactory()
-        cls.version = VersionFactory(value='0.1', product=cls.product)
-        cls.build = TestBuildFactory(product=cls.product)
-        cls.user = UserFactory()
-        cls.test_run = TestRunFactory(manager=cls.user, default_tester=None,
-                                      build=cls.build)
+        cls.product = f.ProductFactory()
+        cls.version = f.VersionFactory(value='0.1', product=cls.product)
+        cls.build = f.TestBuildFactory(product=cls.product)
+        cls.user = f.UserFactory()
+        cls.test_run = f.TestRunFactory(
+            manager=cls.user, default_tester=None, build=cls.build)
 
     @unittest.skip('TODO: fix get_runs to make this test pass.')
     def test_build_get_with_no_args(self):
@@ -290,8 +285,9 @@ class TestBuildCheck(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.product = ProductFactory()
-        cls.build = TestBuildFactory(description='testing ...', product=cls.product)
+        cls.product = f.ProductFactory()
+        cls.build = f.TestBuildFactory(
+            description='testing ...', product=cls.product)
 
     @unittest.skip('TODO: fix check_build to make this test pass.')
     def test_build_get_with_no_args(self):

@@ -8,16 +8,7 @@ from operator import itemgetter
 from django.test import TestCase
 
 from tcms.xmlrpc.api import product
-from tests.factories import ComponentFactory
-from tests.factories import ProductFactory
-from tests.factories import TestBuildFactory
-from tests.factories import TestCaseCategoryFactory
-from tests.factories import TestCaseFactory
-from tests.factories import TestPlanFactory
-from tests.factories import TestRunFactory
-from tests.factories import TestTagFactory
-from tests.factories import UserFactory
-from tests.factories import VersionFactory
+from tests import factories as f
 from tests.xmlrpc.utils import make_http_request
 from tests.xmlrpc.utils import XmlrpcAPIBaseTest
 
@@ -26,12 +17,12 @@ class TestCheckCategory(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.product_nitrate = ProductFactory(name='nitrate')
-        cls.product_xmlrpc = ProductFactory(name='xmlrpc')
+        cls.product_nitrate = f.ProductFactory(name='nitrate')
+        cls.product_xmlrpc = f.ProductFactory(name='xmlrpc')
         cls.case_categories = [
-            TestCaseCategoryFactory(name='auto', product=cls.product_nitrate),
-            TestCaseCategoryFactory(name='manual', product=cls.product_nitrate),
-            TestCaseCategoryFactory(name='pending', product=cls.product_xmlrpc),
+            f.TestCaseCategoryFactory(name='auto', product=cls.product_nitrate),
+            f.TestCaseCategoryFactory(name='manual', product=cls.product_nitrate),
+            f.TestCaseCategoryFactory(name='pending', product=cls.product_xmlrpc),
         ]
 
     def test_check_category(self):
@@ -70,12 +61,12 @@ class TestCheckComponent(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.product_nitrate = ProductFactory(name='nitrate')
-        cls.product_xmlrpc = ProductFactory(name='xmlrpc')
+        cls.product_nitrate = f.ProductFactory(name='nitrate')
+        cls.product_xmlrpc = f.ProductFactory(name='xmlrpc')
         cls.components = [
-            ComponentFactory(name='application', product=cls.product_nitrate),
-            ComponentFactory(name='database', product=cls.product_nitrate),
-            ComponentFactory(name='documentation', product=cls.product_xmlrpc),
+            f.ComponentFactory(name='application', product=cls.product_nitrate),
+            f.ComponentFactory(name='database', product=cls.product_nitrate),
+            f.ComponentFactory(name='documentation', product=cls.product_xmlrpc),
         ]
 
     def test_check_component(self):
@@ -113,7 +104,7 @@ class TestCheckProduct(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.product = ProductFactory(name='Nitrate')
+        cls.product = f.ProductFactory(name='Nitrate')
 
     def test_check_product(self):
         cat = product.check_product(None, 'Nitrate')
@@ -133,8 +124,8 @@ class TestFilter(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.product = ProductFactory(name='Nitrate')
-        cls.product_xmlrpc = ProductFactory(name='XMLRPC API')
+        cls.product = f.ProductFactory(name='Nitrate')
+        cls.product_xmlrpc = f.ProductFactory(name='XMLRPC API')
 
     def test_filter_by_id(self):
         prod = product.filter(None, {"id": self.product.pk})
@@ -156,10 +147,10 @@ class TestFilterCategories(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.product = ProductFactory(name='Nitrate')
+        cls.product = f.ProductFactory(name='Nitrate')
         cls.categories = [
-            TestCaseCategoryFactory(name='auto', product=cls.product),
-            TestCaseCategoryFactory(name='manual', product=cls.product),
+            f.TestCaseCategoryFactory(name='auto', product=cls.product),
+            f.TestCaseCategoryFactory(name='manual', product=cls.product),
         ]
 
     def test_filter_by_product_id(self):
@@ -180,9 +171,12 @@ class TestFilterComponents(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.product = ProductFactory(name='StarCraft')
-        cls.component = ComponentFactory(name='application', product=cls.product,
-                                         initial_owner=None, initial_qa_contact=None)
+        cls.product = f.ProductFactory(name='StarCraft')
+        cls.component = f.ComponentFactory(
+            name='application',
+            product=cls.product,
+            initial_owner=None,
+            initial_qa_contact=None)
 
     def test_filter_by_product_id(self):
         com = product.filter_components(None, {'product': self.product.pk})
@@ -199,8 +193,8 @@ class TestFilterVersions(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.product = ProductFactory(name='StarCraft')
-        cls.version = VersionFactory(value='0.7', product=cls.product)
+        cls.product = f.ProductFactory(name='StarCraft')
+        cls.version = f.VersionFactory(value='0.7', product=cls.product)
 
     def test_filter_by_version_id(self):
         ver = product.filter_versions(None, {'id': self.version.pk})
@@ -223,7 +217,7 @@ class TestGet(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.product = ProductFactory(name='StarCraft')
+        cls.product = f.ProductFactory(name='StarCraft')
 
     def test_get_product(self):
         cat = product.get(None, self.product.pk)
@@ -243,9 +237,12 @@ class TestGetBuilds(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.product = ProductFactory(name='StarCraft')
+        cls.product = f.ProductFactory(name='StarCraft')
         cls.builds_count = 3
-        cls.builds = [TestBuildFactory(product=cls.product) for i in range(cls.builds_count)]
+        cls.builds = [
+            f.TestBuildFactory(product=cls.product)
+            for i in range(cls.builds_count)
+        ]
 
     def test_get_build_with_id(self):
         builds = product.get_builds(None, self.product.pk)
@@ -275,19 +272,25 @@ class TestGetCases(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.tester = UserFactory(username='great tester')
-        cls.product = ProductFactory(name='StarCraft')
-        cls.version = VersionFactory(value='0.1', product=cls.product)
-        cls.plan = TestPlanFactory(name='Test product.get_cases',
-                                   owner=cls.tester, author=cls.tester,
-                                   product=cls.product,
-                                   product_version=cls.version)
-        cls.case_category = TestCaseCategoryFactory(product=cls.product)
+        cls.tester = f.UserFactory(username='great tester')
+        cls.product = f.ProductFactory(name='StarCraft')
+        cls.version = f.VersionFactory(value='0.1', product=cls.product)
+        cls.plan = f.TestPlanFactory(
+            name='Test product.get_cases',
+            owner=cls.tester,
+            author=cls.tester,
+            product=cls.product,
+            product_version=cls.version)
+        cls.case_category = f.TestCaseCategoryFactory(product=cls.product)
         cls.cases_count = 10
-        cls.cases = [TestCaseFactory(category=cls.case_category, author=cls.tester,
-                                     reviewer=cls.tester, default_tester=None,
-                                     plan=[cls.plan])
-                     for i in range(cls.cases_count)]
+        cls.cases = [
+            f.TestCaseFactory(category=cls.case_category,
+                              author=cls.tester,
+                              reviewer=cls.tester,
+                              default_tester=None,
+                              plan=[cls.plan])
+            for i in range(cls.cases_count)
+        ]
 
     def test_get_case_with_id(self):
         cases = product.get_cases(None, self.product.pk)
@@ -315,9 +318,11 @@ class TestGetCategories(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.product = ProductFactory(name='StarCraft')
-        cls.category_auto = TestCaseCategoryFactory(name='auto', product=cls.product)
-        cls.category_manual = TestCaseCategoryFactory(name='manual', product=cls.product)
+        cls.product = f.ProductFactory(name='StarCraft')
+        cls.category_auto = f.TestCaseCategoryFactory(
+            name='auto', product=cls.product)
+        cls.category_manual = f.TestCaseCategoryFactory(
+            name='manual', product=cls.product)
 
     def test_get_categories_with_product_id(self):
         cats = product.get_categories(None, self.product.pk)
@@ -353,8 +358,9 @@ class TestGetCategory(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.product = ProductFactory(name='StarCraft')
-        cls.category = TestCaseCategoryFactory(name='manual', product=cls.product)
+        cls.product = f.ProductFactory(name='StarCraft')
+        cls.category = f.TestCaseCategoryFactory(
+            name='manual', product=cls.product)
 
     def test_get_category(self):
         cat = product.get_category(None, self.category.pk)
@@ -374,11 +380,11 @@ class TestAddComponent(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.admin = UserFactory()
-        cls.staff = UserFactory()
+        cls.admin = f.UserFactory()
+        cls.staff = f.UserFactory()
         cls.admin_request = make_http_request(user=cls.admin, user_perm='management.add_component')
         cls.staff_request = make_http_request(user=cls.staff)
-        cls.product = ProductFactory()
+        cls.product = f.ProductFactory()
 
         # Any added component in tests will be added to this list and then remove them all
         cls.components_to_delete = []
@@ -404,8 +410,8 @@ class TestGetComponent(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.product = ProductFactory(name='StarCraft')
-        cls.component = ComponentFactory(name='application', product=cls.product)
+        cls.product = f.ProductFactory(name='StarCraft')
+        cls.component = f.ComponentFactory(name='application', product=cls.product)
 
     def test_get_component(self):
         com = product.get_component(None, self.component.pk)
@@ -425,15 +431,18 @@ class TestUpdateComponent(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.admin = UserFactory()
-        cls.staff = UserFactory()
+        cls.admin = f.UserFactory()
+        cls.staff = f.UserFactory()
         cls.admin_request = make_http_request(user=cls.admin,
                                               user_perm='management.change_component')
         cls.staff_request = make_http_request(user=cls.staff)
 
-        cls.product = ProductFactory(name='StarCraft')
-        cls.component = ComponentFactory(name="application", product=cls.product,
-                                         initial_owner=None, initial_qa_contact=None)
+        cls.product = f.ProductFactory(name='StarCraft')
+        cls.component = f.ComponentFactory(
+            name="application",
+            product=cls.product,
+            initial_owner=None,
+            initial_qa_contact=None)
 
     def test_update_component(self):
         values = {'name': 'Updated'}
@@ -478,15 +487,16 @@ class TestGetComponents(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.product = ProductFactory(name='StarCraft')
-        cls.starcraft_version_0_1 = VersionFactory(value='0.1', product=cls.product)
+        cls.product = f.ProductFactory(name='StarCraft')
+        cls.starcraft_version_0_1 = f.VersionFactory(
+            value='0.1', product=cls.product)
         cls.components = [
-            ComponentFactory(name='application', product=cls.product,
-                             initial_owner=None, initial_qa_contact=None),
-            ComponentFactory(name='database', product=cls.product,
-                             initial_owner=None, initial_qa_contact=None),
-            ComponentFactory(name='documentation', product=cls.product,
-                             initial_owner=None, initial_qa_contact=None),
+            f.ComponentFactory(name='application', product=cls.product,
+                               initial_owner=None, initial_qa_contact=None),
+            f.ComponentFactory(name='database', product=cls.product,
+                               initial_owner=None, initial_qa_contact=None),
+            f.ComponentFactory(name='documentation', product=cls.product,
+                               initial_owner=None, initial_qa_contact=None),
         ]
 
     def test_get_components_with_id(self):
@@ -539,23 +549,31 @@ class TestGetPlans(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.user = UserFactory(username='jack')
-        cls.product_starcraft = ProductFactory(name='StarCraft')
-        cls.starcraft_version_0_1 = VersionFactory(value='0.1', product=cls.product_starcraft)
-        cls.starcraft_version_0_2 = VersionFactory(value='0.2', product=cls.product_starcraft)
-        cls.product_streetfighter = ProductFactory(name='StreetFighter')
-        cls.streetfighter_version_0_1 = VersionFactory(value='0.1', product=cls.product_streetfighter)
+        cls.user = f.UserFactory(username='jack')
+        cls.product_starcraft = f.ProductFactory(name='StarCraft')
+        cls.starcraft_version_0_1 = f.VersionFactory(
+            value='0.1', product=cls.product_starcraft)
+        cls.starcraft_version_0_2 = f.VersionFactory(
+            value='0.2', product=cls.product_starcraft)
+        cls.product_streetfighter = f.ProductFactory(name='StreetFighter')
+        cls.streetfighter_version_0_1 = f.VersionFactory(
+            value='0.1', product=cls.product_streetfighter)
         cls.plans = [
-            TestPlanFactory(name='StarCraft: Init',
-                            product=cls.product_starcraft, product_version=cls.starcraft_version_0_1,
-                            author=cls.user, owner=cls.user),
-            TestPlanFactory(name='StarCraft: Start',
-                            product=cls.product_starcraft, product_version=cls.starcraft_version_0_2,
-                            author=cls.user, owner=cls.user),
-            TestPlanFactory(name='StreetFighter',
-                            product=cls.product_streetfighter,
-                            product_version=cls.streetfighter_version_0_1,
-                            author=cls.user, owner=cls.user),
+            f.TestPlanFactory(name='StarCraft: Init',
+                              product=cls.product_starcraft,
+                              product_version=cls.starcraft_version_0_1,
+                              author=cls.user,
+                              owner=cls.user),
+            f.TestPlanFactory(name='StarCraft: Start',
+                              product=cls.product_starcraft,
+                              product_version=cls.starcraft_version_0_2,
+                              author=cls.user,
+                              owner=cls.user),
+            f.TestPlanFactory(name='StreetFighter',
+                              product=cls.product_streetfighter,
+                              product_version=cls.streetfighter_version_0_1,
+                              author=cls.user,
+                              owner=cls.user),
         ]
 
     def test_get_plans_with_id(self):
@@ -588,14 +606,20 @@ class TestGetRuns(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.manager = UserFactory(username='manager')
-        cls.product = ProductFactory(name='StarCraft')
-        cls.build = TestBuildFactory(product=cls.product)
+        cls.manager = f.UserFactory(username='manager')
+        cls.product = f.ProductFactory(name='StarCraft')
+        cls.build = f.TestBuildFactory(product=cls.product)
         cls.runs = [
-            TestRunFactory(summary='Test run for StarCraft: Init on Unknown environment',
-                           manager=cls.manager, build=cls.build, default_tester=None),
-            TestRunFactory(summary='Test run for StarCraft: second one',
-                           manager=cls.manager, build=cls.build, default_tester=None),
+            f.TestRunFactory(
+                summary='Test run for StarCraft: Init on Unknown environment',
+                manager=cls.manager,
+                build=cls.build,
+                default_tester=None),
+            f.TestRunFactory(
+                summary='Test run for StarCraft: second one',
+                manager=cls.manager,
+                build=cls.build,
+                default_tester=None),
         ]
 
     def test_get_runs_with_id(self):
@@ -632,7 +656,7 @@ class TestGetTag(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.tag = TestTagFactory(name='QWER')
+        cls.tag = f.TestTagFactory(name='QWER')
 
     def test_get_tag(self):
         tag = product.get_tag(None, self.tag.pk)
@@ -656,9 +680,11 @@ class TestAddVersion(XmlrpcAPIBaseTest):
     @classmethod
     def setUpTestData(cls):
         cls.product_name = 'StarCraft'
-        cls.product = ProductFactory(name=cls.product_name)
-        cls.admin = UserFactory(username='tcr_admin', email='tcr_admin@example.com')
-        cls.staff = UserFactory(username='tcr_staff', email='tcr_staff@example.com')
+        cls.product = f.ProductFactory(name=cls.product_name)
+        cls.admin = f.UserFactory(
+            username='tcr_admin', email='tcr_admin@example.com')
+        cls.staff = f.UserFactory(
+            username='tcr_staff', email='tcr_staff@example.com')
         cls.admin_request = make_http_request(user=cls.admin, user_perm='management.add_version')
         cls.staff_request = make_http_request(user=cls.staff)
 
@@ -725,9 +751,11 @@ class TestGetVersions(XmlrpcAPIBaseTest):
         cls.product_name = 'StarCraft'
         cls.versions = ['0.6', '0.7', '0.8', '0.9', '1.0']
 
-        cls.product = ProductFactory(name=cls.product_name)
-        cls.product_versions = [VersionFactory(product=cls.product, value=version)
-                                for version in cls.versions]
+        cls.product = f.ProductFactory(name=cls.product_name)
+        cls.product_versions = [
+            f.VersionFactory(product=cls.product, value=version)
+            for version in cls.versions
+        ]
 
     def test_get_versions_with_id(self):
         prod = product.get_versions(None, self.product.pk)

@@ -16,15 +16,9 @@ from tcms.management.models import TCMSEnvGroupPropertyMap
 from tcms.management.models import TCMSEnvProperty
 from tcms.testplans.models import TestPlan, _listen, _disconnect_signals
 from tests import HelperAssertions
+from tests import factories as f
 from tests import remove_perm_from_user
 from tests import user_should_have_perm
-from tests.factories import ProductFactory
-from tests.factories import TCMSEnvGroupFactory
-from tests.factories import TCMSEnvGroupPropertyMapFactory
-from tests.factories import TCMSEnvPropertyFactory
-from tests.factories import TestPlanTypeFactory
-from tests.factories import UserFactory
-from tests.factories import VersionFactory
 
 
 class TestVisitAndSearchGroupPage(TestCase):
@@ -40,12 +34,10 @@ class TestVisitAndSearchGroupPage(TestCase):
                                                   email='new-tester@example.com',
                                                   password='password')
 
-        cls.group_1 = TCMSEnvGroupFactory(name='rhel-7',
-                                          manager=cls.new_tester,
-                                          modified_by=None)
-        cls.group_2 = TCMSEnvGroupFactory(name='fedora',
-                                          manager=cls.new_tester,
-                                          modified_by=None)
+        cls.group_1 = f.TCMSEnvGroupFactory(
+            name='rhel-7', manager=cls.new_tester, modified_by=None)
+        cls.group_2 = f.TCMSEnvGroupFactory(
+            name='fedora', manager=cls.new_tester, modified_by=None)
 
         cls.group_1.log_action(
             who=cls.new_tester,
@@ -65,16 +57,21 @@ class TestVisitAndSearchGroupPage(TestCase):
             original_value='',
             new_value=f'Edit group {cls.group_2.name}')
 
-        cls.property_1 = TCMSEnvPropertyFactory()
-        cls.property_2 = TCMSEnvPropertyFactory()
-        cls.property_3 = TCMSEnvPropertyFactory()
+        cls.property_1 = f.TCMSEnvPropertyFactory()
+        cls.property_2 = f.TCMSEnvPropertyFactory()
+        cls.property_3 = f.TCMSEnvPropertyFactory()
 
-        TCMSEnvGroupPropertyMapFactory(group=cls.group_1, property=cls.property_1)
-        TCMSEnvGroupPropertyMapFactory(group=cls.group_1, property=cls.property_2)
-        TCMSEnvGroupPropertyMapFactory(group=cls.group_1, property=cls.property_3)
+        f.TCMSEnvGroupPropertyMapFactory(group=cls.group_1,
+                                         property=cls.property_1)
+        f.TCMSEnvGroupPropertyMapFactory(group=cls.group_1,
+                                         property=cls.property_2)
+        f.TCMSEnvGroupPropertyMapFactory(group=cls.group_1,
+                                         property=cls.property_3)
 
-        TCMSEnvGroupPropertyMapFactory(group=cls.group_2, property=cls.property_1)
-        TCMSEnvGroupPropertyMapFactory(group=cls.group_2, property=cls.property_3)
+        f.TCMSEnvGroupPropertyMapFactory(group=cls.group_2,
+                                         property=cls.property_1)
+        f.TCMSEnvGroupPropertyMapFactory(group=cls.group_2,
+                                         property=cls.property_3)
 
     def tearDown(self):
         remove_perm_from_user(self.new_tester, 'management.change_tcmsenvgroup')
@@ -223,10 +220,10 @@ class TestDeleteGroup(HelperAssertions, TestCase):
                                                      email='manager@example.com',
                                                      password='password')
 
-        cls.group_nitrate = TCMSEnvGroupFactory(name='nitrate',
-                                                manager=cls.group_manager)
-        cls.group_fedora = TCMSEnvGroupFactory(name='fedora',
-                                               manager=cls.group_manager)
+        cls.group_nitrate = f.TCMSEnvGroupFactory(
+            name='nitrate', manager=cls.group_manager)
+        cls.group_fedora = f.TCMSEnvGroupFactory(
+            name='fedora', manager=cls.group_manager)
 
     def tearDown(self):
         remove_perm_from_user(self.tester, self.permission)
@@ -281,7 +278,8 @@ class TestModifyGroup(HelperAssertions, TestCase):
                                               email='tester@exmaple.com',
                                               password='password')
 
-        cls.group_nitrate = TCMSEnvGroupFactory(name='nitrate', manager=cls.tester)
+        cls.group_nitrate = f.TCMSEnvGroupFactory(
+            name='nitrate', manager=cls.tester)
 
         cls.permission = 'management.change_tcmsenvgroup'
         cls.group_modify_url = reverse('management-env-groups')
@@ -346,10 +344,10 @@ class TestVisitEnvironmentGroupPage(HelperAssertions, TestCase):
         user_should_have_perm(cls.tester, 'management.change_tcmsenvgroup')
 
         cls.group_edit_url = reverse('management-env-group-edit')
-        cls.group_nitrate = TCMSEnvGroupFactory(name='nitrate', manager=cls.tester)
-        cls.disabled_group = TCMSEnvGroupFactory(name='disabled-group',
-                                                 is_active=False,
-                                                 manager=cls.tester)
+        cls.group_nitrate = f.TCMSEnvGroupFactory(
+            name='nitrate', manager=cls.tester)
+        cls.disabled_group = f.TCMSEnvGroupFactory(
+            name='disabled-group', is_active=False, manager=cls.tester)
 
     def test_404_when_missing_group_id(self):
         self.client.login(username=self.tester.username, password='password')
@@ -404,12 +402,14 @@ class TestEditEnvironmentGroup(TestCase):
                                               password='password')
         user_should_have_perm(cls.tester, 'management.change_tcmsenvgroup')
 
-        cls.group_nitrate = TCMSEnvGroupFactory(name='nitrate', manager=cls.tester)
-        cls.duplicate_group = TCMSEnvGroupFactory(name='fedora', manager=cls.tester)
+        cls.group_nitrate = f.TCMSEnvGroupFactory(
+            name='nitrate', manager=cls.tester)
+        cls.duplicate_group = f.TCMSEnvGroupFactory(
+            name='fedora', manager=cls.tester)
 
-        cls.property_1 = TCMSEnvPropertyFactory()
-        cls.property_2 = TCMSEnvPropertyFactory()
-        cls.property_3 = TCMSEnvPropertyFactory()
+        cls.property_1 = f.TCMSEnvPropertyFactory()
+        cls.property_2 = f.TCMSEnvPropertyFactory()
+        cls.property_3 = f.TCMSEnvPropertyFactory()
 
         cls.group_edit_url = reverse('management-env-group-edit')
 
@@ -460,8 +460,9 @@ class TestAddProperty(TestCase):
                                               email='tester@example.com',
                                               password='password')
 
-        cls.group_nitrate = TCMSEnvGroupFactory(name='nitrate', manager=cls.tester)
-        cls.duplicate_property = TCMSEnvPropertyFactory(name='f26')
+        cls.group_nitrate = f.TCMSEnvGroupFactory(
+            name='nitrate', manager=cls.tester)
+        cls.duplicate_property = f.TCMSEnvPropertyFactory(name='f26')
 
     def setUp(self):
         user_should_have_perm(self.tester, self.permission)
@@ -535,7 +536,7 @@ class TestEditProperty(TestCase):
                                               email='tester@example.com',
                                               password='password')
 
-        cls.property = TCMSEnvPropertyFactory(name='f26')
+        cls.property = f.TCMSEnvPropertyFactory(name='f26')
 
     def setUp(self):
         user_should_have_perm(self.tester, self.permission)
@@ -595,23 +596,23 @@ class TestEnableDisableProperty(TestCase):
                                               email='tester@example.com',
                                               password='password')
 
-        cls.group_nitrate = TCMSEnvGroupFactory(name='nitrate')
+        cls.group_nitrate = f.TCMSEnvGroupFactory(name='nitrate')
 
-        cls.property_os = TCMSEnvPropertyFactory(name='OS')
-        cls.property_lang = TCMSEnvPropertyFactory(name='lang')
-        cls.disabled_property_1 = TCMSEnvPropertyFactory(name='disabled-property-1',
-                                                         is_active=False)
-        cls.disabled_property_2 = TCMSEnvPropertyFactory(name='disabled-property-2',
-                                                         is_active=False)
+        cls.property_os = f.TCMSEnvPropertyFactory(name='OS')
+        cls.property_lang = f.TCMSEnvPropertyFactory(name='lang')
+        cls.disabled_property_1 = f.TCMSEnvPropertyFactory(
+            name='disabled-property-1', is_active=False)
+        cls.disabled_property_2 = f.TCMSEnvPropertyFactory(
+            name='disabled-property-2', is_active=False)
 
-        TCMSEnvGroupPropertyMapFactory(group=cls.group_nitrate,
-                                       property=cls.property_os)
-        TCMSEnvGroupPropertyMapFactory(group=cls.group_nitrate,
-                                       property=cls.property_lang)
-        TCMSEnvGroupPropertyMapFactory(group=cls.group_nitrate,
-                                       property=cls.disabled_property_1)
-        TCMSEnvGroupPropertyMapFactory(group=cls.group_nitrate,
-                                       property=cls.disabled_property_2)
+        f.TCMSEnvGroupPropertyMapFactory(group=cls.group_nitrate,
+                                         property=cls.property_os)
+        f.TCMSEnvGroupPropertyMapFactory(group=cls.group_nitrate,
+                                         property=cls.property_lang)
+        f.TCMSEnvGroupPropertyMapFactory(group=cls.group_nitrate,
+                                         property=cls.disabled_property_1)
+        f.TCMSEnvGroupPropertyMapFactory(group=cls.group_nitrate,
+                                         property=cls.disabled_property_2)
 
     def setUp(self):
         user_should_have_perm(self.tester, self.permission)
@@ -700,7 +701,7 @@ class TestDeleteProduct(HelperAssertions, test.TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.user = UserFactory(username='admin', email='admin@example.com')
+        cls.user = f.UserFactory(username='admin', email='admin@example.com')
         cls.user.set_password('admin')
         cls.user.is_superuser = True
         cls.user.is_staff = True  # enables access to admin panel
@@ -736,9 +737,9 @@ class TestDeleteProduct(HelperAssertions, test.TestCase):
             b/c in est mode LISTENING_MODEL_SIGNAL = False
         """
         # setup
-        product = ProductFactory(name='Something to delete')
-        product_version = VersionFactory(value='0.1', product=product)
-        plan_type = TestPlanTypeFactory()
+        product = f.ProductFactory(name='Something to delete')
+        product_version = f.VersionFactory(value='0.1', product=product)
+        plan_type = f.TestPlanTypeFactory()
 
         # create Test Plan via the UI by sending a POST request to the view
         previous_plans_count = TestPlan.objects.count()

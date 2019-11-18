@@ -17,10 +17,7 @@ from tcms.core.files import able_to_delete_attachment
 from tcms.management.models import TestAttachment
 from tcms.testcases.models import TestCaseAttachment
 from tcms.testplans.models import TestPlanAttachment
-from tests.factories import TestAttachmentFactory
-from tests.factories import TestPlanAttachmentFactory
-from tests.factories import TestCaseAttachmentFactory
-from tests.factories import UserFactory
+from tests import factories as f
 from tests import BasePlanCase
 from tests import create_request_user
 from tests import user_should_have_perm
@@ -148,14 +145,14 @@ class TestAbleToDeleteFile(BasePlanCase):
     def setUpTestData(cls):
         super().setUpTestData()
 
-        cls.superuser = UserFactory(username='admin')
+        cls.superuser = f.UserFactory(username='admin')
         cls.superuser.is_superuser = True
         cls.superuser.set_password('admin')
         cls.superuser.save()
 
-        cls.anyone_else = UserFactory()
+        cls.anyone_else = f.UserFactory()
 
-        cls.attachment = TestAttachmentFactory()
+        cls.attachment = f.TestAttachmentFactory()
 
     def setUp(self):
         super().setUp()
@@ -209,25 +206,25 @@ class TestDeleteFileAuthorization(BasePlanCase):
     def setUpClass(cls):
         super().setUpClass()
 
-        cls.superuser = UserFactory(username='admin')
+        cls.superuser = f.UserFactory(username='admin')
         cls.superuser.set_password('admin')
         cls.superuser.save()
 
-        cls.anyone_else = UserFactory()
+        cls.anyone_else = f.UserFactory()
         cls.anyone_else_pwd = 'anyone'
         cls.anyone_else.set_password(cls.anyone_else_pwd)
         cls.anyone_else.save()
 
-        cls.plan_attachment = TestAttachmentFactory()
-        cls.plan_attachment_rel = TestPlanAttachmentFactory(
+        cls.plan_attachment = f.TestAttachmentFactory()
+        cls.plan_attachment_rel = f.TestPlanAttachmentFactory(
             plan=cls.plan,
             attachment=cls.plan_attachment)
         cls.submitter_pwd = 'secret'
         cls.plan_attachment.submitter.set_password(cls.submitter_pwd)
         cls.plan_attachment.submitter.save()
 
-        cls.case_attachment = TestAttachmentFactory()
-        cls.case_attachment_rel = TestCaseAttachmentFactory(
+        cls.case_attachment = f.TestAttachmentFactory()
+        cls.case_attachment_rel = f.TestCaseAttachmentFactory(
             case=cls.case_1,
             attachment=cls.case_attachment)
         cls.case_attachment.submitter.set_password(cls.submitter_pwd)

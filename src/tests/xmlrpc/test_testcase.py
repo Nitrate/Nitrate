@@ -11,13 +11,7 @@ from tcms.testcases.models import TestCasePlan
 from tcms.testcases.models import TestCaseStatus
 from tcms.xmlrpc.api import testcase as XmlrpcTestCase
 from tcms.xmlrpc.serializer import datetime_to_str
-from tests.factories import IssueTrackerFactory
-from tests.factories import TestCaseCategoryFactory
-from tests.factories import TestCaseFactory
-from tests.factories import TestCasePlanFactory
-from tests.factories import TestPlanFactory
-from tests.factories import TestTagFactory
-from tests.factories import UserFactory
+from tests import factories as f
 from tests.xmlrpc.utils import make_http_request
 
 
@@ -26,12 +20,12 @@ class TestNotificationRemoveCC(test.TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.user = UserFactory()
+        cls.user = f.UserFactory()
         cls.http_req = make_http_request(user=cls.user,
                                          user_perm='testcases.change_testcase')
 
         cls.default_cc = 'example@MrSenko.com'
-        cls.testcase = TestCaseFactory()
+        cls.testcase = f.TestCaseFactory()
         cls.testcase.emailing.add_cc(cls.default_cc)
 
     def test_remove_existing_cc(self):
@@ -48,14 +42,14 @@ class TestUnlinkPlan(test.TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.user = UserFactory()
+        cls.user = f.UserFactory()
         cls.http_req = make_http_request(user=cls.user,
                                          user_perm='testcases.delete_testcaseplan')
 
-        cls.testcase_1 = TestCaseFactory()
-        cls.testcase_2 = TestCaseFactory()
-        cls.plan_1 = TestPlanFactory()
-        cls.plan_2 = TestPlanFactory()
+        cls.testcase_1 = f.TestCaseFactory()
+        cls.testcase_2 = f.TestCaseFactory()
+        cls.plan_1 = f.TestPlanFactory()
+        cls.plan_2 = f.TestPlanFactory()
 
         cls.testcase_1.add_to_plan(cls.plan_1)
 
@@ -79,17 +73,17 @@ class TestLinkPlan(test.TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.user = UserFactory()
+        cls.user = f.UserFactory()
         cls.http_req = make_http_request(user=cls.user,
                                          user_perm='testcases.add_testcaseplan')
 
-        cls.testcase_1 = TestCaseFactory()
-        cls.testcase_2 = TestCaseFactory()
-        cls.testcase_3 = TestCaseFactory()
+        cls.testcase_1 = f.TestCaseFactory()
+        cls.testcase_2 = f.TestCaseFactory()
+        cls.testcase_3 = f.TestCaseFactory()
 
-        cls.plan_1 = TestPlanFactory()
-        cls.plan_2 = TestPlanFactory()
-        cls.plan_3 = TestPlanFactory()
+        cls.plan_1 = f.TestPlanFactory()
+        cls.plan_2 = f.TestPlanFactory()
+        cls.plan_3 = f.TestPlanFactory()
 
         # case 1 is already linked to plan 1
         cls.testcase_1.add_to_plan(cls.plan_1)
@@ -125,30 +119,30 @@ class TestGet(test.TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.user = UserFactory()
+        cls.user = f.UserFactory()
         cls.http_req = make_http_request(user=cls.user)
-        cls.reviewer = UserFactory(username='reviewer')
+        cls.reviewer = f.UserFactory(username='reviewer')
 
-        cls.plan_1 = TestPlanFactory()
-        cls.plan_2 = TestPlanFactory()
+        cls.plan_1 = f.TestPlanFactory()
+        cls.plan_2 = f.TestPlanFactory()
 
         cls.status = TestCaseStatus.objects.get(name='CONFIRMED')
         cls.priority = Priority.objects.get(value='P2')
-        cls.category = TestCaseCategoryFactory(name='fast')
-        cls.case = TestCaseFactory(
+        cls.category = f.TestCaseCategoryFactory(name='fast')
+        cls.case = f.TestCaseFactory(
             priority=cls.priority,
             case_status=cls.status,
             category=cls.category,
             author=cls.user,
             default_tester=cls.user,
             reviewer=cls.reviewer)
-        cls.tag_fedora = TestTagFactory(name='fedora')
-        cls.tag_python = TestTagFactory(name='python')
+        cls.tag_fedora = f.TestTagFactory(name='fedora')
+        cls.tag_python = f.TestTagFactory(name='python')
         cls.case.add_tag(cls.tag_fedora)
         cls.case.add_tag(cls.tag_python)
 
-        TestCasePlanFactory(plan=cls.plan_1, case=cls.case)
-        TestCasePlanFactory(plan=cls.plan_2, case=cls.case)
+        f.TestCasePlanFactory(plan=cls.plan_1, case=cls.case)
+        f.TestCasePlanFactory(plan=cls.plan_2, case=cls.case)
 
     def test_get_a_case(self):
         resp = XmlrpcTestCase.get(self.http_req, self.case.pk)
@@ -194,11 +188,12 @@ class TestAttachIssue(test.TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.tester = UserFactory(username='tester', email='tester@example.com')
+        cls.tester = f.UserFactory(
+            username='tester', email='tester@example.com')
         cls.request = make_http_request(user=cls.tester,
                                         user_perm='issuetracker.add_issue')
-        cls.case = TestCaseFactory()
-        cls.tracker = IssueTrackerFactory(
+        cls.case = f.TestCaseFactory()
+        cls.tracker = f.IssueTrackerFactory(
             service_url='http://localhost/',
             issue_report_endpoint='/enter_bug.cgi',
             validate_regex=r'^\d+$')
@@ -267,20 +262,21 @@ class TestGetIssues(test.TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.tester = UserFactory(username='tester', email='tester@example.com')
+        cls.tester = f.UserFactory(
+            username='tester', email='tester@example.com')
         cls.request = make_http_request(user=cls.tester)
 
-        cls.tracker = IssueTrackerFactory(
+        cls.tracker = f.IssueTrackerFactory(
             name='coolbz',
             service_url='http://localhost/',
             issue_report_endpoint='/enter_bug.cgi',
             validate_regex=r'^\d+$')
 
-        cls.plan = TestPlanFactory()
-        cls.case_1 = TestCaseFactory(plan=[cls.plan])
+        cls.plan = f.TestPlanFactory()
+        cls.case_1 = f.TestCaseFactory(plan=[cls.plan])
         cls.issue_1 = cls.case_1.add_issue('12345', cls.tracker)
         cls.issue_2 = cls.case_1.add_issue('89072', cls.tracker)
-        cls.case_2 = TestCaseFactory(plan=[cls.plan])
+        cls.case_2 = f.TestCaseFactory(plan=[cls.plan])
         cls.issue_3 = cls.case_2.add_issue('23456', cls.tracker)
 
     def assert_issues(self, case_ids, expected_issues):
@@ -368,22 +364,23 @@ class TestDetachIssue(test.TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.tester = UserFactory(username='tester', email='tester@example.com')
+        cls.tester = f.UserFactory(
+            username='tester', email='tester@example.com')
         cls.request = make_http_request(
             user=cls.tester, user_perm='issuetracker.delete_issue')
 
-        cls.tracker = IssueTrackerFactory(
+        cls.tracker = f.IssueTrackerFactory(
             name='coolbz',
             service_url='http://localhost/',
             issue_report_endpoint='/enter_bug.cgi',
             validate_regex=r'^\d+$')
 
-        cls.plan = TestPlanFactory()
-        cls.case_1 = TestCaseFactory(plan=[cls.plan])
+        cls.plan = f.TestPlanFactory()
+        cls.case_1 = f.TestCaseFactory(plan=[cls.plan])
         cls.issue_1 = cls.case_1.add_issue('12345', cls.tracker)
         cls.issue_2 = cls.case_1.add_issue('23456', cls.tracker)
         cls.issue_3 = cls.case_1.add_issue('34567', cls.tracker)
-        cls.case_2 = TestCaseFactory(plan=[cls.plan])
+        cls.case_2 = f.TestCaseFactory(plan=[cls.plan])
         cls.issue_4 = cls.case_2.add_issue('12345', cls.tracker)
         cls.issue_5 = cls.case_2.add_issue('23456', cls.tracker)
         cls.issue_6 = cls.case_2.add_issue('56789', cls.tracker)

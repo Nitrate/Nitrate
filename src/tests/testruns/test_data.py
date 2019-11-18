@@ -7,11 +7,9 @@ from datetime import datetime
 from tcms.core.helpers.comments import add_comment
 from tcms.testruns.data import TestCaseRunDataMixin
 from tcms.testruns.data import stats_caseruns_status
+from tests import factories as f
 from tests import BaseCaseRun
 from tests import BasePlanCase
-from tests.factories import TestCaseRunFactory
-from tests.factories import TestCaseRunStatus
-from tests.factories import TestRunFactory
 
 
 class TestGetCaseRunsStatsByStatusFromEmptyTestRun(BasePlanCase):
@@ -20,10 +18,12 @@ class TestGetCaseRunsStatsByStatusFromEmptyTestRun(BasePlanCase):
     def setUpTestData(cls):
         super().setUpTestData()
 
-        cls.empty_test_run = TestRunFactory(manager=cls.tester, default_tester=cls.tester,
-                                            plan=cls.plan)
+        cls.empty_test_run = f.TestRunFactory(
+            manager=cls.tester,
+            default_tester=cls.tester,
+            plan=cls.plan)
 
-        cls.case_run_statuss = TestCaseRunStatus.objects.all().order_by('pk')
+        cls.case_run_statuss = f.TestCaseRunStatus.objects.all().order_by('pk')
 
     def test_get_from_empty_case_runs(self):
         data = stats_caseruns_status(self.empty_test_run.pk,
@@ -43,14 +43,18 @@ class TestGetCaseRunsStatsByStatus(BasePlanCase):
     def setUpTestData(cls):
         super().setUpTestData()
 
-        cls.case_run_statuss = TestCaseRunStatus.objects.all().order_by('pk')
+        cls.case_run_statuss = f.TestCaseRunStatus.objects.all().order_by('pk')
 
-        cls.case_run_status_idle = TestCaseRunStatus.objects.get(name='IDLE')
-        cls.case_run_status_failed = TestCaseRunStatus.objects.get(name='FAILED')
-        cls.case_run_status_waived = TestCaseRunStatus.objects.get(name='WAIVED')
+        get_status = f.TestCaseRunStatus.objects.get
+        cls.case_run_status_idle = get_status(name='IDLE')
+        cls.case_run_status_failed = get_status(name='FAILED')
+        cls.case_run_status_waived = get_status(name='WAIVED')
 
-        cls.test_run = TestRunFactory(product_version=cls.version, plan=cls.plan,
-                                      manager=cls.tester, default_tester=cls.tester)
+        cls.test_run = f.TestRunFactory(
+            product_version=cls.version,
+            plan=cls.plan,
+            manager=cls.tester,
+            default_tester=cls.tester)
 
         for case, status in ((cls.case_1, cls.case_run_status_idle),
                              (cls.case_2, cls.case_run_status_failed),
@@ -58,8 +62,12 @@ class TestGetCaseRunsStatsByStatus(BasePlanCase):
                              (cls.case_4, cls.case_run_status_waived),
                              (cls.case_5, cls.case_run_status_waived),
                              (cls.case_6, cls.case_run_status_waived)):
-            TestCaseRunFactory(assignee=cls.tester, tested_by=cls.tester,
-                               run=cls.test_run, case=case, case_run_status=status)
+            f.TestCaseRunFactory(
+                assignee=cls.tester,
+                tested_by=cls.tester,
+                run=cls.test_run,
+                case=case,
+                case_run_status=status)
 
     def test_get_stats(self):
         data = stats_caseruns_status(self.test_run.pk, self.case_run_statuss)

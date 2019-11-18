@@ -8,7 +8,7 @@ from tcms.linkreference.models import create_link
 from tcms.testruns.helpers.serializer import escape_entities
 from tcms.testruns.helpers.serializer import TCR2File
 from tcms.testruns.models import TestCaseRun
-from tests import BaseCaseRun
+from tests import factories as f, BaseCaseRun
 
 
 class TestTCR2FileToExportToXML(BaseCaseRun):
@@ -35,8 +35,7 @@ class TestTCR2FileToExportToXML(BaseCaseRun):
             for name, url in links:
                 create_link(name, url, case_run)
 
-        from tests.factories import IssueTrackerFactory
-        tracker = IssueTrackerFactory(
+        tracker = f.IssueTrackerFactory(
             service_url='http://localhost/',
             issue_report_endpoint='/enter_bug.cgi',
             validate_regex=r'^\d+$')

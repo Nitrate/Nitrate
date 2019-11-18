@@ -5,9 +5,7 @@ from django.urls import reverse
 from itertools import chain
 
 from tcms.management.models import Priority
-from tests import BaseCaseRun
-from tests.factories import TestPlanFactory, ProductFactory, VersionFactory, TestCaseFactory, TestCaseRunFactory, \
-    TCMSEnvGroupFactory, TestRunFactory
+from tests import factories as f, BaseCaseRun
 
 
 class TestAdvancedSearch(BaseCaseRun):
@@ -16,12 +14,13 @@ class TestAdvancedSearch(BaseCaseRun):
     def setUpTestData(cls):
         super().setUpTestData()
 
-        cls.cool_product = ProductFactory(name='CoolProduct')
-        cls.cool_version = VersionFactory(value='0.1', product=cls.cool_product)
+        cls.cool_product = f.ProductFactory(name='CoolProduct')
+        cls.cool_version = f.VersionFactory(value='0.1',
+                                            product=cls.cool_product)
 
-        cls.env_group_db = TCMSEnvGroupFactory(name='db')
+        cls.env_group_db = f.TCMSEnvGroupFactory(name='db')
 
-        cls.plan_02 = TestPlanFactory(
+        cls.plan_02 = f.TestPlanFactory(
             author=cls.tester,
             owner=cls.tester,
             product=cls.product,
@@ -29,31 +28,31 @@ class TestAdvancedSearch(BaseCaseRun):
             env_group=[cls.env_group_db],
         )
 
-        cls.case_001 = TestCaseFactory(
+        cls.case_001 = f.TestCaseFactory(
             author=cls.tester,
             default_tester=None,
             reviewer=cls.tester,
             case_status=cls.case_status_confirmed,
             plan=[cls.plan_02])
-        cls.case_002 = TestCaseFactory(
+        cls.case_002 = f.TestCaseFactory(
             author=cls.tester,
             default_tester=None,
             reviewer=cls.tester,
             case_status=cls.case_status_confirmed,
             plan=[cls.plan_02])
 
-        cls.plan_03 = TestPlanFactory(
+        cls.plan_03 = f.TestPlanFactory(
             author=cls.tester,
             owner=cls.tester,
             product=cls.cool_product,
             product_version=cls.cool_version)
-        cls.case_003 = TestCaseFactory(
+        cls.case_003 = f.TestCaseFactory(
             author=cls.tester,
             default_tester=None,
             reviewer=cls.tester,
             case_status=cls.case_status_confirmed,
             plan=[cls.plan_03])
-        cls.case_004 = TestCaseFactory(
+        cls.case_004 = f.TestCaseFactory(
             author=cls.tester,
             default_tester=None,
             reviewer=cls.tester,
@@ -65,14 +64,14 @@ class TestAdvancedSearch(BaseCaseRun):
         priority_p2 = Priority.objects.get(value='P2')
         priority_p3 = Priority.objects.get(value='P3')
 
-        cls.case_p2_01 = TestCaseFactory(
+        cls.case_p2_01 = f.TestCaseFactory(
             author=cls.tester,
             default_tester=None,
             reviewer=cls.tester,
             case_status=cls.case_status_confirmed,
             plan=[cls.plan_03],
             priority=priority_p2)
-        TestCaseRunFactory(
+        f.TestCaseRunFactory(
             assignee=cls.tester,
             tested_by=cls.tester,
             run=cls.test_run,
@@ -82,7 +81,7 @@ class TestAdvancedSearch(BaseCaseRun):
             sortkey=1000)
 
         # A new case to cls.plan, whose priority is P3.
-        cls.case_005 = TestCaseFactory(
+        cls.case_005 = f.TestCaseFactory(
             author=cls.tester,
             default_tester=None,
             reviewer=cls.tester,
@@ -91,7 +90,7 @@ class TestAdvancedSearch(BaseCaseRun):
             priority=priority_p3)
 
         # Test run for asserting env_group column
-        cls.test_run_with_env_group = TestRunFactory(
+        cls.test_run_with_env_group = f.TestRunFactory(
             product_version=cls.version,
             plan=cls.plan_02,
             build=cls.build,

@@ -8,17 +8,7 @@ from tcms.issuetracker.models import Issue
 from tcms.linkreference.models import LinkReference
 from tcms.testruns.models import TestCaseRunStatus
 from tcms.xmlrpc.api import testcaserun
-from tests import encode
-from tests.factories import IssueTrackerFactory
-from tests.factories import IssueTrackerProductFactory
-from tests.factories import ProductFactory
-from tests.factories import TestBuildFactory
-from tests.factories import TestCaseFactory
-from tests.factories import TestCaseRunFactory
-from tests.factories import TestPlanFactory
-from tests.factories import TestRunFactory
-from tests.factories import UserFactory
-from tests.factories import VersionFactory
+from tests import encode, factories as f
 from tests.xmlrpc.utils import make_http_request
 from tests.xmlrpc.utils import XmlrpcAPIBaseTest
 
@@ -28,18 +18,23 @@ class TestCaseRunCreate(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.admin = UserFactory(username='tcr_admin', email='tcr_admin@example.com')
-        cls.staff = UserFactory(username='tcr_staff', email='tcr_staff@example.com')
+        cls.admin = f.UserFactory(
+            username='tcr_admin', email='tcr_admin@example.com')
+        cls.staff = f.UserFactory(
+            username='tcr_staff', email='tcr_staff@example.com')
         cls.admin_request = make_http_request(user=cls.admin, user_perm='testruns.add_testcaserun')
         cls.staff_request = make_http_request(user=cls.staff)
-        cls.product = ProductFactory(name='Nitrate')
-        cls.version = VersionFactory(value='0.1', product=cls.product)
+        cls.product = f.ProductFactory(name='Nitrate')
+        cls.version = f.VersionFactory(value='0.1', product=cls.product)
         cls.build = cls.product.build.all()[0]
-        cls.plan = TestPlanFactory(author=cls.admin, owner=cls.admin, product=cls.product)
-        cls.test_run = TestRunFactory(product_version=cls.version, build=cls.build,
-                                      default_tester=None, plan=cls.plan)
+        cls.plan = f.TestPlanFactory(
+            author=cls.admin, owner=cls.admin, product=cls.product)
+        cls.test_run = f.TestRunFactory(
+            product_version=cls.version, build=cls.build,
+            default_tester=None, plan=cls.plan)
         cls.case_run_status = TestCaseRunStatus.objects.get(name='IDLE')
-        cls.case = TestCaseFactory(author=cls.admin, default_tester=None, plan=[cls.plan])
+        cls.case = f.TestCaseFactory(
+            author=cls.admin, default_tester=None, plan=[cls.plan])
 
         cls.case_run_pks = []
 
@@ -193,12 +188,13 @@ class TestCaseRunAddComment(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.admin = UserFactory(username='update_admin', email='update_admin@example.com')
+        cls.admin = f.UserFactory(
+            username='update_admin', email='update_admin@example.com')
         cls.admin_request = make_http_request(user=cls.admin,
                                               user_perm='testruns.change_testcaserun')
 
-        cls.case_run_1 = TestCaseRunFactory()
-        cls.case_run_2 = TestCaseRunFactory()
+        cls.case_run_1 = f.TestCaseRunFactory()
+        cls.case_run_2 = f.TestCaseRunFactory()
 
     @unittest.skip('TODO: not implemented yet.')
     def test_add_comment_with_no_args(self):
@@ -235,15 +231,17 @@ class TestCaseRunAttachIssue(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.admin = UserFactory(username='update_admin', email='update_admin@example.com')
-        cls.staff = UserFactory(username='update_staff', email='update_staff@example.com')
+        cls.admin = f.UserFactory(
+            username='update_admin', email='update_admin@example.com')
+        cls.staff = f.UserFactory(
+            username='update_staff', email='update_staff@example.com')
         cls.admin_request = make_http_request(user=cls.admin,
                                               user_perm='issuetracker.add_issue')
         cls.staff_request = make_http_request(user=cls.staff)
-        cls.case_run = TestCaseRunFactory()
+        cls.case_run = f.TestCaseRunFactory()
 
-        cls.tracker_product = IssueTrackerProductFactory(name='MyBugzilla')
-        cls.tracker = IssueTrackerFactory(
+        cls.tracker_product = f.IssueTrackerProductFactory(name='MyBugzilla')
+        cls.tracker = f.IssueTrackerFactory(
             service_url='http://localhost/',
             issue_report_endpoint='/enter_bug.cgi',
             tracker_product=cls.tracker_product)
@@ -377,7 +375,7 @@ class TestCaseRunAttachLog(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.case_run = TestCaseRunFactory()
+        cls.case_run = f.TestCaseRunFactory()
 
     @unittest.skip('TODO: not implemented yet.')
     def test_attach_log_with_bad_args(self):
@@ -444,25 +442,25 @@ class TestCaseRunDetachIssue(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.admin = UserFactory()
-        cls.staff = UserFactory()
+        cls.admin = f.UserFactory()
+        cls.staff = f.UserFactory()
         cls.admin_request = make_http_request(user=cls.admin,
                                               user_perm='issuetracker.delete_issue')
         cls.staff_request = make_http_request(user=cls.staff,
                                               user_perm='issuetracker.add_issue')
 
-        cls.tracker_product = IssueTrackerProductFactory(name='MyBZ')
-        cls.bz_tracker = IssueTrackerFactory(
+        cls.tracker_product = f.IssueTrackerProductFactory(name='MyBZ')
+        cls.bz_tracker = f.IssueTrackerFactory(
             service_url='http://localhost/',
             issue_report_endpoint='/enter_bug.cgi',
             tracker_product=cls.tracker_product,
             validate_regex=r'^\d+$')
-        cls.jira_tracker = IssueTrackerFactory(
+        cls.jira_tracker = f.IssueTrackerFactory(
             service_url='http://localhost/',
             issue_report_endpoint='/enter_bug.cgi',
             tracker_product=cls.tracker_product,
             validate_regex=r'^[A-Z]+-\d+$')
-        cls.case_run = TestCaseRunFactory()
+        cls.case_run = f.TestCaseRunFactory()
 
     def setUp(self):
         self.bz_bug = '67890'
@@ -535,11 +533,13 @@ class TestCaseRunDetachLog(XmlrpcAPIBaseTest):
     @classmethod
     def setUpTestData(cls):
         cls.status_idle = TestCaseRunStatus.objects.get(name='IDLE')
-        cls.tester = UserFactory()
-        cls.case_run = TestCaseRunFactory(assignee=cls.tester, tested_by=None,
-                                          notes='testing ...',
-                                          sortkey=10,
-                                          case_run_status=cls.status_idle)
+        cls.tester = f.UserFactory()
+        cls.case_run = f.TestCaseRunFactory(
+            assignee=cls.tester,
+            tested_by=None,
+            notes='testing ...',
+            sortkey=10,
+            case_run_status=cls.status_idle)
 
     def setUp(self):
         testcaserun.attach_log(None, self.case_run.pk, 'Related issue', 'https://localhost/issue/1')
@@ -598,11 +598,13 @@ class TestCaseRunGet(XmlrpcAPIBaseTest):
     @classmethod
     def setUpTestData(cls):
         cls.status_idle = TestCaseRunStatus.objects.get(name='IDLE')
-        cls.tester = UserFactory()
-        cls.case_run = TestCaseRunFactory(assignee=cls.tester, tested_by=None,
-                                          notes='testing ...',
-                                          sortkey=10,
-                                          case_run_status=cls.status_idle)
+        cls.tester = f.UserFactory()
+        cls.case_run = f.TestCaseRunFactory(
+            assignee=cls.tester,
+            tested_by=None,
+            notes='testing ...',
+            sortkey=10,
+            case_run_status=cls.status_idle)
 
     @unittest.skip('TODO: fix function get to make this test pass.')
     def test_get_with_no_args(self):
@@ -637,10 +639,12 @@ class TestCaseRunGetSet(XmlrpcAPIBaseTest):
     @classmethod
     def setUpTestData(cls):
         cls.status_idle = TestCaseRunStatus.objects.get(name='IDLE')
-        cls.tester = UserFactory()
-        cls.case_run = TestCaseRunFactory(assignee=cls.tester, tested_by=None,
-                                          notes='testing ...',
-                                          case_run_status=cls.status_idle)
+        cls.tester = f.UserFactory()
+        cls.case_run = f.TestCaseRunFactory(
+            assignee=cls.tester,
+            tested_by=None,
+            notes='testing ...',
+            case_run_status=cls.status_idle)
 
     @unittest.skip('TODO: fix function get_s to make this test pass.')
     def test_get_with_no_args(self):
@@ -703,12 +707,12 @@ class TestCaseRunGetIssues(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.admin = UserFactory()
+        cls.admin = f.UserFactory()
         cls.admin_request = make_http_request(user=cls.admin,
                                               user_perm='issuetracker.add_issue')
 
-        cls.case_run = TestCaseRunFactory()
-        cls.bz_tracker = IssueTrackerFactory(name='MyBZ')
+        cls.case_run = f.TestCaseRunFactory()
+        cls.bz_tracker = f.IssueTrackerFactory(name='MyBZ')
         testcaserun.attach_issue(cls.admin_request, {
             'case_run': [cls.case_run.pk],
             'issue_key': '67890',
@@ -747,12 +751,13 @@ class TestCaseRunGetIssuesSet(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.admin = UserFactory(username='update_admin', email='update_admin@example.com')
+        cls.admin = f.UserFactory(
+            username='update_admin', email='update_admin@example.com')
         cls.admin_request = make_http_request(user=cls.admin,
                                               user_perm='issuetracker.add_issue')
 
-        cls.case_run = TestCaseRunFactory()
-        cls.bz_tracker = IssueTrackerFactory(name='MyBugzilla')
+        cls.case_run = f.TestCaseRunFactory()
+        cls.bz_tracker = f.IssueTrackerFactory(name='MyBugzilla')
         testcaserun.attach_issue(cls.admin_request, {
             'case_run': [cls.case_run.pk],
             'issue_key': '67890',
@@ -910,8 +915,8 @@ class TestCaseRunGetLogs(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.case_run_1 = TestCaseRunFactory()
-        cls.case_run_2 = TestCaseRunFactory()
+        cls.case_run_1 = f.TestCaseRunFactory()
+        cls.case_run_2 = f.TestCaseRunFactory()
         testcaserun.attach_log(None, cls.case_run_1.pk, "Test logs", "http://www.google.com")
 
     @unittest.skip('TODO: fix method to make this test pass.')
@@ -948,16 +953,16 @@ class TestCaseRunUpdate(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.admin = UserFactory()
-        cls.staff = UserFactory()
-        cls.user = UserFactory()
+        cls.admin = f.UserFactory()
+        cls.staff = f.UserFactory()
+        cls.user = f.UserFactory()
         cls.admin_request = make_http_request(user=cls.admin,
                                               user_perm='testruns.change_testcaserun')
         cls.staff_request = make_http_request(user=cls.staff)
 
-        cls.build = TestBuildFactory()
-        cls.case_run_1 = TestCaseRunFactory()
-        cls.case_run_2 = TestCaseRunFactory()
+        cls.build = f.TestBuildFactory()
+        cls.case_run_1 = f.TestCaseRunFactory()
+        cls.case_run_2 = f.TestCaseRunFactory()
         cls.status_running = TestCaseRunStatus.objects.get(name='RUNNING')
 
     @unittest.skip('TODO: fix method to make this test pass.')

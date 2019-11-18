@@ -20,15 +20,8 @@ from tcms.testcases.models import TestCasePlan
 from tcms.testplans.models import TCMSEnvPlanMap
 from tcms.testplans.models import TestPlan
 from tcms.testplans.models import TestPlanAttachment
-from tests.factories import ClassificationFactory
-from tests.factories import ProductFactory
-from tests.factories import TestCaseFactory
-from tests.factories import TestPlanEmailSettingsFactory
-from tests.factories import TestPlanFactory
-from tests.factories import TestPlanTypeFactory
-from tests.factories import UserFactory
-from tests.factories import VersionFactory
 from tests import BasePlanCase, HelperAssertions
+from tests import factories as f
 from tests import remove_perm_from_user
 from tests import user_should_have_perm
 from tests.testcases.test_views import PlanCaseExportTestHelper
@@ -38,7 +31,7 @@ class PlanTests(HelperAssertions, test.TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.user = UserFactory(username='admin', email='admin@example.com')
+        cls.user = f.UserFactory(username='admin', email='admin@example.com')
         cls.user.set_password('admin')
         cls.user.is_superuser = True
         cls.user.save()
@@ -46,18 +39,23 @@ class PlanTests(HelperAssertions, test.TestCase):
         cls.c = Client()
         cls.c.login(username='admin', password='admin')
 
-        cls.classification = ClassificationFactory(name='Auto')
-        cls.product = ProductFactory(name='Nitrate', classification=cls.classification)
-        cls.product_version = VersionFactory(value='0.1', product=cls.product)
-        cls.plan_type = TestPlanTypeFactory()
+        cls.classification = f.ClassificationFactory(name='Auto')
+        cls.product = f.ProductFactory(
+            name='Nitrate',
+            classification=cls.classification)
+        cls.product_version = f.VersionFactory(
+            value='0.1',
+            product=cls.product)
+        cls.plan_type = f.TestPlanTypeFactory()
 
-        cls.test_plan = TestPlanFactory(name='another test plan for testing',
-                                        product_version=cls.product_version,
-                                        owner=cls.user,
-                                        author=cls.user,
-                                        product=cls.product,
-                                        type=cls.plan_type)
-        cls.email_settings = TestPlanEmailSettingsFactory(plan=cls.test_plan)
+        cls.test_plan = f.TestPlanFactory(
+            name='another test plan for testing',
+            product_version=cls.product_version,
+            owner=cls.user,
+            author=cls.user,
+            product=cls.product,
+            type=cls.plan_type)
+        cls.email_settings = f.TestPlanEmailSettingsFactory(plan=cls.test_plan)
         cls.plan_id = cls.test_plan.pk
 
     def test_open_plans_search(self):
@@ -130,9 +128,9 @@ class TestPlanModel(test.TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.plan_1 = TestPlanFactory()
-        cls.testcase_1 = TestCaseFactory()
-        cls.testcase_2 = TestCaseFactory()
+        cls.plan_1 = f.TestPlanFactory()
+        cls.testcase_1 = f.TestCaseFactory()
+        cls.testcase_2 = f.TestCaseFactory()
 
         cls.plan_1.add_case(cls.testcase_1)
         cls.plan_1.add_case(cls.testcase_2)
@@ -275,19 +273,19 @@ class TestLinkCases(BasePlanCase):
     def setUpTestData(cls):
         super().setUpTestData()
 
-        cls.another_plan = TestPlanFactory(
+        cls.another_plan = f.TestPlanFactory(
             author=cls.tester,
             owner=cls.tester,
             product=cls.product,
             product_version=cls.version)
 
-        cls.another_case_1 = TestCaseFactory(
+        cls.another_case_1 = f.TestCaseFactory(
             author=cls.tester,
             default_tester=None,
             reviewer=cls.tester,
             plan=[cls.another_plan])
 
-        cls.another_case_2 = TestCaseFactory(
+        cls.another_case_2 = f.TestCaseFactory(
             author=cls.tester,
             default_tester=None,
             reviewer=cls.tester,
@@ -397,36 +395,36 @@ class TestCloneView(BasePlanCase):
     def setUpTestData(cls):
         super().setUpTestData()
 
-        cls.another_plan = TestPlanFactory(
+        cls.another_plan = f.TestPlanFactory(
             name='Another plan for test',
             author=cls.tester, owner=cls.tester,
             product=cls.product, product_version=cls.version)
-        cls.another_case_1 = TestCaseFactory(
+        cls.another_case_1 = f.TestCaseFactory(
             author=cls.tester, default_tester=None,
             reviewer=cls.tester, plan=[cls.another_plan])
-        cls.another_case_2 = TestCaseFactory(
+        cls.another_case_2 = f.TestCaseFactory(
             author=cls.tester, default_tester=None,
             reviewer=cls.tester, plan=[cls.another_plan])
 
-        cls.third_plan = TestPlanFactory(
+        cls.third_plan = f.TestPlanFactory(
             name='Third plan for test',
             author=cls.tester, owner=cls.tester,
             product=cls.product, product_version=cls.version)
-        cls.third_case_1 = TestCaseFactory(
+        cls.third_case_1 = f.TestCaseFactory(
             author=cls.tester, default_tester=None,
             reviewer=cls.tester, plan=[cls.third_plan])
-        cls.third_case_2 = TestCaseFactory(
+        cls.third_case_2 = f.TestCaseFactory(
             author=cls.tester, default_tester=None,
             reviewer=cls.tester, plan=[cls.third_plan])
 
-        cls.totally_new_plan = TestPlanFactory(
+        cls.totally_new_plan = f.TestPlanFactory(
             name='Test clone plan with copying cases',
             author=cls.tester, owner=cls.tester,
             product=cls.product, product_version=cls.version)
-        cls.case_maintain_original_author = TestCaseFactory(
+        cls.case_maintain_original_author = f.TestCaseFactory(
             author=cls.tester, default_tester=None,
             reviewer=cls.tester, plan=[cls.totally_new_plan])
-        cls.case_keep_default_tester = TestCaseFactory(
+        cls.case_keep_default_tester = f.TestCaseFactory(
             author=cls.tester, default_tester=None,
             reviewer=cls.tester, plan=[cls.totally_new_plan])
 
@@ -660,10 +658,10 @@ class TestAJAXSearch(BasePlanCase):
 
         # Add more plans for testing search
         for i in range(25):
-            TestPlanFactory(author=cls.tester,
-                            owner=cls.tester,
-                            product=cls.product,
-                            product_version=cls.version)
+            f.TestPlanFactory(author=cls.tester,
+                              owner=cls.tester,
+                              product=cls.product,
+                              product_version=cls.version)
 
         # So far, each test has 26 plans
 
@@ -781,21 +779,21 @@ class TestExport(PlanCaseExportTestHelper, BasePlanCase):
     def setUpTestData(cls):
         super().setUpTestData()
 
-        cls.plan_export = TestPlanFactory(
+        cls.plan_export = f.TestPlanFactory(
             name='Test export from plan',
             author=cls.tester,
             owner=cls.tester,
             product=cls.product,
             product_version=cls.version)
 
-        cls.case_export = TestCaseFactory(
+        cls.case_export = f.TestCaseFactory(
             summary='Export from a plan',
             author=cls.tester,
             default_tester=None,
             reviewer=cls.tester,
             case_status=cls.case_status_confirmed,
             plan=[cls.plan_export])
-        cls.case_export_more = TestCaseFactory(
+        cls.case_export_more = f.TestCaseFactory(
             summary='Export more',
             author=cls.tester,
             default_tester=None,

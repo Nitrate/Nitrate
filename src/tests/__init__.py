@@ -13,14 +13,7 @@ from django.core.exceptions import ValidationError
 
 from tcms.testcases.models import TestCaseStatus
 from tcms.testruns.models import TestCaseRunStatus
-from tests.factories import ProductFactory
-from tests.factories import TestBuildFactory
-from tests.factories import TestCaseFactory
-from tests.factories import TestCaseRunFactory
-from tests.factories import TestPlanFactory
-from tests.factories import TestRunFactory
-from tests.factories import UserFactory
-from tests.factories import VersionFactory
+from tests import factories as f
 
 __all__ = (
     'user_should_have_perm',
@@ -84,9 +77,9 @@ def remove_perm_from_user(user, perm):
 
 def create_request_user(username=None, password=None):
     if username:
-        user = UserFactory(username=username)
+        user = f.UserFactory(username=username)
     else:
-        user = UserFactory()
+        user = f.UserFactory()
     if password:
         user.set_password(password)
     else:
@@ -163,8 +156,7 @@ class NitrateTestCase(test.TestCase):
     @classmethod
     def create_bz_tracker(cls):
         """Helper function to create a Bugzilla issue tracker"""
-        from tests.factories import IssueTrackerFactory
-        return IssueTrackerFactory(
+        return f.IssueTrackerFactory(
             name='bz',
             service_url='http://bugs.example.com/',
             issue_report_endpoint='/enter_bug.cgi',
@@ -175,8 +167,7 @@ class NitrateTestCase(test.TestCase):
     @classmethod
     def create_jira_tracker(cls):
         """Helper function to create a Bugzilla issue tracker"""
-        from tests.factories import IssueTrackerFactory
-        return IssueTrackerFactory(
+        return f.IssueTrackerFactory(
             name='jira',
             service_url='http://jira.example.com/',
             issue_report_endpoint='/enter_bug.cgi',
@@ -193,8 +184,8 @@ class BasePlanCase(HelperAssertions, NitrateTestCase):
         cls.case_status_confirmed = TestCaseStatus.objects.get(name='CONFIRMED')
         cls.case_status_proposed = TestCaseStatus.objects.get(name='PROPOSED')
 
-        cls.product = ProductFactory(name='Nitrate')
-        cls.version = VersionFactory(value='0.1', product=cls.product)
+        cls.product = f.ProductFactory(name='Nitrate')
+        cls.version = f.VersionFactory(value='0.1', product=cls.product)
 
         cls.tester = User.objects.create_user(
             username='nitrate-tester',
@@ -202,50 +193,50 @@ class BasePlanCase(HelperAssertions, NitrateTestCase):
         cls.tester.set_password('password')
         cls.tester.save()
 
-        cls.plan = TestPlanFactory(
+        cls.plan = f.TestPlanFactory(
             author=cls.tester,
             owner=cls.tester,
             product=cls.product,
             product_version=cls.version)
 
-        cls.case = TestCaseFactory(
+        cls.case = f.TestCaseFactory(
             author=cls.tester,
             default_tester=None,
             reviewer=cls.tester,
             case_status=cls.case_status_confirmed,
             plan=[cls.plan])
-        cls.case_1 = TestCaseFactory(
+        cls.case_1 = f.TestCaseFactory(
             author=cls.tester,
             default_tester=None,
             reviewer=cls.tester,
             case_status=cls.case_status_confirmed,
             plan=[cls.plan])
-        cls.case_2 = TestCaseFactory(
+        cls.case_2 = f.TestCaseFactory(
             author=cls.tester,
             default_tester=None,
             reviewer=cls.tester,
             case_status=cls.case_status_confirmed,
             plan=[cls.plan])
-        cls.case_3 = TestCaseFactory(
+        cls.case_3 = f.TestCaseFactory(
             author=cls.tester,
             default_tester=None,
             reviewer=cls.tester,
             case_status=cls.case_status_confirmed,
             plan=[cls.plan])
 
-        cls.case_4 = TestCaseFactory(
+        cls.case_4 = f.TestCaseFactory(
             author=cls.tester,
             default_tester=None,
             reviewer=cls.tester,
             case_status=cls.case_status_confirmed,
             plan=[cls.plan])
-        cls.case_5 = TestCaseFactory(
+        cls.case_5 = f.TestCaseFactory(
             author=cls.tester,
             default_tester=None,
             reviewer=cls.tester,
             case_status=cls.case_status_confirmed,
             plan=[cls.plan])
-        cls.case_6 = TestCaseFactory(
+        cls.case_6 = f.TestCaseFactory(
             author=cls.tester,
             default_tester=None,
             reviewer=cls.tester,
@@ -278,30 +269,42 @@ class BaseCaseRun(BasePlanCase):
 
         cls.case_run_status_idle = TestCaseRunStatus.objects.get(name='IDLE')
 
-        cls.build = TestBuildFactory(product=cls.product)
+        cls.build = f.TestBuildFactory(product=cls.product)
 
-        cls.test_run = TestRunFactory(product_version=cls.version,
-                                      plan=cls.plan,
-                                      build=cls.build,
-                                      manager=cls.tester,
-                                      default_tester=cls.tester)
+        cls.test_run = f.TestRunFactory(
+            product_version=cls.version,
+            plan=cls.plan,
+            build=cls.build,
+            manager=cls.tester,
+            default_tester=cls.tester)
 
         cls.case_run_1, cls.case_run_2, cls.case_run_3 = [
-            TestCaseRunFactory(assignee=cls.tester, tested_by=cls.tester,
-                               run=cls.test_run, build=cls.build,
-                               case_run_status=cls.case_run_status_idle,
-                               case=case, sortkey=i * 10)
-            for i, case in enumerate((cls.case_1, cls.case_2, cls.case_3), 1)]
+            f.TestCaseRunFactory(
+                assignee=cls.tester,
+                tested_by=cls.tester,
+                run=cls.test_run,
+                build=cls.build,
+                case_run_status=cls.case_run_status_idle,
+                case=case,
+                sortkey=i * 10)
+            for i, case in enumerate((cls.case_1, cls.case_2, cls.case_3), 1)
+        ]
 
-        cls.test_run_1 = TestRunFactory(product_version=cls.version,
-                                        plan=cls.plan,
-                                        build=cls.build,
-                                        manager=cls.tester,
-                                        default_tester=cls.tester)
+        cls.test_run_1 = f.TestRunFactory(
+            product_version=cls.version,
+            plan=cls.plan,
+            build=cls.build,
+            manager=cls.tester,
+            default_tester=cls.tester)
 
         cls.case_run_4, cls.case_run_5, cls.case_run_6 = [
-            TestCaseRunFactory(assignee=cls.tester, tested_by=cls.tester,
-                               run=cls.test_run_1, build=cls.build,
-                               case_run_status=cls.case_run_status_idle,
-                               case=case, sortkey=i * 10)
-            for i, case in enumerate((cls.case_4, cls.case_5, cls.case_6), 1)]
+            f.TestCaseRunFactory(
+                assignee=cls.tester,
+                tested_by=cls.tester,
+                run=cls.test_run_1,
+                build=cls.build,
+                case_run_status=cls.case_run_status_idle,
+                case=case,
+                sortkey=i * 10)
+            for i, case in enumerate((cls.case_4, cls.case_5, cls.case_6), 1)
+        ]

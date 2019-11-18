@@ -5,9 +5,7 @@ from django.test import TestCase
 
 import tcms.xmlrpc.api.user as XUser
 
-from tests.factories import GroupFactory
-from tests.factories import UserFactory
-from tests import user_should_have_perm
+from tests import factories as f, user_should_have_perm
 from tests.xmlrpc.utils import make_http_request
 from tests.xmlrpc.utils import XmlrpcAPIBaseTest
 
@@ -17,7 +15,7 @@ class TestUserSerializer(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.user = UserFactory()
+        cls.user = f.UserFactory()
         cls.http_req = make_http_request(user=cls.user)
 
     def test_ensure_password_not_returned(self):
@@ -32,15 +30,24 @@ class TestUserFilter(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.group_tester = GroupFactory()
-        cls.group_reviewer = GroupFactory()
+        cls.group_tester = f.GroupFactory()
+        cls.group_reviewer = f.GroupFactory()
 
-        cls.user1 = UserFactory(username='user 1', email='user1@exmaple.com', is_active=True,
-                                groups=[cls.group_tester])
-        cls.user2 = UserFactory(username='user 2', email='user2@example.com', is_active=False,
-                                groups=[cls.group_reviewer])
-        cls.user3 = UserFactory(username='user 3', email='user3@example.com', is_active=True,
-                                groups=[cls.group_reviewer])
+        cls.user1 = f.UserFactory(
+            username='user 1',
+            email='user1@exmaple.com',
+            is_active=True,
+            groups=[cls.group_tester])
+        cls.user2 = f.UserFactory(
+            username='user 2',
+            email='user2@example.com',
+            is_active=False,
+            groups=[cls.group_reviewer])
+        cls.user3 = f.UserFactory(
+            username='user 3',
+            email='user3@example.com',
+            is_active=True,
+            groups=[cls.group_reviewer])
 
         cls.http_req = make_http_request()
 
@@ -68,7 +75,7 @@ class TestUserGet(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.user = UserFactory()
+        cls.user = f.UserFactory()
         cls.http_req = make_http_request(user=cls.user)
 
     def test_get(self):
@@ -91,7 +98,7 @@ class TestUserGetMe(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.user = UserFactory()
+        cls.user = f.UserFactory()
         cls.http_req = make_http_request(user=cls.user)
 
     def test_get_me(self):
@@ -108,9 +115,10 @@ class TestUserJoin(XmlrpcAPIBaseTest):
     def setUpTestData(cls):
         cls.http_req = make_http_request(user_perm='auth.change_user')
         cls.username = 'test_username'
-        cls.user = UserFactory(username=cls.username, email='username@example.com')
+        cls.user = f.UserFactory(
+            username=cls.username, email='username@example.com')
         cls.group_name = 'test_group'
-        cls.group = GroupFactory(name=cls.group_name)
+        cls.group = f.GroupFactory(name=cls.group_name)
 
     def test_join_normally(self):
         XUser.join(self.http_req, self.username, self.group_name)
@@ -134,11 +142,11 @@ class TestUserUpdate(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.user = UserFactory(username='bob', email='bob@example.com')
+        cls.user = f.UserFactory(username='bob', email='bob@example.com')
         cls.user.set_password(cls.user.username)
         cls.user.save()
 
-        cls.another_user = UserFactory()
+        cls.another_user = f.UserFactory()
 
         cls.http_req = make_http_request(user=cls.user)
         cls.user_new_attrs = {
