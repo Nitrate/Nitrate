@@ -7,7 +7,7 @@ certifi==2019.6.16
 chardet==3.0.4
 coverage==4.5.4
 defusedxml==0.6.0
-Django==2.2.4
+Django==2.2.8
 django-contrib-comments==1.8.0
 django-debug-toolbar==1.7
 django-extensions==2.2.1
