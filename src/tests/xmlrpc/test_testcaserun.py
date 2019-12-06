@@ -22,6 +22,8 @@ class TestCaseRunCreate(XmlrpcAPIBaseTest):
             username='tcr_admin', email='tcr_admin@example.com')
         cls.staff = f.UserFactory(
             username='tcr_staff', email='tcr_staff@example.com')
+        cls.default_tester = f.UserFactory(
+            username='default_tester', email='default-tester@example.com')
         cls.admin_request = make_http_request(user=cls.admin, user_perm='testruns.add_testcaserun')
         cls.staff_request = make_http_request(user=cls.staff)
         cls.product = f.ProductFactory(name='Nitrate')
@@ -181,6 +183,41 @@ class TestCaseRunCreate(XmlrpcAPIBaseTest):
         }
         self.assertXmlrpcFaultForbidden(
             testcaserun.create, self.staff_request, values)
+
+    def test_use_case_default_user(self):
+        self.case.default_tester = self.default_tester
+        self.case.save()
+
+        # No assignee is passed. Case's default user should be checked
+        values = {
+            "run": self.test_run.pk,
+            "build": self.build.pk,
+            "case": self.case.pk,
+            "notes": "test_create_with_all_fields",
+            "sortkey": 2,
+            "case_run_status": self.case_run_status.pk,
+        }
+
+        case_run = testcaserun.create(self.admin_request, values)
+        self.assertEqual(self.case.default_tester.pk, case_run['assignee_id'])
+
+    def test_use_run_default_user(self):
+        self.test_run.default_tester = self.default_tester
+        self.test_run.save()
+
+        # No assignee is passed. Test run's default user should be checked
+        values = {
+            "run": self.test_run.pk,
+            "build": self.build.pk,
+            "case": self.case.pk,
+            "notes": "test_create_with_all_fields",
+            "sortkey": 2,
+            "case_run_status": self.case_run_status.pk,
+        }
+
+        case_run = testcaserun.create(self.admin_request, values)
+        self.assertEqual(self.test_run.default_tester.pk,
+                         case_run['assignee_id'])
 
 
 class TestCaseRunAddComment(XmlrpcAPIBaseTest):
