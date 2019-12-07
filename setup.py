@@ -54,7 +54,7 @@ extras_require = {
 
     # Contain tools that assists the development
     'devtools': [
-        'django-debug-toolbar == 1.7',
+        'django-debug-toolbar',
         'tox',
         'django-extensions',
         'pygraphviz',
