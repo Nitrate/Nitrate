@@ -26,9 +26,6 @@ matrix:
     env: DJANGO_REL="django>=2.2,<2.3"
   - python: "3.7"
     env: DJANGO_REL="django>=2.2,<2.3"
-before_install:
-- docker pull mysql:5.7
-- docker pull mariadb:10.2.21
 install: pip install coveralls
 script:
 - contrib/travis-ci/runtests.sh "$(python --version | cut -d' ' -f2 2>&1)" "$DJANGO_REL" $NITRATE_DB
