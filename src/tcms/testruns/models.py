@@ -175,14 +175,16 @@ class TestRun(TCMSActionModel):
             _case_text_version = case.latest_text(
                 text_required=False).case_text_version
 
-        _assignee = assignee \
-            or (case.default_tester_id and case.default_tester) \
-            or (self.default_tester_id and self.default_tester)
+        _assignee = (
+            assignee or
+            (case.default_tester_id and case.default_tester) or
+            (self.default_tester_id and self.default_tester)
+        )
 
-        get_caserun_status = TestCaseRunStatus.objects.get
-        _case_run_status = isinstance(case_run_status, int) \
-            and get_caserun_status(id=case_run_status) \
-            or case_run_status
+        if isinstance(case_run_status, int):
+            _case_run_status = TestCaseRunStatus.objects.get(id=case_run_status)
+        else:
+            _case_run_status = case_run_status
 
         return self.case_run.create(case=case,
                                     assignee=_assignee,
@@ -214,15 +216,15 @@ class TestRun(TCMSActionModel):
 
     def remove_tag(self, tag):
         cursor = connection.writer_cursor
-        cursor.execute("DELETE from test_run_tags \
-            WHERE run_id = %s \
-            AND tag_id = %s", (self.pk, tag.pk))
+        cursor.execute(
+            "DELETE from test_run_tags WHERE run_id = %s AND tag_id = %s",
+            (self.pk, tag.pk))
 
     def remove_cc(self, user):
         cursor = connection.writer_cursor
-        cursor.execute("DELETE from test_run_cc \
-            WHERE run_id = %s \
-            AND who = %s", (self.run_id, user.id))
+        cursor.execute(
+            "DELETE from test_run_cc WHERE run_id = %s AND who = %s",
+            (self.run_id, user.id))
 
     def remove_env_value(self, env_value):
         run_env_value = TCMSEnvRunValueMap.objects.get(

@@ -265,8 +265,7 @@ def tag(request, template_name="management/get_tag.html"):
                     try:
                         tag = TestTag.objects.filter(name=tag_str)[0]
                     except IndexError:
-                        return "Tag %s does not exist in current selected " \
-                               "plan." % tag_str
+                        return f"Tag {tag_str} does not exist in current selected plan."
 
                     for o in self.obj:
                         try:

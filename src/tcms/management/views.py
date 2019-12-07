@@ -47,8 +47,10 @@ def environment_groups(request, template_name='environment/groups.html'):
                 {'rc': 1, 'response': 'Environment group name is required.'})
 
         if env_groups.filter(name=group_name).exists():
-            response_msg = "Environment group name '%s' already " \
-                           'exists, please select another name.' % group_name
+            response_msg = (
+                f"Environment group name '{group_name}' already exists, "
+                f"please select another name."
+            )
             return JsonResponse({'rc': 1, 'response': response_msg})
         else:
             env = env_groups.create(name=group_name,
@@ -170,13 +172,12 @@ def environment_group_edit(request, template_name='environment/group_edit.html')
     try:
         de = TCMSEnvGroup.objects.get(name=request.GET.get('name'))
         if environment != de:
-            response = 'Duplicated name already exists, please change to ' \
-                'another name.'
             context_data = {
                 'environment': environment,
                 'properties': TCMSEnvProperty.get_active(),
                 'selected_properties': environment.property.all(),
-                'message': response,
+                'message': 'Duplicated name already exists, please change to '
+                           'another name.',
             }
             return render(request, template_name, context=context_data)
     except TCMSEnvGroup.DoesNotExist:
@@ -263,8 +264,10 @@ def environment_properties(request, template_name='environment/property.html'):
             return JsonResponse({'rc': 1, 'response': 'Property name is required'})
 
         if TCMSEnvProperty.objects.filter(name=property_name).exists():
-            resp_msg = "Environment property named '{}' already exists, " \
-                       "please select another name.".format(property_name)
+            resp_msg = (
+                f"Environment property named '{property_name}' already exists,"
+                f" please select another name."
+            )
             return JsonResponse({'rc': 1, 'response': resp_msg})
 
         new_property = TCMSEnvProperty.objects.create(name=property_name)
@@ -401,8 +404,11 @@ def environment_property_values(request):
             return HttpResponse('Argument illegel')
 
     if duplicated_property_value:
-        message = 'Value(s) named \'%s\' already exists in this property, ' \
-                  'please select another name.' % "', '".join(duplicated_property_value)
+        s = "', '".join(duplicated_property_value)
+        message = (
+            f"Value(s) named '{s}' already exists in this property, "
+            f"please select another name."
+        )
 
     values = property.value.all()
     context_data = {

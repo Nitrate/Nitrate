@@ -426,10 +426,10 @@ class TestCase(TCMSActionModel):
         new_breakdown_checksum = checksum(breakdown)
 
         old_action, old_effect, old_setup, old_breakdown = self.text_checksum()
-        if old_action != new_action_checksum \
-                or old_effect != new_effect_checksum \
-                or old_setup != new_setup_checksum \
-                or old_breakdown != new_breakdown_checksum:
+        if (old_action != new_action_checksum or
+                old_effect != new_effect_checksum or
+                old_setup != new_setup_checksum or
+                old_breakdown != new_breakdown_checksum):
             case_text_version = self.latest_text_version() + 1
 
             latest_text = TestCaseText.objects.create(

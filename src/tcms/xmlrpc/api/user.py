@@ -141,8 +141,8 @@ def update(request, values=None, id=None):
             if not can_change_user and not old_password:
                 raise PermissionDenied('Old password is required')
 
-            if not can_change_user and not \
-                    user_being_updated.check_password(old_password):
+            if (not can_change_user and
+                    not user_being_updated.check_password(old_password)):
                 raise PermissionDenied('Password is incorrect')
 
             user_being_updated.set_password(values['password'])

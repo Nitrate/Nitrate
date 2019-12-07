@@ -253,12 +253,15 @@ def delete(request, run_id):
         )
 
     if request.GET.get('sure', 'no') == 'no':
-        return HttpResponse("<script>\n \
-            if(confirm('Are you sure you want to delete this run %s? \
-            \\n \\n \
-            Click OK to delete or cancel to come back')) \
-            { window.location.href='/run/%s/delete/?sure=yes' } \
-            else { history.go(-1) };</script>" % (run_id, run_id))
+        run_delete_url = reverse('run-delete', args=[run_id])
+        return HttpResponse(
+            "<script>"
+            "if (confirm('Are you sure you want to delete this run %s?\\n\\n"
+            "Click OK to delete or cancel to come back'))"
+            "{ window.location.href='%s?sure=yes' }"
+            "else { history.go(-1) }"
+            "</script>" % (run_id, run_delete_url)
+        )
     elif request.GET.get('sure') == 'yes':
         try:
             plan_id = tr.plan_id
@@ -699,8 +702,7 @@ def edit(request, run_id, template_name='run/edit.html'):
             # detect if auto_update_run_status field is changed by user when
             # edit testrun.
             auto_update_changed = False
-            if tr.auto_update_run_status \
-                    != form.cleaned_data['auto_update_run_status']:
+            if tr.auto_update_run_status != form.cleaned_data['auto_update_run_status']:
                 auto_update_changed = True
 
             # detect if finished field is changed by user when edit testrun.
@@ -722,8 +724,7 @@ def edit(request, run_id, template_name='run/edit.html'):
             tr.notes = form.cleaned_data['notes']
             tr.estimated_time = form.cleaned_data['estimated_time']
             tr.errata_id = form.cleaned_data['errata_id']
-            tr.auto_update_run_status = form.cleaned_data[
-                'auto_update_run_status']
+            tr.auto_update_run_status = form.cleaned_data['auto_update_run_status']
             tr.save()
             if auto_update_changed:
                 tr.update_completion_status(is_auto_updated=True)
@@ -1303,12 +1304,11 @@ def export(request, run_id):
     writer = TCR2File(tcrs)
     if format == 'csv':
         writer.write_to_csv(response)
-        response['Content-Disposition'] = \
-            'attachment; filename=tcms-testcase-runs-%s.csv' % timestamp_str
+        filename = f'tcms-testcase-runs-{timestamp_str}.csv'
     else:
         writer.write_to_xml(response)
-        response['Content-Disposition'] = \
-            'attachment; filename=tcms-testcase-runs-%s.xml' % timestamp_str
+        filename = f'tcms-testcase-runs-{timestamp_str}.xml'
+    response['Content-Disposition'] = f'attachment; filename={filename}'
 
     return response
 

@@ -52,8 +52,7 @@ def timedelta_to_str(value):
     total_seconds = value.seconds + (value.days * SECONDS_PER_DAY)
     hours = total_seconds / SECONDS_PER_HOUR
     # minutes - Total seconds subtract the used hours
-    minutes = total_seconds / SECONDS_PER_MIN - \
-        total_seconds / SECONDS_PER_HOUR * 60
+    minutes = total_seconds / SECONDS_PER_MIN - total_seconds / SECONDS_PER_HOUR * 60
     seconds = total_seconds % SECONDS_PER_MIN
     return '%02i:%02i:%02i' % (hours, minutes, seconds)
 
@@ -358,8 +357,7 @@ class QuerySetBasedXMLRPCSerializer(XMLRPCSerializer):
             # Replace name from ORM side to the serialization side as expected
             new_serialized_data = {}
             if values_fields_mapping:
-                for orm_name, serialize_info in \
-                        values_fields_mapping.items():
+                for orm_name, serialize_info in values_fields_mapping.items():
                     serialize_name, conv_func = serialize_info
                     value = conv_func(row[orm_name])
                     new_serialized_data[serialize_name] = value

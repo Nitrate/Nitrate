@@ -156,14 +156,15 @@ def delete(request, plan_id):
     """Delete testplan"""
     if request.GET.get('sure', 'no') == 'no':
         # TODO: rewrite the response
-        return HttpResponse("\
-            <script>if(confirm('Are you sure you want to delete this plan %s? \
-            \\n \\n \
-            Click OK to delete or cancel to come back')) { \
-                window.location.href='%s?sure=yes' \
-            } else { \
-                history.go(-1) \
-            };</script>" % (plan_id, reverse('plan-delete', args=[plan_id])))
+        plan_delete_url = reverse('plan-delete', args=[plan_id])
+        return HttpResponse(
+            "<script>"
+            "if (confirm('Are you sure you want to delete this plan %s?\\n\\n"
+            "Click OK to delete or cancel to come back'))"
+            "{ window.location.href='%s?sure=yes' }"
+            "else { history.go(-1) }"
+            "</script>" % (plan_id, plan_delete_url)
+        )
     elif request.GET.get('sure') == 'yes':
         tp = get_object_or_404(TestPlan, plan_id=plan_id)
 
@@ -389,9 +390,10 @@ def ajax_search(request, template_name='plan/common/json_plans.txt'):
             if author and len(search_form.changed_data) == 1:
                 if request.user.is_authenticated:
                     if author == request.user.username or author == request.user.email:
-                        q = Q(author__email__startswith=author) | \
+                        tps = TestPlan.objects.filter(
+                            Q(author__email__startswith=author) |
                             Q(owner__email__startswith=author)
-                        tps = TestPlan.objects.filter(q).distinct()
+                        ).distinct()
             else:
                 tps = TestPlan.list(search_form.cleaned_data)
                 tps = tps.select_related('author', 'owner', 'type', 'product')
@@ -698,15 +700,17 @@ def clone(request, template_name='plan/clone.html'):
                 if assign_me_as_plan_author:
                     clone_params['new_original_author'] = request.user
 
-                assign_me_as_copied_case_author = \
-                    clone_options['copy_testcases'] and \
+                assign_me_as_copied_case_author = (
+                    clone_options['copy_testcases'] and
                     not clone_options['maintain_case_orignal_author']
+                )
                 if assign_me_as_copied_case_author:
                     clone_params['new_case_author'] = request.user
 
-                assign_me_as_copied_case_default_tester = \
-                    clone_options['copy_testcases'] and \
+                assign_me_as_copied_case_default_tester = (
+                    clone_options['copy_testcases'] and
                     not clone_options['keep_case_default_tester']
+                )
                 if assign_me_as_copied_case_default_tester:
                     clone_params['new_case_default_tester'] = request.user
 
@@ -1085,6 +1089,6 @@ def export(request, template_name='case/export.xml'):
         timestamp.year, timestamp.month, timestamp.day)
 
     response = render(request, template_name, context=context_data)
-    response['Content-Disposition'] = \
-        'attachment; filename=tcms-testcases-%s.xml' % timestamp_str
+    filename = f'tcms-testcases-{timestamp_str}.xml'
+    response['Content-Disposition'] = f'attachment; filename={filename}'
     return response

@@ -216,9 +216,9 @@ class TestPlan(TCMSActionModel):
 
     def remove_tag(self, tag):
         cursor = connection.writer_cursor
-        cursor.execute("DELETE from test_plan_tags \
-            WHERE plan_id = %s \
-            AND tag_id = %s", (self.pk, tag.pk))
+        cursor.execute(
+            "DELETE from test_plan_tags WHERE plan_id = %s AND tag_id = %s",
+            (self.pk, tag.pk))
 
     def remove_component(self, component):
         try:

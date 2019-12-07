@@ -93,9 +93,10 @@ class TCR2File:
            Element ``bugs`` is renamed to ``issues``.
         """
         write_to_output = output.write
-        tcr_start_elem = '<testcaserun case_run_id="%d" case_id="%d" ' \
-                         'category="%s" status="%s" summary="%s" ' \
-                         'scripts="%s" automated="%s">'
+        tcr_start_elem = (
+            '<testcaserun case_run_id="%d" case_id="%d" category="%s" '
+            'status="%s" summary="%s" scripts="%s" automated="%s">'
+        )
 
         write_to_output('<%s>' % self.root)
         for tcr in self.tcrs.iterator():

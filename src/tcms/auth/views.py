@@ -48,8 +48,10 @@ def register(request, template_name='registration/registration_form.html'):
             if form.cleaned_data['email'] and settings.EMAIL_HOST:
                 form.send_confirm_mail(request=request, active_key=ak)
 
-                msg = 'Your account has been created, please check your ' \
-                      'mailbox for confirmation.'
+                msg = (
+                    'Your account has been created, please check your mailbox '
+                    'for confirmation.'
+                )
             else:
                 msg = [
                     '<p>Your account has been created, but you need to contact '
@@ -103,12 +105,11 @@ def confirm(request, activation_key):
     # login(request, user)
 
     # Response to web browser.
-    msg = 'Your account has been activated successfully, click next link to ' \
-          're-login.'
     return Prompt.render(
         request=request,
         info_type=Prompt.Info,
-        info=msg,
+        info='Your account has been activated successfully, click next link to '
+             're-login.',
         next=request.GET.get('next', reverse('user-profile-redirect'))
     )
 

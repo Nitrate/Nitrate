@@ -613,9 +613,9 @@ def update(request, run_ids, values):
             _values['manager'] = form.cleaned_data['manager']
 
         if 'default_tester' in values:
-            if values.get('default_tester') and \
-                    form.cleaned_data['default_tester']:
-                _values['default_tester'] = form.cleaned_data['default_tester']
+            default_tester = form.cleaned_data['default_tester']
+            if values.get('default_tester') and default_tester:
+                _values['default_tester'] = default_tester
             else:
                 _values['default_tester'] = None
 

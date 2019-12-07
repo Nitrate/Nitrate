@@ -667,10 +667,12 @@ class TestingReportByPlanTagsData(TestingReportBaseData):
 
         def walk_status_matrix_rows():
             for tag_id, status_subtotal in status_matrix.iteritems():
-                yield tags_names.get(tag_id, ''), \
-                    plans_subtotal.get(tag_id, 0), \
-                    runs_subtotal.get(tag_id, 0), \
+                yield (
+                    tags_names.get(tag_id, ''),
+                    plans_subtotal.get(tag_id, 0),
+                    runs_subtotal.get(tag_id, 0),
                     status_subtotal
+                )
 
         return {
             'plans_count': plans_count,
@@ -739,11 +741,13 @@ class TestingReportByPlanTagsDetailData(TestingReportByPlanTagsData):
             status_matrix.leaf_values_count(value_in_row=True)
             for tag_id, builds in status_matrix.iteritems():
                 # Data on top of each status matrix under each tag
-                yield tags_names.get(tag_id, 'untagged'), \
-                    plans_subtotal.get(tag_id, 0), \
-                    runs_subtotal.get(tag_id, 0), \
-                    builds.total, \
+                yield (
+                    tags_names.get(tag_id, 'untagged'),
+                    plans_subtotal.get(tag_id, 0),
+                    runs_subtotal.get(tag_id, 0),
+                    builds.total,
                     self.walk_status_matrix_rows(builds)
+                )
 
         return {
             'plans_count': plans_count,
@@ -793,8 +797,8 @@ class TestingReportByPlanTagsDetailData(TestingReportByPlanTagsData):
         status_matrix = GroupByResult()
 
         for row in rows:
-            tag_id, build_id, build_name, plan_id, plan_name, run_id, \
-                run_summary, status_name, total_count = row
+            (tag_id, build_id, build_name, plan_id, plan_name, run_id,
+             run_summary, status_name, total_count) = row
 
             builds = status_matrix.setdefault(tag_id, GroupByResult())
             plans = builds.setdefault(TestBuild(pk=build_id, name=build_name),
@@ -826,10 +830,12 @@ class TestingReportByPlanBuildData(TestingReportBaseData):
             ordered_plans = sorted(status_matrix.iteritems(),
                                    key=lambda item: item[0].pk)
             for plan, status_subtotal in ordered_plans:
-                yield plan, \
-                    builds_subtotal.get(plan, 0), \
-                    runs_subtotal.get(plan, 0), \
+                yield (
+                    plan,
+                    builds_subtotal.get(plan, 0),
+                    runs_subtotal.get(plan, 0),
                     status_matrix.get(plan, {})
+                )
 
         return {
             'plans_count': plans_count,
@@ -901,8 +907,13 @@ class TestingReportByPlanBuildDetailData(TestingReportByPlanBuildData):
                 runs_count = runs_subtotal.get(plan, 0)
                 caseruns_count = builds.total
 
-                yield plan, builds_count, runs_count, caseruns_count, \
+                yield (
+                    plan,
+                    builds_count,
+                    runs_count,
+                    caseruns_count,
                     self.walk_status_matrix_section(builds)
+                )
 
         return {
             'plans_count': plans_count,

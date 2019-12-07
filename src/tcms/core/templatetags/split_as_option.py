@@ -51,11 +51,11 @@ def split_as_inputbox(value, splitter='|', autoescape=None):
     result = ""
 
     for v in value:
-        result += '<input id="id_btn_%s" ' \
-                  'type="text" name="value" ' \
-                  'value="%s" /><input type="button" ' \
-                  'value="Del" onclick="$(\'id_btn_%s\').remove();' \
-                  ' this.remove();" />' % (v, v, v)
+        result += (
+            f'<input id="id_btn_{v}" type="text" name="value" value="{v}" />'
+            f'<input type="button" value="Del" '
+            f'onclick="$(\'id_btn_{v}\').remove(); this.remove();" />'
+        )
 
     return mark_safe(result)
 

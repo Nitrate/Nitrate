@@ -42,29 +42,28 @@ class CustomSearchForm(forms.Form):
     )
 
     def populate(self, product_id):
+        f_product_version = self.fields['build_run__product_version']
+        f_case__category = self.fields['testcaserun__case__category']
+        f_case__component = self.fields['testcaserun__case__component']
         if product_id:
-            self.fields['build_run__product_version'].queryset = \
-                Version.objects.filter(product__id=product_id).only('value')
+            f_product_version.queryset = Version.objects.filter(
+                product__id=product_id).only('value')
             self.fields['pk__in'].queryset = TestBuild.objects.filter(
                 product__id=product_id).only('name')
-            self.fields['testcaserun__case__category'].queryset = \
-                TestCaseCategory.objects.filter(product__id=product_id).only(
-                    'name')
-            self.fields['testcaserun__case__component'].queryset = \
-                Component.objects.filter(product__id=product_id).only('name')
+            f_case__category.queryset = TestCaseCategory.objects.filter(
+                product__id=product_id).only('name')
+            f_case__component.queryset = Component.objects.filter(
+                product__id=product_id).only('name')
         else:
             # FIXME: is this branch necessary? when I notice this, I'm
             # optimizing custom report here. If product_id is None, it's an
             # critical error for the search operation and everything should be
             # stopped. Therefor, in my opinion, following 4 lines of code
             # waste time and resources.
-            self.fields['build_run__product_version'].queryset = \
-                Version.objects.only('value')
+            f_product_version.queryset = Version.objects.only('value')
             self.fields['pk__in'].queryset = TestBuild.objects.only('name')
-            self.fields['testcaserun__case__category'].queryset = \
-                TestCaseCategory.objects.only('name')
-            self.fields['testcaserun__case__component'].queryset = \
-                Component.objects.only('name')
+            f_case__category.queryset = TestCaseCategory.objects.only('name')
+            f_case__component.queryset = Component.objects.only('name')
 
 
 class CustomSearchDetailsForm(CustomSearchForm):

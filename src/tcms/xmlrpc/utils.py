@@ -140,8 +140,10 @@ def distinct_m2m_rows(cls, values, op_type):
 
     qs = cls.objects.filter(**values)
     if op_type == COUNT_DISTINCT:
-        return qs.aggregate(Count('pk', distinct=True))['pk__count'] if flag \
-            else qs.count()
+        if flag:
+            return qs.aggregate(Count('pk', distinct=True))['pk__count']
+        else:
+            return qs.count()
     elif op_type == QUERY_DISTINCT:
         return qs.distinct() if flag else qs
     else:

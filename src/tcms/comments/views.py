@@ -23,8 +23,7 @@ def post(request, template_name='comments/comments.html'):
 
     if request.user.is_authenticated:
         if not data.get('name', ''):
-            data["name"] = \
-                request.user.get_full_name() or request.user.username
+            data["name"] = request.user.get_full_name() or request.user.username
         if not data.get('email', ''):
             data["email"] = request.user.email
 

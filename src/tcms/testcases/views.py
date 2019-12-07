@@ -27,32 +27,33 @@ from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django_comments.models import Comment
 
-from tcms.core import forms
 from tcms.core.db import SQLExecution
-from tcms.logs.models import TCMSLogModel
-from tcms.core.utils.raw_sql import RawSQL
+from tcms.core import forms
 from tcms.core.utils import DataTableResult
+from tcms.core.utils import form_error_messags_to_list
+from tcms.core.utils.raw_sql import RawSQL
 from tcms.core.views import Prompt
-from tcms.search.views import remove_from_request_path
+from tcms.issuetracker.models import IssueTracker
+from tcms.logs.models import TCMSLogModel
+from tcms.management.models import Priority, TestTag
 from tcms.search.order import order_case_queryset
+from tcms.search.views import remove_from_request_path
+from tcms.testcases.data import get_exported_cases_and_related_data
+from tcms.testcases.fields import CC_LIST_DEFAULT_DELIMITER
+from tcms.testcases.forms import (
+    CaseAutomatedForm, NewCaseForm, SearchCaseForm, CaseFilterForm,
+    EditCaseForm, CaseNotifyForm, CloneCaseForm, CaseIssueForm, CaseTagForm,
+    CaseComponentForm
+)
 from tcms.testcases import actions
 from tcms.testcases import data
 from tcms.testcases import sqls
-from tcms.testcases.models import TestCase, TestCaseStatus, TestCasePlan
-from tcms.management.models import Priority, TestTag
 from tcms.testcases.models import TestCaseComponent
+from tcms.testcases.models import TestCase, TestCaseStatus, TestCasePlan
+from tcms.testplans.forms import SearchPlanForm
 from tcms.testplans.models import TestPlan
 from tcms.testruns.models import TestCaseRun
 from tcms.testruns.models import TestCaseRunStatus
-from tcms.testcases.forms import CaseAutomatedForm, NewCaseForm, \
-    SearchCaseForm, CaseFilterForm, EditCaseForm, CaseNotifyForm, \
-    CloneCaseForm, CaseIssueForm, CaseTagForm
-from tcms.testplans.forms import SearchPlanForm
-from tcms.testcases.data import get_exported_cases_and_related_data
-from tcms.testcases.fields import CC_LIST_DEFAULT_DELIMITER
-from tcms.testcases.forms import CaseComponentForm
-from tcms.issuetracker.models import IssueTracker
-from tcms.core.utils import form_error_messags_to_list
 
 
 logger = logging.getLogger(__name__)
@@ -348,8 +349,8 @@ def build_cases_search_form(request, populate=None, plan=None):
     action = request.POST.get('a')
     if action in TESTCASE_OPERATION_ACTIONS:
         search_form = SearchForm(request.POST)
-        request.session['items_per_page'] = \
-            request.POST.get('items_per_page', settings.DEFAULT_PAGE_SIZE)
+        request.session['items_per_page'] = request.POST.get(
+            'items_per_page', settings.DEFAULT_PAGE_SIZE)
     else:
         d_status = get_case_status(request.POST.get('template_type'))
         d_status_ids = d_status.values_list('pk', flat=True)
@@ -1090,10 +1091,10 @@ def export(request, template_name='case/export.xml'):
     response = render(request, template_name, context=context_data)
 
     timestamp = datetime.datetime.now()
-    timestamp_str = '%02i-%02i-%02i' \
-                    % (timestamp.year, timestamp.month, timestamp.day)
-    response['Content-Disposition'] = \
-        'attachment; filename=tcms-testcases-%s.xml' % timestamp_str
+    timestamp_str = '%02i-%02i-%02i' % (
+        timestamp.year, timestamp.month, timestamp.day)
+    filename = f'tcms-testcases-{timestamp_str}.xml'
+    response['Content-Disposition'] = f'attachment; filename={filename}'
     return response
 
 

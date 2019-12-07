@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 # Download from http://www.djangosnippets.org/snippets/721/
 # All right reserved by  the orignal author(s).
-from django.template import Library, TemplateSyntaxError, Node, NodeList, \
-    Variable, VariableDoesNotExist
+from django.template import (
+    Library, TemplateSyntaxError, Node, NodeList, Variable,
+    VariableDoesNotExist
+)
 
 register = Library()
 
@@ -26,8 +28,8 @@ class IfInNode(Node):
         except VariableDoesNotExist:
             val2 = None
         try:
-            if (self.negate and val1 not in val2) \
-                    or (not self.negate and val1 in val2):
+            if ((self.negate and val1 not in val2) or
+                    (not self.negate and val1 in val2)):
                 return self.nodelist_true.render(context)
             return self.nodelist_false.render(context)
         except TypeError:

@@ -643,13 +643,12 @@ class CaseCategoryForm(forms.Form):
     )
 
     def populate(self, product_id=None):
+        field = self.fields['o_category']
+        manager = TestCaseCategory.objects
         if product_id:
-            self.fields[
-                'o_category'].queryset = TestCaseCategory.objects.filter(
-                product__id=product_id)
+            field.queryset = manager.filter(product__id=product_id)
         else:
-            self.fields['o_category'].queryset = \
-                TestCaseCategory.objects.all()
+            field.queryset = manager.all()
 
 
 class CaseTagForm(forms.Form):
