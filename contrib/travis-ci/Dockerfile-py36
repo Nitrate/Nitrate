@@ -1,9 +1,0 @@
-FROM registry.fedoraproject.org/fedora:30
-LABEL maintainer="Chenxiong Qi <qcxhome@gmail.com>" \
-      description="Test box for running Nitrate tests. This test box must work with a database image." \
-      version="0.1"
-RUN dnf update -y && \
-    dnf install -y gcc redhat-rpm-config make mariadb mariadb-devel postgresql-devel \
-        python36 python3-virtualenv python3-devel graphviz-devel && \
-    dnf clean all
-RUN virtualenv --python=/usr/bin/python3.6 /testenv && /testenv/bin/pip install --upgrade pip
