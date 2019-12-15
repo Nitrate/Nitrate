@@ -51,9 +51,9 @@ def check_category(request, name, product):
     Example::
 
         # Get with product ID
-        >>> Product.check_category('Feature', 1)
+        Product.check_category('Feature', 1)
         # Get with product name
-        >>> Product.check_category('Feature', 'product name')
+        Product.check_category('Feature', 'product name')
     """
     from tcms.testcases.models import TestCaseCategory
 
@@ -73,9 +73,9 @@ def check_component(request, name, product):
     Example::
 
         # Get with product ID
-        >>> Product.check_component('acpi', 1)
+        Product.check_component('acpi', 1)
         # Get with product name
-        >>> Product.check_component('acpi', 'Product A')
+        Product.check_component('acpi', 'Product A')
     """
     from tcms.management.models import Component
 
@@ -95,9 +95,9 @@ def check_product(request, name):
     Example::
 
         # Get with product ID
-        >>> Product.check_product(1)
+        Product.check_product(1)
         # Get with product name
-        >>> Product.check_product('Product A')
+        Product.check_product('Product A')
     """
     p = pre_check_product(values=name)
     return p.serialize()
@@ -120,7 +120,7 @@ def filter(request, query):
     Example::
 
         # Get all of product named 'product name'
-        >>> Product.filter({'name': 'product name'})
+        Product.filter({'name': 'product name'})
     """
     return Product.to_xmlrpc(query)
 
@@ -142,9 +142,9 @@ def filter_categories(request, query):
     Example::
 
         # Get all of categories named like 'libvirt'
-        >>> Product.filter_categories({'name__icontains': 'regression'})
+        Product.filter_categories({'name__icontains': 'regression'})
         # Get all of categories named in product 'product name'
-        >>> Product.filter_categories({'product__name': 'product name'})
+        Product.filter_categories({'product__name': 'product name'})
     """
     from tcms.testcases.models import TestCaseCategory
 
@@ -170,9 +170,9 @@ def filter_components(request, query):
     Example::
 
         # Get all of components named like 'libvirt'
-        >>> Product.filter_components({'name__icontains': 'libvirt'})
+        Product.filter_components({'name__icontains': 'libvirt'})
         # Get all of components named in product 'product name'
-        >>> Product.filter_components({'product__name': 'product name'})
+        Product.filter_components({'product__name': 'product name'})
     """
     from tcms.management.models import Component
 
@@ -195,9 +195,9 @@ def filter_versions(request, query):
     Example::
 
         # Get all of versions named like '2.4.0-SNAPSHOT'
-        >>> Product.filter_versions({'value__icontains': '2.4.0-SNAPSHOT'})
+        Product.filter_versions({'value__icontains': '2.4.0-SNAPSHOT'})
         # Get all of filter_versions named in product 'product name'
-        >>> Product.filter_versions({'product__name': 'product name'})
+        Product.filter_versions({'product__name': 'product name'})
     """
     from tcms.management.models import Version
 
@@ -214,7 +214,7 @@ def get(request, id):
 
     Example::
 
-        >>> Product.get(61)
+        Product.get(61)
     """
     return Product.objects.get(id=int(id)).serialize()
 
@@ -233,9 +233,9 @@ def get_builds(request, product, is_active=True):
     Example::
 
         # Get with product id including all builds
-        >>> Product.get_builds(1)
+        Product.get_builds(1)
         # Get with product name excluding all inactive builds
-        >>> Product.get_builds('product name', 0)
+        Product.get_builds('product name', 0)
     """
     from tcms.management.models import TestBuild
 
@@ -255,9 +255,9 @@ def get_cases(request, product):
     Example::
 
         # Get with product id
-        >>> Product.get_cases(61)
+        Product.get_cases(61)
         # Get with product name
-        >>> Product.get_cases('product name')
+        Product.get_cases('product name')
     """
     from tcms.testcases.models import TestCase
 
@@ -278,9 +278,9 @@ def get_categories(request, product):
     Example:
 
         # Get with product id
-        >>> Product.get_categories(61)
+        Product.get_categories(61)
         # Get with product name
-        >>> Product.get_categories('product name')
+        Product.get_categories('product name')
     """
     from tcms.testcases.models import TestCaseCategory
 
@@ -299,7 +299,7 @@ def get_category(request, id):
 
     Example::
 
-        >>> Product.get_category(11)
+        Product.get_category(11)
     """
     from tcms.testcases.models import TestCaseCategory
 
@@ -323,7 +323,7 @@ def add_component(request, product, name, initial_owner_id=None, initial_qa_cont
 
     Example::
 
-        >>> Product.add_component(71, 'JPBMM')
+        Product.add_component(71, 'JPBMM')
     """
     from tcms.management.models import Component
 
@@ -357,7 +357,7 @@ def get_component(request, id):
 
     Example::
 
-        >>> Product.get_component(11)
+        Product.get_component(11)
     """
     from tcms.management.models import Component
 
@@ -381,7 +381,7 @@ def update_component(request, component_id, values):
 
     Example::
 
-        >>> Product.update_component(1, {'name': 'NewName'})
+        Product.update_component(1, {'name': 'NewName'})
     """
     from tcms.management.models import Component
 
@@ -414,9 +414,9 @@ def get_components(request, product):
     Example::
 
         # Get with product id
-        >>> Product.get_components(61)
+        Product.get_components(61)
         # Get with product name
-        >>> Product.get_components('product name')
+        Product.get_components('product name')
     """
     from tcms.management.models import Component
 
@@ -449,9 +449,9 @@ def get_plans(request, product):
     Example::
 
         # Get with product id
-        >>> Product.get_plans(61)
+        Product.get_plans(61)
         # Get with product name
-        >>> Product.get_plans('product name')
+        Product.get_plans('product name')
     """
     from tcms.testplans.models import TestPlan
 
@@ -472,9 +472,9 @@ def get_runs(request, product):
     Example::
 
         # Get with product id
-        >>> Product.get_runs(1)
+        Product.get_runs(1)
         # Get with product name
-        >>> Product.get_runs('product name')
+        Product.get_runs('product name')
     """
     from tcms.testruns.models import TestRun
 
@@ -493,7 +493,7 @@ def get_tag(request, id):
 
     Example::
 
-        >>> Product.get_tag(1)
+        Product.get_tag(1)
     """
     from tcms.management.models import TestTag
 
@@ -516,10 +516,10 @@ def add_version(request, values):
     Example::
 
         # Add version for specified product:
-        >>> Product.add_version({'value': 'devel', 'product': 1})
+        Product.add_version({'value': 'devel', 'product': 1})
         {'product': 'Test Product', 'id': '1', 'value': 'devel', 'product_id': 1}
         # Run it again:
-        >>> Product.add_version({'value': 'devel', 'product': 1})
+        Product.add_version({'value': 'devel', 'product': 1})
         [['__all__', 'Version with this Product and Value already exists.']]
     """
     from tcms.management.forms import VersionForm
@@ -549,9 +549,9 @@ def get_versions(request, product):
     Example::
 
         # Get with product id
-        >>> Product.get_versions(1)
+        Product.get_versions(1)
         # Get with product name
-        >>> Product.get_versions('product name')
+        Product.get_versions('product name')
     """
     from tcms.management.models import Version
 

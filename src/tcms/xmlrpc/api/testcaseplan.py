@@ -22,7 +22,7 @@ def get(request, case_id, plan_id):
 
     Example::
 
-        >>> TestCasePlan.get(1, 2)
+        TestCasePlan.get(1, 2)
     """
     tc = TestCase.objects.get(pk=case_id)
     tp = TestPlan.objects.get(pk=plan_id)
@@ -43,7 +43,7 @@ def update(request, case_id, plan_id, sortkey):
     Example::
 
         # Update sortkey of selected test-case-plan to 10
-        >>> TestCasePlan.update(1, 2, 10)
+        TestCasePlan.update(1, 2, 10)
     """
     tc = TestCase.objects.get(pk=case_id)
     tp = TestPlan.objects.get(pk=plan_id)

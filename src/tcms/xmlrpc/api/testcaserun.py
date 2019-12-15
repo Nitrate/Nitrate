@@ -76,11 +76,11 @@ def add_comment(request, case_run_ids, comment):
     Example::
 
         # Add comment 'foobar' to case run 1
-        >>> TestCaseRun.add_comment(1, 'foobar')
+        TestCaseRun.add_comment(1, 'foobar')
         # Add 'foobar' to case runs list [1, 2]
-        >>> TestCaseRun.add_comment([1, 2], 'foobar')
+        TestCaseRun.add_comment([1, 2], 'foobar')
         # Add 'foobar' to case runs list '1, 2' with String
-        >>> TestCaseRun.add_comment('1, 2', 'foobar')
+        TestCaseRun.add_comment('1, 2', 'foobar')
     """
     from tcms.xmlrpc.utils import Comment
 
@@ -117,7 +117,7 @@ def attach_issue(request, values):
     Example::
 
         # Attach an issue 67890 to case run 12345
-        >>> TestCaseRun.attach_issue({
+        TestCaseRun.attach_issue({
                 'case_run': [12345],
                 'issue_key': '67890',
                 'tracker': 1,
@@ -164,7 +164,7 @@ def check_case_run_status(request, name):
 
     Example::
 
-        >>> TestCaseRun.check_case_run_status('idle')
+        TestCaseRun.check_case_run_status('idle')
     """
     return TestCaseRunStatus.objects.get(name=name).serialize()
 
@@ -191,12 +191,12 @@ def create(request, values):
     Example::
 
         # Minimal test case parameters
-        >>> values = {
+        values = {
             'run': 1990,
             'case': 12345,
             'build': 123,
         }
-        >>> TestCaseRun.create(values)
+        TestCaseRun.create(values)
     """
     from tcms.core import forms
     from tcms.testruns.forms import XMLRPCNewCaseRunForm
@@ -246,11 +246,11 @@ def detach_issue(request, case_run_ids, issue_keys):
     Example::
 
         # Remove issue 1000 from case run 1
-        >>> TestCaseRun.detach_issue(1, 1000)
+        TestCaseRun.detach_issue(1, 1000)
         # Remove issues [1000, 2000] from case runs list [1, 2]
-        >>> TestCaseRun.detach_issue([1, 2], [1000, 2000])
+        TestCaseRun.detach_issue([1, 2], [1000, 2000])
         # Remove issues '1000, 2000' from case runs list '1, 2' with String
-        >>> TestCaseRun.detach_issue('1, 2', '1000, 2000')
+        TestCaseRun.detach_issue('1, 2', '1000, 2000')
     """
     tcrs = TestCaseRun.objects.filter(pk__in=pre_process_ids(case_run_ids))
     issue_keys = pre_process_ids(issue_keys)
@@ -283,7 +283,7 @@ def filter(request, values={}):
     Example::
 
         # Get all case runs contain 'TCMS' in case summary
-        >>> TestCaseRun.filter({'case__summary__icontain': 'TCMS'})
+        TestCaseRun.filter({'case__summary__icontain': 'TCMS'})
     """
     return TestCaseRun.to_xmlrpc(values)
 
@@ -315,7 +315,7 @@ def get(request, case_run_id):
 
     Example::
 
-        >>> TestCaseRun.get(1)
+        TestCaseRun.get(1)
     """
     return gcr.pre_process_tcr(case_run_id=case_run_id).serialize()
 
@@ -333,7 +333,7 @@ def get_s(request, case_id, run_id, build_id, environment_id=0):
 
     Example::
 
-        >>> TestCaseRun.get_s(1, 2, 3, 4)
+        TestCaseRun.get_s(1, 2, 3, 4)
     """
     return gcr.pre_process_tcr_s(run_id, case_id, build_id,
                                  environment_id).serialize()
@@ -349,7 +349,7 @@ def get_issues(request, case_run_id):
 
     Example::
 
-        >>> TestCaseRun.get_issues(10)
+        TestCaseRun.get_issues(10)
     """
     query = {'case_run': int(case_run_id)}
     return Issue.to_xmlrpc(query)
@@ -368,7 +368,7 @@ def get_issues_s(request, run_id, case_id, build_id, environment_id=0):
 
     Example::
 
-        >>> TestCaseRun.get_issues_s(1, 2, 3, 4)
+        TestCaseRun.get_issues_s(1, 2, 3, 4)
     """
     query = {
         'case_run__run': int(run_id),
@@ -398,9 +398,9 @@ def get_case_run_status(request, case_run_status_id=None):
     Example::
 
         # Get all of case run status
-        >>> TestCaseRun.get_case_run_status()
+        TestCaseRun.get_case_run_status()
         # Get case run status by ID 1
-        >>> TestCaseRun.get_case_run_status(1)
+        TestCaseRun.get_case_run_status(1)
     """
     if case_run_status_id:
         return TestCaseRunStatus.objects.get(pk=case_run_status_id).serialize()
@@ -419,7 +419,7 @@ def get_completion_time(request, case_run_id):
 
     Example::
 
-        >>> TestCaseRun.get_completion_time(1)
+        TestCaseRun.get_completion_time(1)
     """
     from tcms.core.forms.widgets import SECONDS_PER_DAY
 
@@ -446,7 +446,7 @@ def get_completion_time_s(request, run_id, case_id, build_id, environment_id=0):
 
     Example::
 
-        >>> TestCaseRun.get_completion_time_s(1, 2, 3, 4)
+        TestCaseRun.get_completion_time_s(1, 2, 3, 4)
     """
     from tcms.core.forms.widgets import SECONDS_PER_DAY
 
@@ -537,7 +537,7 @@ def update(request, case_run_ids, values):
     Example::
 
         # Update alias to 'tcms' for case 12345 and 23456
-        >>> TestCaseRun.update([12345, 23456], {'assignee': 2206})
+        TestCaseRun.update([12345, 23456], {'assignee': 2206})
     """
     from datetime import datetime
     from tcms.core import forms

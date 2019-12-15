@@ -61,11 +61,11 @@ def add_cases(request, run_ids, case_ids):
     Example::
 
         # Add case id 10 to run 1
-        >>> TestRun.add_cases(1, 10)
+        TestRun.add_cases(1, 10)
         # Add case ids list [10, 20] to run list [1, 2]
-        >>> TestRun.add_cases([1, 2], [10, 20])
+        TestRun.add_cases([1, 2], [10, 20])
         # Add case ids list '10, 20' to run list '1, 2' with String
-        >>> TestRun.add_cases('1, 2', '10, 20')
+        TestRun.add_cases('1, 2', '10, 20')
     """
     trs = TestRun.objects.filter(run_id__in=pre_process_ids(run_ids))
     tcs = TestCase.objects.filter(case_id__in=pre_process_ids(case_ids))
@@ -128,11 +128,11 @@ def add_tag(request, run_ids, tags):
     Example::
 
         # Add tag 'foobar' to run 1
-        >>> TestPlan.add_tag(1, 'foobar')
+        TestPlan.add_tag(1, 'foobar')
         # Add tag list ['foo', 'bar'] to run list [1, 2]
-        >>> TestPlan.add_tag([1, 2], ['foo', 'bar'])
+        TestPlan.add_tag([1, 2], ['foo', 'bar'])
         # Add tag list ['foo', 'bar'] to run list [1, 2] with String
-        >>> TestPlan.add_tag('1, 2', 'foo, bar')
+        TestPlan.add_tag('1, 2', 'foo, bar')
     """
     trs = TestRun.objects.filter(pk__in=pre_process_ids(value=run_ids))
     tags = TestTag.string_to_list(tags)
@@ -172,16 +172,16 @@ def create(request, values):
 
     Example::
 
-        >>> values = {
-                'build': 2,
-                'manager': 1,
-                'plan': 1,
-                'errata_id': 2,
-                'product': 1,
-                'product_version': 2,
-                'summary': 'Testing XML-RPC for TCMS',
-            }
-        >>> TestRun.create(values)
+        values = {
+            'build': 2,
+            'manager': 1,
+            'plan': 1,
+            'errata_id': 2,
+            'product': 1,
+            'product_version': 2,
+            'summary': 'Testing XML-RPC for TCMS',
+        }
+        TestRun.create(values)
     """
     from datetime import datetime
     from tcms.core import forms
@@ -259,7 +259,7 @@ def env_value(request, action, run_ids, env_value_ids):
     Example::
 
         # Add env value 20 to run id 8
-        >>> TestRun.env_value('add', 8, 20)
+        TestRun.env_value('add', 8, 20)
     """
     from tcms.management.models import TCMSEnvValue
 
@@ -303,13 +303,13 @@ def filter(request, values={}):
     Example::
 
         # Get all of runs contain 'TCMS' in summary
-        >>> TestRun.filter({'summary__icontain': 'TCMS'})
+        TestRun.filter({'summary__icontain': 'TCMS'})
         # Get all of runs managed by xkuang
-        >>> TestRun.filter({'manager__username': 'xkuang'})
+        TestRun.filter({'manager__username': 'xkuang'})
         # Get all of runs the manager name starts with x
-        >>> TestRun.filter({'manager__username__startswith': 'x'})
+        TestRun.filter({'manager__username__startswith': 'x'})
         # Get runs contain the case ID 1, 2, 3
-        >>> TestRun.filter({'case_run__case__case_id__in': [1, 2, 3]})
+        TestRun.filter({'case_run__case__case_id__in': [1, 2, 3]})
     """
     return TestRun.to_xmlrpc(values)
 
@@ -339,7 +339,7 @@ def get(request, run_id):
 
     Example::
 
-        >>> TestRun.get(1)
+        TestRun.get(1)
     """
     try:
         tr = TestRun.objects.get(run_id=run_id)
@@ -371,11 +371,11 @@ def get_issues(request, run_ids):
     Example::
 
         # Get issues belonging to ID 12345
-        >>> TestRun.get_issues(1)
+        TestRun.get_issues(1)
         # Get issues belonging to run ids list [1, 2]
-        >>> TestRun.get_issues([1, 2])
+        TestRun.get_issues([1, 2])
         # Get issues belonging to run ids list 1 and 2 with string
-        >>> TestRun.get_issues('1, 2')
+        TestRun.get_issues('1, 2')
     """
     query = {'case_run__run__in': pre_process_ids(run_ids)}
     return Issue.to_xmlrpc(query)
@@ -424,7 +424,7 @@ def get_env_values(request, run_id):
 
     Example::
 
-        >>> TestRun.get_env_values(8)
+        TestRun.get_env_values(8)
     """
     from tcms.management.models import TCMSEnvValue
 
@@ -442,7 +442,7 @@ def get_tags(request, run_id):
 
     Example::
 
-        >>> TestRun.get_tags(1)
+        TestRun.get_tags(1)
     """
     tr = TestRun.objects.get(run_id=run_id)
 
@@ -462,7 +462,7 @@ def get_test_case_runs(request, run_id):
     Example::
 
         # Get all of case runs
-        >>> TestRun.get_test_case_runs(1)
+        TestRun.get_test_case_runs(1)
     """
     return TestCaseRun.to_xmlrpc({'run__run_id': run_id})
 
@@ -477,7 +477,7 @@ def get_test_cases(request, run_id):
 
     Example::
 
-        >>> TestRun.get_test_cases(1)
+        TestRun.get_test_cases(1)
     """
     tcs_serializer = TestCase.to_xmlrpc(query={'case_run__run_id': run_id})
 
@@ -503,7 +503,7 @@ def get_test_plan(request, run_id):
 
     Example::
 
-        >>> TestRun.get_test_plan(1)
+        TestRun.get_test_plan(1)
     """
     return TestRun.objects.select_related('plan').get(
         run_id=run_id).plan.serialize()
@@ -526,11 +526,11 @@ def remove_tag(request, run_ids, tags):
     Example::
 
         # Remove tag 'foo' from run 1
-        >>> TestRun.remove_tag(1, 'foo')
+        TestRun.remove_tag(1, 'foo')
         # Remove tag 'foo' and 'bar' from run list [1, 2]
-        >>> TestRun.remove_tag([1, 2], ['foo', 'bar'])
+        TestRun.remove_tag([1, 2], ['foo', 'bar'])
         # Remove tag 'foo' and 'bar' from run list '1, 2' with String
-        >>> TestRun.remove_tag('1, 2', 'foo, bar')
+        TestRun.remove_tag('1, 2', 'foo, bar')
     """
     trs = TestRun.objects.filter(
         run_id__in=pre_process_ids(value=run_ids)
@@ -580,7 +580,7 @@ def update(request, run_ids, values):
     Example::
 
         # Update status to finished for run 1 and 2
-        >>> TestRun.update([1, 2], {'status': 1})
+        TestRun.update([1, 2], {'status': 1})
     """
     from datetime import datetime
     from tcms.core import forms
@@ -672,7 +672,7 @@ def link_env_value(request, run_ids, env_value_ids):
     Example::
 
         # Add env value 1 to run id 2
-        >>> TestRun.link_env_value(2, 1)
+        TestRun.link_env_value(2, 1)
     """
     return env_value(request, 'add', run_ids, env_value_ids)
 
@@ -697,6 +697,6 @@ def unlink_env_value(request, run_ids, env_value_ids):
     Example::
 
         # Unlink env value 1 to run id 2
-        >>> TestRun.unlink_env_value(2, 1)
+        TestRun.unlink_env_value(2, 1)
     """
     return env_value(request, 'remove', run_ids, env_value_ids)

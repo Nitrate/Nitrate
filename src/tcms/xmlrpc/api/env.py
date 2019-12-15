@@ -37,7 +37,7 @@ def filter_groups(request, query):
     Example::
 
         # Get all of env group name contains 'Desktop'
-        >>> Env.filter_groups({'name__icontains': 'Desktop'})
+        Env.filter_groups({'name__icontains': 'Desktop'})
     """
     if 'is_active' in query:
         query['is_active'] = parse_bool_value(query['is_active'])
@@ -62,7 +62,7 @@ def filter_properties(request, query):
     Example::
 
         # Get all of env properties name contains 'Desktop'
-        >>> Env.filter_properties({'name__icontains': 'Desktop'})
+        Env.filter_properties({'name__icontains': 'Desktop'})
     """
     if 'is_active' in query:
         query['is_active'] = parse_bool_value(query['is_active'])
@@ -86,7 +86,7 @@ def filter_values(request, query):
     Example::
 
         # Get all of env values name contains 'Desktop'
-        >>> Env.filter_values({'name__icontains': 'Desktop'})
+        Env.filter_values({'name__icontains': 'Desktop'})
     """
     if 'is_active' in query:
         query['is_active'] = parse_bool_value(query['is_active'])
@@ -106,9 +106,9 @@ def get_properties(request, env_group_id=None, is_active=True):
     Example::
 
         # Get all of properties
-        >>> Env.get_properties()
+        Env.get_properties()
         # Get the properties in group 10
-        >>> Env.get_properties(10)
+        Env.get_properties(10)
     """
     query = {'is_active': parse_bool_value(is_active)}
     if env_group_id:
@@ -131,9 +131,9 @@ def get_values(request, env_property_id=None, is_active=True):
     Example::
 
         # Get all values from active environment properties
-        >>> Env.get_values()
+        Env.get_values()
         # Get the properties in group 10
-        >>> Env.get_values(10)
+        Env.get_values(10)
     """
     query = {'is_active': parse_bool_value(is_active)}
     if env_property_id:

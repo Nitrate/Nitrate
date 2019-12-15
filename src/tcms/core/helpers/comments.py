@@ -21,12 +21,15 @@ def add_comment(objs, comments, user, submit_date=None):
     params:
         @objs: [model, model,]
         @submit_date: datetime object
-    >>> from django.contrib.auth.models import User
-    >>> testuser = User.objects.get(email='user@example.com')
-    >>> from tcms.testruns.models import TestCaseRun as Run
-    >>> testrun = Run.objects.get(pk=171675)
-    >>> comments = 'stupid comments by Homer'
-    >>> add_comment([testrun,], comments, testuser)
+
+    Example::
+
+        from django.contrib.auth.models import User
+        testuser = User.objects.get(email='user@example.com')
+        from tcms.testruns.models import TestCaseRun as Run
+        testrun = Run.objects.get(pk=171675)
+        comments = 'stupid comments by Homer'
+        add_comment([testrun,], comments, testuser)
     """
     site = Site.objects.get(pk=settings.SITE_ID)
     c_type = ContentType.objects.get_for_model(model=objs[0].__class__)

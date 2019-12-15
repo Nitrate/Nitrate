@@ -19,7 +19,7 @@ def get(request):
 
     Example:
 
-    >>> Version.get()
+        Version.get()
     """
 
     return get_version()

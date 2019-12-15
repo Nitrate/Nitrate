@@ -81,11 +81,11 @@ def add_comment(request, case_ids, comment):
     Example::
 
         # Add comment 'foobar' to case 1
-        >>> TestCase.add_comment(1, 'foobar')
+        TestCase.add_comment(1, 'foobar')
         # Add 'foobar' to cases list [1, 2]
-        >>> TestCase.add_comment([1, 2], 'foobar')
+        TestCase.add_comment([1, 2], 'foobar')
         # Add 'foobar' to cases list '1, 2' with String
-        >>> TestCase.add_comment('1, 2', 'foobar')
+        TestCase.add_comment('1, 2', 'foobar')
     """
     from tcms.xmlrpc.utils import Comment
 
@@ -119,11 +119,11 @@ def add_component(request, case_ids, component_ids):
     Example::
 
         # Add component id 1 to case 1
-        >>> TestCase.add_component(1, 1)
+        TestCase.add_component(1, 1)
         # Add component ids list [3, 4] to cases list [1, 2]
-        >>> TestCase.add_component([1, 2], [3, 4])
+        TestCase.add_component([1, 2], [3, 4])
         # Add component ids list '3, 4' to cases list '1, 2' with String
-        >>> TestCase.add_component('1, 2', '3, 4')
+        TestCase.add_component('1, 2', '3, 4')
     """
     from tcms.management.models import Component
 
@@ -154,11 +154,11 @@ def add_tag(request, case_ids, tags):
     Example::
 
         # Add tag 'foobar' to case 1
-        >>> TestCase.add_tag(1, 'foobar')
+        TestCase.add_tag(1, 'foobar')
         # Add tag list ['foo', 'bar'] to cases list [1, 2]
-        >>> TestCase.add_tag([1, 2], ['foo', 'bar'])
+        TestCase.add_tag([1, 2], ['foo', 'bar'])
         # Add tag list ['foo', 'bar'] to cases list [1, 2] with String
-        >>> TestCase.add_tag('1, 2', 'foo, bar')
+        TestCase.add_tag('1, 2', 'foo, bar')
     """
     tcs = TestCase.objects.filter(
         case_id__in=pre_process_ids(value=case_ids))
@@ -192,11 +192,11 @@ def add_to_run(request, case_ids, run_ids):
     Example::
 
         # Add case 1 to run id 1
-        >>> TestCase.add_to_run(1, 1)
+        TestCase.add_to_run(1, 1)
         # Add case ids list [1, 2] to run list [3, 4]
-        >>> TestCase.add_to_run([1, 2], [3, 4])
+        TestCase.add_to_run([1, 2], [3, 4])
         # Add case ids list 1 and 2 to run list 3 and 4 with String
-        >>> TestCase.add_to_run('1, 2', '3, 4')
+        TestCase.add_to_run('1, 2', '3, 4')
     """
     from tcms.testruns.models import TestRun
 
@@ -238,14 +238,14 @@ def attach_issue(request, values):
 
     Example::
 
-        >>> values = {
-                'case': 1,
-                'issue_key': '1000',
-                'tracker': 1,
-                'summary': 'Testing TCMS',
-                'description': 'Just foo and bar',
-            }
-        >>> TestCase.attach_issue(values)
+        values = {
+            'case': 1,
+            'issue_key': '1000',
+            'tracker': 1,
+            'summary': 'Testing TCMS',
+            'description': 'Just foo and bar',
+        }
+        TestCase.attach_issue(values)
 
     .. versionchanged:: 4.2
        Some arguments passed via ``values`` are changed. ``case_id`` is changed
@@ -280,7 +280,7 @@ def check_case_status(request, name):
 
     Example::
 
-        >>> TestCase.check_case_status('proposed')
+        TestCase.check_case_status('proposed')
     """
     from tcms.testcases.models import TestCaseStatus
 
@@ -297,7 +297,7 @@ def check_priority(request, value):
 
     Example::
 
-        >>> TestCase.check_priority('p1')
+        TestCase.check_priority('p1')
     """
     from tcms.management.models import Priority
 
@@ -317,7 +317,7 @@ def calculate_average_estimated_time(request, case_ids):
 
     Example::
 
-        >>> TestCase.calculate_average_estimated_time([609, 610, 611])
+        TestCase.calculate_average_estimated_time([609, 610, 611])
     """
     from django.db.models import Avg
 
@@ -349,7 +349,7 @@ def calculate_total_estimated_time(request, case_ids):
 
     Example::
 
-        >>> TestCase.calculate_total_estimated_time([609, 610, 611])
+        TestCase.calculate_total_estimated_time([609, 610, 611])
     """
     from django.db.models import Sum
 
@@ -406,13 +406,13 @@ def create(request, values):
     Example::
 
         # Minimal test case parameters
-        >>> values = {
-                'category': 1,
-                'product': 1,
-                'summary': 'Testing XML-RPC',
-                'priority': 1,
-            }
-        >>> TestCase.create(values)
+        values = {
+            'category': 1,
+            'product': 1,
+            'summary': 'Testing XML-RPC',
+            'priority': 1,
+        }
+        TestCase.create(values)
     """
     from tcms.core import forms
     from tcms.xmlrpc.forms import NewCaseForm
@@ -481,11 +481,11 @@ def detach_issue(request, case_ids, issue_keys):
     Example::
 
         # Remove issue key 1000 from case 1
-        >>> TestCase.detach_issue(1, 1000)
+        TestCase.detach_issue(1, 1000)
         # Remove issue keys list [1000, 1001] from cases list [1, 2]
-        >>> TestCase.detach_issue([1, 2], [1000, 1001])
+        TestCase.detach_issue([1, 2], [1000, 1001])
         # Remove issue keys list '1000, 1001' from cases list '1, 2' with String
-        >>> TestCase.detach_issue('1, 2', '1000, 1001')
+        TestCase.detach_issue('1, 2', '1000, 1001')
     """
     case_ids = pre_process_ids(case_ids)
     issue_keys = pre_process_ids(issue_keys)
@@ -525,17 +525,17 @@ def filter(request, query):
     Example::
 
         # Get all of cases contain 'TCMS' in summary
-        >>> TestCase.filter({'summary__icontain': 'TCMS'})
+        TestCase.filter({'summary__icontain': 'TCMS'})
         # Get all of cases create by xkuang
-        >>> TestCase.filter({'author__username': 'xkuang'})
+        TestCase.filter({'author__username': 'xkuang'})
         # Get all of cases the author name starts with x
-        >>> TestCase.filter({'author__username__startswith': 'x'})
+        TestCase.filter({'author__username__startswith': 'x'})
         # Get all of cases belong to the plan 1
-        >>> TestCase.filter({'plan__plan_id': 1})
+        TestCase.filter({'plan__plan_id': 1})
         # Get all of cases belong to the plan create by xkuang
-        >>> TestCase.filter({'plan__author__username': 'xkuang'})
+        TestCase.filter({'plan__author__username': 'xkuang'})
         # Get cases with ID 12345, 23456, 34567 - Here is only support array so far.
-        >>> TestCase.filter({'case_id__in': [12345, 23456, 34567]})
+        TestCase.filter({'case_id__in': [12345, 23456, 34567]})
     """
     if query.get('estimated_time'):
         query['estimated_time'] = timedelta2int(
@@ -576,7 +576,7 @@ def get(request, case_id):
 
     Example::
 
-        >>> TestCase.get(1)
+        TestCase.get(1)
     """
     tc = TestCase.objects.get(case_id=case_id)
 
@@ -606,7 +606,7 @@ def get_issue_tracker(request, id):
 
     Example::
 
-        >>> TestCase.get_issue_tracker(1)
+        TestCase.get_issue_tracker(1)
     """
     return IssueTracker.objects.get(pk=int(id)).serialize()
 
@@ -625,11 +625,11 @@ def get_issues(request, case_ids):
     Example::
 
         # Get issues belonging to case 1
-        >>> TestCase.get_issues(1)
+        TestCase.get_issues(1)
         # Get issues belonging to cases [1, 2]
-        >>> TestCase.get_issues([1, 2])
+        TestCase.get_issues([1, 2])
         # Get issues belonging to case 1 and 2 with string
-        >>> TestCase.get_issues('1, 2')
+        TestCase.get_issues('1, 2')
     """
     case_ids = pre_process_ids(case_ids)
     query = {'case__in': case_ids}
@@ -649,7 +649,7 @@ def get_case_run_history(request, case_id):
 
     Example::
 
-        >>> TestCase.get_case_run_history(1)
+        TestCase.get_case_run_history(1)
 
     .. warning:: NOT IMPLEMENTED - Case run history is different than before
     """
@@ -667,9 +667,9 @@ def get_case_status(request, id=None):
     Example::
 
         # Get all of case status
-        >>> TestCase.get_case_status()
+        TestCase.get_case_status()
         # Get case status by ID 1
-        >>> TestCase.get_case_status(1)
+        TestCase.get_case_status(1)
     """
     from tcms.testcases.models import TestCaseStatus
 
@@ -689,7 +689,7 @@ def get_change_history(request, case_id):
 
     Example::
 
-        >>> TestCase.get_change_history(12345)
+        TestCase.get_change_history(12345)
 
     .. warning::
 
@@ -709,7 +709,7 @@ def get_components(request, case_id):
 
     Example::
 
-        >>> TestCase.get_components(1)
+        TestCase.get_components(1)
     """
     from tcms.management.models import Component
 
@@ -731,7 +731,7 @@ def get_plans(request, case_id):
 
     Example::
 
-        >>> TestCase.get_plans(1)
+        TestCase.get_plans(1)
     """
     tc = TestCase.objects.get(case_id=case_id)
 
@@ -751,7 +751,7 @@ def get_tags(request, case_id):
 
     Example::
 
-        >>> TestCase.get_tags(1)
+        TestCase.get_tags(1)
     """
     tc = TestCase.objects.get(case_id=case_id)
 
@@ -776,9 +776,9 @@ def get_text(request, case_id, case_text_version=None):
     Example::
 
         # Get all latest case text
-        >>> TestCase.get_text(1)
+        TestCase.get_text(1)
         # Get all case text with version 4
-        >>> TestCase.get_text(1, 4)
+        TestCase.get_text(1, 4)
     """
     tc = TestCase.objects.get(case_id=case_id)
 
@@ -796,7 +796,7 @@ def get_priority(request, id):
 
     Example::
 
-        >>> TestCase.get_priority(1)
+        TestCase.get_priority(1)
     """
     from tcms.management.models import Priority
 
@@ -823,11 +823,11 @@ def link_plan(request, case_ids, plan_ids):
     Example::
 
         # Add case 1 to plan id 2
-        >>> TestCase.link_plan(1, 2)
+        TestCase.link_plan(1, 2)
         # Add case ids list [1, 2] to plan list [3, 4]
-        >>> TestCase.link_plan([1, 2], [3, 4])
+        TestCase.link_plan([1, 2], [3, 4])
         # Add case ids list 1 and 2 to plan list 3 and 4 with String
-        >>> TestCase.link_plan('1, 2', '3, 4')
+        TestCase.link_plan('1, 2', '3, 4')
     """
     case_ids = pre_process_ids(value=case_ids)
     qs = TestCase.objects.filter(pk__in=case_ids)
@@ -967,11 +967,11 @@ def remove_component(request, case_ids, component_ids):
     Example::
 
         # Remove component id 1 from case 1
-        >>> TestCase.remove_component(1, 1)
+        TestCase.remove_component(1, 1)
         # Remove component ids list [3, 4] from cases list [1, 2]
-        >>> TestCase.remove_component([1, 2], [3, 4])
+        TestCase.remove_component([1, 2], [3, 4])
         # Remove component ids list '3, 4' from cases list '1, 2' with String
-        >>> TestCase.remove_component('1, 2', '3, 4')
+        TestCase.remove_component('1, 2', '3, 4')
     """
     from tcms.management.models import Component
 
@@ -1009,11 +1009,11 @@ def remove_tag(request, case_ids, tags):
     Example::
 
         # Remove tag 'foo' from case 1
-        >>> TestCase.remove_tag(1, 'foo')
+        TestCase.remove_tag(1, 'foo')
         # Remove tag 'foo' and bar from cases list [1, 2]
-        >>> TestCase.remove_tag([1, 2], ['foo', 'bar'])
+        TestCase.remove_tag([1, 2], ['foo', 'bar'])
         # Remove tag 'foo' and 'bar' from cases list '1, 2' with String
-        >>> TestCase.remove_tag('1, 2', 'foo, bar')
+        TestCase.remove_tag('1, 2', 'foo, bar')
     """
     tcs = TestCase.objects.filter(
         case_id__in=pre_process_ids(value=case_ids)
@@ -1049,8 +1049,8 @@ def store_text(request, case_id, action, effect='', setup='', breakdown='',
 
     Example::
 
-        >>> TestCase.store_text(1, 'Action')
-        >>> TestCase.store_text(1, 'Action', 'Effect', 'Setup', 'Breakdown', 2)
+        TestCase.store_text(1, 'Action')
+        TestCase.store_text(1, 'Action', 'Effect', 'Setup', 'Breakdown', 2)
     """
     from django.contrib.auth.models import User
 
@@ -1088,7 +1088,7 @@ def unlink_plan(requst, case_id, plan_id):
     Example::
 
         # Unlink case 100 from plan 10
-        >>> TestCase.unlink_plan(100, 10)
+        TestCase.unlink_plan(100, 10)
     """
     TestCasePlan.objects.filter(case=case_id, plan=plan_id).delete()
     plan_pks = TestCasePlan.objects.filter(case=case_id).values_list('plan',
@@ -1132,7 +1132,7 @@ def update(request, case_ids, values):
     Example::
 
         # Update alias to 'tcms' for case 1 and 2
-        >>> TestCase.update([1, 2], {'alias': 'tcms'})
+        TestCase.update([1, 2], {'alias': 'tcms'})
     """
     from tcms.core import forms
     from tcms.xmlrpc.forms import UpdateCaseForm

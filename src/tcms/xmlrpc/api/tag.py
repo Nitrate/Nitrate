@@ -22,7 +22,7 @@ def get_tags(request, values):
 
     Example::
 
-        >>> Tag.get_tags({'ids': [121, 123]})
+        Tag.get_tags({'ids': [121, 123]})
     """
     if not isinstance(values, dict):
         raise TypeError('Argument values must be an dictionary.')

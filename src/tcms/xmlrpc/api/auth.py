@@ -68,7 +68,7 @@ def login_krbv(request):
         Password for username@example.com:
 
         $ python
-        >>> Auth.login_krbv()
+        Auth.login_krbv()
     """
     from django.contrib.auth.middleware import RemoteUserMiddleware
 

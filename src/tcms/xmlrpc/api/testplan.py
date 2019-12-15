@@ -58,11 +58,11 @@ def add_tag(request, plan_ids, tags):
     Example::
 
         # Add tag 'foobar' to plan 1
-        >>> TestPlan.add_tag(1, 'foobar')
+        TestPlan.add_tag(1, 'foobar')
         # Add tag list ['foo', 'bar'] to plan list [1, 2]
-        >>> TestPlan.add_tag([1, 2], ['foo', 'bar'])
+        TestPlan.add_tag([1, 2], ['foo', 'bar'])
         # Add tag list ['foo', 'bar'] to plan list [1, 2] with String
-        >>> TestPlan.add_tag('1, 2', 'foo, bar')
+        TestPlan.add_tag('1, 2', 'foo, bar')
     """
     # FIXME: this could be optimized to reduce possible huge number of SQLs
 
@@ -96,11 +96,11 @@ def add_component(request, plan_ids, component_ids):
     Example::
 
         # Add component id 54321 to plan 1234
-        >>> TestPlan.add_component(1234, 54321)
+        TestPlan.add_component(1234, 54321)
         # Add component ids list [1234, 5678] to plan list [56789, 12345]
-        >>> TestPlan.add_component([56789, 12345], [1234, 5678])
+        TestPlan.add_component([56789, 12345], [1234, 5678])
         # Add component ids list '1234, 5678' to plan list '56789, 12345' with String
-        >>> TestPlan.add_component('56789, 12345', '1234, 5678')
+        TestPlan.add_component('56789, 12345', '1234, 5678')
     """
     # FIXME: optimize this method to reduce possible huge number of SQLs
 
@@ -128,7 +128,7 @@ def check_plan_type(request, name):
 
     Example::
 
-        >>> TestPlan.check_plan_type('regression')
+        TestPlan.check_plan_type('regression')
     """
     return TestPlanType.objects.get(name=name).serialize()
 
@@ -155,7 +155,7 @@ def create(request, values):
     Example::
 
         # Minimal test case parameters
-        >>> values = {
+        values = {
             'product': 1,
             'name': 'Testplan foobar',
             'type': 1,
@@ -163,7 +163,7 @@ def create(request, values):
             'default_product_version': 1,
             'text':'Testing TCMS',
         }
-        >>> TestPlan.create(values)
+        TestPlan.create(values)
 
     .. deprecated: x.y
        ``default_product_version`` is deprecated and will be removed.
@@ -226,13 +226,13 @@ def filter(request, values={}):
     Example::
 
         # Get all of plans contain 'TCMS' in name
-        >>> TestPlan.filter({'name__icontain': 'TCMS'})
+        TestPlan.filter({'name__icontain': 'TCMS'})
         # Get all of plans create by xkuang
-        >>> TestPlan.filter({'author__username': 'xkuang'})
+        TestPlan.filter({'author__username': 'xkuang'})
         # Get all of plans the author name starts with x
-        >>> TestPlan.filter({'author__username__startswith': 'x'})
+        TestPlan.filter({'author__username__startswith': 'x'})
         # Get plans contain the case ID 1, 2, 3
-        >>> TestPlan.filter({'case__case_id__in': [1, 2, 3]})
+        TestPlan.filter({'case__case_id__in': [1, 2, 3]})
     """
     return TestPlan.to_xmlrpc(values)
 
@@ -261,7 +261,7 @@ def get(request, plan_id):
 
     Example::
 
-        >>> TestPlan.get(1)
+        TestPlan.get(1)
     """
     tp = TestPlan.objects.get(plan_id=plan_id)
     response = tp.serialize()
@@ -319,7 +319,7 @@ def get_plan_type(request, id):
 
     Example::
 
-        >>> TestPlan.get_plan_type(1)
+        TestPlan.get_plan_type(1)
     """
     return TestPlanType.objects.get(id=id).serialize()
 
@@ -334,7 +334,7 @@ def get_product(request, plan_id):
 
     Example::
 
-        >>> TestPlan.get_product(1)
+        TestPlan.get_product(1)
     """
     products = Product.objects.filter(plan=plan_id)
     products = products.select_related('classification')
@@ -355,7 +355,7 @@ def get_tags(request, plan_id):
 
     Example::
 
-        >>> TestPlan.get_tags(1)
+        TestPlan.get_tags(1)
     """
     tp = TestPlan.objects.get(plan_id=plan_id)
 
@@ -374,7 +374,7 @@ def get_components(request, plan_id):
 
     Example::
 
-        >>> TestPlan.get_components(1)
+        TestPlan.get_components(1)
     """
     tp = TestPlan.objects.get(plan_id=plan_id)
 
@@ -393,7 +393,7 @@ def get_all_cases_tags(request, plan_id):
 
     Example::
 
-        >>> TestPlan.get_all_cases_tags(137)
+        TestPlan.get_all_cases_tags(137)
     """
     tp = TestPlan.objects.get(plan_id=plan_id)
 
@@ -416,7 +416,7 @@ def get_test_cases(request, plan_id):
 
     Example::
 
-        >>> TestPlan.get_test_cases(1)
+        TestPlan.get_test_cases(1)
     """
     from tcms.testcases.models import TestCase
     from tcms.testplans.models import TestPlan
@@ -443,7 +443,7 @@ def get_test_runs(request, plan_id):
 
     Example::
 
-        >>> TestPlan.get_test_runs(1)
+        TestPlan.get_test_runs(1)
     """
     from tcms.testruns.models import TestRun
 
@@ -465,9 +465,9 @@ def get_text(request, plan_id, plan_text_version=None):
     Example::
 
         # Get all latest case text
-        >>> TestPlan.get_text(1)
+        TestPlan.get_text(1)
         # Get all case text with version 4
-        >>> TestPlan.get_text(1, 4)
+        TestPlan.get_text(1, 4)
     """
     tp = TestPlan.objects.get(plan_id=plan_id)
     test_plan_text = tp.get_text_with_version(
@@ -506,11 +506,11 @@ def remove_tag(request, plan_ids, tags):
     Example::
 
         # Remove tag 'foo' from plan 1
-        >>> TestPlan.remove_tag(1, 'foo')
+        TestPlan.remove_tag(1, 'foo')
         # Remove tag 'foo' and 'bar' from plan list [1, 2]
-        >>> TestPlan.remove_tag([1, 2], ['foo', 'bar'])
+        TestPlan.remove_tag([1, 2], ['foo', 'bar'])
         # Remove tag 'foo' and 'bar' from plan list '1, 2' with String
-        >>> TestPlan.remove_tag('1, 2', 'foo, bar')
+        TestPlan.remove_tag('1, 2', 'foo, bar')
     """
     from tcms.management.models import TestTag
 
@@ -550,11 +550,11 @@ def remove_component(request, plan_ids, component_ids):
     Example::
 
         # Remove component id 2 from plan 1
-        >>> TestPlan.remove_component(1, 2)
+        TestPlan.remove_component(1, 2)
         # Remove component ids list [3, 4] from plan list [1, 2]
-        >>> TestPlan.remove_component([1, 2], [3, 4])
+        TestPlan.remove_component([1, 2], [3, 4])
         # Remove component ids list '3, 4' from plan list '1, 2' with String
-        >>> TestPlan.remove_component('1, 2', '3, 4')
+        TestPlan.remove_component('1, 2', '3, 4')
     """
     tps = TestPlan.objects.filter(
         plan_id__in=pre_process_ids(value=plan_ids)
@@ -587,7 +587,7 @@ def store_text(request, plan_id, text, author=None):
 
     Example::
 
-        >>> TestPlan.store_text(1, 'Plan Text', 2)
+        TestPlan.store_text(1, 'Plan Text', 2)
     """
     from django.contrib.auth.models import User
 
@@ -631,7 +631,7 @@ def update(request, plan_ids, values):
     Example::
 
         # Update product to 7 for plan 1 and 2
-        >>> TestPlan.update([1, 2], {'product': 7})
+        TestPlan.update([1, 2], {'product': 7})
 
     .. deprecated:: x.y
        ``default_product_version`` is deprecated and will be removed.
@@ -713,8 +713,8 @@ def import_case_via_XML(request, plan_id, xml_content):
 
     Example::
 
-        >>> fb = open('tcms.xml', 'rb')
-        >>> TestPlan.import_case_via_XML(1, fb.read())
+        fb = open('tcms.xml', 'rb')
+        TestPlan.import_case_via_XML(1, fb.read())
     """
     tp = TestPlan.objects.get(pk=plan_id)
     new_case_from_xml = list(clean_xml_file(xml_content))

@@ -27,9 +27,9 @@ def check_build(request, name, product):
     Example::
 
         # Get with product ID
-        >>> Build.check_build('2008-02-25', 1)
+        Build.check_build('2008-02-25', 1)
         # Get with product name
-        >>> Build.check_build('2008-02-25', 'Product A')
+        Build.check_build('2008-02-25', 'Product A')
     """
     p = pre_check_product(values=product)
     tb = TestBuild.objects.get(name=name, product=p)
@@ -55,9 +55,9 @@ def create(request, values):
     Example::
 
         # Create build by product ID and set the build active.
-        >>> Build.create({'product': 234, 'name': 'tcms_testing', 'description': 'None', 'is_active': 1})
+        Build.create({'product': 234, 'name': 'tcms_testing', 'description': 'None', 'is_active': 1})
         # Create build by product name and set the build to inactive.
-        >>> Build.create({'product': 'TCMS', 'name': 'tcms_testing 2', 'description': 'None', 'is_active': 0})
+        Build.create({'product': 'TCMS', 'name': 'tcms_testing 2', 'description': 'None', 'is_active': 0})
     """
     if not values.get('product') or not values.get('name'):
         raise ValueError('Product and name are both required.')
@@ -82,7 +82,7 @@ def get(request, build_id):
 
     Example::
 
-        >>> Build.get(1234)
+        Build.get(1234)
     """
     return TestBuild.objects.get(build_id=build_id).serialize()
 
@@ -97,7 +97,7 @@ def get_runs(request, build_id):
 
     Example::
 
-        >>> Build.get_runs(1234)
+        Build.get_runs(1234)
     """
     from tcms.testruns.models import TestRun
 
@@ -116,7 +116,7 @@ def get_caseruns(request, build_id):
 
     Example::
 
-        >>> Build.get_caseruns(1234)
+        Build.get_caseruns(1234)
     """
     from tcms.testruns.models import TestCaseRun
 
@@ -164,9 +164,9 @@ def update(request, build_id, values):
     Example::
 
         # Update name to 'foo' for build id 702
-        >>> Build.update(702, {'name': 'foo'})
+        Build.update(702, {'name': 'foo'})
         # Update status to inactive for build id 702
-        >>> Build.update(702, {'is_active': 0})
+        Build.update(702, {'is_active': 0})
     """
     tb = TestBuild.objects.get(build_id=build_id)
 

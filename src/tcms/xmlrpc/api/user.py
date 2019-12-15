@@ -48,7 +48,7 @@ def filter(request, query):
 
     Example::
 
-        >>> User.filter({'username__startswith': 'z'})
+        User.filter({'username__startswith': 'z'})
     """
     if 'is_active' in query:
         query['is_active'] = parse_bool_value(query['is_active'])
@@ -66,7 +66,7 @@ def get(request, id):
 
     Example::
 
-        >>> User.get(2)
+        User.get(2)
     """
     return get_user_dict(User.objects.get(pk=id))
 
@@ -80,7 +80,7 @@ def get_me(request):
 
     Example::
 
-        >>> User.get_me()
+        User.get_me()
     """
     return get_user_dict(request.user)
 
@@ -106,9 +106,9 @@ def update(request, values=None, id=None):
 
     Example::
 
-        >>> User.update({'first_name': 'foo'})
-        >>> User.update({'password': 'foo', 'old_password': '123'})
-        >>> User.update({'password': 'foo', 'old_password': '123'}, 2)
+        User.update({'first_name': 'foo'})
+        User.update({'password': 'foo', 'old_password': '123'})
+        User.update({'password': 'foo', 'old_password': '123'}, 2)
     """
     if id:
         user_being_updated = User.objects.get(pk=id)
@@ -167,7 +167,7 @@ def join(request, username, groupname):
 
     Example::
 
-        >>> User.join('username', 'groupname')
+        User.join('username', 'groupname')
     """
     try:
         user = User.objects.get(username=username)
