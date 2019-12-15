@@ -1278,8 +1278,10 @@ def update_case_run_text(request, run_id):
             tcr.case_text_version = lctv
             tcr.save()
 
-    info = '<p>%s case run(s) succeed to update, following is the list:</p>\
-    <ul>%s</ul>' % (count, updated_tcrs)
+    info = (
+        f'<p>{count} case run(s) succeed to update, following is the list:</p>'
+        f'<ul>{updated_tcrs}</ul>'
+    )
 
     return Prompt.render(
         request=request,
