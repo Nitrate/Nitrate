@@ -1,18 +1,20 @@
 # -*- coding: utf-8 -*-
 
+from datetime import timedelta
 from mock import patch
 
 from django.contrib.auth.models import User
 from django.core import mail
+from django.db.models import Max
 from django.db.models.signals import post_save, post_delete, pre_save
 from django import test
 
 from tcms.core.utils.checksum import checksum
 from tcms.issuetracker.models import Issue
-from tcms.management.models import Priority
+from tcms.management.models import Priority, Component, Product
 from tcms.testcases import signals as case_watchers
 from tcms.testcases.models import _listen
-from tcms.testcases.models import TestCase
+from tcms.testcases.models import TestCase, TestCasePlan
 from tcms.testcases.models import TestCaseCategory
 from tcms.testcases.models import TestCaseStatus
 from tcms.testcases.models import TestCaseText
@@ -270,6 +272,9 @@ class TestCreate(BasePlanCase):
         cls.tag_fedora = f.TestTagFactory(name='fedora')
         cls.tag_python = f.TestTagFactory(name='python')
 
+        cls.component_db = f.ComponentFactory(name='db', product=cls.product)
+        cls.component_web = f.ComponentFactory(name='web', product=cls.product)
+
     def test_create(self):
         values = {
             'summary': f'Test new case: {self.__class__.__name__}',
@@ -286,15 +291,22 @@ class TestCreate(BasePlanCase):
             'priority': Priority.objects.all()[0],
             'default_tester': self.tester,
             'notes': '',
-            'tag': [self.tag_fedora, self.tag_python]
+            'tag': [self.tag_fedora, self.tag_python],
+            'component': [self.component_db, self.component_web],
         }
-        case = TestCase.create(self.tester, values=values)
+        TestCase.create(self.tester, values=values, plans=[self.plan])
 
         new_case = TestCase.objects.get(summary=values['summary'])
 
-        self.assertEqual(case, new_case)
-        self.assertEqual(values['case_status'], new_case.case_status)
-        self.assertEqual(set(values['tag']), set(new_case.tag.all()))
+        expected = values.copy()
+        expected['estimated_time'] = timedelta(0)
+
+        from tests.testcases import assert_new_case
+        assert_new_case(new_case, expected)
+
+        self.assertTrue(
+            TestCasePlan.objects.filter(plan=self.plan, case=new_case).exists()
+        )
 
 
 class TestUpdateTags(test.TestCase):
@@ -395,8 +407,320 @@ class TestAddIssue(BaseCaseRun):
     def test_issue_must_be_validated_before_add(self):
         self.assertValidationError(
             'issue_key',
-            r'Issue key PROJ-1 is in malformat',
+            r'Issue key PROJ-1 is in wrong format',
             self.case_1.add_issue,
             issue_key='PROJ-1',
             issue_tracker=self.issue_tracker,
         )
+
+
+class TestGetPreviousAndNext(BasePlanCase):
+    """Test TestCase.get_previous_and_next"""
+
+    def test_get_the_case(self):
+        test_data = (
+            ((self.case.pk, self.case_3.pk, self.case_6.pk),
+             (self.case, self.case_6)),
+
+            ((self.case_3.pk, self.case_2.pk, self.case_5.pk),
+             (self.case_5, self.case_2)),
+
+            ((self.case_4.pk, self.case_6.pk, self.case_3.pk),
+             (self.case_6, self.case_4)),
+
+            ((self.case_6.pk, self.case_2.pk, self.case_1.pk),
+             (None, None)),
+        )
+
+        test_target = self.case_3
+
+        for example_input, expected_output in test_data:
+            output = test_target.get_previous_and_next(example_input)
+            self.assertTupleEqual(expected_output, output)
+
+
+class TestAddTextToCase(test.TestCase):
+    """Test TestCase.add_text"""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.case = f.TestCaseFactory()
+        cls.tester = f.UserFactory(username='zhangsan', email='zhangsan@cool')
+
+    def test_add_new_text(self):
+        args = [
+            {
+                'action': 'action',
+                'effect': 'effect',
+                'setup': 'setup',
+                'breakdown': 'breakdown',
+            },
+            {
+                'action': 'action 1',
+                'effect': 'effect 1',
+                'setup': 'setup 1',
+                'breakdown': 'breakdown 1',
+            },
+            {
+                'action': 'action 1',
+                'effect': 'effect 1',
+                'setup': 'setup 1',
+                'breakdown': 'break into several steps',
+            },
+            {
+                'action': 'take some action',
+                'effect': 'expected result',
+                'setup': 'setup environemnt',
+                'breakdown': 'break into several steps',
+                'action_checksum': checksum('take some action'),
+                'effect_checksum': checksum('expected result')
+            },
+            {
+                'action': 'action 1',
+                'effect': 'effect 1',
+                'setup': 'setup 1',
+                'breakdown': 'breakdown 1',
+                'action_checksum': checksum('action 1'),
+                'effect_checksum': checksum('effect 1'),
+                'setup_checksum': checksum('setup 1'),
+                'breakdown_checksum': checksum('breakdown 1'),
+            },
+        ]
+
+        for expected_text_version, kwargs in enumerate(args, 1):
+            self.case.add_text(**kwargs)
+
+            new_text = self.case.text.order_by('pk').last()
+
+            self.assertEqual(expected_text_version, new_text.case_text_version)
+            self.assertEqual(kwargs['action'], new_text.action)
+            self.assertEqual(kwargs['effect'], new_text.effect)
+            self.assertEqual(kwargs['setup'], new_text.setup)
+            self.assertEqual(kwargs['breakdown'], new_text.breakdown)
+
+            self.assertEqual(checksum(kwargs['action']), new_text.action_checksum)
+            self.assertEqual(checksum(kwargs['effect']), new_text.effect_checksum)
+            self.assertEqual(checksum(kwargs['setup']), new_text.setup_checksum)
+            self.assertEqual(checksum(kwargs['breakdown']), new_text.breakdown_checksum)
+
+    def test_do_not_add_if_all_checksum_are_same(self):
+        action_checksum = checksum('action')
+        effect_checksum = checksum('effect')
+        setup_checksum = checksum('setup')
+        breakdown_checksum = checksum('breakdown')
+
+        args = [
+            {
+                'action': 'action',
+                'effect': 'effect',
+                'setup': 'setup',
+                'breakdown': 'breakdown',
+            },
+            {
+                'action': 'action',
+                'effect': 'effect',
+                'setup': 'setup',
+                'breakdown': 'breakdown',
+                'action_checksum': action_checksum,
+                'setup_checksum': setup_checksum,
+            },
+            {
+                'action': 'action',
+                'effect': 'effect',
+                'setup': 'setup',
+                'breakdown': 'breakdown',
+                'action_checksum': action_checksum,
+                'effect_checksum': effect_checksum,
+                'setup_checksum': setup_checksum,
+                'breakdown_checksum': breakdown_checksum,
+            },
+        ]
+
+        text = self.case.add_text(**args[0])
+
+        for kwargs in args:
+            new_text = self.case.add_text(**kwargs)
+
+            self.assertEqual(text.case_text_version, new_text.case_text_version)
+            self.assertEqual(text.action, new_text.action)
+            self.assertEqual(text.effect, new_text.effect)
+            self.assertEqual(text.setup, new_text.setup)
+            self.assertEqual(text.breakdown, new_text.breakdown)
+
+            self.assertEqual(action_checksum, new_text.action_checksum)
+            self.assertEqual(effect_checksum, new_text.effect_checksum)
+            self.assertEqual(setup_checksum, new_text.setup_checksum)
+            self.assertEqual(breakdown_checksum, new_text.breakdown_checksum)
+
+    def test_set_author_correctly(self):
+        text = self.case.add_text(action='action', effect='effect',
+                                  setup='setup', breakdown='breakdown',
+                                  author=self.tester)
+        self.assertEqual(self.tester, text.author)
+
+    def test_use_case_author_if_text_author_is_not_specified(self):
+        text = self.case.add_text(action='action', effect='effect',
+                                  setup='setup', breakdown='breakdown')
+        self.assertEqual(self.case.author, text.author)
+
+
+class TestGetLatestTextVersion(test.TestCase):
+    """Test TestCase.latest_text_version"""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.case = f.TestCaseFactory(summary='Test with no text')
+
+        cls.case_1 = f.TestCaseFactory(summary='Test with text added')
+        cls.case_1.add_text(
+            action='action', effect='effect',
+            setup='setup', breakdown='breakdown')
+        cls.text = cls.case_1.add_text(
+            action='another action', effect='effect',
+            setup='setup', breakdown='breakdown')
+        cls.text.case_text_version = 3
+        cls.text.save()
+
+    def test_get_when_no_text_is_added(self):
+        self.assertEqual(0, self.case.latest_text_version())
+
+    def test_get_the_version(self):
+        self.assertEqual(self.text.case_text_version,
+                         self.case_1.latest_text_version())
+
+
+class TestListCases(BasePlanCase):
+    """Test TestCase.list"""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+
+        cls.bz_tracker = cls.create_bz_tracker()
+
+        cls.case_author = f.UserFactory(username='case-author')
+        cls.default_tester = f.UserFactory(username='default-tester')
+
+        cls.case_1.summary = 'Test list case'
+        cls.case_1.is_automated = 1
+        cls.case_1.is_automated_proposed = True
+        cls.case_1.author = cls.case_author
+        cls.case_1.default_tester = cls.default_tester
+        cls.case_1.category = f.TestCaseCategoryFactory(
+            name='functional', product=cls.product)
+        cls.case_1.priority = Priority.objects.get(value='P3')
+        cls.case_1.case_status = TestCaseStatus.objects.first()
+        cls.case_1.save()
+
+        cls.case_1.add_issue('2000', cls.bz_tracker)
+        cls.case_1.add_issue('2001', cls.bz_tracker)
+
+        f.TestCaseComponentFactory(
+            case=cls.case_1, component=f.ComponentFactory(name='db'))
+        f.TestCaseComponentFactory(
+            case=cls.case_1, component=f.ComponentFactory(name='web'))
+
+        f.TestCaseTagFactory(
+            case=cls.case_1, tag=f.TestTagFactory(name='python'))
+        f.TestCaseTagFactory(
+            case=cls.case_1, tag=f.TestTagFactory(name='fedora'))
+
+    def test_simple_list_by_property(self):
+        criteria = [
+            {'summary': 'list case'},
+            {'author': self.case_1.author.username},
+            {'author': self.case_1.author.email},
+            {'default_tester': self.case_1.default_tester.username},
+            {'default_tester': self.case_1.default_tester.email},
+            {'tag__name__in': ['python']},
+            {'category': TestCaseCategory.objects.get(name='functional')},
+            {'priority': [Priority.objects.get(value='P3')]},
+            {'case_status': [TestCaseStatus.objects.first()]},
+            {'component': Component.objects.get(name='db')},
+            {'is_automated': 1},
+            {'is_automated_proposed': True},
+            {'product': self.product.pk},
+            {'issue_key': ['2000', '1000']},
+        ]
+
+        for item in criteria:
+            cases = TestCase.list(item)
+            self.assertEqual([self.case_1], list(cases))
+
+    def test_list_a_set_of_cases(self):
+        cases = TestCase.list({
+            'case_id_set': [self.case_2.pk, self.case_5.pk]
+        })
+        self.assertEqual([self.case_2, self.case_5], list(cases))
+
+    def test_list_by_plan(self):
+        cases = TestCase.list(
+            {'product': self.product.pk}, plan=self.plan
+        ).order_by('pk')
+        self.assertEqual([self.case_1], list(cases))
+
+    def test_list_by_search_keyword(self):
+        criteria = [
+            {'search': 'Test list'},
+            {'search': self.case_author.email.split('@')[0]},
+        ]
+
+        for item in criteria:
+            cases = TestCase.list(item)
+            self.assertEqual([self.case_1], list(cases))
+
+    def test_list_by_multiple_criteria(self):
+        cases = TestCase.list({
+            'category': TestCaseCategory.objects.get(name='functional'),
+            'issue_key': ['2000'],
+        })
+        self.assertEqual([self.case_1], list(cases))
+
+    def test_get_empty_result(self):
+        result = Product.objects.aggregate(max_pk=Max('pk'))
+        unknown_pk = result['max_pk'] + 1
+        self.assertListEqual([], list(TestCase.list({'product': unknown_pk})))
+
+
+class TestUpdateCases(BasePlanCase):
+    """Test TestCase.update"""
+
+    def test_update(self):
+        TestCase.update(self.case_1.pk, {
+            'category': f.TestCaseCategoryFactory(
+                name='functional', product=self.product),
+            'is_automated': 1,
+            'notes': '',
+            'script': '',
+        })
+
+        case = TestCase.objects.get(pk=self.case_1.pk)
+
+        category = TestCaseCategory.objects.get(
+            name='functional', product=self.product)
+
+        self.assertEqual(category, case.category)
+        self.assertEqual(1, case.is_automated)
+        self.assertEqual('', case.notes)
+        self.assertEqual('', case.script)
+
+
+class TestTextExist(test.TestCase):
+    """Test TestCase.text_exist"""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.case_1 = f.TestCaseFactory(summary='case 2')
+        cls.case_1.add_text(action='action', effect='effect',
+                            setup='setup', breakdown='breakdown')
+        cls.case_1.add_text(action='action 1', effect='effect 1',
+                            setup='setup 1', breakdown='breakdown 1')
+        cls.case_1.add_text(action='action 2', effect='effect 2',
+                            setup='setup 2', breakdown='breakdown 2')
+        cls.case_2 = f.TestCaseFactory(summary='case 2')
+
+    def test_text_exists(self):
+        self.assertTrue(self.case_1.text_exist())
+
+    def test_text_not_exist(self):
+        self.assertFalse(self.case_2.text_exist())

@@ -1,0 +1,11 @@
+<ul class="comment ul-no-format">
+{% for comment in comments %}
+	<li>
+		<span class="strong">#{{ forloop.counter }}</span>
+		<span class="strong">{{ comment.user.email }}</span>
+		<span class="grey">{{ comment.submit_date }}</span>
+		<br/>
+		{{ comment.comment|urlize|linebreaksbr }}
+	</li>
+{% endfor %}
+<ul>

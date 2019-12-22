@@ -7,6 +7,7 @@ import logging
 
 from http import HTTPStatus
 from operator import itemgetter, attrgetter
+from typing import Dict, List, Optional
 
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
@@ -15,7 +16,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
 from django.db.models import Count
 from django.http import HttpResponseRedirect, HttpResponse, Http404
-from django.http import JsonResponse
+from django.http import HttpResponseBadRequest, JsonResponse
 from django import forms as djforms
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import get_template
@@ -28,7 +29,6 @@ from django.utils.decorators import method_decorator
 from django_comments.models import Comment
 
 from tcms.core.db import SQLExecution
-from tcms.core import forms
 from tcms.core.utils import DataTableResult
 from tcms.core.utils import form_error_messags_to_list
 from tcms.core.utils.raw_sql import RawSQL
@@ -74,49 +74,44 @@ TESTCASE_OPERATION_ACTIONS = (
 
 
 def plan_from_request_or_none(request, pk_enough=False):
-    """Get TestPlan from REQUEST
+    """Get TestPlan from request data either get or post
 
     This method relies on the existence of from_plan within REQUEST.
 
-    Arguments:
-    - pk_enough: a choice for invoker to determine whether the ID is enough.
+    :param request: the Django HTTPRequest object.
+    :param bool pk_enough: indicate whether it is ok to just return the plan
+        ID, otherwise, the plan object will be returned.
+    :return: the plan ID or corresponding plan object. If ``from_plan`` does
+        not exist in the query string or the value of ``from_plan`` is not an
+        integer, None will be returned.
+    :rtype: int or TestPlan or None
+    :raises Http404: if plan ID does not exist in the database.
     """
     tp_id = request.POST.get("from_plan") or request.GET.get("from_plan")
-    if tp_id:
-        if pk_enough:
-            try:
-                tp = int(tp_id)
-            except ValueError:
-                tp = None
-        else:
-            tp = get_object_or_404(TestPlan, plan_id=tp_id)
+    if not tp_id:
+        return None
+    if pk_enough:
+        return int(tp_id) if tp_id.isdigit() else None
     else:
-        tp = None
-    return tp
+        return get_object_or_404(TestPlan, plan_id=tp_id)
 
 
 def update_case_email_settings(tc, n_form):
     """Update testcase's email settings."""
 
-    tc.emailing.notify_on_case_update = n_form.cleaned_data[
-        'notify_on_case_update']
-    tc.emailing.notify_on_case_delete = n_form.cleaned_data[
-        'notify_on_case_delete']
-    tc.emailing.auto_to_case_author = n_form.cleaned_data[
-        'author']
-    tc.emailing.auto_to_case_tester = n_form.cleaned_data[
-        'default_tester_of_case']
-    tc.emailing.auto_to_run_manager = n_form.cleaned_data[
-        'managers_of_runs']
-    tc.emailing.auto_to_run_tester = n_form.cleaned_data[
-        'default_testers_of_runs']
-    tc.emailing.auto_to_case_run_assignee = n_form.cleaned_data[
-        'assignees_of_case_runs']
-    tc.emailing.save()
+    tc.emailing.notify_on_case_update = n_form.cleaned_data['notify_on_case_update']
+    tc.emailing.notify_on_case_delete = n_form.cleaned_data['notify_on_case_delete']
+    tc.emailing.auto_to_case_author = n_form.cleaned_data['author']
+    # tc.emailing.auto_to_case_tester = n_form.cleaned_data['default_tester_of_case']
+    tc.emailing.auto_to_run_manager = n_form.cleaned_data['managers_of_runs']
+    tc.emailing.auto_to_run_tester = n_form.cleaned_data['default_testers_of_runs']
+    tc.emailing.auto_to_case_run_assignee = n_form.cleaned_data['assignees_of_case_runs']
 
     default_tester = n_form.cleaned_data['default_tester_of_case']
-    if (default_tester and tc.default_tester_id):
+    if default_tester and tc.default_tester_id:
         tc.emailing.auto_to_case_tester = True
+
+    tc.emailing.save()
 
     # Continue to update CC list
     valid_emails = n_form.cleaned_data['cc_list']
@@ -127,26 +122,6 @@ def group_case_issues(issues):
     """Group issues by issue key."""
     issues = itertools.groupby(issues, attrgetter('issue_key'))
     return [(pk, list(_issues)) for pk, _issues in issues]
-
-
-def create_testcase(request, form, tp):
-    """Create testcase"""
-    tc = TestCase.create(author=request.user, values=form.cleaned_data)
-    tc.add_text(case_text_version=1,
-                author=request.user,
-                action=form.cleaned_data['action'],
-                effect=form.cleaned_data['effect'],
-                setup=form.cleaned_data['setup'],
-                breakdown=form.cleaned_data['breakdown'])
-
-    # Assign the case to the plan
-    if tp:
-        tc.add_to_plan(plan=tp)
-
-    # Add components into the case
-    for component in form.cleaned_data['component']:
-        tc.add_component(component=component)
-    return tc
 
 
 @permission_required('testcases.change_testcase')
@@ -166,21 +141,24 @@ def automated(request):
     ajax_response = {'rc': 0, 'response': 'ok'}
 
     form = CaseAutomatedForm(request.POST)
-    if form.is_valid():
-        tcs = get_selected_testcases(request)
+    form.populate()
 
-        if form.cleaned_data['a'] == 'change':
-            if isinstance(form.cleaned_data['is_automated'], int):
+    if form.is_valid():
+        cleaned_data = form.cleaned_data
+        cases = cleaned_data['case']
+        if cleaned_data['a'] == 'change':
+            if isinstance(cleaned_data['is_automated'], int):
                 # FIXME: inconsistent operation updating automated property
                 # upon TestCases. Other place to update property upon
                 # TestCase via Model.save, that will trigger model
                 #        singal handlers.
-                tcs.update(is_automated=form.cleaned_data['is_automated'])
-            if isinstance(form.cleaned_data['is_automated_proposed'], bool):
-                tcs.update(is_automated_proposed=form.cleaned_data['is_automated_proposed'])
+                cases.update(is_automated=cleaned_data['is_automated'])
+            if isinstance(cleaned_data['is_automated_proposed'], bool):
+                cases.update(
+                    is_automated_proposed=cleaned_data['is_automated_proposed'])
     else:
         ajax_response['rc'] = 1
-        ajax_response['response'] = forms.errors_to_list(form)
+        ajax_response['messages'] = form_error_messags_to_list(form)
 
     return HttpResponse(json.dumps(ajax_response))
 
@@ -201,71 +179,48 @@ def new(request, template_name='case/new.html'):
         default_form_parameters = {'is_automated': '0'}
 
     if request.method == "POST":
-        form = NewCaseForm(request.POST)
-        if request.POST.get('product'):
-            form.populate(product_id=request.POST['product'])
+        post_data = request.POST
+        form = NewCaseForm(post_data)
+        if post_data.get('product'):
+            form.populate(product_id=post_data['product'])
         else:
             form.populate()
 
         if form.is_valid():
-            tc = create_testcase(request, form, tp)
+            new_case = TestCase.create(author=request.user,
+                                       values=form.cleaned_data,
+                                       plans=[tp] if tp else None)
+            new_case.add_text(case_text_version=1,
+                              author=request.user,
+                              action=form.cleaned_data['action'],
+                              effect=form.cleaned_data['effect'],
+                              setup=form.cleaned_data['setup'],
+                              breakdown=form.cleaned_data['breakdown'])
 
-            class ReturnActions:
-                def __init__(self, case, plan):
-                    self.__all__ = ('_addanother', '_continue', '_returntocase', '_returntoplan')
-                    self.case = case
-                    self.plan = plan
+            if post_data.get('_continue'):
+                url = reverse('case-edit', args=[new_case.pk])
+                if tp:
+                    url = f'{url}?from_plan={tp.pk}'
+                return HttpResponseRedirect(url)
 
-                def _continue(self):
-                    if self.plan:
-                        return HttpResponseRedirect('{}?from_plan={}'.format(
-                            reverse('case-edit', args=[self.case.case_id]),
-                            self.plan.plan_id))
+            elif post_data.get('_addanother'):
+                form = NewCaseForm(initial=default_form_parameters)
+                if tp:
+                    form.populate(product_id=tp.product_id)
 
-                    return HttpResponseRedirect(
-                        reverse('case-edit', args=[tc.case_id]))
+            elif post_data.get('_returntoplan'):
+                if tp:
+                    url = reverse('plan-get', args=[tp.pk])
+                    return HttpResponseRedirect(f'{url}#reviewcases')
+                else:
+                    raise Http404
 
-                def _addanother(self):
-                    form = NewCaseForm(initial=default_form_parameters)
-
-                    if tp:
-                        form.populate(product_id=self.plan.product_id)
-
-                    return form
-
-                def _returntocase(self):
-                    if self.plan:
-                        return HttpResponseRedirect(
-                            '{}?from_plan={}'.format(
-                                reverse('case-get', args=[self.case.pk]),
-                                self.plan.plan_id))
-
-                    return HttpResponseRedirect(
-                        reverse('case-get', args=[self.case.pk]))
-
-                def _returntoplan(self):
-                    if not self.plan:
-                        raise Http404
-
-                    return HttpResponseRedirect('%s#reviewcases' % reverse(
-                        'plan-get', args=[self.plan.pk]))
-
-            # Genrate the instance of actions
-            ras = ReturnActions(case=tc, plan=tp)
-            for ra_str in ras.__all__:
-                if request.POST.get(ra_str):
-                    func = getattr(ras, ra_str)
-                    break
             else:
-                func = ras._returntocase
-
-            # Get the function and return back
-            result = func()
-            if isinstance(result, HttpResponseRedirect):
-                return result
-            else:
-                # Assume here is the form
-                form = result
+                # Default destination after case is created
+                url = reverse('case-get', args=[new_case.pk])
+                if tp:
+                    url = f'{url}?from_plan={tp.pk}'
+                return HttpResponseRedirect(url)
 
     # Initial NewCaseForm for submit
     else:
@@ -281,7 +236,8 @@ def new(request, template_name='case/new.html'):
     return render(request, template_name, context=context_data)
 
 
-def get_testcaseplan_sortkey_pk_for_testcases(plan, tc_ids):
+def get_testcaseplan_sortkey_pk_for_testcases(
+        plan: TestPlan, tc_ids: List[int]) -> Dict[int, Dict[int, int]]:
     """Get each TestCase' sortkey and related TestCasePlan's pk"""
     qs = TestCasePlan.objects.filter(case__in=tc_ids)
     if plan is not None:
@@ -296,33 +252,32 @@ def get_testcaseplan_sortkey_pk_for_testcases(plan, tc_ids):
     }
 
 
-def calculate_for_testcases(plan, testcases):
+def calculate_for_testcases(
+        plan: Optional[TestPlan],
+        cases: List[TestCase]) -> List[TestCase]:
     """Calculate extra data for TestCases
 
-    Attach TestCasePlan.sortkey, TestCasePlan.pk, and the number of bugs of
-    each TestCase.
+    Attach TestCasePlan.sortkey and TestCasePlan.pk.
 
     :param plan: the TestPlan containing searched TestCases. None means
-        testcases are not limited to a specific TestPlan.
-    :param testcases: a queryset of TestCase.
+        ``cases`` are not limited to a specific TestPlan.
+    :param cases: a queryset of TestCase.
+    :type cases: list[TestCase]
+    :return: a list of test cases which are modified by adding extra data.
     """
-    tc_ids = [tc.pk for tc in testcases]
-    sortkey_tcpkan_pks = get_testcaseplan_sortkey_pk_for_testcases(
-        plan, tc_ids)
+    tc_ids = [tc.pk for tc in cases]
+    extra_data = get_testcaseplan_sortkey_pk_for_testcases(plan, tc_ids)
 
-    # FIXME: strongly recommended to upgrade to Python +2.6
-    for tc in testcases:
-        data = sortkey_tcpkan_pks.get(tc.pk, None)
+    for case in cases:
+        data = extra_data.get(case.pk)
         if data:
-            setattr(tc, 'cal_sortkey', data['sortkey'])
+            setattr(case, 'cal_sortkey', data['sortkey'])
+            setattr(case, 'cal_testcaseplan_pk', data['testcaseplan_pk'])
         else:
-            setattr(tc, 'cal_sortkey', None)
-        if data:
-            setattr(tc, 'cal_testcaseplan_pk', data['testcaseplan_pk'])
-        else:
-            setattr(tc, 'cal_testcaseplan_pk', None)
+            setattr(case, 'cal_sortkey', None)
+            setattr(case, 'cal_testcaseplan_pk', None)
 
-    return testcases
+    return cases
 
 
 def get_case_status(template_type):
@@ -638,6 +593,7 @@ def search(request, template_name='case/all.html'):
     return render(request, template_name, context=context_data)
 
 
+@require_GET
 def ajax_search(request, template_name='case/common/json_cases.txt'):
     """Generate the case list in search case and case zone in plan
     """
@@ -816,11 +772,16 @@ class TestCaseCaseRunListPaneView(TemplateView):
 
     def get_comments_count(self, caserun_ids):
         ct = ContentType.objects.get_for_model(TestCaseRun)
-        qs = Comment.objects.filter(content_type=ct,
-                                    object_pk__in=caserun_ids,
-                                    site_id=settings.SITE_ID,
-                                    is_removed=False)
-        qs = qs.values('object_pk').annotate(comment_count=Count('pk'))
+        qs = (
+            Comment.objects
+            .filter(content_type=ct,
+                    object_pk__in=caserun_ids,
+                    site_id=settings.SITE_ID,
+                    is_removed=False)
+            .order_by('object_pk')
+            .values('object_pk')
+            .annotate(comment_count=Count('pk'))
+        )
         return {
             int(item['object_pk']): item['comment_count']
             for item in qs.iterator()
@@ -846,7 +807,7 @@ class TestCaseCaseRunListPaneView(TemplateView):
 
 
 class TestCaseSimpleCaseRunView(TemplateView, data.TestCaseRunViewDataMixin):
-    """Display caserun information in Case Runs tab in case page
+    """Display case run information in Case Runs tab in case page
 
     This view only shows notes, comments and logs simply. So, call it simple.
     """
@@ -855,31 +816,32 @@ class TestCaseSimpleCaseRunView(TemplateView, data.TestCaseRunViewDataMixin):
 
     # what permission here?
     def get(self, request, case_id):
-        try:
-            self.caserun_id = int(request.GET.get('case_run_id', None))
-        except (TypeError, ValueError):
-            raise Http404
+        self.case_id = case_id
+
+        val = request.GET.get('case_run_id')
+        if not val:
+            return HttpResponseBadRequest(
+                'Missing case_run_id in the query string.')
+        if val.isdigit():
+            self.case_run_id = int(val)
+        else:
+            return HttpResponseBadRequest(
+                f'Invalid case_run_id {val} which should be an integer.')
 
         this_cls = TestCaseSimpleCaseRunView
         return super(this_cls, self).get(request, case_id)
-
-    def get_caserun(self):
-        try:
-            return TestCaseRun.objects.filter(
-                pk=self.caserun_id).only('notes')[0]
-        except IndexError:
-            raise Http404
 
     def get_context_data(self, **kwargs):
         this_cls = TestCaseSimpleCaseRunView
         data = super(this_cls, self).get_context_data(**kwargs)
 
-        caserun = self.get_caserun()
-        logs = self.get_caserun_logs(caserun)
-        comments = self.get_caserun_comments(caserun)
+        case_run = get_object_or_404(TestCaseRun.objects.only('notes'),
+                                     case=self.case_id, pk=self.case_run_id)
+        logs = self.get_caserun_logs(case_run)
+        comments = self.get_caserun_comments(case_run)
 
         data.update({
-            'test_caserun': caserun,
+            'test_caserun': case_run,
             'logs': logs.iterator(),
             'comments': comments.iterator(),
         })
@@ -895,11 +857,26 @@ class TestCaseCaseRunDetailPanelView(TemplateView,
 
     def get(self, request, case_id):
         self.case_id = case_id
-        try:
-            self.caserun_id = int(request.GET.get('case_run_id'))
-            self.case_text_version = int(request.GET.get('case_text_version'))
-        except (TypeError, ValueError):
-            raise Http404
+
+        val = request.GET.get('case_run_id')
+        if not val:
+            return HttpResponseBadRequest(
+                'Missing case_run_id in the query string.')
+        if val.isdigit():
+            self.case_run_id = int(val)
+        else:
+            return HttpResponseBadRequest(
+                f'Invalid case_run_id {val} which should be an integer.')
+
+        val = request.GET.get('case_text_version')
+        if not val:
+            return HttpResponseBadRequest(
+                'Missing case_text_version in query string.')
+        if val.isdigit():
+            self.case_text_version = int(val)
+        else:
+            return HttpResponseBadRequest(
+                f'Invalid case_text_version {val} which should be an integer.')
 
         this_cls = TestCaseCaseRunDetailPanelView
         return super(this_cls, self).get(request, case_id)
@@ -908,17 +885,8 @@ class TestCaseCaseRunDetailPanelView(TemplateView,
         this_cls = TestCaseCaseRunDetailPanelView
         data = super(this_cls, self).get_context_data(**kwargs)
 
-        try:
-            qs = TestCase.objects.filter(pk=self.case_id)
-            qs = qs.prefetch_related('attachment',
-                                     'component',
-                                     'tag').only('pk')
-            case = qs[0]
-
-            qs = TestCaseRun.objects.filter(pk=self.caserun_id).order_by('pk')
-            case_run = qs[0]
-        except IndexError:
-            raise Http404
+        case = get_object_or_404(TestCase.objects.only('pk'), pk=self.case_id)
+        case_run = get_object_or_404(TestCaseRun, pk=self.case_run_id, case=case)
 
         # Data of TestCase
         test_case_text = case.get_text_with_version(self.case_text_version)
@@ -1305,6 +1273,7 @@ def edit(request, case_id, template_name='case/edit.html'):
     return render(request, template_name, context=context_data)
 
 
+@require_GET
 def text_history(request, case_id, template_name='case/history.html'):
     """View test plan text history"""
     SUB_MODULE_NAME = 'cases'
@@ -1550,7 +1519,7 @@ class RemoveComponentView(View):
         if not form.is_valid():
             return JsonResponse({
                 'rc': 1,
-                'response': 'Cannot add component. Some data is incorrect.',
+                'response': 'Cannot remove component. Some data is incorrect.',
                 'error_list': form.errors,
             })
 
@@ -1569,7 +1538,7 @@ class RemoveComponentView(View):
         if errors:
             return JsonResponse({
                 'rc': 1,
-                'response': 'Error while adding component to case.',
+                'response': 'Error while removing component from case.',
                 'errors_list': errors,
             })
         else:
@@ -1763,12 +1732,13 @@ def plan(request, case_id):
             }
             return render(request, 'case/get_plan.html', context=context_data)
 
-        tps = TestPlan.objects.filter(pk__in=request.GET.getlist('plan_id'))
+        plan_ids = request.GET.getlist('plan_id')
+        tps = TestPlan.objects.filter(pk__in=plan_ids)
 
         if not tps:
             context_data = {
                 'testplans': tps,
-                'message': 'The plan id are not exist in database at all.'
+                'message': f'None of plan IDs {", ".join(plan_ids)} exist.'
             }
             return render(request, 'case/get_plan.html', context=context_data)
 

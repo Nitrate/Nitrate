@@ -5,32 +5,141 @@ import unittest
 import xml.etree.ElementTree
 
 from bs4 import BeautifulSoup
-from datetime import datetime
+from datetime import datetime, timedelta
 from operator import attrgetter, itemgetter
 
 import mock
 
 from django import test
 from django.contrib.auth.models import User
+from django.db.models import Max
+from django.http import Http404
+from django.template import Template, Context
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.forms import ValidationError
 from django.test import RequestFactory
 from uuslug import slugify
 
-from tcms.issuetracker.models import Issue
-from tcms.management.models import TestTag, Component
+from django_comments.models import Comment
+from tcms.core.helpers.comments import add_comment
+from tcms.core.utils.timedelta2int import timedelta2int
+from tcms.issuetracker.models import Issue, IssueTracker
+from tcms.logs.models import TCMSLogModel
+from tcms.management.models import TestTag, Component, Priority
 from tcms.testcases.fields import MultipleEmailField
-from tcms.testcases.forms import CaseTagForm
-from tcms.testcases.models import TestCase
+from tcms.testcases.forms import CaseTagForm, CaseNotifyForm
+from tcms.testcases.models import TestCase, TestCaseStatus, TestCaseCategory
 from tcms.testcases.models import TestCaseComponent
 from tcms.testcases.models import TestCasePlan
 from tcms.testcases.models import TestCaseTag
-from tcms.testcases.views import ajax_response
+from tcms.testcases.views import (
+    ajax_response, calculate_for_testcases, plan_from_request_or_none,
+    update_case_email_settings)
+from tcms.testplans.models import TestPlan
+from tcms.testruns.models import TestCaseRun
 from tests import factories as f
 from tests import BaseCaseRun
 from tests import BasePlanCase
 from tests import remove_perm_from_user
 from tests import user_should_have_perm
+from tests.testcases import assert_new_case
+
+
+class TestGetPlanFromRequest(test.TestCase):
+    """Test function plan_from_request_or_none"""
+
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    def test_get_plan_id_from_get_request(self):
+        request = self.factory.get('/uri', data={'from_plan': 1})
+        pk = plan_from_request_or_none(request, pk_enough=True)
+        self.assertEqual(1, pk)
+
+    def test_get_plan_id_from_post_request(self):
+        request = self.factory.post('/uri', data={'from_plan': 1})
+        pk = plan_from_request_or_none(request, pk_enough=True)
+        self.assertEqual(1, pk)
+
+    @mock.patch('tcms.testcases.views.get_object_or_404')
+    def test_get_plan_object_from_get_request(self, get_object_or_404):
+        request = self.factory.get('/uri', data={'from_plan': 1})
+        plan = plan_from_request_or_none(request)
+        self.assertEqual(get_object_or_404.return_value, plan)
+
+    @mock.patch('tcms.testcases.views.get_object_or_404')
+    def test_get_plan_object_from_post_request(self, get_object_or_404):
+        request = self.factory.post('/uri', data={'from_plan': 1})
+        plan = plan_from_request_or_none(request)
+        self.assertEqual(get_object_or_404.return_value, plan)
+
+    def test_missing_plan_id_in_get_request(self):
+        request = self.factory.get('/uri')
+        plan = plan_from_request_or_none(request)
+        self.assertIsNone(plan)
+
+    def test_missing_plan_id_in_post_request(self):
+        request = self.factory.post('/uri')
+        plan = plan_from_request_or_none(request)
+        self.assertIsNone(plan)
+
+    @mock.patch('tcms.testcases.views.get_object_or_404')
+    def test_nonexisting_plan_id_from_get_request(self, get_object_or_404):
+        get_object_or_404.side_effect = Http404
+
+        request = self.factory.get('/uri', data={'from_plan': 1})
+        self.assertRaises(Http404, plan_from_request_or_none, request)
+
+    @mock.patch('tcms.testcases.views.get_object_or_404')
+    def test_nonexisting_plan_id_from_post_request(self, get_object_or_404):
+        get_object_or_404.side_effect = Http404
+
+        request = self.factory.post('/uri', data={'from_plan': 1})
+        self.assertRaises(Http404, plan_from_request_or_none, request)
+
+    def test_invalid_plan_id(self):
+        request = self.factory.post('/uri', data={'from_plan': 'a'})
+        self.assertIsNone(plan_from_request_or_none(request, pk_enough=True))
+
+
+class TestUpdateCaseNotificationList(test.TestCase):
+    """Test update_case_email_settings"""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.case = f.TestCaseFactory(summary='Test notify')
+        cls.case_1 = f.TestCaseFactory(summary='Test notify 2',
+                                       default_tester=None)
+
+    @staticmethod
+    def update_the_notify_settings(case):
+        form = CaseNotifyForm({
+            'notify_on_case_update': 'On',
+            'notify_on_case_delete': 'On',
+            'author': 'On',
+            'managers_of_runs': 'On',
+            'default_testers_of_runs': 'On',
+            'assignees_of_case_runs': 'On',
+            'default_tester_of_case': 'On',
+        })
+        form.is_valid()
+        update_case_email_settings(case, form)
+
+    def test_update_notifications(self):
+        self.update_the_notify_settings(self.case)
+        emailing = self.case.emailing
+        self.assertTrue(emailing.notify_on_case_update)
+        self.assertTrue(emailing.notify_on_case_delete)
+        self.assertTrue(emailing.auto_to_case_author)
+        self.assertTrue(emailing.auto_to_run_manager)
+        self.assertTrue(emailing.auto_to_run_tester)
+        self.assertTrue(emailing.auto_to_case_run_assignee)
+        self.assertTrue(emailing.auto_to_case_tester)
+
+    def test_not_notify_default_tester(self):
+        self.update_the_notify_settings(self.case_1)
+        self.assertFalse(self.case_1.emailing.auto_to_case_tester)
 
 
 class TestMultipleEmailField(unittest.TestCase):
@@ -78,6 +187,8 @@ class TestMultipleEmailField(unittest.TestCase):
         self.field.required = False
         data = self.field.clean(value)
         self.assertEqual(data, [])
+
+        self.assertRaisesRegex(ValidationError, 'is not a valid string value', self.field.clean, object())
 
 
 class CaseTagFormTest(test.TestCase):
@@ -171,9 +282,8 @@ class TestOperateComponentView(BasePlanCase):
         )
         self.assertContains(
             response,
-            '''<select multiple="multiple" id="id_o_component" name="o_component">
-{}
-</select>'''.format(''.join(comp_options)),
+            f'<select multiple="multiple" id="id_o_component" name="o_component">'
+            f'{"".join(comp_options)}</select>',
             html=True)
 
     def test_add_components(self):
@@ -228,6 +338,37 @@ class TestOperateComponentView(BasePlanCase):
                 case=self.case_1, component=comp)
             self.assertFalse(case_components.exists())
 
+    def test_fail_to_remove_if_component_not_exist(self):
+        user_should_have_perm(self.tester, 'testcases.delete_testcasecomponent')
+        self.login_tester()
+
+        result = Component.objects.aggregate(max_pk=Max('pk'))
+        resp = self.client.post(reverse('cases-remove-component'), {
+            'o_component': [result['max_pk'] + 1],
+            'case': [self.case_1.pk],
+            'a': 'remove',
+        })
+
+        data = json.loads(resp.content)
+        self.assertIn('Cannot remove component', data['response'])
+
+    @mock.patch('tcms.testcases.models.TestCase.remove_component')
+    def test_case_remove_component_fails(self, remove_component):
+        remove_component.side_effect = Exception
+
+        user_should_have_perm(self.tester, 'testcases.delete_testcasecomponent')
+        self.login_tester()
+
+        resp = self.client.post(reverse('cases-remove-component'), {
+            'o_component': [self.comp_cli.pk, self.comp_api.pk],
+            'case': [self.case_1.pk],
+            'a': 'remove',
+        })
+
+        data = json.loads(resp.content)
+        self.assertIn('Error while removing component from case.',
+                      data['response'])
+
 
 class TestOperateCategoryView(BasePlanCase):
     """Tests for operating category on cases"""
@@ -250,21 +391,25 @@ class TestOperateCategoryView(BasePlanCase):
     def test_show_categories_form(self):
         self.client.login(username=self.tester.username, password='password')
 
-        response = self.client.post(self.case_category_url, {'product': self.product.pk})
+        response = self.client.post(self.case_category_url,
+                                    {'product': self.product.pk})
 
         self.assertContains(
             response,
-            '<option value="{}" selected="selected">{}</option>'.format(
-                self.product.pk, self.product.name),
+            f'<option value="{self.product.pk}" selected="selected">'
+            f'{self.product.name}'
+            f'</option>',
             html=True)
 
-        categories = (f'<option value="{category.pk}">{category.name}</option>'
-                      for category in self.product.category.all())
+        categories = ''.join(
+            f'<option value="{category.pk}">{category.name}</option>'
+            for category in self.product.category.all()
+        )
         self.assertContains(
             response,
-            '''<select multiple="multiple" id="id_o_category" name="o_category">
-{}
-</select>'''.format(''.join(categories)),
+            f'<select multiple="multiple" id="id_o_category" name="o_category">'
+            f'{categories}'
+            f'</select>',
             html=True)
 
     def test_update_cases_category(self):
@@ -355,27 +500,37 @@ class TestOperateCasePlans(BasePlanCase):
         cls.case_1.add_to_plan(cls.plan_test_case_plans)
         cls.case_1.add_to_plan(cls.plan_test_remove)
 
-        cls.plan_tester = User.objects.create_user(username='plantester',
-                                                   email='plantester@example.com',
-                                                   password='password')
+        cls.plan_tester = User.objects.create_user(
+            username='plantester',
+            email='plantester@example.com',
+            password='password')
 
         cls.case_plans_url = reverse('case-plan', args=[cls.case_1.pk])
 
-    def tearDown(self):
-        remove_perm_from_user(self.plan_tester, 'testcases.add_testcaseplan')
-        remove_perm_from_user(self.plan_tester, 'testcases.change_testcaseplan')
+        cls.perm_add = 'testcases.add_testcaseplan'
+        cls.perm_change = 'testcases.change_testcaseplan'
+        user_should_have_perm(cls.plan_tester, cls.perm_add)
+        user_should_have_perm(cls.plan_tester, cls.perm_change)
+
+    def setUp(self):
+        self.login_tester(self.plan_tester, 'password')
+
+    # def tearDown(self):
+        # remove_perm_from_user(self.plan_tester, 'testcases.add_testcaseplan')
+        # remove_perm_from_user(self.plan_tester, 'testcases.change_testcaseplan')
 
     def assert_list_case_plans(self, response, case):
         for case_plan_rel in TestCasePlan.objects.filter(case=case):
             plan = case_plan_rel.plan
-            self.assertContains(
-                response,
-                '<a href="/plan/{0}/{1}">{0}</a>'.format(plan.pk, slugify(plan.name)),
-                html=True)
 
+            slugified_name = slugify(plan.name)
             self.assertContains(
                 response,
-                '<a href="/plan/{}/{}">{}</a>'.format(plan.pk, slugify(plan.name), plan.name),
+                f'<a href="/plan/{plan.pk}/{slugified_name}">{plan.pk}</a>',
+                html=True)
+            self.assertContains(
+                response,
+                f'<a href="/plan/{plan.pk}/{slugified_name}">{plan.name}</a>',
                 html=True)
 
     def test_list_plans(self):
@@ -383,20 +538,26 @@ class TestOperateCasePlans(BasePlanCase):
         self.assert_list_case_plans(response, self.case_1)
 
     def test_missing_permission_to_add(self):
-        response = self.client.get(self.case_plans_url,
-                                   {'a': 'add', 'plan_id': self.plan_test_add.pk})
+        remove_perm_from_user(self.plan_tester, self.perm_add)
+        response = self.client.get(self.case_plans_url, {
+            'a': 'add',
+            'plan_id': self.plan_test_add.pk
+        })
         self.assertContains(response, 'Permission denied')
 
     def test_missing_permission_to_remove(self):
-        response = self.client.get(self.case_plans_url,
-                                   {'a': 'remove', 'plan_id': self.plan_test_remove.pk})
+        remove_perm_from_user(self.plan_tester, self.perm_change)
+        response = self.client.get(self.case_plans_url, {
+            'a': 'remove',
+            'plan_id': self.plan_test_remove.pk
+        })
         self.assertContains(response, 'Permission denied')
 
     def test_add_a_plan(self):
-        user_should_have_perm(self.plan_tester, 'testcases.add_testcaseplan')
-        self.client.login(username=self.plan_tester.username, password='password')
-        response = self.client.get(self.case_plans_url,
-                                   {'a': 'add', 'plan_id': self.plan_test_add.pk})
+        response = self.client.get(self.case_plans_url, {
+            'a': 'add',
+            'plan_id': self.plan_test_add.pk
+        })
 
         self.assert_list_case_plans(response, self.case_1)
 
@@ -404,10 +565,10 @@ class TestOperateCasePlans(BasePlanCase):
             plan=self.plan_test_add, case=self.case_1).exists())
 
     def test_remove_a_plan(self):
-        user_should_have_perm(self.plan_tester, 'testcases.change_testcaseplan')
-        self.client.login(username=self.plan_tester.username, password='password')
-        response = self.client.get(self.case_plans_url,
-                                   {'a': 'remove', 'plan_id': self.plan_test_remove.pk})
+        response = self.client.get(self.case_plans_url, {
+            'a': 'remove',
+            'plan_id': self.plan_test_remove.pk
+        })
 
         self.assert_list_case_plans(response, self.case_1)
 
@@ -415,22 +576,49 @@ class TestOperateCasePlans(BasePlanCase):
             case=self.case_1, plan=self.plan_test_remove).exists()
         self.assertTrue(not_linked_to_plan)
 
-    def test_add_a_few_plans(self):
-        user_should_have_perm(self.plan_tester, 'testcases.add_testcaseplan')
-        self.client.login(username=self.plan_tester.username, password='password')
+    def test_add_a_few_of_plans(self):
         # This time, add a few plans to another case
         url = reverse('case-plan', args=[self.case_2.pk])
 
-        response = self.client.get(url,
-                                   {'a': 'add', 'plan_id': [self.plan_test_add.pk,
-                                                            self.plan_test_remove.pk]})
-
-        self.assert_list_case_plans(response, self.case_2)
+        response = self.client.get(url, {
+            'a': 'add',
+            'plan_id': [self.plan_test_add.pk, self.plan_test_remove.pk]
+        })
 
         self.assertTrue(TestCasePlan.objects.filter(
             case=self.case_2, plan=self.plan_test_add).exists())
         self.assertTrue(TestCasePlan.objects.filter(
             case=self.case_2, plan=self.plan_test_remove).exists())
+
+        self.assert_list_case_plans(response, self.case_2)
+
+    def test_missing_plan_id(self):
+        resp = self.client.get(self.case_plans_url, {'a': 'add'})
+
+        self.assertContains(resp, 'The case must specific one plan at leaset')
+        self.assertContains(
+            resp,
+            '<td colspan="7">No plan found for this case.</td>',
+            html=True)
+
+    def test_all_plan_ids_do_not_exist(self):
+        result = TestPlan.objects.aggregate(max_pk=Max('pk'))
+        nonexisting_plan_ids = [
+            str(result['max_pk'] + 1),
+            str(result['max_pk'] + 2)
+        ]
+        resp = self.client.get(self.case_plans_url, {
+            'a': 'add',
+            'plan_id': nonexisting_plan_ids,
+        })
+
+        self.assertContains(
+            resp,
+            f'None of plan IDs {", ".join(nonexisting_plan_ids)} exist')
+        self.assertContains(
+            resp,
+            '<td colspan="7">No plan found for this case.</td>',
+            html=True)
 
 
 class TestOperateCaseTag(BasePlanCase):
@@ -453,19 +641,22 @@ class TestOperateCaseTag(BasePlanCase):
         cls.cases_tag_url = reverse('cases-tag')
 
     def test_show_cases_list(self):
-        response = self.client.post(self.cases_tag_url,
-                                    {'case': [self.case_1.pk, self.case_3.pk]})
+        response = self.client.post(self.cases_tag_url, {
+            'case': [self.case_1.pk, self.case_3.pk]
+        })
 
         tags = TestTag.objects.filter(
             cases__in=[self.case_1, self.case_3]).order_by('name').distinct()
-        tag_options = [f'<option value="{tag.pk}">{tag.name}</option>'
-                       for tag in tags]
+        tag_options = [
+            f'<option value="{tag.pk}">{tag.name}</option>' for tag in tags
+        ]
 
         self.assertContains(
             response,
-            '''<p><label for="id_o_tag">Tags:</label>
-<select multiple="multiple" id="id_o_tag" name="o_tag">{}
-</select></p>'''.format(''.join(tag_options)),
+            f'<p><label for="id_o_tag">Tags:</label>'
+            f'<select multiple="multiple" id="id_o_tag" name="o_tag">'
+            f'{"".join(tag_options)}'
+            f'</select></p>',
             html=True)
 
     def test_remove_tags_from_cases(self):
@@ -719,8 +910,7 @@ class TestChangeCasesAutomated(BasePlanCase):
 
         self.assertJsonResponse(response, {'rc': 0, 'response': 'ok'})
 
-        for pk in self.change_data['case']:
-            case = TestCase.objects.get(pk=pk)
+        for case in TestCase.objects.filter(pk__in=self.change_data['case']):
             self.assertEqual(1, case.is_automated)
 
     def test_update_manual(self):
@@ -747,9 +937,21 @@ class TestChangeCasesAutomated(BasePlanCase):
 
         self.assertJsonResponse(response, {'rc': 0, 'response': 'ok'})
 
-        for pk in self.change_data['case']:
-            case = TestCase.objects.get(pk=pk)
+        for case in TestCase.objects.filter(pk__in=self.change_data['case']):
             self.assertTrue(case.is_automated_proposed)
+
+    def test_fail_due_to_invalid_input(self):
+        self.login_tester()
+
+        change_data = self.change_data.copy()
+        result = TestCase.objects.aggregate(max_pk=Max('pk'))
+        change_data['case'] = [result['max_pk'] + 1]
+
+        resp = self.client.post(self.change_url, change_data)
+
+        data = json.loads(resp.content)
+        self.assertIn(f'{change_data["case"][0]} do not exist',
+                      data['messages'][0])
 
 
 class PlanCaseExportTestHelper:
@@ -1026,16 +1228,20 @@ class TestCloneCase(BasePlanCase):
     def test_show_clone_page_with_from_plan(self):
         self.login_tester()
 
-        response = self.client.get(self.clone_url,
-                                   {'from_plan': self.plan.pk,
-                                    'case': [self.case_1.pk, self.case_2.pk]})
+        response = self.client.get(self.clone_url, {
+            'from_plan': self.plan.pk,
+            'case': [self.case_1.pk, self.case_2.pk]
+        })
 
         self.assertContains(
             response,
-            '''<div>
-    <input type="radio" id="id_use_sameplan" name="selectplan" value="{0}">
-    <label for="id_use_sameplan" class="strong">Use the same Plan -- {0} : {1}</label>
-</div>'''.format(self.plan.pk, self.plan.name),
+            f'<div>'
+            f'<input type="radio" id="id_use_sameplan" name="selectplan" '
+            f'  value="{self.plan.pk}">'
+            f'<label for="id_use_sameplan" class="strong">'
+            f'Use the same Plan -- {self.plan.pk} : {self.plan.name}'
+            f'</label>'
+            f'</div>',
             html=True)
 
         # The order of cases is important for running tests against PostgreSQL.
@@ -1354,14 +1560,70 @@ class TestSearchCases(BasePlanCase):
             html=True)
 
     def test_search_with_selected_product(self):
-        response = self.client.get(self.search_url,
-                                   {'product': self.product.pk})
+        product = self.product
+        response = self.client.get(self.search_url, {'product': product.pk})
         self.assertContains(
             response,
-            '<option value="{}" selected="selected">{}</option>'.format(
-                self.product.pk, self.product.name),
+            f'<option value="{product.pk}" selected="selected">'
+            f'{product.name}'
+            f'</option>',
             html=True
         )
+
+
+class TestAjaxSearch(BasePlanCase):
+    """Test ajax_search"""
+
+    @classmethod
+    def setUpTestData(cls):
+        super(TestAjaxSearch, cls).setUpTestData()
+
+        cls.functional_case = f.TestCaseCategoryFactory(
+            name='Functional', product=cls.product
+        )
+
+        cls.case_2.category = cls.functional_case
+        cls.case_2.save()
+        cls.case_3.category = cls.functional_case
+        cls.case_3.save()
+
+        cls.component_db = f.ComponentFactory(name='db', product=cls.product)
+
+        f.TestCaseComponentFactory(case=cls.case_1, component=cls.component_db)
+        f.TestCaseComponentFactory(case=cls.case_2, component=cls.component_db)
+        f.TestCaseComponentFactory(case=cls.case_3, component=cls.component_db)
+        f.TestCaseComponentFactory(case=cls.case_4, component=cls.component_db)
+
+        cls.tag_python = f.TestTagFactory(name='python')
+        cls.tag_fedora = f.TestTagFactory(name='fedora')
+
+        cls.case_1.add_tag(cls.tag_python)
+        cls.case_2.add_tag(cls.tag_python)
+        cls.case_2.add_tag(cls.tag_fedora)
+        cls.case_3.add_tag(cls.tag_python)
+        cls.case_4.add_tag(cls.tag_fedora)
+
+    def test_search_in_general(self):
+        url = reverse('cases-ajax-search')
+
+        # List case 2 and case 3, and ordered by pk
+
+        resp = self.client.get(url, data={
+            'a': 'search',
+            'product': self.product.pk,
+            'summary': 'Test case',
+            'component': self.component_db.pk,
+            'tag__name__in': f'{self.tag_python.name},{self.tag_fedora.name}'
+        })
+
+        result = json.loads(resp.content)
+        cases_list = result['aaData']
+
+        self.assertEqual(2, result['iTotalRecords'])
+        self.assertEqual(2, len(cases_list))
+
+        self.assertIn(self.case_2.summary, cases_list[0][3])
+        self.assertIn(self.case_3.summary, cases_list[1][3])
 
 
 class TestAJAXResponse(BasePlanCase):
@@ -1431,10 +1693,7 @@ class TestAJAXResponse(BasePlanCase):
         id_links = [row[2] for row in data['aaData']]
         id_links.sort()
         expected_id_links = [
-            "<a href='{}'>{}</a>".format(
-                reverse('case-get', args=[case.pk]),
-                case.pk,
-            )
+            f"<a href='{reverse('case-get', args=[case.pk])}'>{case.pk}</a>"
             for case in self.plan.case.order_by('-pk')[0:2]
         ]
         expected_id_links.sort()
@@ -1450,6 +1709,9 @@ class TestAddComponent(BasePlanCase):
         cls.component_db = f.ComponentFactory(name='db', product=cls.product)
         cls.component_doc = f.ComponentFactory(name='doc', product=cls.product)
         cls.component_cli = f.ComponentFactory(name='cli', product=cls.product)
+
+        cls.case_2.add_component(cls.component_db)
+        cls.case_2.add_component(cls.component_cli)
 
     def setUp(self):
         user_should_have_perm(self.tester, 'testcases.add_testcasecomponent')
@@ -1500,6 +1762,45 @@ class TestAddComponent(BasePlanCase):
         self.assertEqual(2, len(components))
         self.assertEqual(self.component_cli, components[0])
         self.assertEqual(self.component_doc, components[1])
+
+    def test_invalid_arguments(self):
+        from tcms.management.models import Product, Component
+
+        result = Product.objects.aggregate(max_pk=Max('pk'))
+        nonexisting_product_id = result['max_pk'] + 1
+
+        result = Component.objects.aggregate(max_pk=Max('pk'))
+        nonexisting_component_id = result['max_pk'] + 1
+
+        resp = self.client.post(self.add_component_url, {
+            'product': nonexisting_product_id,
+            'case': self.case_1.pk,
+            'o_component': [nonexisting_component_id],
+        })
+
+        self.assert200(resp)
+
+        data = json.loads(resp.content)
+        self.assertIn('Cannot add component', data['response'])
+
+    @mock.patch('tcms.testcases.models.TestCase.add_component')
+    def test_failed_to_add_component(self, add_component):
+        add_component.side_effect = ValueError
+
+        resp = self.client.post(self.add_component_url, {
+            'product': self.product.pk,
+            'case': self.case_2.pk,
+            'o_component': [
+                self.component_db.pk,
+                self.component_doc.pk,
+                self.component_cli.pk
+            ],
+        })
+
+        self.assert200(resp)
+
+        data = json.loads(resp.content)
+        self.assertIn('Error while adding component to case', data['response'])
 
 
 class TestIssueManagement(BaseCaseRun):
@@ -1614,6 +1915,58 @@ class TestIssueManagement(BaseCaseRun):
         self.assertIsNotNone(added_issue)
         self.assertIn(added_issue.get_absolute_url(), resp.json()['html'])
 
+    def test_invalid_input_for_adding_an_issue(self):
+        user_should_have_perm(self.tester, 'issuetracker.add_issue')
+
+        result = IssueTracker.objects.aggregate(max_pk=Max('pk'))
+        resp = self.client.get(self.issue_manage_url, data={
+            'handle': 'add',
+            'issue_key': '123456',
+            'tracker': result['max_pk'] + 1
+        })
+
+        self.assert400(resp)
+
+        data = json.loads(resp.content)
+        error_messages = sorted(data['messages'])
+        self.assertListEqual(
+            ['Invalid issue tracker that does not exist.'],
+            error_messages)
+
+    @mock.patch('tcms.testcases.models.TestCase.add_issue')
+    def test_fail_if_case_add_issue_fails(self, add_issue):
+        add_issue.side_effect = Exception('Something wrong')
+
+        user_should_have_perm(self.tester, 'issuetracker.add_issue')
+
+        resp = self.client.get(self.issue_manage_url, data={
+            'handle': 'add',
+            'issue_key': '123456',
+            'tracker': self.issue_tracker.pk,
+        })
+
+        self.assert400(resp)
+
+        data = json.loads(resp.content)
+        self.assertIn('Something wrong', data['messages'][0])
+
+    def test_fail_if_validation_error_occurs_while_adding_the_issue(self):
+        user_should_have_perm(self.tester, 'issuetracker.add_issue')
+
+        resp = self.client.get(self.issue_manage_url, data={
+            'handle': 'add',
+            # invalid issue key that should cause the validation error
+            'issue_key': 'abcdef1234',
+            'tracker': self.issue_tracker.pk,
+        })
+
+        self.assert400(resp)
+
+        data = json.loads(resp.content)
+        self.assertIn(
+            'Issue key abcdef1234 is in wrong format for issue tracker',
+            data['messages'][0])
+
     def test_remove_an_issue(self):
         user_should_have_perm(self.tester, 'issuetracker.delete_issue')
 
@@ -1646,3 +1999,717 @@ class TestIssueManagement(BaseCaseRun):
 
         self.assertIsNotNone(remained_issue)
         self.assertIn(remained_issue.get_absolute_url(), resp.json()['html'])
+
+    def test_404_if_case_not_exist(self):
+        user_should_have_perm(self.tester, 'issuetracker.add_issue')
+
+        result = TestCase.objects.aggregate(max_pk=Max('pk'))
+        case_id = result['max_pk'] + 1
+        url = reverse('case-issue', args=[case_id])
+
+        resp = self.client.get(url, data={
+            'handle': 'add',
+            'issue_key': '123456',
+            'tracker': self.issue_tracker.pk,
+        })
+
+        self.assert404(resp)
+
+        data = json.loads(resp.content)
+        self.assertIn(f'Case {case_id} does not exist.', data['messages'][0])
+
+
+class TestNewCase(BasePlanCase):
+    """Test create a new case"""
+
+    @classmethod
+    def setUpTestData(cls):
+        super(TestNewCase, cls).setUpTestData()
+        cls.tag_fedora = f.TestTagFactory(name='fedora')
+        cls.tag_python = f.TestTagFactory(name='python')
+
+        cls.component_db = f.ComponentFactory(name='db', product=cls.product)
+        cls.component_web = f.ComponentFactory(name='web', product=cls.product)
+
+        user_should_have_perm(cls.tester, 'testcases.add_testcase')
+
+    def setUp(self):
+        self.new_case_url = reverse('cases-new')
+        self.login_tester()
+
+    def test_open_page(self):
+        """Test open the page to create a new case"""
+        resp = self.client.get(self.new_case_url,
+                               data={'from_plan': self.plan.pk})
+        self.assert200(resp)
+
+        # More assertions on the content to ensure the rendered page is correct.
+
+    def assert_new_case_creation(
+            self,
+            estimated_time: str = '0m',
+            from_plan: int = None,
+            next_action: str = None) -> None:
+        category = TestCaseCategory.objects.all()[0]
+        priority = Priority.objects.all()[0]
+
+        post_data = {
+            'product': str(self.product.pk),
+            'summary': 'Test case: create a new test case',
+            'is_automated': '0',
+            'script': '',
+            'arguments': '',
+            'extra_link': 'https://localhost/case-2',
+            'requirement': '',
+            'alias': 'alias',
+            'estimated_time': estimated_time,
+            'category': category.pk,
+            'priority': priority.pk,
+            'default_tester': '',
+            'notes': '',
+            'tag': f'{self.tag_fedora.name},{self.tag_python.name}',
+            'component': [self.component_db.pk, self.component_web.pk],
+            'action': '',
+            'effect': '',
+            'setup': '',
+            'breakdown': '',
+        }
+        if from_plan is not None:
+            post_data['from_plan'] = str(from_plan),
+        if next_action:
+            post_data[next_action] = 'Next action after case is created'
+
+        resp = self.client.post(self.new_case_url, data=post_data)
+
+        new_case = TestCase.objects.filter(summary=post_data['summary']).first()
+        self.assertIsNotNone(new_case)
+
+        if next_action == 'continue':
+            url = reverse('case-edit', args=[new_case.pk])
+            if from_plan is None:
+                self.assertRedirects(resp, url, fetch_redirect_response=False)
+            else:
+                self.assertRedirects(resp, f'{url}?from_plan={from_plan}',
+                                     fetch_redirect_response=False)
+        elif next_action == 'addanother':
+            self.assert200(resp)
+        elif next_action == 'returntocase':
+            url = reverse('case-get', args=[new_case.pk])
+            if from_plan is None:
+                self.assertRedirects(resp, f'{url}?from_plan={from_plan}',
+                                     fetch_redirect_response=False)
+            else:
+                self.assertRedirects(resp, url, fetch_redirect_response=False)
+        elif next_action == 'returntoplan':
+            if from_plan is None:
+                self.assert404(resp)
+            else:
+                url = reverse('plan-get', args=[from_plan])
+                self.assertRedirects(resp, f'{url}#reviewcases',
+                                     fetch_redirect_response=False)
+
+        # Prepare expected properties for assertion
+        expected = post_data.copy()
+        expected['is_automated'] = False
+        expected['is_automated_proposed'] = False
+        expected['product'] = self.product
+        expected['category'] = category
+        expected['priority'] = priority
+        expected['default_tester'] = None
+        expected['estimated_time'] = timedelta(
+            timedelta2int(post_data['estimated_time']))
+        expected['case_status'] = TestCaseStatus.objects.get(name='PROPOSED')
+        expected['tag'] = [self.tag_fedora, self.tag_python]
+        expected['component'] = [self.component_db, self.component_web]
+
+        assert_new_case(new_case, expected)
+
+        new_case.delete()
+
+    def test_create_a_new_case(self):
+        """Test new case creation and redirect to the new case page"""
+        self.assert_new_case_creation()
+        self.assert_new_case_creation(from_plan=self.plan.pk)
+
+    def test_save_and_continue_editing(self):
+        self.assert_new_case_creation(next_action='_continue')
+        self.assert_new_case_creation(from_plan=self.plan.pk,
+                                      next_action='_continue')
+
+    def test_save_and_add_another_one(self):
+        self.assert_new_case_creation(next_action='_addanother')
+        self.assert_new_case_creation(from_plan=self.plan.pk,
+                                      next_action='_addanother')
+
+    def test_save_and_return_plan(self):
+        self.assert_new_case_creation(next_action='_returntoplan')
+        self.assert_new_case_creation(from_plan=self.plan.pk,
+                                      next_action='_returntoplan')
+
+    def test_empty_estimated_time(self):
+        self.assert_new_case_creation(estimated_time='')
+
+
+class TestTextHistory(test.TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.case = f.TestCaseFactory()
+        cls.case.add_text(action='abc', effect='def',
+                          setup='uvw', breakdown='xyz')
+        cls.case.add_text(action='123', effect='456',
+                          setup='789', breakdown='010')
+        cls.url = reverse('case-text-history', args=[cls.case.pk])
+
+    def test_open_page(self):
+        resp = self.client.get(self.url)
+        self.assertContains(resp, '<h2>Test Case History</h2>', html=True)
+
+    def test_open_page_with_specific_text_version(self):
+        resp = self.client.get(f'{self.url}?case_text_version=2')
+        self.assertContains(resp, '<h2>Test Case History</h2>', html=True)
+        self.assertContains(resp, '<b>SETUP:</b>', html=True)
+        self.assertContains(resp, '789')
+        self.assertContains(resp, '<b>ACTION:</b>', html=True)
+        self.assertContains(resp, '123')
+        self.assertContains(resp, '<b>EXPECTED RESULT:</b>', html=True)
+        self.assertContains(resp, '456')
+        self.assertContains(resp, '<b>BREAKDOWN:</b>', html=True)
+        self.assertContains(resp, '010')
+
+
+class TestCalculationForTestCase(BasePlanCase):
+    """Test calculate_for_testcases"""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.orphan_case = f.TestCaseFactory(summary='Orphan case')
+
+        cls.cool_plan = f.TestPlanFactory(
+            name='Cool test plan',
+            author=cls.tester,
+            owner=cls.tester,
+            product=cls.product,
+            product_version=cls.version)
+        f.TestCasePlanFactory(plan=cls.cool_plan, case=cls.case_1)
+
+    def test_calculate_for_cases(self):
+        result = calculate_for_testcases(self.plan, [self.case_1, self.case_2])
+
+        for case in result:
+            rel = TestCasePlan.objects.get(plan=self.plan, case=case)
+            self.assertEqual(rel.sortkey, case.cal_sortkey)
+            self.assertEqual(rel.pk, case.cal_testcaseplan_pk)
+
+    def test_calculate_for_empty_cases(self):
+        result = calculate_for_testcases(self.plan, [])
+        self.assertListEqual([], result)
+
+    def test_part_of_cases_are_not_associated_with_the_plan(self):
+        result = calculate_for_testcases(
+            self.plan, [self.case_1, self.orphan_case])
+
+        for case in result:
+            rel = TestCasePlan.objects.filter(
+                plan=self.plan, case=case).first()
+            if rel is None:
+                self.assertIsNone(case.cal_sortkey)
+                self.assertIsNone(case.cal_testcaseplan_pk)
+            else:
+                self.assertEqual(rel.sortkey, case.cal_sortkey)
+                self.assertEqual(rel.pk, case.cal_testcaseplan_pk)
+
+
+class BaseTestCaseView(test.TestCase):
+    """Base class of test case view in a plan page"""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.case = f.TestCaseFactory(
+            summary='Show the simple test case',
+            notes='Some notes',
+        )
+        cls.case.add_text(action='action', effect='effect',
+                          setup='setup', breakdown='breakdown')
+        cls.case.add_component(f.ComponentFactory(name='db'))
+        cls.case.add_component(f.ComponentFactory(name='web'))
+        cls.case.add_tag(f.TestTagFactory(name='python'))
+        cls.case.add_tag(f.TestTagFactory(name='tcms'))
+        cls.case.add_tag(f.TestTagFactory(name='django'))
+
+        cls.attachment_logo = f.TestAttachmentFactory(file_name='logo.png')
+        f.TestCaseAttachmentFactory(
+            case=cls.case, attachment=cls.attachment_logo)
+
+        add_comment([cls.case], 'first comment', cls.case.author)
+        add_comment([cls.case], 'second comment', cls.case.author)
+        add_comment([cls.case], 'third comment', cls.case.author)
+
+        cls.first_comment = Comment.objects.get(comment='first comment')
+        cls.second_comment = Comment.objects.get(comment='second comment')
+        cls.third_comment = Comment.objects.get(comment='third comment')
+
+    def assert_case_content(self, response):
+        expected_content = [
+            '<div class="content">action</div>',
+            '<div class="content">effect</div>',
+            '<div class="content">setup</div>',
+            '<div class="content">breakdown</div>',
+            '<li class="grey">No issue found</li>',
+
+            '<ul class="ul-no-format">'
+            '<li>python</li><li>tcms</li><li>django</li>'
+            '</ul>',
+
+            '<ul class="ul-no-format">'
+            '<li id="display_component" >db</li>'
+            '<li id="display_component" >web</li>'
+            '</ul>',
+
+            f'<ul class="ul-no-format"><li>'
+            f'<a href="{reverse("check-file", args=[self.attachment_logo.pk])}">'
+            f'{self.attachment_logo.file_name}'
+            f'</a></li></ul>',
+        ]
+
+        for item in expected_content:
+            self.assertContains(response, item, html=True)
+
+    def assert_nonexisting_case_content(self, response):
+        expected_content = [
+            '<h4>Actions:</h4><div class="content"></div>',
+            '<h4>Setup:</h4><div class="content"></div>',
+            '<h4>Breakdown:</h4><div class="content"></div>',
+            '<h4>Expected Results:</h4><div class="content"></div>',
+            '<ul class="ul-no-format"><li class="grey">No tag found</li></ul>',
+
+            '<ul class="ul-no-format">'
+            '<li class="grey">No issue found</li>'
+            '</ul>',
+
+            '<ul class="ul-no-format">'
+            '<li class="grey">No component found</li>'
+            '</ul>',
+
+            '<ul class="ul-no-format">'
+            '<li class="grey">No attachment found</li>'
+            '</ul>',
+        ]
+
+        for item in expected_content:
+            self.assertContains(response, item, html=True)
+
+
+class TestSimpleTestCaseView(BaseTestCaseView):
+    """Test the SimpleTestCaseView"""
+
+    def assert_comments(self, response, comments):
+        expected_content = render_to_string(
+            'case/comments_in_simple_case_pane.html',
+            context={'comments': comments}
+        )
+        self.assertContains(response, expected_content, html=True)
+
+    def test_show_the_case(self):
+        url = reverse('case-readonly-pane', args=[self.case.pk])
+        resp = self.client.get(url)
+
+        self.assert_case_content(resp)
+        self.assertContains(
+            resp,
+            f'<h4>Notes:</h4>'
+            f'<div class="content">{self.case.notes}</div>',
+            html=True
+        )
+        self.assert_comments(resp, [
+            self.first_comment, self.second_comment, self.third_comment
+        ])
+
+    def test_nonexisting_case(self):
+        result = TestCase.objects.aggregate(max_pk=Max('pk'))
+        url = reverse('case-readonly-pane', args=[result['max_pk'] + 1])
+        resp = self.client.get(url)
+
+        self.assert_nonexisting_case_content(resp)
+        self.assertContains(
+            resp,
+            '<h4>Notes:</h4><div class="content"></div>',
+            html=True
+        )
+        self.assert_comments(resp, [])
+
+
+class TestCaseReviewPaneView(BaseTestCaseView):
+    """Test view TestCaseReviewPaneView"""
+
+    def assert_comments(self, response, comments):
+        expected_content = render_to_string(
+            'case/comments_of_reviewing_cases.html',
+            context={'comments': comments}
+        )
+        self.assertContains(response, expected_content, html=True)
+
+    def assert_change_log(self, response):
+        logs = TCMSLogModel.objects.for_model(self.case).order_by('date')
+        expected_content = render_to_string(
+            'case/get_details_case_log.html', context={'logs': logs})
+        self.assertContains(response, expected_content, html=True)
+
+    def test_show_the_case(self):
+        url = reverse('case-review-pane', args=[self.case.pk])
+        resp = self.client.get(url)
+
+        self.assert_case_content(resp)
+        self.assert_comments(resp, [
+            self.first_comment, self.second_comment, self.third_comment
+        ])
+        self.assert_change_log(resp)
+
+    def test_nonexisting_case(self):
+        result = TestCase.objects.aggregate(max_pk=Max('pk'))
+        url = reverse('case-review-pane', args=[result['max_pk'] + 1])
+        resp = self.client.get(url)
+
+        self.assert_nonexisting_case_content(resp)
+        self.assert_comments(resp, [])
+        self.assert_change_log(resp)
+
+
+class TestCaseCaseRunListPaneView(BaseCaseRun):
+    """Test view class TestCaseCaseRunListPaneView"""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        add_comment([cls.case_run_1], 'first comment', cls.tester)
+        add_comment([cls.case_run_1], 'second comment', cls.tester)
+
+    def test_get_the_list(self):
+        url = reverse('caserun-list-pane', args=[self.case_1.pk])
+        resp = self.client.get(url, data={'plan_id': self.plan.pk})
+
+        case_runs = TestCaseRun.objects.filter(
+            case=self.case_1, run__plan=self.plan
+        ).select_related('run')
+
+        for case_run in case_runs:
+            run = case_run.run
+            run_url = reverse("run-get", args=[run.pk])
+            expected_content = [
+                f'<td><a href="{run_url}">{run.pk}</a></td>',
+                f'<td class="expandable"><p>{run.summary}</p></td>',
+
+                # the number of comments
+                '<td class="expandable"><img src="/static/images/comment.png"'
+                ' style="vertical-align: middle;">2</td>'
+            ]
+            for item in expected_content:
+                self.assertContains(resp, item, html=True)
+
+    def test_irrelative_plan_id(self):
+        url = reverse('caserun-list-pane', args=[self.case_1.pk])
+        result = TestPlan.objects.aggregate(max_pk=Max('pk'))
+        resp = self.client.get(url, data={'plan_id': result['max_pk'] + 1})
+
+        self.assertContains(resp, '<tbody></tbody>', html=True)
+
+
+def format_date(dt: datetime) -> str:
+    """Format datetime to string using in the Django way"""
+    return Template('{{ submit_date }}').render(Context({'submit_date': dt}))
+
+
+class TestCaseSimpleCaseRunView(BaseCaseRun):
+    """Test view TestCaseSimpleCaseRunView"""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+
+        cls.case_run_1.notes = 'Some notes'
+        cls.case_run_1.save()
+
+        cls.submit_date = datetime.now()
+        add_comment([cls.case_run_1], 'first comment', cls.tester,
+                    submit_date=cls.submit_date)
+
+        cls.submit_date_later = cls.submit_date + timedelta(minutes=10)
+        add_comment([cls.case_run_1], 'second comment', cls.tester,
+                    submit_date=cls.submit_date_later)
+
+    def test_get_the_view(self):
+        url = reverse('caserun-simple-pane', args=[self.case_1.pk])
+        resp = self.client.get(url, data={'case_run_id': self.case_run_1.pk})
+
+        expected_content = [
+            f'<p>{self.case_run_1.notes}</p>',
+
+            f'<li>'
+            f'<span class="strong">#1</span>'
+            f'<span class="strong">{self.tester.email}</span>'
+            f'<span class="grey">{format_date(self.submit_date)}</span><br/>'
+            f'first comment'
+            f'</li>',
+
+            f'<li>'
+            f'<span class="strong">#2</span>'
+            f'<span class="strong">{self.tester.email}</span>'
+            f'<span class="grey">{format_date(self.submit_date_later)}</span><br/>'
+            f'second comment'
+            f'</li>',
+
+            # FIXME: assert change logs after the template is fixed to show
+            #        change log content
+        ]
+        for item in expected_content:
+            self.assertContains(resp, item, html=True)
+
+    def test_show_empty_content(self):
+        url = reverse('caserun-simple-pane', args=[self.case_2.pk])
+        resp = self.client.get(url, data={'case_run_id': self.case_run_2.pk})
+
+        expected_content = [
+            f'<p>{self.case_run_2.notes}</p>',
+            '<li class="grey" style="border:none;margin:0px;padding:0px">'
+            'No comments found.</li>',
+            '<li class="grey">No log found.</li>'
+        ]
+        for item in expected_content:
+            self.assertContains(resp, item, html=True)
+
+    def test_404_if_case_run_id_is_invalid(self):
+        url = reverse('caserun-simple-pane', args=[self.case.pk])
+        resp = self.client.get(url, data={'case_run_id': 'abc'})
+        self.assert400(resp)
+
+    def test_404_if_case_and_case_run_are_not_associated(self):
+        url = reverse('caserun-simple-pane', args=[self.case.pk])
+        resp = self.client.get(url, data={'case_run_id': self.case_run_2.pk})
+        self.assert404(resp)
+
+    def test_404_if_case_run_id_does_not_exist(self):
+        url = reverse('caserun-simple-pane', args=[self.case.pk])
+        result = TestCaseRun.objects.aggregate(max_pk=Max('pk'))
+        resp = self.client.get(url, data={'case_run_id': result['max_pk'] + 1})
+        self.assert404(resp)
+
+    def test_404_if_missing_case_run_id(self):
+        url = reverse('caserun-simple-pane', args=[self.case.pk])
+        resp = self.client.get(url)
+        self.assert400(resp)
+
+
+class TestCaseCaseRunDetailPanelView(BaseCaseRun):
+    """Test TestCaseCaseRunDetailPanelView"""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+
+        cls.case_1.add_text(
+            action='123', effect='456', setup='789', breakdown='010')
+        cls.case_1.add_text(
+            action='abc', effect='def', setup='ghi', breakdown='jkl')
+
+        cls.case_1.add_component(f.ComponentFactory(name='db'))
+        cls.case_1.add_component(f.ComponentFactory(name='web'))
+        cls.case_1.add_component(f.ComponentFactory(name='dist'))
+
+        cls.case_1.add_tag(f.TestTagFactory(name='python'))
+        cls.case_1.add_tag(f.TestTagFactory(name='webapp'))
+
+        cls.attachment_logo = f.TestAttachmentFactory(file_name='logo.png')
+        f.TestCaseAttachmentFactory(case=cls.case_1,
+                                    attachment=cls.attachment_logo)
+        cls.attachment_screenshort = f.TestAttachmentFactory(
+            file_name='screenshot.png')
+        f.TestCaseAttachmentFactory(case=cls.case_1,
+                                    attachment=cls.attachment_screenshort)
+
+        add_comment([cls.case_run_1], 'start the test', cls.tester)
+        add_comment([cls.case_run_1], 'mark failed', cls.tester)
+
+        cls.first_comment = Comment.objects.get(comment='start the test')
+        cls.second_comment = Comment.objects.get(comment='mark failed')
+
+        cls.case_run_1.log_action(
+            who=cls.tester, field='case_run_status',
+            new_value='idle', original_value='running')
+        cls.case_run_1.log_action(
+            who=cls.tester, field='case_run_status',
+            new_value='running', original_value='failed')
+
+        cls.first_log = TCMSLogModel.objects.get(
+            new_value='idle', original_value='running')
+        cls.second_log = TCMSLogModel.objects.get(
+            new_value='running', original_value='failed')
+
+    def test_404_if_case_and_case_run_are_not_associated(self):
+        case_run = self.case_run_1
+        # Note that, self.case_run_1 is not created from self.case_2
+        url = reverse('caserun-detail-pane', args=[self.case_2.pk])
+        resp = self.client.get(url, data={
+            'case_run_id': case_run.pk,
+            'case_text_version': 1
+        })
+        self.assert404(resp)
+
+    def test_invalid_argument_case_run_id(self):
+        invalid_args = [
+            {'case_text_version': 1},
+            {'case_run_id': '', 'case_text_version': 1},
+            {'case_run_id': 'pk', 'case_text_version': 1},
+        ]
+        url = reverse('caserun-detail-pane', args=[self.case_1.pk])
+        for args in invalid_args:
+            resp = self.client.get(url, data=args)
+            self.assert400(resp)
+
+    def test_invalid_argument_case_text_version(self):
+        invalid_args = [
+            {'case_run_id': 1},
+            {'case_run_id': 1, 'case_text_version': ''},
+            {'case_run_id': 1, 'case_text_version': 'i'},
+        ]
+        url = reverse('caserun-detail-pane', args=[self.case_1.pk])
+        for args in invalid_args:
+            resp = self.client.get(url, data=args)
+            self.assert400(resp)
+
+    def test_show_with_some_empty_content(self):
+        case_run = self.case_run_2
+        url = reverse('caserun-detail-pane', args=[case_run.case.pk])
+        resp = self.client.get(url, data={
+            'case_run_id': case_run.pk,
+            'case_text_version': 1
+        })
+
+        expected_content = [
+            f'<ul class="comment" id="comment{case_run.pk}" style="display:none;"></ul>',
+            '<ul class="ul-no-format"><li class="grey">No bug found</li></ul>',
+            '<ul><li class="grey">No log recorded.</li></ul>',
+            '<ul class="ul-no-format"><li class="grey">No attachment found</li></ul>',
+            '<ul class="ul-no-format"><li class="grey">No component found</li></ul>',
+            '<ul class="ul-no-format"><li class="grey">No tag found</li></ul>',
+
+            f'<h4 class="borderB">Test Log <span>'
+            f'[<a href="javascript:void(0);" class="js-add-testlog" '
+            f'data-params="[{case_run.case_id}, {case_run.pk}]">Add</a>]'
+            f'</span></h4>'
+            f'<div class="content"><ul class="ul-format"></ul></div>',
+
+            '<h4>Actions</h4><div class="content"></div>',
+            '<h4>Breakdown</h4><div class="content"></div>',
+            '<h4>Actions</h4><div class="content"></div>',
+            '<h4>Expected Results</h4><div class="content"></div>',
+        ]
+
+        for item in expected_content:
+            self.assertContains(resp, item, html=True)
+
+    def test_show_case_run_detailed_info(self):
+        case_run = self.case_run_1
+        url = reverse('caserun-detail-pane', args=[case_run.case.pk])
+        resp = self.client.get(url, data={
+            'case_run_id': case_run.pk,
+            'case_text_version': 2
+        })
+
+        expected_content = [
+            '<h4>Actions</h4><div class="content">abc</div>',
+            '<h4>Expected Results</h4><div class="content">def</div>',
+            '<h4>Setup</h4><div class="content">ghi</div>',
+            '<h4>Breakdown</h4><div class="content">jkl</div>',
+
+            # Assert change logs
+            f'<ul id="changeLog{case_run.pk}" style="display:none;">'
+            f'<li>'
+            f'<span>{format_date(self.first_log.date)}</span>'
+            f'<span>{self.first_log.who.username}</span><br />'
+            f'Field {self.first_log.field} changed '
+            f'from {self.first_log.original_value} to {self.first_log.new_value}'
+            f'</li>'
+            f'<li>'
+            f'<span>{format_date(self.second_log.date)}</span>'
+            f'<span>{self.second_log.who.username}</span><br />'
+            f'Field {self.second_log.field} changed '
+            f'from {self.second_log.original_value} to {self.second_log.new_value}'
+            f'</li>'
+            f'</ul>',
+
+            # Assert comments history list
+            f'<ul class="comment" id="comment{case_run.pk}" style="display:none;">'
+            f'<li>'
+            f'<span>#1</span>'
+            f'<span>{self.first_comment.user.email}</span>'
+            f'<span>{format_date(self.first_comment.submit_date)}</span>'
+            f'<div>'
+            f'{self.first_comment.comment}'
+            f'<br></div></li>'
+            f'<li>'
+            f'<span>#2</span>'
+            f'<span>{self.second_comment.user.email}</span>'
+            f'<span>{format_date(self.second_comment.submit_date)}</span>'
+            f'<div>'
+            f'{self.second_comment.comment}'
+            f'<br></div></li>'
+            f'</ul>',
+
+            f'<ul class="ul-no-format">'
+            f'<li>'
+            f'<a href="{reverse("check-file", args=[self.attachment_logo.pk])}">'
+            f'{self.attachment_logo.file_name}'
+            f'</a></li>'
+            f'<li>'
+            f'<a href="{reverse("check-file", args=[self.attachment_screenshort.pk])}">'
+            f'{self.attachment_screenshort.file_name}'
+            f'</a></li>'
+            f'</ul>',
+
+            '<ul class="ul-no-format"><li>db</li><li>web</li><li>dist</li></ul>',
+            '<ul class="ul-no-format"><li>python</li><li>webapp</li></ul>',
+        ]
+
+        for item in expected_content:
+            self.assertContains(resp, item, html=True)
+
+
+class TestLoadMoreCases(BasePlanCase):
+    """Test view method load_more_cases"""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+
+        cls.plan_without_cases = f.TestPlanFactory(
+            name='plan without cases',
+            product=cls.product,
+        )
+
+    def test_missing_plan(self):
+        url = reverse('cases-load-more')
+        resp = self.client.post(url)
+        self.assertContains(resp, 'No test case was found in this plan.')
+
+    def test_plan_has_no_cases(self):
+        url = reverse('cases-load-more')
+        resp = self.client.post(url, data={
+            'from_plan': self.plan_without_cases.pk
+        })
+        self.assertContains(resp, 'No test case was found in this plan.')
+
+    def test_load_cases(self):
+        url = reverse('cases-load-more')
+        plan_id = self.plan.pk
+
+        resp = self.client.post(url, data={
+            'a': 'initial',
+            'from_plan': plan_id,
+            'template_type': 'case',
+        })
+
+        for case in self.plan.case.all():
+            url = f'{reverse("case-get", args=[case.pk])}?from_plan={plan_id}'
+            self.assertContains(
+                resp, f'<a href="{url}">{case.pk}</a>', html=True)

@@ -174,7 +174,7 @@
 								Attachment
 								<span>[
 								{% if perms.management.add_testattachment %}
-								<a href="{% url "case-attachment" test_case_run.case_id %}?from_plan={{ testrun.plan_id }}" target="_blank">Add</a>
+								<a href="{% url "case-attachment" test_case_run.case_id %}?from_plan={{ test_case_run.run.plan_id }}" target="_blank">Add</a>
 								{% endif %}
 								]</span>
 							</h4>

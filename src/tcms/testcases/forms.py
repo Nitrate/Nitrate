@@ -56,86 +56,6 @@ class IssueKeyField(forms.CharField):
                     '{} is not a valid issue key of configured issue trackers.')
 
 
-# =========== New Case ModelForm ==============
-# The form works fine for web but broken for XML-RPC.
-# So it's not in using yet.
-
-class CaseModelForm(forms.ModelForm):
-    default_tester = UserField(required=False)
-
-    is_automated = forms.MultipleChoiceField(
-        choices=AUTOMATED_CHOICES,
-        widget=forms.CheckboxSelectMultiple(),
-    )
-    is_automated_proposed = forms.BooleanField(
-        label='Autoproposed', widget=forms.CheckboxInput(),
-        required=False
-    )
-
-    product = forms.ModelChoiceField(
-        label="Product",
-        queryset=Product.objects.all(),
-        empty_label=None,
-    )
-    category = forms.ModelChoiceField(
-        label="Category",
-        queryset=TestCaseCategory.objects.none(),
-        empty_label=None,
-    )
-    component = forms.ModelMultipleChoiceField(
-        label="Components",
-        queryset=Component.objects.none(),
-        required=False,
-    )
-
-    case_status = forms.ModelChoiceField(
-        label="Case status",
-        queryset=TestCaseStatus.objects.all(),
-        empty_label=None,
-    )
-
-    priority = forms.ModelChoiceField(
-        label="Priority",
-        queryset=Priority.objects.all(),
-        empty_label=None,
-    )
-
-    class Meta:
-        model = TestCase
-        exclude = ('author', )
-        widgets = {
-            'default_tester': UserField(),
-        }
-
-    # def clean_alias(self):
-    #    data = self.cleaned_data['alias']
-    #    tc_count = TestCase.objects.filter(alias = data).count()
-    #
-    #    if tc_count == 0:
-    #        return data
-    #    raise forms.ValidationError('Duplicated alias exist in database.')
-
-    def clean_is_automated(self):
-        data = self.cleaned_data['is_automated']
-        if len(data) == 2:
-            return 2
-
-        if len(data):
-            return data[0]
-
-        return data
-
-    def populate(self, product_id=None):
-        if product_id:
-            self.fields['category'].queryset = TestCaseCategory.objects.filter(
-                product__id=product_id)
-            self.fields['component'].queryset = Component.objects.filter(
-                product__id=product_id)
-        else:
-            self.fields['category'].queryset = TestCaseCategory.objects.all()
-            self.fields['component'].queryset = Component.objects.all()
-
-
 # =========== Forms for create/update ==============
 
 class BaseCaseForm(forms.Form):
@@ -534,8 +454,14 @@ class CaseAutomatedForm(forms.Form):
         return cdata
 
     def populate(self):
-
-        self.fields['case'].queryset = TestCase.objects.all()
+        self.fields['case'] = forms.ModelMultipleChoiceField(
+            queryset=TestCase.objects.all(),
+            error_messages={
+                'required': 'Missing test case ID. At least one should be given.',
+                'invalid_choice': 'Test case ID(s) %(value)s do not exist.',
+            },
+            help_text='Test cases whose is_automated property will be updated.'
+        )
 
 
 class BaseAddIssueForm(forms.Form):

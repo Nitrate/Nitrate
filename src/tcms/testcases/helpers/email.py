@@ -6,28 +6,29 @@ from tcms.core.utils.mailto import mailto
 
 
 def email_case_update(case):
-    recipients = get_case_notification_recipients(case)
-    if len(recipients) == 0:
-        return
-    cc = case.emailing.get_cc_list()
-    subject = 'TestCase %s has been updated.' % case.pk
-    txt = case.latest_text()
-    context = {
-        'test_case': case, 'test_case_text': txt,
-    }
-    template = settings.CASE_EMAIL_TEMPLATE
-    mailto(template, subject, recipients, context, cc=cc)
+    notify_recipients(
+        case,
+        f'TestCase {case.pk} has been updated.',
+        {
+            'test_case': case,
+            'test_case_text': case.latest_text(),
+        },
+    )
 
 
 def email_case_deletion(case):
+    notify_recipients(
+        case,
+        f'TestCase {case.pk} has been deleted.',
+        {'case': case},
+    )
+
+
+def notify_recipients(case, subject, context):
     recipients = get_case_notification_recipients(case)
     cc = case.emailing.get_cc_list()
     if len(recipients) == 0:
         return
-    subject = 'TestCase %s has been deleted.' % case.pk
-    context = {
-        'case': case,
-    }
     template = settings.CASE_EMAIL_TEMPLATE
     mailto(template, subject, recipients, context, cc=cc)
 

@@ -8,7 +8,7 @@ from html2text import html2text
 from django.conf import settings
 from django.urls import reverse
 from django.db import models
-from django.db.models import ObjectDoesNotExist
+from django.db.models import Max, ObjectDoesNotExist
 from django.db.models.signals import post_save, post_delete, pre_save
 from django.contrib.contenttypes.fields import GenericRelation
 from django.utils.encoding import smart_str
@@ -161,7 +161,7 @@ class TestCase(TCMSActionModel):
         return s.serialize_queryset()
 
     @classmethod
-    def create(cls, author, values):
+    def create(cls, author, values, plans=None):
         """
         Create the case element based on models/forms.
         """
@@ -169,7 +169,6 @@ class TestCase(TCMSActionModel):
             author=author,
             is_automated=values['is_automated'],
             is_automated_proposed=values['is_automated_proposed'],
-            # sortkey = values['sortkey'],
             script=values['script'],
             arguments=values['arguments'],
             extra_link=values['extra_link'],
@@ -183,10 +182,21 @@ class TestCase(TCMSActionModel):
             default_tester=values['default_tester'],
             notes=values['notes'],
         )
+
         tags = values.get('tag')
         if tags:
             for tag in tags:
                 case.add_tag(tag)
+
+        components = values.get('component')
+        if components is not None:
+            for component in components:
+                case.add_component(component=component)
+
+        if plans:
+            for plan in plans:
+                case.add_to_plan(plan)
+
         return case
 
     @classmethod
@@ -453,9 +463,6 @@ class TestCase(TCMSActionModel):
     def add_to_plan(self, plan):
         TestCasePlan.objects.get_or_create(case=self, plan=plan)
 
-    def clear_components(self):
-        return TestCaseComponent.objects.filter(case=self).delete()
-
     def clear_estimated_time(self):
         """Converts a integer to time"""
         return format_timedelta(self.estimated_time)
@@ -464,12 +471,6 @@ class TestCase(TCMSActionModel):
         return (Issue.objects.filter(case__pk=self.pk)
                              .select_related('tracker')
                              .order_by('pk'))
-
-    def get_components(self):
-        return self.component.all()
-
-    def get_component_names(self):
-        return self.component.values_list('name', flat=True)
 
     def get_choiced(self, obj_value, choices):
         for x in choices:
@@ -491,14 +492,13 @@ class TestCase(TCMSActionModel):
 
     def get_previous_and_next(self, pk_list):
         pk_list = list(pk_list)
+        if self.pk not in pk_list:
+            return None, None
         current_idx = pk_list.index(self.pk)
         prev = TestCase.objects.get(pk=pk_list[current_idx - 1])
-        try:
-            next = TestCase.objects.get(pk=pk_list[current_idx + 1])
-        except IndexError:
-            next = TestCase.objects.get(pk=pk_list[0])
-
-        return (prev, next)
+        next_pk = (current_idx + 1) % len(pk_list)
+        next_ = TestCase.objects.get(pk=pk_list[next_pk])
+        return prev, next_
 
     def get_text_with_version(self, case_text_version=None):
         if case_text_version:
@@ -520,8 +520,12 @@ class TestCase(TCMSActionModel):
         return NoneText if len(qs) == 0 else qs[0]
 
     def latest_text_version(self):
-        qs = self.text.order_by('-case_text_version').only('case_text_version')[0:1]
-        return 0 if len(qs) == 0 else qs[0].case_text_version
+        result = (
+            self.text.order_by('case', 'case_text_version')
+            .aggregate(latest_version=Max('case_text_version'))
+        )
+        latest_version = result['latest_version']
+        return 0 if latest_version is None else latest_version
 
     def text_exist(self):
         return self.text.exists()

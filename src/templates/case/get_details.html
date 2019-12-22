@@ -7,7 +7,7 @@
 				<h4>Setup:</h4>
 				<div class="content">{{ test_case_text.setup|safe }}</div>
 			</td>
-			<td class="" valign="top">
+			<td valign="top">
 				<h4>Breakdown:</h4>
 				<div class="content">{{ test_case_text.breakdown|safe }}</div>
 			</td>
@@ -57,11 +57,11 @@
 			</td>
 		</tr>
 		<tr>
-			<td class="" valign="top">
+			<td valign="top">
 				<h4>Actions:</h4>
 				<div class="content">{{ test_case_text.action|safe }}</div>
 			</td>
-			<td class="" valign="top">
+			<td valign="top">
 				<h4>Expected Results:</h4>
 				<div class="content">{{ test_case_text.effect|safe }}</div>
 			</td>
@@ -75,17 +75,7 @@
 		<tr>
 			<td colspan="3" style="border:none; background:none">
 				<h4>Comments:</h4>
-				<ul class="comment ul-no-format">
-				{% for comment in case_comments %}
-					<li>
-						<span class="strong">#{{ forloop.counter }}</span>
-						<span class="strong">{{ comment.user.email }}</span>
-						<span class="grey">{{ comment.submit_date }}</span>
-						<br/>
-						{{ comment.comment|urlize|linebreaksbr }}
-					</li>
-					{% endfor %}
-				<ul>
+				{% include 'case/comments_in_simple_case_pane.html' with comments=case_comments %}
 			</td>
 		</tr>
 	</table>
