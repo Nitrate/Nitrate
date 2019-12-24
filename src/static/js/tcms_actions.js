@@ -361,6 +361,7 @@ function set_up_choices(elemSelect, values, addBlankOption) {
 
   if (addBlankOption) {
     newElemOption = document.createElement('option');
+    newElemOption.value = '';
     newElemOption.text = '---------';
     elemSelect.add(newElemOption);
   }
