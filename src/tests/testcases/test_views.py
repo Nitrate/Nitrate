@@ -1179,7 +1179,7 @@ class TestCloneCase(BasePlanCase):
         else:
             self.assertEqual(self.tester, cloned_case.default_tester)
 
-    def _clone_cases(self, plans, orig_cases,
+    def _clone_cases(self, dest_plans, orig_cases,
                      orig_plan=None,
                      copy_case=True,
                      keep_original_author=False,
@@ -1189,7 +1189,7 @@ class TestCloneCase(BasePlanCase):
         self.login_tester()
 
         post_data = {
-            'plan': [item.pk for item in plans],
+            'plan': [item.pk for item in dest_plans],
             'case': [item.pk for item in orig_cases],
             'copy_case': copy_case,
             'maintain_case_orignal_author': keep_original_author,
@@ -1203,36 +1203,46 @@ class TestCloneCase(BasePlanCase):
 
         resp = self.client.post(self.clone_url, post_data)
 
-        plans_count = len(plans)
+        dest_plans_count = len(dest_plans)
         orig_cases_count = len(orig_cases)
 
         # Assert response from view
 
-        if plans_count == 1 and orig_cases_count == 1:
-            cloned_case = plans[0].case.first()
-            self.assertRedirects(resp, '{}?from_plan={}'.format(
-                reverse('case-get', args=[cloned_case.pk]),
-                plans[0].pk
-            ))
+        if dest_plans_count == 1 and orig_cases_count == 1:
+            # Use last() to get the correct case. If a case is cloned into
+            # another plan, last() returns that case. If a case is cloned into
+            # the same plan, last() just returns the new cloned case properly.
+            cloned_case = dest_plans[0].case.order_by('pk').last()
+            redirect_url = reverse('case-get', args=[cloned_case.pk])
+            self.assertRedirects(
+                resp, f'{redirect_url}?from_plan={dest_plans[0].pk}')
         elif orig_cases_count == 1:
-            cloned_case = plans[0].case.first()
+            cloned_case = dest_plans[0].case.first()
             self.assertRedirects(
                 resp, reverse('case-get', args=[cloned_case.pk]))
-        elif plans_count == 1:
+        elif dest_plans_count == 1:
             self.assertRedirects(
-                resp, reverse('plan-get', args=[plans[0].pk]),
+                resp, reverse('plan-get', args=[dest_plans[0].pk]),
                 fetch_redirect_response=False)
         else:
             self.assertContains(resp, 'Test case successful to clone')
 
         # Assert cases are cloned or linked correctly
 
-        for plan in plans:
-            cloned_cases = plan.case.order_by('pk')
+        for dest_plan in dest_plans:
+            for orig_case in orig_cases:
+                # Every original case should have a corresponding cloned case
+                # in the destination plan.
+                # Same purpose to use last() as above to the correct cloned case.
+                cloned_case = TestCase.objects.filter(
+                    summary=orig_case.summary, plan__in=[dest_plan]
+                ).order_by('pk').last()
 
-            self.assertEqual(len(orig_cases), len(cloned_cases))
+                # Otherwise, there must be something wrong with the clone code.
+                # So, make the test fail.
+                if cloned_case is None:
+                    self.fail(f'{orig_case} is not cloned into plan {dest_plan}.')
 
-            for orig_case, cloned_case in zip(orig_cases, cloned_cases):
                 self.assert_cloned_case(
                     orig_case, cloned_case,
                     copy_case=copy_case,
@@ -1242,24 +1252,24 @@ class TestCloneCase(BasePlanCase):
                     keep_original_default_tester=keep_original_default_tester
                 )
 
-            # Assert sort key in test case plan relationship
+                # Assert sort key in test case plan relationship
 
-            if orig_plan is None:
-                for rel in TestCasePlan.objects.filter(plan=plan):
-                    # In the test case, destination plan does not have any
-                    # cases, so when any cases are associated with the plan,
-                    # sortkey should be None.
-                    self.assertIsNone(rel.sortkey)
-            else:
-                tcp_filter = TestCasePlan.objects.filter
-                for rel in tcp_filter(plan=plan):
-                    orig_rel = tcp_filter(plan=orig_plan, case=orig_case).first()
+                if orig_plan is None:
+                    # If no original plan is specified, use the destination plan's
+                    # sort key.
+                    new_rel = TestCasePlan.objects.get(plan=dest_plan, case=cloned_case)
+                    self.assertEqual(dest_plan.get_case_sortkey(), new_rel.sortkey)
+                else:
+                    # If original plan is specified, use the original sort key
+                    # related to the original plan.
+                    orig_rel = TestCasePlan.objects.filter(
+                        plan=orig_plan, case=orig_case).first()
+                    new_rel = TestCasePlan.objects.get(
+                        plan=dest_plan, case=cloned_case)
                     if orig_rel:
-                        self.assertEqual(orig_rel.sortkey, rel.sortkey)
+                        self.assertEqual(orig_rel.sortkey, new_rel.sortkey)
                     else:
-                        # Same as above, the original plan has no cases
-                        # associated. So, sortkey should be None.
-                        self.assertIsNone(rel.sortkey)
+                        self.assertEqual(dest_plan.get_case_sortkey(), new_rel.sortkey)
 
     def test_keep_original_author(self):
         self._clone_cases([self.plan_test_clone],
@@ -1299,16 +1309,32 @@ class TestCloneCase(BasePlanCase):
                           copy_case=False)
 
     def test_create_new_plan_case_rel_sort_key_for_copy(self):
+        """
+        Test to generate a new sort key from destination plan even if
+        from_plan is given, but the given from_plan has no relationship with
+        the case to be cloned
+        """
         self._clone_cases([self.plan_test_clone, self.plan_test_clone_more],
                           [self.case],
                           orig_plan=self.orphan_plan,
                           copy_case=True)
 
     def test_create_new_plan_case_rel_sort_key_for_link(self):
+        """
+        Same as test test_create_new_plan_case_rel_sort_key_for_copy, but this
+        test tests link rather than cloned
+        """
         self._clone_cases([self.plan_test_clone, self.plan_test_clone_more],
                           [self.case],
                           orig_plan=self.orphan_plan,
                           copy_case=False)
+
+    @mock.patch('tcms.testplans.models.TestPlan.get_case_sortkey')
+    def test_clone_to_same_plan(self, get_case_sortkey):
+        # Make it easier to assert the new sort key.
+        get_case_sortkey.return_value = 100
+        self._clone_cases(
+            [self.plan], [self.case, self.case_1, self.case_2], copy_case=True)
 
 
 class TestSearchCases(BasePlanCase):
