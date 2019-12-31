@@ -900,7 +900,7 @@ class TestCaseEmailSettings(models.Model):
     def get_cc_list(self):
         """Return the whole CC list"""
 
-        return [c.email for c in self.cc_list.all()]
+        return sorted(c.email for c in self.cc_list.all())
 
     def remove_cc(self, email_addrs):
         """Remove one or more email addresses from EmailSettings' CC list

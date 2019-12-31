@@ -108,6 +108,7 @@ def wrap_exceptions(func):
                 django.core.exceptions.FieldError,
                 django.core.exceptions.ValidationError,
                 django.core.exceptions.MultipleObjectsReturned,
+                django.forms.ValidationError,
                 ValueError,
                 TypeError) as e:
             # 400 Bad Request

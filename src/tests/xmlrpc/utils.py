@@ -27,9 +27,11 @@ class XmlrpcAPIBaseTest(test.TestCase):
         try:
             method(*args, **kwargs)
         except Fault as f:
-            self.assertEqual(f.faultCode, faultCode,
-                             'Except raising fault error with code {}, but {} is raised'.format(
-                                 faultCode, f.faultCode))
+            self.assertEqual(
+                f.faultCode, faultCode,
+                f'Except raising fault error with code {faultCode},'
+                f' but {f.faultCode} is raised'
+            )
         except Exception as e:
             self.fail('Expect raising xmlrpclib.Fault, but {} is raised and '
                       'message is "{}".'.format(e.__class__.__name__, str(e)))

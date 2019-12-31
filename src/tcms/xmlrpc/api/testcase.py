@@ -4,7 +4,7 @@ import itertools
 
 from django.contrib.auth.decorators import permission_required
 from django.core.exceptions import ObjectDoesNotExist
-from django.forms import EmailField, ValidationError
+from django.forms import EmailField
 
 from tcms.core.utils.timedelta2int import timedelta2int
 from tcms.issuetracker.models import Issue
@@ -161,16 +161,21 @@ def add_tag(request, case_ids, tags):
         TestCase.add_tag('1, 2', 'foo, bar')
     """
     tcs = TestCase.objects.filter(
-        case_id__in=pre_process_ids(value=case_ids))
+        case_id__in=pre_process_ids(value=case_ids)
+    ).only('pk')
+
+    if not tcs.exists():
+        return
 
     tags = TestTag.string_to_list(tags)
+
+    if not tags:
+        return
 
     for tag in tags:
         t, c = TestTag.objects.get_or_create(name=tag)
         for tc in tcs.iterator():
             tc.add_tag(tag=t)
-
-    return
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -211,11 +216,8 @@ def add_to_run(request, case_ids, run_ids):
     if not tcs.exists():
         raise ValueError('Invalid case_ids')
 
-    for tr in trs.iterator():
-        for tc in tcs.iterator():
-            tr.add_case_run(case=tc)
-
-    return
+    for run, case in itertools.product(trs, tcs):
+        run.add_case_run(case)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -360,7 +362,7 @@ def calculate_total_estimated_time(request, case_ids):
         raise ValueError('Please input valid case Id')
 
     # aggregate Sum return integer directly rather than timedelta
-    seconds = tcs.aggregate(Sum('estimated_time')).get('estimated_time__sum')
+    seconds = tcs.aggregate(total=Sum('estimated_time'))['total'].seconds
 
     m, s = divmod(seconds, 60)
     h, m = divmod(m, 60)
@@ -673,10 +675,10 @@ def get_case_status(request, id=None):
     """
     from tcms.testcases.models import TestCaseStatus
 
-    if id:
+    if id is None:
+        return TestCaseStatus.to_xmlrpc()
+    else:
         return TestCaseStatus.objects.get(id=id).serialize()
-
-    return TestCaseStatus.to_xmlrpc()
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -975,21 +977,15 @@ def remove_component(request, case_ids, component_ids):
     """
     from tcms.management.models import Component
 
-    tcs = TestCase.objects.filter(
+    cases = TestCase.objects.filter(
         case_id__in=pre_process_ids(value=case_ids)
     )
-    tccs = Component.objects.filter(
+    components = Component.objects.filter(
         id__in=pre_process_ids(value=component_ids)
     )
 
-    for tc in tcs.iterator():
-        for tcc in tccs.iterator():
-            try:
-                tc.remove_component(component=tcc)
-            except ObjectDoesNotExist:
-                pass
-
-    return
+    for case, component in itertools.product(cases, components):
+        case.remove_component(component=component)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -1015,21 +1011,15 @@ def remove_tag(request, case_ids, tags):
         # Remove tag 'foo' and 'bar' from cases list '1, 2' with String
         TestCase.remove_tag('1, 2', 'foo, bar')
     """
-    tcs = TestCase.objects.filter(
+    cases = TestCase.objects.filter(
         case_id__in=pre_process_ids(value=case_ids)
     )
-    tgs = TestTag.objects.filter(
+    tags = TestTag.objects.filter(
         name__in=TestTag.string_to_list(tags)
     )
 
-    for tc in tcs.iterator():
-        for tg in tgs.iterator():
-            try:
-                tc.remove_tag(tg)
-            except ObjectDoesNotExist:
-                pass
-
-    return
+    for case, tag in itertools.product(cases, tags):
+        case.remove_tag(tag)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -1173,19 +1163,13 @@ def validate_cc_list(cc_list):
     if not isinstance(cc_list, list):
         raise TypeError('cc_list should be a list object.')
 
-    field = EmailField(required=True)
-    invalid_emails = []
+    field = EmailField(required=True, error_messages={
+        'required': 'Missing email address.',
+        'invalid': '%(value)s is not a valid email address.',
+    })
 
     for item in cc_list:
-        try:
-            field.clean(item)
-        except ValidationError:
-            invalid_emails.append(item)
-
-    if invalid_emails:
-        raise ValidationError(
-            field.error_messages['invalid'] % {
-                'value': ', '.join(invalid_emails)})
+        field.clean(item)
 
 
 @log_call(namespace=__xmlrpc_namespace__)

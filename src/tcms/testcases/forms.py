@@ -120,18 +120,6 @@ class BaseCaseForm(forms.Form):
         required=False
     )
 
-    def __init__(self, *args, **kwargs):
-        if args:
-            self.notes_val = args[0].get('notes', None)
-            self.script_val = args[0].get('script', None)
-        elif kwargs:
-            self.notes_val = kwargs.get('notes', None)
-            self.script_val = kwargs.get('script', None)
-        else:
-            self.notes_val = ''
-            self.script_val = ''
-        super().__init__(*args, **kwargs)
-
     def clean_is_automated(self):
         data = self.cleaned_data['is_automated']
         if len(data) == 2:
@@ -145,31 +133,6 @@ class BaseCaseForm(forms.Form):
                 return data[0]
 
         return data
-
-    def clean_script(self):
-        if self.script_val == '':
-            return ''
-        elif self.script_val:
-            return self.cleaned_data['script']
-        else:
-            return None
-
-    def clean_notes(self):
-        if self.notes_val == '':
-            return ''
-        elif self.notes_val:
-            return self.cleaned_data['notes']
-        else:
-            return None
-
-    # def clean_alias(self):
-    #    data = self.cleaned_data['alias']
-    #    tc_count = TestCase.objects.filter(alias = data).count()
-    #
-    #    if tc_count == 0:
-    #        return data
-    #
-    #    raise forms.ValidationError('Duplicated alias exist in database.')
 
     def clean_tag(self):
         tags = []
