@@ -7,7 +7,7 @@ billiard==3.5.0.5
 celery==4.2.0
 certifi==2019.11.28
 chardet==3.0.4
-coverage==4.5.4
+coverage==5.0.1
 defusedxml==0.6.0
 Django==2.2.8
 django-contrib-comments==1.9.1
