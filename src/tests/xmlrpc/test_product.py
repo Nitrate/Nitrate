@@ -5,12 +5,18 @@ import unittest
 
 from operator import itemgetter
 
+from django.contrib.auth.models import User
+from django.db.models import Max
 from django.test import TestCase
 
 from tcms.xmlrpc.api import product
 from tests import factories as f
 from tests.xmlrpc.utils import make_http_request
 from tests.xmlrpc.utils import XmlrpcAPIBaseTest
+
+
+def get_max_user_id():
+    return User.objects.aggregate(max_pk=Max('pk'))['max_pk']
 
 
 class TestCheckCategory(XmlrpcAPIBaseTest):
@@ -377,11 +383,15 @@ class TestGetCategory(XmlrpcAPIBaseTest):
 
 
 class TestAddComponent(XmlrpcAPIBaseTest):
+    """Test add_component"""
 
     @classmethod
     def setUpTestData(cls):
         cls.admin = f.UserFactory()
         cls.staff = f.UserFactory()
+        cls.initial_owner = f.UserFactory()
+        cls.initial_qa_contact = f.UserFactory()
+
         cls.admin_request = make_http_request(user=cls.admin, user_perm='management.add_component')
         cls.staff_request = make_http_request(user=cls.staff)
         cls.product = f.ProductFactory()
@@ -404,6 +414,35 @@ class TestAddComponent(XmlrpcAPIBaseTest):
     def test_add_component_with_non_exist(self):
         self.assertXmlrpcFaultNotFound(
             product.add_component, self.admin_request, 9999, "MyComponent")
+
+    def test_specify_initial_owner(self):
+        component = product.add_component(
+            self.admin_request,
+            self.product.pk, "db",
+            initial_owner_id=self.initial_owner.pk)
+        self.assertEqual(self.initial_owner.pk, component['initial_owner_id'])
+
+    def test_specify_initial_qa_contact(self):
+        component = product.add_component(
+            self.admin_request,
+            self.product.pk, "web",
+            initial_qa_contact_id=self.initial_qa_contact.pk)
+        self.assertEqual(self.initial_qa_contact.pk,
+                         component['initial_qa_contact_id'])
+
+    def test_given_initial_owner_does_not_exist(self):
+        component = product.add_component(
+            self.admin_request,
+            self.product.pk, "docs",
+            initial_owner_id=get_max_user_id() + 1)
+        self.assertEqual(self.admin.pk, component['initial_owner_id'])
+
+    def test_given_initial_qa_contact_does_not_exist(self):
+        component = product.add_component(
+            self.admin_request,
+            self.product.pk, "dist",
+            initial_qa_contact_id=get_max_user_id() + 1)
+        self.assertEqual(self.admin.pk, component['initial_qa_contact_id'])
 
 
 class TestGetComponent(XmlrpcAPIBaseTest):
@@ -428,11 +467,15 @@ class TestGetComponent(XmlrpcAPIBaseTest):
 
 
 class TestUpdateComponent(XmlrpcAPIBaseTest):
+    """Test update_componnet"""
 
     @classmethod
     def setUpTestData(cls):
         cls.admin = f.UserFactory()
         cls.staff = f.UserFactory()
+        cls.initial_owner = f.UserFactory()
+        cls.initial_qa_contact = f.UserFactory()
+
         cls.admin_request = make_http_request(user=cls.admin,
                                               user_perm='management.change_component')
         cls.staff_request = make_http_request(user=cls.staff)
@@ -448,6 +491,43 @@ class TestUpdateComponent(XmlrpcAPIBaseTest):
         values = {'name': 'Updated'}
         com = product.update_component(self.admin_request, self.component.pk, values)
         self.assertEqual(com['name'], 'Updated')
+
+    def test_update_initial_owner(self):
+        values = {
+            'name': 'db',
+            'initial_owner_id': self.initial_owner.pk
+        }
+        component = product.update_component(
+            self.admin_request, self.component.pk, values)
+        self.assertEqual(self.initial_owner.pk, component['initial_owner_id'])
+
+    def test_update_initial_qa_contact(self):
+        values = {
+            'name': 'doc',
+            'initial_qa_contact_id': self.initial_qa_contact.pk
+        }
+        component = product.update_component(
+            self.admin_request, self.component.pk, values)
+        self.assertEqual(self.initial_qa_contact.pk,
+                         component['initial_qa_contact_id'])
+
+    def test_given_initial_owner_does_not_exist(self):
+        values = {
+            'name': 'web',
+            'initial_owner_id': get_max_user_id() + 1,
+        }
+        component = product.update_component(
+            self.admin_request, self.component.pk, values)
+        self.assertIsNone(component['initial_owner_id'])
+
+    def test_given_initial_qa_contact_does_not_exist(self):
+        values = {
+            'name': 'dist',
+            'initial_qa_contact_id': get_max_user_id() + 1,
+        }
+        component = product.update_component(
+            self.admin_request, self.component.pk, values)
+        self.assertIsNone(component['initial_qa_contact_id'])
 
     def test_update_component_with_non_exist(self):
         self.assertXmlrpcFaultNotFound(
@@ -481,6 +561,10 @@ class TestUpdateComponent(XmlrpcAPIBaseTest):
         self.assertXmlrpcFaultBadRequest(
             product.update_component,
             self.admin_request, self.component.pk, ())
+
+        self.assertXmlrpcFaultBadRequest(
+            product.update_component,
+            self.admin_request, self.component.pk, {'name': ''})
 
 
 class TestGetComponents(XmlrpcAPIBaseTest):
@@ -785,3 +869,22 @@ class TestGetVersions(XmlrpcAPIBaseTest):
         self.assertXmlrpcFaultBadRequest(product.get_versions, None, False)
         self.assertXmlrpcFaultBadRequest(product.get_versions, None, '')
         self.assertXmlrpcFaultBadRequest(product.get_versions, None, object)
+
+
+class TestDeprecatedAPIs(XmlrpcAPIBaseTest):
+    """Test deprecated APIs"""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.product = f.ProductFactory(name='nitrate')
+
+    def test_lookup_name_by_id(self):
+        result = product.lookup_name_by_id(self.request, self.product.pk)
+        self.assertEqual(self.product.pk, result['id'])
+        self.assertEqual('nitrate', result['name'])
+
+    def test_lookup_id_by_name(self):
+        result = product.lookup_id_by_name(self.request, 'nitrate')
+        self.assertEqual(self.product.pk, result['id'])
+        self.assertEqual('nitrate', result['name'])
