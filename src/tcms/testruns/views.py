@@ -39,10 +39,10 @@ from django_comments.models import Comment
 from tcms.issuetracker.models import Issue
 from tcms.issuetracker.models import IssueTracker
 from tcms.issuetracker.services import find_service
+from tcms.core.tcms_router import connection
 from tcms.core.utils import clean_request
 from tcms.core.utils import DataTableResult
-from tcms.core.utils.tcms_router import connection
-from tcms.core.utils.timedeltaformat import format_timedelta
+from tcms.core.utils import format_timedelta
 from tcms.core.views import Prompt
 from tcms.management.models import Priority, TCMSEnvValue, TestTag, TCMSEnvGroup
 from tcms.search.forms import RunForm

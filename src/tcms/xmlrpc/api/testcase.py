@@ -6,7 +6,6 @@ from django.contrib.auth.decorators import permission_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms import EmailField
 
-from tcms.core.utils.timedelta2int import timedelta2int
 from tcms.issuetracker.models import Issue
 from tcms.issuetracker.models import IssueTracker
 from tcms.management.models import TestTag
@@ -18,7 +17,7 @@ from tcms.xmlrpc.utils import distinct_count
 from tcms.xmlrpc.utils import pre_process_estimated_time
 from tcms.xmlrpc.utils import pre_process_ids
 from tcms.testcases.forms import CaseIssueForm
-from tcms.core.utils import form_error_messags_to_list
+from tcms.core.utils import form_error_messags_to_list, timedelta2int
 
 
 __all__ = (

@@ -2,7 +2,7 @@
 
 from django.conf import settings
 
-from tcms.core.utils.mailto import mailto
+from tcms.core.mailto import mailto
 
 
 def email_case_update(case):

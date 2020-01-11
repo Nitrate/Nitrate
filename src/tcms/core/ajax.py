@@ -439,7 +439,7 @@ def update(request):
             object_pk=object_pk,
         )
         if mail_context:
-            from tcms.core.utils.mailto import mailto
+            from tcms.core.mailto import mailto
 
             mail_context['context']['user'] = request.user
             mailto(**mail_context)
@@ -529,7 +529,7 @@ def update_case_run_status(request):
     objects_update(targets, **{field: value})
 
     if hasattr(model, 'mail_scene'):
-        from tcms.core.utils.mailto import mailto
+        from tcms.core.mailto import mailto
 
         mail_context = model.mail_scene(
             objects=targets, field=field, value=value, ctype=ctype,
@@ -635,7 +635,7 @@ class TestCaseUpdateActions(ModelUpdateActions):
                                            field=self.target_field,
                                            value=self.new_value)
         if mail_context:
-            from tcms.core.utils.mailto import mailto
+            from tcms.core.mailto import mailto
 
             mail_context['context']['user'] = self.request.user
             mailto(**mail_context)

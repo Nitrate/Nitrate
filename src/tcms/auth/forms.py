@@ -40,7 +40,7 @@ class RegistrationForm(UserCreationForm):
                           template_name='registration/confirm_email.html'):
         from django.urls import reverse
         from django.contrib.sites.models import Site
-        from tcms.core.utils.mailto import mailto
+        from tcms.core.mailto import mailto
         from tcms.core.utils import request_host_link
 
         s = Site.objects.get_current()

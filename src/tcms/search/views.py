@@ -13,7 +13,7 @@ from django.views.decorators.http import require_GET
 from django.core.paginator import Paginator
 from django.core.paginator import PageNotAnInteger
 
-from tcms.core.utils.raw_sql import RawSQL
+from tcms.core.raw_sql import RawSQL
 from tcms.management.models import Priority
 from tcms.management.models import Product
 from tcms.search.forms import CaseForm, RunForm, PlanForm

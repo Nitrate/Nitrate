@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import datetime
 import functools
+import hashlib
 import operator
+import re
 
 from django.apps import apps
 
@@ -244,3 +247,52 @@ class EnumLike:
             return ValueError('ID {} does not exist in model {}.'.format(
                 obj_id, cls.__name__))
         return obj.name
+
+
+def checksum(value):
+    if value is None:
+        return ''
+    md5 = hashlib.md5()
+    md5.update(value.encode("UTF-8"))
+    return md5.hexdigest()
+
+
+def format_timedelta(timedelta):
+    """convert instance of datetime.timedelta to d(ay), h(our), m(inute)"""
+    if isinstance(timedelta, datetime.timedelta):
+        m, s = divmod(timedelta.seconds, 60)
+        h, m = divmod(m, 60)
+        d = timedelta.days
+        day = '%dd' % d if d else ''
+        hour = '%dh' % h if h else ''
+        minute = '%dm' % m if m else ''
+        second = '%ds' % s if s else ''
+        timedelta_str = day + hour + minute + second
+        return timedelta_str if timedelta_str else '0m'
+    else:
+        raise TypeError(
+            'Unable to convert %s to d(ay):h(our):m(inute):s(econd)'
+            % timedelta)
+
+
+def timedelta2int(value):
+    """convert string nh(ay):nh(our):nm(inute) to integer seconds."""
+    value = value.replace(' ', '')
+    second_regex = re.compile(r'\d+s')
+    minute_regex = re.compile(r'\d+m')
+    hour_regex = re.compile(r'\d+h')
+    day_regex = re.compile(r'\d+d')
+
+    second = second_regex.findall(value)
+    seconds = int(second[0][:-1]) if second else 0
+
+    minute = minute_regex.findall(value)
+    minutes = int(minute[0][:-1]) if minute else 0
+
+    hour = hour_regex.findall(value)
+    hours = int(hour[0][:-1]) if hour else 0
+
+    day = day_regex.findall(value)
+    days = int(day[0][:-1]) if day else 0
+
+    return seconds + minutes * 60 + hours * 3600 + days * 86400

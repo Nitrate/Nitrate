@@ -29,7 +29,7 @@ DATABASES = {
 # )
 
 # To enable database routers for read/write separation.
-# DATABASE_ROUTERS = ['tcms.core.utils.tcms_router.RWRouter']
+# DATABASE_ROUTERS = ['tcms.core.tcms_router.RWRouter']
 
 # Kerberos realm
 # KRB5_REALM = 'EXAMPLE.COM'

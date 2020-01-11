@@ -12,7 +12,7 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.http import require_GET
 from django.shortcuts import get_object_or_404
 
-from tcms.core.utils.raw_sql import RawSQL
+from tcms.core.raw_sql import RawSQL
 from tcms.testplans.models import TestPlan
 from tcms.testruns.models import TestRun
 from tcms.profiles.models import Bookmark

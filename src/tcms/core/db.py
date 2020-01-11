@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from tcms.core.utils.tcms_router import connection
+from tcms.core.tcms_router import connection
 
 __all__ = ('SQLExecution',
            'get_groupby_result',

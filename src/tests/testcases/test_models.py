@@ -9,7 +9,7 @@ from django.db.models import Max
 from django.db.models.signals import post_save, post_delete, pre_save
 from django import test
 
-from tcms.core.utils.checksum import checksum
+from tcms.core.utils import checksum
 from tcms.issuetracker.models import Issue
 from tcms.management.models import Priority, Component, Product
 from tcms.testcases import signals as case_watchers

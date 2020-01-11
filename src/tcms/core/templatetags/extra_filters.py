@@ -45,8 +45,7 @@ def smart_int(object):
 
 @register.filter(name='timedelta2string')
 def timedelta2string(object):
-    from tcms.core.utils.timedeltaformat import format_timedelta
-
+    from tcms.core.utils import format_timedelta
     return format_timedelta(object)
 
 

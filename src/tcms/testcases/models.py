@@ -17,8 +17,8 @@ from tcms.core.models import TCMSActionModel
 from tcms.core.models import TCMSContentTypeBaseModel
 from tcms.core.models.fields import DurationField
 from tcms.core.utils import EnumLike
-from tcms.core.utils.checksum import checksum
-from tcms.core.utils.timedeltaformat import format_timedelta
+from tcms.core.utils import checksum
+from tcms.core.utils import format_timedelta
 from tcms.issuetracker.models import Issue
 from tcms.issuetracker.services import find_service
 from tcms.testcases import signals as case_watchers
@@ -545,7 +545,7 @@ class TestCase(TCMSActionModel):
                     text.breakdown_checksum)
 
     def mail(self, template, subject, context={}, to=[], request=None):
-        from tcms.core.utils.mailto import mailto
+        from tcms.core.mailto import mailto
 
         if not to:
             to = self.author.email

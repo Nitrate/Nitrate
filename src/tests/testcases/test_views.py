@@ -23,7 +23,7 @@ from uuslug import slugify
 
 from django_comments.models import Comment
 from tcms.core.helpers.comments import add_comment
-from tcms.core.utils.timedelta2int import timedelta2int
+from tcms.core.utils import timedelta2int
 from tcms.issuetracker.models import Issue, IssueTracker
 from tcms.logs.models import TCMSLogModel
 from tcms.management.models import TestTag, Component, Priority

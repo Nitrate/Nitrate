@@ -17,8 +17,8 @@ from tcms.core.utils import EnumLike
 from tcms.linkreference.models import LinkReference
 from tcms.core.models.fields import DurationField
 from tcms.core.models import TCMSActionModel
-from tcms.core.utils.tcms_router import connection
-from tcms.core.utils.timedeltaformat import format_timedelta
+from tcms.core.tcms_router import connection
+from tcms.core.utils import format_timedelta
 from tcms.testcases.models import TestCaseText, NoneText
 from tcms.testruns import signals as run_watchers
 from tcms.issuetracker.models import Issue
@@ -234,7 +234,7 @@ class TestRun(TCMSActionModel):
         run_env_value.delete()
 
     def mail(self, template, subject, context, to=[], request=None):
-        from tcms.core.utils.mailto import mailto
+        from tcms.core.mailto import mailto
 
         to = self.get_notify_addrs()
         mailto(template, subject, to, context, request=request)

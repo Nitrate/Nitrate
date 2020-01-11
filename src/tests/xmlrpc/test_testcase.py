@@ -9,7 +9,7 @@ from django.db.models import Max, Min
 from django import test
 from mock import patch, PropertyMock
 
-from tcms.core.utils.checksum import checksum
+from tcms.core.utils import checksum
 from tcms.issuetracker.models import Issue
 from tcms.management.models import Priority, TestTag, Component
 from tcms.testcases.models import TestCasePlan, TestCase

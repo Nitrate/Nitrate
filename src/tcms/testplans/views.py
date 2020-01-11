@@ -27,9 +27,9 @@ from uuslug import slugify
 
 from tcms.core.db import SQLExecution
 from tcms.core.models import TCMSLog
-from tcms.core.utils.checksum import checksum
+from tcms.core.raw_sql import RawSQL
+from tcms.core.utils import checksum
 from tcms.core.utils import DataTableResult
-from tcms.core.utils.raw_sql import RawSQL
 from tcms.core.views import Prompt
 from tcms.management.models import TCMSEnvGroup, Component
 from tcms.search.views import remove_from_request_path

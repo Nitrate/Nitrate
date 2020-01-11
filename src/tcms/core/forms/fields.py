@@ -8,8 +8,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 
-from tcms.core.utils import string_to_list
-from tcms.core.utils.timedelta2int import timedelta2int
+from tcms.core.utils import string_to_list, timedelta2int
 
 
 class UserField(forms.CharField):

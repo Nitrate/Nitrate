@@ -12,8 +12,8 @@ from django.urls import reverse
 from uuslug import slugify
 
 from tcms.core.models import TCMSActionModel
-from tcms.core.utils.checksum import checksum
-from tcms.core.utils.tcms_router import connection
+from tcms.core.utils import checksum
+from tcms.core.tcms_router import connection
 from tcms.management.models import Version
 from tcms.testcases.models import TestCase
 from tcms.testcases.models import TestCaseCategory

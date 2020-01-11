@@ -29,9 +29,9 @@ from django.utils.decorators import method_decorator
 from django_comments.models import Comment
 
 from tcms.core.db import SQLExecution
+from tcms.core.raw_sql import RawSQL
 from tcms.core.utils import DataTableResult
 from tcms.core.utils import form_error_messags_to_list
-from tcms.core.utils.raw_sql import RawSQL
 from tcms.core.views import Prompt
 from tcms.issuetracker.models import IssueTracker
 from tcms.logs.models import TCMSLogModel
