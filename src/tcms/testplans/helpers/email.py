@@ -24,9 +24,8 @@ def email_plan_deletion(plan):
 
 def get_plan_notification_recipients(plan):
     recipients = set()
-    if plan.owner:
-        if plan.email_settings.auto_to_plan_owner:
-            recipients.add(plan.owner.email)
+    if plan.email_settings.auto_to_plan_owner and plan.owner:
+        recipients.add(plan.owner.email)
     if plan.email_settings.auto_to_plan_author:
         recipients.add(plan.author.email)
     if plan.email_settings.auto_to_case_owner:

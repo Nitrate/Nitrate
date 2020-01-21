@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from mock import patch
+
 from django.contrib.auth.models import User
 from django.test import TestCase
 
@@ -209,3 +211,45 @@ class TestUserUpdate(XmlrpcAPIBaseTest):
 
         user = User.objects.get(pk=test_user.pk)
         self.assertTrue(user.check_password(new_password))
+
+    def test_do_nothing(self):
+        original_user = self.http_req.user
+        XUser.update(self.http_req)
+        updated_user = User.objects.get(pk=self.http_req.user.pk)
+
+        self.assertEqual(original_user.first_name, updated_user.first_name)
+        self.assertEqual(original_user.last_name, updated_user.last_name)
+        self.assertEqual(original_user.email, updated_user.email)
+        self.assertEqual(original_user.password, updated_user.password)
+
+
+class TestGetUserDict(TestCase):
+    """Test get_user_dict"""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.tester = f.UserFactory(username='tester')
+        cls.tester.set_password('security password')
+        cls.tester.save()
+
+    def test_get_dict(self):
+        user = User.objects.get(username='tester')
+        result = XUser.get_user_dict(user)
+
+        self.assertEqual(user.pk, result['id'])
+        self.assertEqual(user.username, result['username'])
+        self.assertEqual(user.email, result['email'])
+        self.assertTrue(result['is_active'])
+        self.assertFalse(result['is_staff'])
+        self.assertFalse(result['is_superuser'])
+
+    @patch('tcms.xmlrpc.api.user.XMLRPCSerializer.serialize_model')
+    def test_no_password_is_in_serialized_result(self, serialize_model):
+        expected = {
+            'id': 1,
+            'username': 'tester',
+        }
+        serialize_model.return_value = expected
+
+        user = User.objects.get(username='tester')
+        self.assertEqual(expected, XUser.get_user_dict(user))

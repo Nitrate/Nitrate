@@ -84,6 +84,16 @@ xml_file_without_error = '''
 '''
 
 
+xml_file_without_testcase = '''
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<!DOCTYPE testopia SYSTEM "testopia.dtd" [
+  <!ENTITY testopia_lt "<">
+  <!ENTITY testopia_gt ">">
+]>
+<testopia version="1.1"></testopia>
+'''
+
+
 xml_file_single_case_without_error = '''
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <!DOCTYPE testopia SYSTEM "testopia.dtd" [
@@ -179,6 +189,7 @@ class TestProcessCase(test.TestCase):
         xmldict = self._create_xml_dict(sample_case_data)
 
         cleaned_case = process_case(xmldict['testcase'])
+
         self.assertEqual(self.user.id, cleaned_case['author_id'])
         self.assertEqual(self.user, cleaned_case['author'])
         self.assertEqual(sample_case_data['summary'], cleaned_case['summary'])
@@ -296,11 +307,26 @@ class TestCleanXMLFile(test.TestCase):
         result = clean_xml_file(xml_file_single_case_without_error)
         self.assertEqual(1, len(list(result)))
 
+    def test_xml_content_is_in_a_byte_string(self):
+        result = clean_xml_file(xml_file_without_error.encode('utf-8'))
+        self.assertEqual(2, len(list(result)))
+
+    def test_case_default_tester_does_not_exist(self):
         cases = clean_xml_file(xml_file_with_error)
         self.assertRaisesRegex(ValueError, 'Default tester\'s email .+ does not exist',
                                list, cases)
 
-        self.assertRaisesRegex(ValueError, 'Invalid XML document',
-                               clean_xml_file, xml_file_in_malformat)
-        self.assertRaisesRegex(ValueError, 'Wrong version.+',
-                               clean_xml_file, xml_file_with_wrong_version)
+    def test_root_element_has_incorrect_name(self):
+        self.assertRaisesRegex(
+            ValueError, 'Invalid XML document',
+            clean_xml_file, xml_file_in_malformat)
+
+    def test_xml_has_wrong_version(self):
+        self.assertRaisesRegex(
+            ValueError, 'Wrong version.+',
+            clean_xml_file, xml_file_with_wrong_version)
+
+    def test_xml_includes_no_test_case_element(self):
+        self.assertRaisesRegex(
+            ValueError, 'No case found in XML document',
+            clean_xml_file, xml_file_without_testcase)
