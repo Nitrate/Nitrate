@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from django_comments.models import Comment
 from tcms.comments import get_form
-from tcms.core.helpers.comments import add_comment
+from tcms.comments.models import add_comment
 
 from tests import factories as f, user_should_have_perm
 
@@ -86,10 +86,17 @@ class TestDeleteComment(test.TestCase):
         cls.case_1 = f.TestCaseFactory()
         cls.case_2 = f.TestCaseFactory()
 
-        add_comment([cls.case_1, cls.case_2], 'first comment', cls.tester)
-        add_comment([cls.case_1, cls.case_2], 'second comment', cls.tester)
-        add_comment([cls.case_1, cls.case_2], 'third comment', cls.tester)
-        add_comment([cls.case_1], '4th comment', cls.comment_author)
+        add_comment(cls.tester,
+                    'testcases.testcase', [cls.case_1.pk, cls.case_2.pk],
+                    'first comment')
+        add_comment(cls.tester,
+                    'testcases.testcase', [cls.case_1.pk, cls.case_2.pk],
+                    'second comment')
+        add_comment(cls.tester,
+                    'testcases.testcase', [cls.case_1.pk, cls.case_2.pk],
+                    'third comment')
+        add_comment(cls.comment_author,
+                    'testcases.testcase', [cls.case_1.pk], '4th comment')
 
     def setUp(self):
         self.url = reverse('comments-delete')

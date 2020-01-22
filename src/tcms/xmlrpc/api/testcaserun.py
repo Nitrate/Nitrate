@@ -2,6 +2,8 @@
 
 from django.contrib.auth.decorators import permission_required
 
+import tcms.comments.models
+
 from tcms.core.utils import form_error_messags_to_list
 from tcms.issuetracker.models import Issue
 from tcms.issuetracker.services import find_service
@@ -82,18 +84,12 @@ def add_comment(request, case_run_ids, comment):
         # Add 'foobar' to case runs list '1, 2' with String
         TestCaseRun.add_comment('1, 2', 'foobar')
     """
-    from tcms.xmlrpc.utils import Comment
-
-    # FIXME: empty object_pks should be an ValueError
     object_pks = pre_process_ids(value=case_run_ids)
-    c = Comment(
-        request=request,
-        content_type='testruns.testcaserun',
-        object_pks=object_pks,
-        comment=comment
-    )
-
-    return c.add()
+    if not object_pks:
+        return
+    tcms.comments.models.add_comment(
+        request.user, 'testruns.testcaserun', object_pks, comment,
+        request.META.get('REMOTE_ADDR'))
 
 
 @log_call(namespace=__xmlrpc_namespace__)

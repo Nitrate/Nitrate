@@ -6,6 +6,8 @@ from django.contrib.auth.decorators import permission_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms import EmailField
 
+import tcms.comments.models
+
 from tcms.issuetracker.models import Issue
 from tcms.issuetracker.models import IssueTracker
 from tcms.management.models import TestTag
@@ -75,7 +77,7 @@ def add_comment(request, case_ids, comment):
     :type case_ids: int, str or list
     :param str comment: the comment content to add.
     :return: a list which is empty on success or a list of mappings with
-        failure codes if a failure occured.
+        failure codes if a failure occurred.
 
     Example::
 
@@ -86,17 +88,12 @@ def add_comment(request, case_ids, comment):
         # Add 'foobar' to cases list '1, 2' with String
         TestCase.add_comment('1, 2', 'foobar')
     """
-    from tcms.xmlrpc.utils import Comment
-
     object_pks = pre_process_ids(value=case_ids)
-    c = Comment(
-        request=request,
-        content_type='testcases.testcase',
-        object_pks=object_pks,
-        comment=comment
-    )
-
-    return c.add()
+    if not object_pks:
+        return
+    tcms.comments.models.add_comment(
+        request.user, 'testcases.testcase', object_pks, comment,
+        request.META.get('REMOTE_ADDR'))
 
 
 @log_call(namespace=__xmlrpc_namespace__)

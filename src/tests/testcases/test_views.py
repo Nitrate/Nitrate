@@ -19,10 +19,10 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.forms import ValidationError
 from django.test import RequestFactory
+from tcms.comments.models import add_comment
 from uuslug import slugify
 
 from django_comments.models import Comment
-from tcms.core.helpers.comments import add_comment
 from tcms.core.utils import timedelta2int
 from tcms.issuetracker.models import Issue, IssueTracker
 from tcms.logs.models import TCMSLogModel
@@ -2242,9 +2242,12 @@ class BaseTestCaseView(test.TestCase):
         f.TestCaseAttachmentFactory(
             case=cls.case, attachment=cls.attachment_logo)
 
-        add_comment([cls.case], 'first comment', cls.case.author)
-        add_comment([cls.case], 'second comment', cls.case.author)
-        add_comment([cls.case], 'third comment', cls.case.author)
+        add_comment(cls.case.author,
+                    'testcases.testcase', [cls.case.pk], 'first comment')
+        add_comment(cls.case.author,
+                    'testcases.testcase', [cls.case.pk], 'second comment')
+        add_comment(cls.case.author,
+                    'testcases.testcase', [cls.case.pk], 'third comment')
 
         cls.first_comment = Comment.objects.get(comment='first comment')
         cls.second_comment = Comment.objects.get(comment='second comment')
@@ -2382,8 +2385,12 @@ class TestCaseCaseRunListPaneView(BaseCaseRun):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        add_comment([cls.case_run_1], 'first comment', cls.tester)
-        add_comment([cls.case_run_1], 'second comment', cls.tester)
+        add_comment(
+            cls.tester, 'testruns.testcaserun', [cls.case_run_1.pk],
+            'first comment')
+        add_comment(
+            cls.tester, 'testruns.testcaserun', [cls.case_run_1.pk],
+            'second comment')
 
     def test_get_the_list(self):
         url = reverse('caserun-list-pane', args=[self.case_1.pk])
@@ -2430,13 +2437,19 @@ class TestCaseSimpleCaseRunView(BaseCaseRun):
         cls.case_run_1.notes = 'Some notes'
         cls.case_run_1.save()
 
-        cls.submit_date = datetime.now()
-        add_comment([cls.case_run_1], 'first comment', cls.tester,
-                    submit_date=cls.submit_date)
+        with mock.patch('django.utils.timezone.now') as mock_now:
+            cls.submit_date = datetime(2020, 1, 22, 19, 47, 30)
+            mock_now.return_value = cls.submit_date
+            add_comment(
+                cls.tester, 'testruns.testcaserun', [cls.case_run_1.pk],
+                'first comment')
 
-        cls.submit_date_later = cls.submit_date + timedelta(minutes=10)
-        add_comment([cls.case_run_1], 'second comment', cls.tester,
-                    submit_date=cls.submit_date_later)
+        with mock.patch('django.utils.timezone.now') as mock_now:
+            cls.submit_date_later = cls.submit_date + timedelta(minutes=10)
+            mock_now.return_value = cls.submit_date_later
+            add_comment(
+                cls.tester, 'testruns.testcaserun', [cls.case_run_1.pk],
+                'second comment')
 
     def test_get_the_view(self):
         url = reverse('caserun-simple-pane', args=[self.case_1.pk])
@@ -2527,8 +2540,12 @@ class TestCaseCaseRunDetailPanelView(BaseCaseRun):
         f.TestCaseAttachmentFactory(case=cls.case_1,
                                     attachment=cls.attachment_screenshort)
 
-        add_comment([cls.case_run_1], 'start the test', cls.tester)
-        add_comment([cls.case_run_1], 'mark failed', cls.tester)
+        add_comment(
+            cls.tester, 'testruns.testcaserun', [cls.case_run_1.pk],
+            'start the test')
+        add_comment(
+            cls.tester, 'testruns.testcaserun', [cls.case_run_1.pk],
+            'mark failed')
 
         cls.first_comment = Comment.objects.get(comment='start the test')
         cls.second_comment = Comment.objects.get(comment='mark failed')

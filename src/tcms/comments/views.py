@@ -1,104 +1,112 @@
 # -*- coding: utf-8 -*-
 
+import logging
+
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_POST
 
-import django_comments as comments
+import django_comments.signals
+from django_comments.views.moderation import perform_delete
 
+import tcms.comments
 from tcms.core import utils
+
+log = logging.getLogger(__name__)
+
+
+class InvalidCommentPostRequest(Exception):
+    """Raised if comment is not valid"""
+
+    def __init__(self, target, form):
+        self.target = target
+        self.form = form
+
+
+def get_comment_target_object(content_type: str, object_pk: int):
+    """Get corresponding model object
+
+    :param content_type: a string representing the model's content type in
+        format ``app_name.model_name``, for example, ``testcases.testcase``.
+    :type content_type: str
+    :param object_pk: the pk of the object.
+    :type object_pk: int
+    :return: the model object according to the content type.
+    """
+    return utils.get_model(content_type)._default_manager.get(pk=object_pk)
+
+
+def post_comment(comment_data, request_user, remote_addr=None):
+    """Save a comment
+
+    This function is a customized version of
+    ``django_comments.views.comments.post_comment`` by cutting off part of the
+    code that are not necessary for Nitrate, for example, this method does not
+    send signal before and after saving comment. A significant change between
+    them is this function is not a view function and can be reused to add a
+    comment to a given model object.
+    """
+
+    if request_user.is_authenticated:
+        # Nitrate does not allow user to enter name or email for adding a
+        # comment, so when the request is authenticated, use the logged-in
+        # user's name and email.
+        comment_data["name"] = request_user.get_full_name() or request_user.username
+        comment_data["email"] = request_user.email
+
+    ctype = comment_data.get('content_type')
+    object_pk = comment_data.get('object_pk')
+
+    target = get_comment_target_object(ctype, int(object_pk))
+
+    form = tcms.comments.get_form()(target, data=comment_data)
+    if not form.is_valid():
+        log.error('Failed to add comment to %s %s: %r',
+                  ctype, object_pk, comment_data)
+        log.error('Error messages: %r', form.errors)
+        raise InvalidCommentPostRequest(target, form)
+
+    # Otherwise create the comment
+    comment = form.get_comment_object()
+    comment.ip_address = remote_addr
+    if request_user.is_authenticated:
+        comment.user = request_user
+    comment.save()
+
+    return target, comment
 
 
 @require_POST
 def post(request, template_name='comments/comments.html'):
     """Post a comment"""
-
-    # Fill out some initial data fields from an authenticated user, if present
     data = request.POST.copy()
-
-    if request.user.is_authenticated:
-        if not data.get('name', ''):
-            data["name"] = request.user.get_full_name() or request.user.username
-        if not data.get('email', ''):
-            data["email"] = request.user.email
-
-    # Look up the object we're trying to comment about
-    ctype = data.get("content_type")
-    object_pk = data.get("object_pk")
-
-    model = utils.get_model(ctype)
-    target = model._default_manager.get(pk=object_pk)
-
-    # Construct the comment form
-    form = comments.get_form()(target, data=data)
-    if not form.is_valid():
-        context_data = {
-            'object': target,
-            'form': form,
-        }
-        return render(request, template_name, context=context_data)
-
-    # Otherwise create the comment
-    comment = form.get_comment_object()
-    comment.ip_address = request.META.get("REMOTE_ADDR", None)
-    if request.user.is_authenticated:
-        comment.user = request.user
-
-    # Signal that the comment is about to be saved
-    comments.signals.comment_will_be_posted.send(
-        sender=comment.__class__,
-        comment=comment,
-        request=request
-    )
-
-    # Save the comment and signal that it was saved
-    comment.is_removed = False
-    comment.save()
-    comments.signals.comment_was_posted.send(
-        sender=comment.__class__,
-        comment=comment,
-        request=request
-    )
-
-    context_data = {
-        'object': target,
-        'form': form,
-    }
-    return render(request, template_name, context=context_data)
+    try:
+        target, _ = post_comment(
+            data, request.user, request.META.get('REMOTE_ADDR'))
+    except InvalidCommentPostRequest as e:
+        target = e.target
+    return render(request, template_name, context={'object': target})
 
 
 @require_POST
 @permission_required('django_comments.can_moderate')
 def delete(request):
-    """Deletes a comment"""
+    """Delete given comments"""
 
-    comments_s = comments.get_model().objects.filter(
+    comments = django_comments.get_model().objects.filter(
         pk__in=request.POST.getlist('comment_id'),
         site__pk=settings.SITE_ID,
         is_removed=False,
         user_id=request.user.id
     )
 
-    if not comments_s:
+    if not comments:
         return JsonResponse({'rc': 1, 'response': 'Object does not exist.'})
 
     # Flag the comment as deleted instead of actually deleting it.
-    for comment in comments_s:
-        flag, created = comments.models.CommentFlag.objects.get_or_create(
-            comment=comment,
-            user=request.user,
-            flag=comments.models.CommentFlag.MODERATOR_DELETION
-        )
-        comment.is_removed = True
-        comment.save()
-        comments.signals.comment_was_flagged.send(
-            sender=comment.__class__,
-            comment=comment,
-            flag=flag,
-            created=created,
-            request=request,
-        )
+    for comment in comments:
+        perform_delete(request, comment)
 
     return JsonResponse({'rc': 0, 'response': 'ok'})

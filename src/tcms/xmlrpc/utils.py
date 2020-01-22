@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
-
 from django.db.models import Count, FieldDoesNotExist
-
-from tcms.core import utils
 from tcms.management.models import Product
 
 
@@ -156,69 +153,6 @@ def distinct_count(cls, values):
 
 def distinct_filter(cls, values):
     return distinct_m2m_rows(cls, values, op_type=QUERY_DISTINCT)
-
-
-class Comment:
-    def __init__(self, request, content_type, object_pks, comment=None):
-        self.request = request
-        self.content_type = content_type
-        self.object_pks = object_pks
-        self.comment = comment
-
-    def add(self):
-        import time
-        import django_comments as comments
-
-        comment_form = comments.get_form()
-
-        model = utils.get_model(self.content_type)
-        targets = model._default_manager.filter(pk__in=self.object_pks)
-
-        for target in targets.iterator():
-            d_form = comment_form(target)
-            timestamp = str(time.time()).split('.')[0]
-            object_pk = str(target.pk)
-            data = {
-                'content_type': self.content_type,
-                'object_pk': object_pk,
-                'timestamp': timestamp,
-                'comment': self.comment
-            }
-            security_hash_dict = {
-                'content_type': self.content_type,
-                'object_pk': object_pk,
-                'timestamp': timestamp
-            }
-            data['security_hash'] = d_form.generate_security_hash(
-                **security_hash_dict)
-            form = comment_form(target, data=data)
-
-            # Response the errors if got
-            if not form.is_valid():
-                return form.errors
-
-            # Otherwise create the comment
-            comment = form.get_comment_object()
-            comment.ip_address = self.request.META.get("REMOTE_ADDR", None)
-            if self.request.user.is_authenticated:
-                comment.user = self.request.user
-
-            # Signal that the comment is about to be saved
-            comments.signals.comment_will_be_posted.send(
-                sender=comment.__class__,
-                comment=comment,
-                request=self.request
-            )
-
-            # Save the comment and signal that it was saved
-            comment.save()
-            comments.signals.comment_was_posted.send(
-                sender=comment.__class__,
-                comment=comment,
-                request=self.request
-            )
-
-        return
 
 
 estimated_time_re = re.compile(r'^(\d+[d])?(\d+[h])?(\d+[m])?(\d+[s])?$')

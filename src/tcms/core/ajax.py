@@ -23,6 +23,8 @@ from django.shortcuts import render
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
 
+import tcms.comments.models
+
 from tcms.core import utils
 from tcms.management.models import Component, TestBuild, Version
 from tcms.management.models import Priority
@@ -35,7 +37,6 @@ from tcms.testcases.views import plan_from_request_or_none
 from tcms.testplans.models import TestPlan, TestCasePlan
 from tcms.testruns import signals as run_watchers
 from tcms.testruns.models import TestRun, TestCaseRun, TestCaseRunStatus
-from tcms.core.helpers.comments import add_comment
 from tcms.core.utils import get_string_combinations
 
 post_update = Signal(providing_args=["instances", "kwargs"])
@@ -752,10 +753,13 @@ def comment_case_runs(request):
     run_ids = [i for i in data.get('run', '').split(',') if i]
     if not run_ids:
         return say_no('No runs selected.')
-    runs = TestCaseRun.objects.filter(pk__in=run_ids).only('pk')
-    if not runs:
+    case_run_ids = TestCaseRun.objects.filter(
+        pk__in=run_ids).values_list('pk', flat=True)
+    if not case_run_ids:
         return say_no('No caserun found.')
-    add_comment(runs, comment, request.user)
+    tcms.comments.models.add_comment(
+        request.user, 'testruns.testcaserun', case_run_ids, comment,
+        request.META.get('REMOTE_ADDR'))
     return say_yes()
 
 

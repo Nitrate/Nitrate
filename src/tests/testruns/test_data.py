@@ -3,8 +3,9 @@
 import operator
 
 from datetime import datetime
+from unittest.mock import patch
 
-from tcms.core.helpers.comments import add_comment
+from tcms.comments.models import add_comment
 from tcms.testruns.data import TestCaseRunDataMixin
 from tcms.testruns.data import stats_caseruns_status
 from tests import factories as f
@@ -96,27 +97,23 @@ class TestGetCaseRunsComments(BaseCaseRun):
     empty result even if no comment is added.
     """
 
-    @classmethod
-    def setUpTestData(cls):
-        super().setUpTestData()
-
-        cls.submit_date = datetime(2017, 7, 7, 7, 7, 7)
-
-        add_comment([cls.case_run_4, cls.case_run_5],
-                    comments='new comment',
-                    user=cls.tester,
-                    submit_date=cls.submit_date)
-        add_comment([cls.case_run_4],
-                    comments='make better',
-                    user=cls.tester,
-                    submit_date=cls.submit_date)
-
     def test_get_empty_comments_if_no_comment_there(self):
         data = TestCaseRunDataMixin()
         comments = data.get_caseruns_comments(self.test_run.pk)
         self.assertEqual({}, comments)
 
-    def test_get_comments(self):
+    @patch('django.utils.timezone.now')
+    def test_get_comments(self, now):
+        now.return_value = datetime(2017, 7, 7, 7, 7, 7)
+
+        add_comment(
+            self.tester,
+            'testruns.testcaserun', [self.case_run_4.pk, self.case_run_5.pk],
+            'new comment')
+        add_comment(
+            self.tester, 'testruns.testcaserun', [self.case_run_4.pk],
+            'make better')
+
         data = TestCaseRunDataMixin()
         comments = data.get_caseruns_comments(self.test_run_1.pk)
 
@@ -128,13 +125,13 @@ class TestGetCaseRunsComments(BaseCaseRun):
                 {
                     'case_run_id': self.case_run_4.pk,
                     'user_name': self.tester.username,
-                    'submit_date': self.submit_date,
+                    'submit_date': now.return_value,
                     'comment': 'make better'
                 },
                 {
                     'case_run_id': self.case_run_4.pk,
                     'user_name': self.tester.username,
-                    'submit_date': self.submit_date,
+                    'submit_date': now.return_value,
                     'comment': 'new comment'
                 },
             ],
@@ -142,7 +139,7 @@ class TestGetCaseRunsComments(BaseCaseRun):
                 {
                     'case_run_id': self.case_run_5.pk,
                     'user_name': self.tester.username,
-                    'submit_date': self.submit_date,
+                    'submit_date': now.return_value,
                     'comment': 'new comment'
                 }
             ]
