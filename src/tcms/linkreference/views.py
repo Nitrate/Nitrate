@@ -68,8 +68,8 @@ def get(request):
     form = BasicValidationForm(request.GET)
 
     if form.is_valid():
-        model_class = form.clean_data['target']
-        target_id = form.clean_data['target_id']
+        model_class = form.cleaned_data['target']
+        target_id = form.cleaned_data['target_id']
 
         try:
             model_instance = model_class.objects.get(pk=target_id)
@@ -94,20 +94,8 @@ def get(request):
 def remove(request, link_id):
     """Remove a specific link with ID ``link_id``"""
 
-    from django.forms import IntegerField
-    from django.forms import ValidationError
-
-    field = IntegerField(min_value=1)
     try:
-        value = field.clean(link_id)
-    except ValidationError as err:
-        return JsonResponseBadRequest({
-            'rc': 1,
-            'response': '\n'.join(err.messages)
-        })
-
-    try:
-        LinkReference.unlink(value)
+        LinkReference.unlink(link_id)
     except Exception as err:
         return JsonResponseBadRequest({'rc': 1, 'response': str(err)})
 

@@ -48,4 +48,4 @@ class LinkReference(TCMSContentTypeBaseModel):
         If the link with link_id does not exist, unlink will keep quiet
         """
 
-        cls.objects.filter(id__in=[link_id, ]).delete()
+        cls.objects.filter(id__in=[link_id]).delete()

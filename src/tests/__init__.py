@@ -150,6 +150,33 @@ class HelperAssertions:
             self.fail('ValidationError is not raised.')
 
 
+class AuthMixin(object):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.tester = User.objects.create_user(
+            username='nitrate-tester',
+            email='nitrate-tester@example.com')
+        cls.tester.set_password('password')
+        cls.tester.save()
+
+    def login_tester(self, user=None, password=None):
+        """Login tester user for test
+
+        Login pre-created tester user by default. If both user and password
+        are given, login that user instead.
+        """
+        if user and password:
+            login_user = user
+            login_password = password
+        else:
+            login_user = self.tester
+            login_password = 'password'
+
+        self.client.login(username=login_user.username,
+                          password=login_password)
+
+
 class NitrateTestCase(test.TestCase):
     """Base test case for writing tests for Nitrate"""
 
@@ -176,22 +203,18 @@ class NitrateTestCase(test.TestCase):
             validate_regex=r'^[A-Z]+-\d+$')
 
 
-class BasePlanCase(HelperAssertions, NitrateTestCase):
+class BasePlanCase(HelperAssertions, AuthMixin, NitrateTestCase):
     """Base test case by providing essential Plan and Case objects used in tests"""
 
     @classmethod
     def setUpTestData(cls):
+        super().setUpTestData()
+
         cls.case_status_confirmed = TestCaseStatus.objects.get(name='CONFIRMED')
         cls.case_status_proposed = TestCaseStatus.objects.get(name='PROPOSED')
 
         cls.product = f.ProductFactory(name='Nitrate')
         cls.version = f.VersionFactory(value='0.1', product=cls.product)
-
-        cls.tester = User.objects.create_user(
-            username='nitrate-tester',
-            email='nitrate-tester@example.com')
-        cls.tester.set_password('password')
-        cls.tester.save()
 
         cls.plan = f.TestPlanFactory(
             author=cls.tester,
@@ -249,22 +272,6 @@ class BasePlanCase(HelperAssertions, NitrateTestCase):
             reviewer=cls.tester,
             case_status=cls.case_status_confirmed,
             plan=[cls.plan])
-
-    def login_tester(self, user=None, password=None):
-        """Login tester user for test
-
-        Login pre-created tester user by default. If both user and password
-        are given, login that user instead.
-        """
-        if user and password:
-            login_user = user
-            login_password = password
-        else:
-            login_user = self.tester
-            login_password = 'password'
-
-        self.client.login(username=login_user.username,
-                          password=login_password)
 
 
 class BaseCaseRun(BasePlanCase):
