@@ -408,26 +408,20 @@ class TestStartCloneRunFromRunsSearchPage(CloneRunBaseTest):
     def test_open_clone_page_by_selecting_multiple_runs(self):
         self.client.login(username=self.tester.username, password='password')
 
-        response = self.client.get(self.clone_url,
-                                   {'run': [self.test_run.pk, self.test_run_1.pk]})
+        runs = [self.test_run_1, self.test_run]
+        response = self.client.get(self.clone_url, {
+            'run': [item.pk for item in runs]
+        })
 
         runs_li = [
-            '''
-            <li>
-                <label for="id_run_0">
-                    <input checked="checked" id="id_run_0" name="run" value="{}" type="checkbox">
-                    {}
-                </label>
-            </li>
-            '''.format(self.test_run.pk, self.test_run.summary),
-            '''
-            <li>
-                <label for="id_run_1">
-                    <input checked="checked" id="id_run_1" name="run" value="{}" type="checkbox">
-                    {}
-                </label>
-            </li>
-            '''.format(self.test_run_1.pk, self.test_run_1.summary),
+            '<li>'
+            '<label for="id_run_{}">'
+            '<input checked="checked" id="id_run_{}" name="run" value="{}" '
+            'type="checkbox">'
+            '{}'
+            '</label>'
+            '</li>'.format(i, i, item.pk, item.summary)
+            for i, item in enumerate(runs)
         ]
         runs_ul = '<ul id="id_run">{}</ul>'.format(''.join(runs_li))
 

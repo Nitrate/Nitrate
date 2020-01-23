@@ -298,7 +298,8 @@ class MulitpleRunsCloneForm(forms.Form):
     )
 
     def populate(self, trs, product_id=None):
-        self.fields['run'].queryset = TestRun.objects.filter(pk__in=trs)
+        self.fields['run'].queryset = TestRun.objects.filter(
+            pk__in=trs).order_by('-pk')
 
         if product_id:
             self.fields['product_version'].queryset = Version.objects.filter(
