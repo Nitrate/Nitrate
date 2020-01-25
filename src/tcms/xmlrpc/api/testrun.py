@@ -154,7 +154,6 @@ def create(request, values):
 
         * plan: (int) **Required** ID of test plan
         * build: (int)/(str) **Required** ID of Build
-        * errata_id: (int) optional ID of Errata
         * manager: (int) **Required** ID of run manager
         * summary: (str) **Required**
         * product: (int) **Required** ID of product
@@ -170,13 +169,15 @@ def create(request, values):
     :return: a mapping representing newly created :class:`TestRun`.
     :rtype: dict
 
+    .. versionchanged:: 4.5
+       Argument ``errata_id`` is removed.
+
     Example::
 
         values = {
             'build': 2,
             'manager': 1,
             'plan': 1,
-            'errata_id': 2,
             'product': 1,
             'product_version': 2,
             'summary': 'Testing XML-RPC for TCMS',
@@ -211,7 +212,6 @@ def create(request, values):
             estimated_time=form.cleaned_data['estimated_time'],
             plan=form.cleaned_data['plan'],
             build=form.cleaned_data['build'],
-            errata_id=form.cleaned_data['errata_id'],
             manager=form.cleaned_data['manager'],
             default_tester=form.cleaned_data['default_tester'],
         )
@@ -564,7 +564,6 @@ def update(request, run_ids, values):
         * plan: (int) TestPlan.plan_id
         * product: (int) Product.id
         * build: (int) Build.id
-        * errata_id: (int) Errata.id
         * manager: (int) Auth.User.id
         * default_tester: Intege Auth.User.id
         * summary: (str)
@@ -576,6 +575,9 @@ def update(request, run_ids, values):
 
     :return: list of mappings of the updated test runs.
     :rtype: list[dict]
+
+    .. versionchanged:: 4.5
+       Argument ``errata_id`` is removed.
 
     Example::
 
@@ -605,9 +607,6 @@ def update(request, run_ids, values):
 
         if form.cleaned_data['build']:
             _values['build'] = form.cleaned_data['build']
-
-        if form.cleaned_data['errata_id']:
-            _values['errata_id'] = form.cleaned_data['errata_id']
 
         if form.cleaned_data['manager']:
             _values['manager'] = form.cleaned_data['manager']

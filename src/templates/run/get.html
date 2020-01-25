@@ -147,14 +147,6 @@ jQ(function() {
 				</div>
 			</div>
 			<div class="listinfo">
-				<div class="title grey">Errata&nbsp;:</div>
-				<div class="name">
-				{% if test_run.errata_id %}
-				<a href="{{ errata_url_prefix }}/{{ test_run.errata_id }}" target="_blank">{{ test_run.errata_id }}</a>
-				{% endif %}
-				</div>
-			</div>
-			<div class="listinfo">
 				<div class="title grey">Default Tester&nbsp;:</div>
 				<div class="name">
 					{% if test_run.default_tester %}

@@ -191,7 +191,6 @@ INSTALLED_APPS = (
     'tcms.linkreference',
     'tcms.logs',
     'tcms.issuetracker',
-    'tcms.integration.errata',
     'tcms.management',
     'tcms.profiles',
     'tcms.testcases',
@@ -379,11 +378,6 @@ LISTENING_MODEL_SIGNAL = True
 # Kerberos settings
 # Required by kerberos authentication backend
 KRB5_REALM = ''
-
-# Integration with Errata system, used to linkify the Errata ID
-# A valid Errata URL:
-# https://errata.devel.example.com/errata/stateview/{Errata ID}
-ERRATA_URL_PREFIX = ''
 
 # user guide url:
 USER_GUIDE_URL = ''

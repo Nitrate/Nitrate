@@ -38,7 +38,6 @@ class TestRun(TCMSActionModel):
         'completed_case_run_percent')
 
     run_id = models.AutoField(primary_key=True)
-    errata_id = models.IntegerField(null=True, blank=True)
     plan_text_version = models.IntegerField()
     start_date = models.DateTimeField(auto_now_add=True, db_index=True)
     stop_date = models.DateTimeField(null=True, blank=True, db_index=True)

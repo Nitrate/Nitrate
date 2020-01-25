@@ -44,7 +44,6 @@ class TestGet(test.TestCase):
     def test_get(self):
         expected_run = {
             'run_id': self.test_run.pk,
-            'errata_id': None,
             'summary': self.test_run.summary,
             'plan_text_version': 1,
             'start_date': datetime_to_str(self.test_run.start_date),
