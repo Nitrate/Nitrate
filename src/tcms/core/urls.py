@@ -26,7 +26,7 @@ urlpatterns = [
     url(r'^management/tags/$', ajax.tag),
 
     # Attached file zone
-    url(r'^management/uploadfile/$', files.upload_file, name='upload-file'),
+    url(r'^management/uploadfile/$', files.UploadFileView.as_view(), name='upload-file'),
     url(r'^management/checkfile/(?P<file_id>\d+)/$', files.check_file,
         name='check-file'),
     url(r'^management/deletefile/(?P<file_id>\d+)/$', files.delete_file,

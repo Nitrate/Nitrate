@@ -11,6 +11,7 @@ from operator import add, itemgetter
 from django.utils.decorators import method_decorator
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
 from django.db.models import Count
@@ -459,53 +460,52 @@ def get(request, plan_id, slug=None, template_name='plan/get.html'):
     return render(request, template_name, context=context_data)
 
 
-@require_http_methods(['GET', 'POST'])
-@permission_required('testruns.change_testrun')
-def choose_run(request, plan_id, template_name='plan/choose_testrun.html'):
-    """Choose one run to add cases"""
+class AddCasesToRunsView(PermissionRequiredMixin, View):
+    """View of adding cases to runs"""
 
-    # Define the default sub module
     SUB_MODULE_NAME = 'runs'
-    if request.method == 'GET':
-        try:
-            plan_id = int(plan_id)
-            tp = TestPlan.objects.filter(pk=plan_id).defer('product_version')[0]
-        except IndexError:
+    permission_required = 'testruns.change_testrun'
+    template_name = 'plan/choose_testrun.html'
+
+    def get(self, request, plan_id):
+        plan = TestPlan.objects.filter(
+            pk=int(plan_id)).defer('product_version').first()
+        if plan is None:
             raise Http404
 
-        testruns = TestRun.objects.filter(plan=plan_id).values(
+        # TODO: replace with plan.run.values(...)
+        runs = TestRun.objects.filter(plan=plan_id).values(
             'pk', 'summary', 'build__name', 'manager__username')
 
-        # Ready to write cases to test plan
-        tcs = get_selected_testcases(request)
-        tcs = tcs.values('pk', 'summary',
-                         'author__username',
-                         'create_date',
-                         'category__name',
-                         'priority__value', )
+        cases = get_selected_testcases(request).values(
+            'pk', 'summary', 'author__username', 'create_date',
+            'category__name', 'priority__value'
+        )
 
-        context_data = {
+        return render(request, self.template_name, context={
             'module': MODULE_NAME,
-            'sub_module': SUB_MODULE_NAME,
+            'sub_module': self.SUB_MODULE_NAME,
             'plan_id': plan_id,
-            'plan': tp,
-            'test_runs': testruns.iterator(),
-            'test_cases': tcs.iterator(),
-        }
-        return render(request, template_name, context=context_data)
+            'plan': plan,
+            'test_runs': runs.iterator(),
+            'test_cases': cases,
+        })
 
-    # Add cases to runs
-    if request.method == 'POST':
+    def post(self, request, plan_id):
         choosed_testrun_ids = request.POST.getlist('testrun_ids')
-        to_be_added_cases = TestCase.objects.filter(pk__in=request.POST.getlist('case_ids'))
+        to_be_added_cases = TestCase.objects.filter(
+            pk__in=request.POST.getlist('case_ids'))
+
+        plan_url = reverse('plan-get', args=[plan_id])
 
         # cases and runs are required in this process
         if not len(choosed_testrun_ids) or not len(to_be_added_cases):
             return Prompt.render(
                 request=request,
                 info_type=Prompt.Info,
-                info='At least one test run and one case is required to add cases to runs.',
-                next=reverse('plan-get', args=[plan_id]),
+                info='At least one test run and one case is required to add '
+                     'cases to runs.',
+                next=plan_url,
             )
 
         # Adding cases to runs by recursion
@@ -524,7 +524,7 @@ def choose_run(request, plan_id, template_name='plan/choose_testrun.html'):
             testrun.estimated_time = testrun.estimated_time + estimated_time
             testrun.save()
 
-        return HttpResponseRedirect(reverse('plan-get', args=[plan_id]))
+        return HttpResponseRedirect(plan_url)
 
 
 @require_http_methods(['GET', 'POST'])
@@ -841,7 +841,8 @@ class ReorderCasesView(View):
 class LinkCasesView(View):
     """Link cases to plan"""
 
-    @method_decorator(permission_required('testcases.add_testcaseplan'))
+    permission_required = 'testcases.add_testcaseplan'
+
     def post(self, request, plan_id):
         plan = get_object_or_404(TestPlan.objects.only('pk'), pk=int(plan_id))
         case_ids = [int(id) for id in request.POST.getlist('case')]
@@ -909,10 +910,11 @@ class LinkCasesSearchView(View):
         return render(request, self.template_name, context=context)
 
 
-class ImportCasesView(View):
+class ImportCasesView(PermissionRequiredMixin, View):
     """Import cases to a plan"""
 
-    @method_decorator(permission_required('testcases.add_testcaseplan'))
+    permission_required = 'testcases.add_testcaseplan'
+
     def post(self, request, plan_id):
         plan = get_object_or_404(TestPlan.objects.only('pk'), pk=int(plan_id))
         xml_form = ImportCasesViaXMLForm(request.POST, request.FILES)

@@ -16,9 +16,11 @@ urlpatterns = [
         name='run-report'),
 
     url(r'^(?P<run_id>\d+)/ordercase/$', views.order_case, name='run-order-case'),
-    url(r'^(?P<run_id>\d+)/changestatus/$', views.change_status, name='run-change-status'),
+    url(r'^(?P<run_id>\d+)/changestatus/$', views.ChangeRunStatusView.as_view(),
+        name='run-change-status'),
     url(r'^(?P<run_id>\d+)/ordercaserun/$', views.order_case, name='run-order-caserun'),
-    url(r'^(?P<run_id>\d+)/removecaserun/$', views.remove_case_run, name='run-remove-caserun'),
+    url(r'^(?P<run_id>\d+)/removecaserun/$', views.RemoveCaseRunView.as_view(),
+        name='run-remove-caserun'),
 
     url(r'^(?P<run_id>\d+)/assigncase/$', views.AddCasesToRunView.as_view(),
         name='add-cases-to-run'),

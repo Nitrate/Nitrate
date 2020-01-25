@@ -6,13 +6,14 @@ import logging
 from datetime import datetime
 
 from django.conf import settings
-from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils.encoding import smart_str
-from django.views.decorators.http import require_POST, require_GET
+from django.views import generic
+from django.views.decorators.http import require_GET
 from six.moves.urllib_parse import unquote
 
 from tcms.core.views import Prompt
@@ -23,103 +24,104 @@ from tcms.management.models import TestAttachment, TestAttachmentData
 log = logging.getLogger(__name__)
 
 
-@require_POST
-@permission_required('management.add_testattachment')
-def upload_file(request):
-    if 'to_plan_id' not in request.POST and 'to_case_id' not in request.POST:
-        return Prompt.render(
-            request=request,
-            info_type=Prompt.Alert,
-            info='Uploading file works with plan or case. Nitrate cannot '
-                 'proceed with no plan or case ID.',
-            next='javascript:window.history.go(-1);',
-        )
+class UploadFileView(PermissionRequiredMixin, generic.View):
+    """Upload a file"""
 
-    if request.FILES.get('upload_file'):
-        upload_file = request.FILES['upload_file']
+    permission_required = 'management.add_testattachment'
 
-        try:
-            upload_file.name.encode('utf8')
-        except UnicodeEncodeError:
+    def post(self, request):
+        to_plan_id = request.POST.get('to_plan_id')
+        to_case_id = request.POST.get('to_case_id')
+
+        if to_plan_id is None and to_case_id is None:
             return Prompt.render(
                 request=request,
                 info_type=Prompt.Alert,
-                info='Upload File name is not legal.',
+                info='Uploading file works with plan or case. Nitrate cannot '
+                     'proceed with no plan or case ID.',
                 next='javascript:window.history.go(-1);',
             )
 
-        now = datetime.now()
+        if request.FILES.get('upload_file'):
+            upload_file = request.FILES['upload_file']
 
-        stored_name = f'{request.user.username}-{now}-{upload_file.name}'
+            try:
+                upload_file.name.encode('utf8')
+            except UnicodeEncodeError:
+                return Prompt.render(
+                    request=request,
+                    info_type=Prompt.Alert,
+                    info='Upload File name is not legal.',
+                    next='javascript:window.history.go(-1);',
+                )
 
-        stored_file_name = os.path.join(
-            settings.FILE_UPLOAD_DIR, stored_name).replace('\\', '/')
-        stored_file_name = smart_str(stored_file_name)
+            now = datetime.now()
 
-        if upload_file.size > settings.MAX_UPLOAD_SIZE:
-            return Prompt.render(
-                request=request,
-                info_type=Prompt.Alert,
-                info='You upload entity is too large. Please ensure the file is'
-                     ' less than {} bytes.'.format(settings.MAX_UPLOAD_SIZE),
-                next='javascript:window.history.go(-1);',
+            stored_name = f'{request.user.username}-{now}-{upload_file.name}'
+
+            stored_file_name = os.path.join(
+                settings.FILE_UPLOAD_DIR, stored_name).replace('\\', '/')
+            stored_file_name = smart_str(stored_file_name)
+
+            if upload_file.size > settings.MAX_UPLOAD_SIZE:
+                return Prompt.render(
+                    request=request,
+                    info_type=Prompt.Alert,
+                    info=f'You upload entity is too large. Please ensure the file is'
+                         f' less than {settings.MAX_UPLOAD_SIZE} bytes.',
+                    next='javascript:window.history.go(-1);',
+                )
+
+            # Create the upload directory when it's not exist
+            if not os.path.exists(settings.FILE_UPLOAD_DIR):
+                os.mkdir(settings.FILE_UPLOAD_DIR)
+
+            if os.path.exists(stored_file_name):
+                return Prompt.render(
+                    request=request,
+                    info_type=Prompt.Alert,
+                    info=f"File named '{upload_file.name}' already exists in "
+                         f"upload folder, please rename to another name for "
+                         f"solve conflict.",
+                    next='javascript:window.history.go(-1);',
+                )
+
+            with open(stored_file_name, 'wb+') as f:
+                for chunk in upload_file.chunks():
+                    f.write(chunk)
+
+            # Write the file to database
+            # store_file = open(upload_file_name, 'ro')
+            ta = TestAttachment.objects.create(
+                submitter_id=request.user.id,
+                description=request.POST.get('description', None),
+                file_name=upload_file.name,
+                stored_name=stored_name,
+                create_date=now,
+                mime_type=upload_file.content_type
             )
 
-        # Create the upload directory when it's not exist
-        if not os.path.exists(settings.FILE_UPLOAD_DIR):
-            os.mkdir(settings.FILE_UPLOAD_DIR)
+            if request.POST.get('to_plan_id'):
+                TestPlanAttachment.objects.create(
+                    plan_id=int(to_plan_id),
+                    attachment_id=ta.attachment_id,
+                )
+                return HttpResponseRedirect(
+                    reverse('plan-attachment', args=[to_plan_id]))
 
-        if os.path.exists(stored_file_name):
-            return Prompt.render(
-                request=request,
-                info_type=Prompt.Alert,
-                info="File named '{}' already exists in upload folder, please "
-                     "rename to another name for solve conflict.".format(
-                         upload_file.name),
-                next='javascript:window.history.go(-1);',
-            )
-
-        with open(stored_file_name, 'wb+') as f:
-            for chunk in upload_file.chunks():
-                f.write(chunk)
-
-        # Write the file to database
-        # store_file = open(upload_file_name, 'ro')
-        ta = TestAttachment.objects.create(
-            submitter_id=request.user.id,
-            description=request.POST.get('description', None),
-            file_name=upload_file.name,
-            stored_name=stored_name,
-            create_date=now,
-            mime_type=upload_file.content_type
-        )
-
-        if request.POST.get('to_plan_id'):
-            TestPlanAttachment.objects.create(
-                plan_id=int(request.POST['to_plan_id']),
-                attachment_id=ta.attachment_id,
-            )
-            return HttpResponseRedirect(
-                reverse('plan-attachment', args=[request.POST['to_plan_id']])
-            )
-
-        if request.POST.get('to_case_id'):
-            TestCaseAttachment.objects.create(
-                attachment_id=ta.attachment_id,
-                case_id=int(request.POST['to_case_id'])
-            )
-            return HttpResponseRedirect(
-                reverse('case-attachment', args=[request.POST['to_case_id']])
-            )
-    else:
-        if 'to_plan_id' in request.POST:
-            return HttpResponseRedirect(
-                reverse('plan-attachment', args=[request.POST['to_plan_id']])
-            )
-        if 'to_case_id' in request.POST:
-            return HttpResponseRedirect(
-                reverse('case-attachment', args=[request.POST['to_case_id']])
-            )
+            if request.POST.get('to_case_id'):
+                TestCaseAttachment.objects.create(
+                    attachment_id=ta.attachment_id,
+                    case_id=int(to_case_id))
+                return HttpResponseRedirect(
+                    reverse('case-attachment', args=[to_case_id]))
+        else:
+            if 'to_plan_id' in request.POST:
+                return HttpResponseRedirect(
+                    reverse('plan-attachment', args=[to_plan_id]))
+            if 'to_case_id' in request.POST:
+                return HttpResponseRedirect(
+                    reverse('case-attachment', args=[to_case_id]))
 
 
 @require_GET

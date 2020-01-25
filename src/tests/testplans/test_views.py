@@ -9,6 +9,7 @@ from http import HTTPStatus
 
 from django import test
 from django.contrib.auth.models import User
+from django.db.models import Max
 from django.urls import reverse
 from django.test.client import Client
 
@@ -20,7 +21,8 @@ from tcms.testcases.models import TestCasePlan
 from tcms.testplans.models import TCMSEnvPlanMap
 from tcms.testplans.models import TestPlan
 from tcms.testplans.models import TestPlanAttachment
-from tests import BasePlanCase, HelperAssertions
+from tcms.testruns.models import TestCaseRun
+from tests import BasePlanCase, HelperAssertions, BaseCaseRun
 from tests import factories as f
 from tests import remove_perm_from_user
 from tests import user_should_have_perm
@@ -836,3 +838,113 @@ class TestExport(PlanCaseExportTestHelper, BasePlanCase):
                     # No components and tags are set to case
                     [], [], []
                 )
+
+
+class TestChooseCasesToRun(BaseCaseRun):
+    """Test choose_run view"""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+
+        # Create an empty run for test
+        cls.test_run_2 = f.TestRunFactory(
+            product_version=cls.version,
+            plan=cls.plan,
+            build=cls.build,
+            manager=cls.tester,
+            default_tester=cls.tester)
+
+        user_should_have_perm(cls.tester, 'testruns.change_testrun')
+        cls.url = reverse('plan-choose-run', args=[cls.plan.pk])
+
+    def test_plan_id_does_not_exist(self):
+        self.login_tester()
+        max_pk = TestPlan.objects.aggregate(max_pk=Max('pk'))['max_pk']
+        url = reverse('plan-choose-run', args=[max_pk + 1])
+        resp = self.client.get(url)
+        self.assert404(resp)
+
+    def test_show_page(self):
+        self.login_tester()
+
+        resp = self.client.get(self.url, data={
+            'case': [self.case_1.pk, self.case_2.pk]
+        })
+
+        expected_content = [
+            '<td><a href="/run/{0}/">{0}</a></td>'.format(self.test_run_1.pk),
+            f'<td>{self.test_run_1.summary}</td>',
+
+            '<td><a href="/run/{0}/">{0}</a></td>'.format(self.test_run_2.pk),
+            f'<td>{self.test_run_2.summary}</td>',
+
+            '<b>Cases to be added: 2</b>',
+
+            '<td><a href="/case/{0}/">{0}</a>'
+            '<input type="hidden" name="case" value="{0}">'
+            '</td>'.format(self.case_1.pk),
+
+            '<td><a href="/case/{0}/">{0}</a>'
+            '<input type="hidden" name="case" value="{0}">'
+            '</td>'.format(self.case_2.pk),
+        ]
+
+        for item in expected_content:
+            self.assertContains(resp, item, html=True)
+
+    def test_add_cases_to_runs(self):
+        self.login_tester()
+
+        resp = self.client.post(self.url, data={
+            'testrun_ids': self.test_run_2.pk,
+            'case_ids': [self.case_1.pk, self.case_2.pk]
+        })
+
+        self.assertRedirects(
+            resp,
+            reverse('plan-get', args=[self.plan.pk]),
+            fetch_redirect_response=False)
+
+        for run_id, case_id in ((self.test_run_2.pk, self.case_1.pk),
+                                (self.test_run_2.pk, self.case_2.pk)):
+            self.assertTrue(
+                TestCaseRun.objects.filter(run=run_id, case=case_id).exists())
+
+    def test_empty_selected_runs(self):
+        self.login_tester()
+
+        resp = self.client.post(self.url, data={
+            'case_ids': [self.case_1.pk, self.case_2.pk]
+        })
+
+        self.assertContains(
+            resp,
+            'At least one test run and one case is required to add cases to '
+            'runs.')
+
+    def test_404_if_some_run_id_does_not_exist(self):
+        self.login_tester()
+
+        resp = self.client.post(self.url, data={
+            'testrun_ids': self.test_run_2.pk + 1,
+            'case_ids': [self.case_1.pk, self.case_2.pk]
+        })
+
+        self.assert404(resp)
+
+    def test_no_selected_cases(self):
+        self.login_tester()
+
+        result = TestCase.objects.aggregate(max_pk=Max('pk'))
+        max_pk = result['max_pk']
+
+        resp = self.client.post(self.url, data={
+            'testrun_ids': self.test_run_2.pk,
+            'case_ids': [max_pk + 1, max_pk + 2],
+        })
+
+        self.assertContains(
+            resp,
+            'At least one test run and one case is required to add cases to '
+            'runs.')

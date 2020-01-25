@@ -9,24 +9,25 @@ from http import HTTPStatus
 from operator import itemgetter, attrgetter
 from typing import Dict, List, Optional
 
+from django_comments.models import Comment
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
 from django.db.models import Count
-from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.http import HttpResponseBadRequest, JsonResponse
+from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django import forms as djforms
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import get_template
 from django.template.loader import render_to_string
+from django.urls import reverse
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
 from django.views.generic.base import TemplateView, View
-from django.urls import reverse
-from django.utils.decorators import method_decorator
-from django_comments.models import Comment
+from django.views.generic.edit import FormView
 
 from tcms.core.db import SQLExecution
 from tcms.core.raw_sql import RawSQL
@@ -124,43 +125,39 @@ def group_case_issues(issues):
     return [(pk, list(_issues)) for pk, _issues in issues]
 
 
-@permission_required('testcases.change_testcase')
-def automated(request):
-    """Change the automated status for cases
+class ChangeCaseAutomatedPropertyView(PermissionRequiredMixin, FormView):
+    """View of changing cases' is_automated property"""
 
-    Parameters:
-    - a: Actions
-    - case: IDs for case_id
-    - o_is_automated: Status for is_automated
-    - o_is_automated_proposed: Status for is_automated_proposed
+    permission_required = 'testcases.change_testcase'
+    form_class = CaseAutomatedForm
 
-    Returns:
-    - Serialized JSON
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.populate()
+        return form
 
-    """
-    ajax_response = {'rc': 0, 'response': 'ok'}
+    def form_valid(self, form):
+        cases = form.cleaned_data['case']
+        is_automated = form.cleaned_data['is_automated']
+        is_automated_proposed = form.cleaned_data['is_automated_proposed']
 
-    form = CaseAutomatedForm(request.POST)
-    form.populate()
+        if form.cleaned_data['a'] == 'change':
+            # FIXME: inconsistent operation updating automated property upon
+            #        TestCases. Other place to update property upon TestCase
+            #        via Model.save, that will trigger model singal handlers.
+            kwargs = {}
+            if is_automated is not None:
+                kwargs['is_automated'] = is_automated
+            if is_automated_proposed is not None:
+                kwargs['is_automated_proposed'] = is_automated_proposed
+            cases.update(**kwargs)
+        return JsonResponse({'rc': 0, 'response': 'ok'})
 
-    if form.is_valid():
-        cleaned_data = form.cleaned_data
-        cases = cleaned_data['case']
-        if cleaned_data['a'] == 'change':
-            if isinstance(cleaned_data['is_automated'], int):
-                # FIXME: inconsistent operation updating automated property
-                # upon TestCases. Other place to update property upon
-                # TestCase via Model.save, that will trigger model
-                #        singal handlers.
-                cases.update(is_automated=cleaned_data['is_automated'])
-            if isinstance(cleaned_data['is_automated_proposed'], bool):
-                cases.update(
-                    is_automated_proposed=cleaned_data['is_automated_proposed'])
-    else:
-        ajax_response['rc'] = 1
-        ajax_response['messages'] = form_error_messags_to_list(form)
-
-    return HttpResponse(json.dumps(ajax_response))
+    def form_invalid(self, form):
+        return JsonResponse({
+            'rc': 1,
+            'messages': form_error_messags_to_list(form)
+        })
 
 
 @permission_required('testcases.add_testcase')
@@ -1458,10 +1455,11 @@ def tag(request):
     return HttpResponse(form.as_p())
 
 
-class AddComponentView(View):
+class AddComponentView(PermissionRequiredMixin, View):
     """Add component view"""
 
-    @method_decorator(permission_required('testcases.add_testcasecomponent'))
+    permission_required = 'testcases.add_testcasecomponent'
+
     def post(self, request):
         form = CaseComponentForm(request.POST)
         form.populate(product_id=request.POST['product'])
@@ -1508,10 +1506,11 @@ class AddComponentView(View):
             })
 
 
-class RemoveComponentView(View):
+class RemoveComponentView(PermissionRequiredMixin, View):
     """Remove component view"""
 
-    @method_decorator(permission_required('testcases.delete_testcasecomponent'))
+    permission_required = 'testcases.delete_testcasecomponent'
+
     def post(self, request):
         form = CaseComponentForm(request.POST)
         form.populate()
@@ -1550,10 +1549,11 @@ class RemoveComponentView(View):
             })
 
 
-class GetComponentFormView(View):
+class GetComponentFormView(PermissionRequiredMixin, View):
     """Get component form view"""
 
-    @method_decorator(permission_required('testcases.add_testcasecomponent'))
+    permission_required = 'testcases.add_testcasecomponent'
+
     def post(self, request):
         product_id = request.POST['product']
         form = CaseComponentForm(initial={
@@ -1575,26 +1575,30 @@ def category(request):
     return func()
 
 
-@permission_required('testcases.add_testcaseattachment')
-def attachment(request, case_id, template_name='case/attachment.html'):
-    """Manage test case attachments"""
+class ListCaseAttachmentsView(PermissionRequiredMixin, View):
+    """View to list a case' attachments"""
+
     SUB_MODULE_NAME = 'cases'
 
-    file_size_limit = settings.MAX_UPLOAD_SIZE
-    limit_readable = int(file_size_limit) / 2 ** 20  # Mb
+    permission_required = 'testcases.add_testcaseattachment'
+    template_name = 'case/attachment.html'
 
-    tc = get_object_or_404(TestCase, case_id=case_id)
-    tp = plan_from_request_or_none(request)
+    def get(self, request, case_id):
+        file_size_limit = settings.MAX_UPLOAD_SIZE
+        limit_readable = int(file_size_limit) / 2 ** 20  # Mb
 
-    context_data = {
-        'module': request.GET.get('from_plan') and 'testplans' or MODULE_NAME,
-        'sub_module': SUB_MODULE_NAME,
-        'testplan': tp,
-        'testcase': tc,
-        'limit': file_size_limit,
-        'limit_readable': str(limit_readable) + "Mb",
-    }
-    return render(request, template_name, context=context_data)
+        case = get_object_or_404(TestCase, case_id=case_id)
+        plan = plan_from_request_or_none(request)
+
+        context_data = {
+            'module': request.GET.get('from_plan') and 'testplans' or MODULE_NAME,
+            'sub_module': self.SUB_MODULE_NAME,
+            'testplan': plan,
+            'testcase': case,
+            'limit': file_size_limit,
+            'limit_readable': str(limit_readable) + "Mb",
+        }
+        return render(request, self.template_name, context=context_data)
 
 
 def get_log(request, case_id, template_name="management/get_log.html"):

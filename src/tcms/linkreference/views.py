@@ -1,58 +1,65 @@
 # -*- coding: utf-8 -*-
 
-from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.http import JsonResponse
-from django.views.decorators.http import require_GET, require_POST
+from django.views import generic
+from django.views.decorators.http import require_GET
 
 from .forms import AddLinkReferenceForm, BasicValidationForm
 from .models import create_link, LinkReference
 from tcms.core.responses import JsonResponseBadRequest
 from tcms.core.responses import JsonResponseServerError
 
-__all__ = ('add', 'get', 'remove', )
+__all__ = (
+    'AddLinkReferenceForm',
+    'AddLinkToTargetView',
+    'get',
+    'RemoveLinkReferenceView',
+)
 
 
-@require_POST
-@permission_required('testruns.change_testcaserun')
-def add(request):
+class AddLinkToTargetView(PermissionRequiredMixin, generic.View):
     """Add new link to a specific target
 
-    The target should be a valid model within TCMS, which are documented in
+    The target should be a valid model within Nitrate, which are documented in
     ``LINKREF_TARGET``.
 
     Incoming request should be a POST request, and contains following
     arguments:
 
-    - target: To which the new link will link to. The avialable target names
+    * target: To which the new link will link to. The avialable target names
       are documented in the ``LINKREF_TARGET``.
-    - target_id: the ID used to construct the concrete target instance, to
+    * target_id: the ID used to construct the concrete target instance, to
       which the new link will be linked.
-    - name: a short description to this new link, and accept 64 characters at
+    * name: a short description to this new link, and accept 64 characters at
       most.
-    - url: the actual URL.
+    * url: the actual URL.
     """
 
-    form = AddLinkReferenceForm(request.POST)
-    if form.is_valid():
-        name = form.cleaned_data['name']
-        url = form.cleaned_data['url']
-        target_id = form.cleaned_data['target_id']
-        model_class = form.cleaned_data['target']
+    permission_required = 'testruns.change_testcaserun'
 
-        model_instance = model_class.objects.get(pk=target_id)
-        create_link(name=name, url=url, link_to=model_instance)
+    def post(self, request):
+        form = AddLinkReferenceForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            url = form.cleaned_data['url']
+            target_id = form.cleaned_data['target_id']
+            model_class = form.cleaned_data['target']
 
-        return JsonResponse({
-            'rc': 0,
-            'response': 'ok',
-            'data': {'name': name, 'url': url}
-        })
+            model_instance = model_class.objects.get(pk=target_id)
+            create_link(name=name, url=url, link_to=model_instance)
 
-    else:
-        return JsonResponseBadRequest({
-            'rc': 1,
-            'response': form.errors.as_text()
-        })
+            return JsonResponse({
+                'rc': 0,
+                'response': 'ok',
+                'data': {'name': name, 'url': url}
+            })
+
+        else:
+            return JsonResponseBadRequest({
+                'rc': 1,
+                'response': form.errors.as_text()
+            })
 
 
 @require_GET
@@ -89,17 +96,18 @@ def get(request):
         })
 
 
-@require_GET
-@permission_required('testruns.change_testcaserun')
-def remove(request, link_id):
-    """Remove a specific link with ID ``link_id``"""
+class RemoveLinkReferenceView(PermissionRequiredMixin, generic.View):
+    """Remove a specific link with ID"""
 
-    try:
-        LinkReference.unlink(link_id)
-    except Exception as err:
-        return JsonResponseBadRequest({'rc': 1, 'response': str(err)})
+    permission_required = 'testruns.change_testcaserun'
 
-    return JsonResponse({
-        'rc': 0,
-        'response': 'Link has been removed successfully.'
-    })
+    def get(self, request, link_id):
+        try:
+            LinkReference.unlink(link_id)
+        except Exception as err:
+            return JsonResponseBadRequest({'rc': 1, 'response': str(err)})
+
+        return JsonResponse({
+            'rc': 0,
+            'response': 'Link has been removed successfully.'
+        })

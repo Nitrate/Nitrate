@@ -3,9 +3,10 @@
 import logging
 
 from django.conf import settings
-from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.views import generic
 from django.views.decorators.http import require_POST
 
 import django_comments.signals
@@ -90,23 +91,24 @@ def post(request, template_name='comments/comments.html'):
     return render(request, template_name, context={'object': target})
 
 
-@require_POST
-@permission_required('django_comments.can_moderate')
-def delete(request):
-    """Delete given comments"""
+class DeleteCommentView(PermissionRequiredMixin, generic.View):
+    """Delete comment from given objects"""
 
-    comments = django_comments.get_model().objects.filter(
-        pk__in=request.POST.getlist('comment_id'),
-        site__pk=settings.SITE_ID,
-        is_removed=False,
-        user_id=request.user.id
-    )
+    permission_required = 'django_comments.can_moderate'
 
-    if not comments:
-        return JsonResponse({'rc': 1, 'response': 'Object does not exist.'})
+    def post(self, request):
+        comments = django_comments.get_model().objects.filter(
+            pk__in=request.POST.getlist('comment_id'),
+            site__pk=settings.SITE_ID,
+            is_removed=False,
+            user_id=request.user.id
+        )
 
-    # Flag the comment as deleted instead of actually deleting it.
-    for comment in comments:
-        perform_delete(request, comment)
+        if not comments:
+            return JsonResponse({'rc': 1, 'response': 'Object does not exist.'})
 
-    return JsonResponse({'rc': 0, 'response': 'ok'})
+        # Flag the comment as deleted instead of actually deleting it.
+        for comment in comments:
+            perform_delete(request, comment)
+
+        return JsonResponse({'rc': 0, 'response': 'ok'})

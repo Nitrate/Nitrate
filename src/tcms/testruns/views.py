@@ -14,6 +14,7 @@ from operator import itemgetter
 
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
@@ -26,7 +27,6 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
 from django.template.loader import get_template
-from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
 from django.views.decorators.http import require_http_methods
@@ -1074,59 +1074,59 @@ def order_case(request, run_id):
     return HttpResponseRedirect(reverse('run-get', args=[run_id]))
 
 
-@permission_required('testruns.change_testrun')
-def change_status(request, run_id):
-    """Change test run finished or running"""
-    tr = get_object_or_404(TestRun, run_id=run_id)
+class ChangeRunStatusView(PermissionRequiredMixin, View):
+    """View to change a run status"""
 
-    if request.GET.get('finished') == '1':
-        tr.update_completion_status(is_auto_updated=False, is_finish=True)
-    else:
-        tr.update_completion_status(is_auto_updated=False, is_finish=False)
+    permission_required = 'testruns.change_testrun'
 
-    return HttpResponseRedirect(reverse('run-get', args=[run_id]))
-
-
-@require_POST
-@permission_required('testruns.delete_testcaserun')
-def remove_case_run(request, run_id):
-    """Remove specific case run from the run"""
-
-    # Ignore invalid case run ids
-    case_run_ids = []
-    for item in request.POST.getlist('case_run'):
-        try:
-            case_run_ids.append(int(item))
-        except (ValueError, TypeError):
-            pass
-
-    # If no case run to remove, no further operation is required, just return
-    # back to run page immediately.
-    if not case_run_ids:
+    def get(self, request, run_id):
+        is_finish = request.GET.get('finished') == '1'
+        tr = get_object_or_404(TestRun, run_id=run_id)
+        tr.update_completion_status(is_auto_updated=False, is_finish=is_finish)
         return HttpResponseRedirect(reverse('run-get', args=[run_id]))
 
-    run = get_object_or_404(TestRun.objects.only('pk'), pk=run_id)
 
-    # Restrict to delete those case runs that belongs to run
-    TestCaseRun.objects.filter(run_id=run.pk, pk__in=case_run_ids).delete()
+class RemoveCaseRunView(PermissionRequiredMixin, View):
+    """View to remove case run from a test run"""
 
-    caseruns_exist = TestCaseRun.objects.filter(run_id=run.pk).exists()
-    if caseruns_exist:
-        redirect_to = 'run-get'
-    else:
-        redirect_to = 'add-cases-to-run'
+    permission_required = 'testruns.delete_testcaserun'
 
-    return HttpResponseRedirect(reverse(redirect_to, args=[run_id]))
+    def post(self, request, run_id):
+        case_run_ids = []
+        for item in request.POST.getlist('case_run'):
+            try:
+                case_run_ids.append(int(item))
+            except (ValueError, TypeError):
+                logger.warning(
+                    'Ignore case run id %s to remove it from run %s, '
+                    'because %s is not an integer.',
+                    item, run_id, item
+                )
+
+        # If no case run to remove, no further operation is required, just
+        # return back to run page immediately.
+        if not case_run_ids:
+            return HttpResponseRedirect(reverse('run-get', args=[run_id]))
+
+        run = get_object_or_404(TestRun.objects.only('pk'), pk=run_id)
+
+        # Restrict to delete those case runs that belongs to run
+        TestCaseRun.objects.filter(run_id=run.pk, pk__in=case_run_ids).delete()
+
+        caseruns_exist = TestCaseRun.objects.filter(run_id=run.pk).exists()
+        if caseruns_exist:
+            redirect_to = 'run-get'
+        else:
+            redirect_to = 'add-cases-to-run'
+
+        return HttpResponseRedirect(reverse(redirect_to, args=[run_id]))
 
 
-class AddCasesToRunView(View):
+class AddCasesToRunView(PermissionRequiredMixin, View):
     """Add cases to a TestRun"""
 
     template_name = 'run/assign_case.html'
-
-    @method_decorator(permission_required('testruns.add_testcaserun'))
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
+    permission_required = 'testruns.add_testcaserun'
 
     def post(self, request, run_id):
         # Selected cases' ids to add to run

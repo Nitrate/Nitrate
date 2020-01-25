@@ -3,13 +3,14 @@
 import json
 import os
 
-from datetime import timedelta
+from datetime import datetime, timedelta
 from http import HTTPStatus
 from operator import attrgetter
 
 from mock import patch
 from xml.etree import ElementTree
 
+from django.db.models import Max
 from django.utils import formats
 from django.urls import reverse
 from django.contrib.auth.models import User
@@ -1210,7 +1211,7 @@ class TestRemoveCaseRuns(BaseCaseRun):
         self.assertRedirects(
             response,
             reverse('add-cases-to-run', args=[self.test_run.pk]),
-            target_status_code=302)
+            fetch_redirect_response=False)
 
 
 class TestUpdateCaseRunText(BaseCaseRun):
@@ -1407,3 +1408,51 @@ class TestRunReportView(BaseCaseRun):
             response,
             '<a href="{0}" target="_blank">{0}</a>'.format(issues_display_url),
             html=True)
+
+
+class TestChangeRunStatus(BaseCaseRun):
+    """Test view to change a test run status"""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+
+        cls.url = reverse('run-change-status', args=[cls.test_run_1.pk])
+        user_should_have_perm(cls.tester, 'testruns.change_testrun')
+
+    def test_run_id_does_not_exist(self):
+        self.login_tester()
+
+        result = TestRun.objects.aggregate(max_pk=Max('pk'))
+        max_pk = result['max_pk']
+
+        url = reverse('run-change-status', args=[max_pk + 1])
+        resp = self.client.get(url, data={'finished': '0'})
+        self.assert404(resp)
+
+    def test_set_finish(self):
+        self.login_tester()
+        resp = self.client.get(self.url, data={'finished': '1'})
+
+        self.assertRedirects(
+            resp,
+            reverse('run-get', args=[self.test_run_1.pk]),
+            fetch_redirect_response=False)
+
+        self.test_run_1.refresh_from_db()
+        self.assertIsNotNone(self.test_run_1.stop_date)
+
+    def test_set_running(self):
+        self.login_tester()
+        self.test_run_1.stop_date = datetime.now()
+        self.test_run_1.save()
+
+        resp = self.client.get(self.url, data={'finished': '0'})
+
+        self.assertRedirects(
+            resp,
+            reverse('run-get', args=[self.test_run_1.pk]),
+            fetch_redirect_response=False)
+
+        self.test_run_1.refresh_from_db()
+        self.assertIsNone(self.test_run_1.stop_date)
