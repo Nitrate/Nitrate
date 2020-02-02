@@ -358,12 +358,6 @@ def query_testcases(request, plan, search_form):
     if plan:
         tcs = tcs.filter(plan=plan)
 
-    tcs = tcs.select_related('author',
-                             'default_tester',
-                             'case_status',
-                             'priority',
-                             'category',
-                             'reviewer')
     return tcs
 
 
@@ -520,6 +514,9 @@ def all(request, template_name="case/all.html"):
     else:
         ttags = get_tags_from_cases((case.pk for case in tcs))
 
+    tcs = tcs.prefetch_related(
+        'author', 'default_tester', 'case_status', 'category', 'priority'
+    )
     tcs = paginate_testcases(request, tcs)
 
     # There are several extra information related to each TestCase to be shown

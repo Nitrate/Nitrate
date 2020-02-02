@@ -96,13 +96,13 @@ def new(request, template_name='run/new.html'):
     num_unconfirmed_cases = tcs.exclude(case_status=confirm_status).count()
     estimated_time = datetime.timedelta(seconds=0)
 
-    tcs_values = (
-        tcs.select_related('author', 'case_status', 'category', 'priority')
-           .only('case_id', 'summary', 'estimated_time', 'author__email',
-                 'create_date', 'category__name', 'priority__value',
-                 'case_status__name')
-           .order_by('case_id')
-    )
+    tcs_values = tcs.select_related(
+        'author', 'case_status', 'category', 'priority'
+    ).only(
+        'case_id', 'summary', 'create_date', 'estimated_time',
+        'author__email', 'case_status__name', 'priority__value',
+        'category__name'
+    ).order_by('case_id')
 
     if request.POST.get('POSTING_TO_CREATE'):
         form = NewRunForm(request.POST)
