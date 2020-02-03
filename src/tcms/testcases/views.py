@@ -289,31 +289,33 @@ def get_case_status(template_type):
     return d_status
 
 
-def build_cases_search_form(request, populate=None, plan=None):
+def build_cases_search_form(
+        request_data, http_session, populate=None, plan=None):
     """Build search form preparing for quering TestCases"""
     # Intial the plan in plan details page
-    if request.POST.get('from_plan'):
+    if request_data.get('from_plan'):
         SearchForm = CaseFilterForm
     else:
         SearchForm = SearchCaseForm
 
     # Initial the form and template
-    action = request.POST.get('a')
+    action = request_data.get('a')
     if action in TESTCASE_OPERATION_ACTIONS:
-        search_form = SearchForm(request.POST)
-        request.session['items_per_page'] = request.POST.get(
+        search_form = SearchForm(request_data)
+        http_session['items_per_page'] = request_data.get(
             'items_per_page', settings.DEFAULT_PAGE_SIZE)
     else:
-        d_status = get_case_status(request.POST.get('template_type'))
+        d_status = get_case_status(request_data.get('template_type'))
         d_status_ids = d_status.values_list('pk', flat=True)
-        items_per_page = request.session.get('items_per_page',
-                                             settings.DEFAULT_PAGE_SIZE)
-        search_form = SearchForm(initial={'case_status': d_status_ids,
-                                          'items_per_page': items_per_page})
+        search_form = SearchForm(initial={
+            'case_status': d_status_ids,
+            'items_per_page': http_session.get(
+                'items_per_page', settings.DEFAULT_PAGE_SIZE)
+        })
 
     if populate:
-        if request.POST.get('product'):
-            search_form.populate(product_id=request.POST['product'])
+        if request_data.get('product'):
+            search_form.populate(product_id=request_data['product'])
         elif plan and plan.product_id:
             search_form.populate(product_id=plan.product_id)
         else:
@@ -342,14 +344,14 @@ def paginate_testcases(request, testcases):
     return testcases[offset:offset + page_size]
 
 
-def query_testcases(request, plan, search_form):
+def query_testcases(request_data, plan, search_form):
     """Query TestCases according to the criterias along with REQUEST"""
     # FIXME: search_form is not defined before being used.
-    action = request.POST.get('a')
+    action = request_data.get('a')
     if action in TESTCASE_OPERATION_ACTIONS and search_form.is_valid():
         tcs = TestCase.list(search_form.cleaned_data, plan)
     elif action == 'initial':
-        d_status = get_case_status(request.POST.get('template_type'))
+        d_status = get_case_status(request_data.get('template_type'))
         tcs = TestCase.objects.filter(case_status__in=d_status)
     else:
         tcs = TestCase.objects.none()
@@ -386,16 +388,17 @@ def sort_queried_testcases(request, testcases):
     return tcs
 
 
-def query_testcases_from_request(request, plan=None):
+def query_testcases_from_request(request_data, http_session, plan=None):
     """Query TestCases according to criterias coming within REQUEST
 
-    Arguments:
-    - request: the REQUEST object.
-    - plan: instance of TestPlan to restrict only those TestCases belongs to
-      the TestPlan. Can be None. As you know, query from all TestCases.
+    :param request_data: the HTTP request data, which could be either
+        ``request.GET`` or ``request.POST``.
+    :param http_session: the HTTP session object.
+    :param plan: a TestPlan object to restrict only those TestCases belongs to
+        the TestPlan. Can be None. As you know, query from all TestCases.
     """
-    search_form = build_cases_search_form(request)
-    return query_testcases(request, plan, search_form)
+    search_form = build_cases_search_form(request_data, http_session)
+    return query_testcases(request_data, plan, search_form)
 
 
 def get_selected_testcases(request):
@@ -413,12 +416,13 @@ def get_selected_testcases(request):
     Arguments:
     - request: REQUEST object.
     """
-    REQ = request.POST or request.GET
-    if REQ.get('selectAll', None):
+    request_data = request.POST or request.GET
+    if request_data.get('selectAll', None):
         plan = plan_from_request_or_none(request)
-        return query_testcases_from_request(request, plan)
+        return query_testcases_from_request(
+            request_data, request.session, plan)
     else:
-        pks = [int(pk) for pk in REQ.getlist('case')]
+        pks = [int(pk) for pk in request_data.getlist('case')]
         return TestCase.objects.filter(pk__in=pks)
 
 
@@ -428,7 +432,8 @@ def load_more_cases(request, template_name='plan/cases_rows.html'):
     cases = []
     selected_case_ids = []
     if plan is not None:
-        cases = query_testcases_from_request(request, plan)
+        cases = query_testcases_from_request(
+            request.POST, request.session, plan)
         cases = sort_queried_testcases(request, cases)
         cases = paginate_testcases(request, cases)
         cases = calculate_for_testcases(plan, cases)
@@ -500,8 +505,9 @@ def all(request, template_name="case/all.html"):
     """
     # Intial the plan in plan details page
     tp = plan_from_request_or_none(request)
-    search_form = build_cases_search_form(request, populate=True, plan=tp)
-    tcs = query_testcases(request, tp, search_form)
+    search_form = build_cases_search_form(
+        request.POST, request.session, populate=True, plan=tp)
+    tcs = query_testcases(request.POST, tp, search_form)
     tcs = sort_queried_testcases(request, tcs)
     total_cases_count = tcs.count()
 
