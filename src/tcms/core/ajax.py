@@ -607,7 +607,7 @@ class TestCaseUpdateActions(ModelUpdateActions):
                 resp = action()
                 self._sendmail()
             except ObjectDoesNotExist as err:
-                return say_no(err.message)
+                return say_no(str(err))
             except Exception:
                 # TODO: besides this message to users, what happening should be
                 # recorded in the system log.
@@ -649,10 +649,14 @@ class TestCaseUpdateActions(ModelUpdateActions):
         self.get_update_targets().update(**{str(self.target_field): self.new_value})
 
     def _update_default_tester(self):
-        user_pk = User.objects.filter(username=self.new_value).values_list('pk', flat=True)
+        user_pk = User.objects.filter(
+            username=self.new_value).values_list('pk', flat=True)
         if not user_pk:
-            raise ObjectDoesNotExist('Your input is not found.')
-        self.get_update_targets().update(**{str(self.target_field): user_pk[0]})
+            raise ObjectDoesNotExist(
+                f'{self.new_value} cannot be set as a default tester, '
+                f'since this user does not exist.')
+        self.get_update_targets().update(
+            **{str(self.target_field): user_pk[0]})
 
     def _update_case_status(self):
         exists = TestCaseStatus.objects.filter(pk=self.new_value).exists()
