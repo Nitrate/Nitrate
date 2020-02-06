@@ -10,4 +10,4 @@ graft src/tests
 include docs/Makefile docs/requirements.txt docs/make.bat
 graft docs/source
 
-global-exclude __pycache__
+global-exclude *.pyc
