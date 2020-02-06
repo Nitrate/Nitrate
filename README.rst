@@ -1,8 +1,12 @@
 Nitrate - Test Case Management System
 =====================================
 
+.. image:: https://img.shields.io/pypi/v/nitrate-tcms
+   :alt: PyPI
+   :target: https://pypi.python.org/pypi/nitrate-tcms
+
 .. image:: https://travis-ci.org/Nitrate/Nitrate.svg?branch=develop
-    :target: https://travis-ci.org/Nitrate/Nitrate
+   :target: https://travis-ci.org/Nitrate/Nitrate
 
 .. image:: https://coveralls.io/repos/github/Nitrate/Nitrate/badge.svg?branch=develop
    :target: https://coveralls.io/github/Nitrate/Nitrate?branch=develop
