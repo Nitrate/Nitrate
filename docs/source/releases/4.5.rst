@@ -1,0 +1,93 @@
+.. _4.5:
+
+4.5
+===
+
+*Feb 6, 2020*
+
+This is a maintenance release with bug fixes, lots of code refactor and many
+tests added.
+
+Nitrate works with Django 2.2 since this version.
+
+Get and install
+---------------
+
+From PyPI::
+
+    pip install nitrate-tcms
+
+From image registry::
+
+    docker pull quay.io/nitrate/nitrate:4.5
+
+Refer to :ref:`how_to_run` for details of installation.
+
+Database Migration
+------------------
+
+Run Django ``migrate`` command to apply database migrations.
+
+Change Log
+----------
+
+* Fix wrong parameter passed to backend while typing tag name - `#516`_ (Chenxiong Qi)
+* Fix get error message when default tester does not exist - `#515`_ (Chenxiong Qi)
+* Show cases correctly in page /plan/id/chooseruns/ if SelectAll is checked - `#506`_ (Chenxiong Qi)
+* Fix default_tester in both defer and select_related - `#512`_ (Chenxiong Qi)
+* Avoid to add existing email address to user - `#430`_ (Chenxiong Qi)
+* Remove future-breakpoint from devtools (Chenxiong Qi)
+* Remove Errata integration - `#378`_ (Chenxiong Qi)
+* Use PermissionRequiredMixin - `#408`_ (Chenxiong Qi)
+* List runs in the desc order of id in clone page (Chenxiong Qi)
+* Add tests to app linkreference (Chenxiong Qi)
+* Reuse django-contrib-comments APIs - `#456`_ (Chenxiong Qi)
+* Add more tests to several apps (Chenxiong Qi)
+* Cleanup tcms/core/utils/ (Chenxiong Qi)
+* Add tests for comments/views.py (Chenxiong Qi)
+* Remove unused code (Chenxiong Qi)
+* Add tests to XMLRPC env APIs (Chenxiong Qi)
+* Add tests to XMLRPC product APIs (Chenxiong Qi)
+* Add tests to testcases XMLRPC API (Chenxiong Qi)
+* Fix template tag (Chenxiong Qi)
+* Fix failure coverage upload to coveralls (Chenxiong Qi)
+* Add tests to testcases app (Chenxiong Qi)
+* Fix load more tests (Chenxiong Qi)
+* Blank select option should have an empty value (Chenxiong Qi)
+* Fix tests for case clone (Chenxiong Qi)
+* Reformat code lines in XMLRPC API examples - `#460`_ (Chenxiong Qi)
+* Remove another two trailing line breakers (Chenxiong Qi)
+* Reduce the size of testbox (Chenxiong Qi)
+* Massive improvements to the tests run in Travis-CI (Chenxiong Qi)
+* Pull image on-demand in Travis-CI (Chenxiong Qi)
+* Upgrade django-debug-toolbar vesion and add psycopg2 in requirements (Chenxiong Qi)
+* Do not limit version of django-debug-toolbar (Chenxiong Qi)
+* Remove trailing line breakers (Chenxiong Qi)
+* Remove clean_assignee from XMLRPCNewCaseRunForm (Chenxiong Qi)
+* Refactor clone cases (Chenxiong Qi)
+* Update requirements (Chenxiong Qi)
+* Bump django from 2.2.4 to 2.2.8 (dependabot[bot])
+* Fix grammar in README (Mfon Eti-mfon)
+* Shorten imports list from tests.factories (Chenxiong Qi)
+* Clean more code accessing HTTPStatus (Chenxiong Qi)
+* Add missing imports (Chenxiong Qi)
+* Import http status code from correct module (Chenxiong Qi)
+* Allow specifying release version for up-release-container target (Chenxiong Qi)
+* Prebuild testenv images (Chenxiong Qi)
+* Upgrade django-contrib-comments to 1.9.1 (Chenxiong Qi)
+* Make it much clear for travis-ci testenv matrix comments (Chenxiong Qi)
+* Add Django 2.2 to tox testenv (Chenxiong Qi)
+* Use latest version of pytest (Chenxiong Qi)
+* Update document for running from a released image (Chenxiong Qi)
+* Set version properly in released image (Chenxiong Qi)
+
+.. _#378: https://github.com/Nitrate/Nitrate/issues/378
+.. _#408: https://github.com/Nitrate/Nitrate/issues/408
+.. _#430: https://github.com/Nitrate/Nitrate/issues/430
+.. _#456: https://github.com/Nitrate/Nitrate/issues/456
+.. _#460: https://github.com/Nitrate/Nitrate/issues/460
+.. _#506: https://github.com/Nitrate/Nitrate/issues/506
+.. _#512: https://github.com/Nitrate/Nitrate/issues/512
+.. _#515: https://github.com/Nitrate/Nitrate/issues/515
+.. _#516: https://github.com/Nitrate/Nitrate/issues/516
+

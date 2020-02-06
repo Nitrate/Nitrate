@@ -71,9 +71,9 @@ extras_require = {
 }
 
 setup(
-    name='Nitrate',
+    name='nitrate-tcms',
     version=pkg_version,
-    description='Test Case Management System',
+    description='A full-featured Test Case Management System',
     long_description=get_long_description(),
     author='Nitrate Team',
     maintainer='Chenxiong Qi',
