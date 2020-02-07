@@ -80,7 +80,7 @@ Nitrate.TestRuns.List.on_load = function() {
  * runId: test run ID to construct report URL if there is issue added.
  */
 function showTheNumberOfCaseRunIssues(newIssuesCount, runId) {
-  if (newIssuesCount === 0) {
+  if (parseInt(newIssuesCount) === 0) {
     jQ('div#run-statistics')
       .find('span#total_run_issues_count')
       .html('No Issues');
@@ -684,7 +684,7 @@ function changeCaseRunOrder(run_id, case_run_id, sort_key) {
     return false;
   }
 
-  if (nsk == sort_key) {
+  if (nsk === sort_key) {
     window.alert('Nothing changed');
     return false;
   }
@@ -863,7 +863,7 @@ function submitValue(run_id,value,hidebox,select_field,submitid) {
 
   var success = function(t) {
     var returnobj = jQ.parseJSON(t.responseText);
-    if (returnobj.rc == 0) {
+    if (parseInt(returnobj.rc) === 0) {
       jQ('#' + hidebox).html(new_value).show();
       jQ(select_field).hide();
       jQ('#' + submitid).hide();
@@ -901,7 +901,7 @@ function removeProperty(run_id, element) {
 
   var success = function(t) {
     var returnobj = jQ.parseJSON(t.responseText);
-    if (returnobj.rc == 0) {
+    if (parseInt(returnobj.rc) === 0) {
       emptySelf.remove();
     } else {
       window.alert(returnobj.response);
@@ -993,7 +993,7 @@ function change_value(env_property_id,selectid) {
 function add_property_to_env(run_id, env_value_id) {
   var callback = function(data, textStatus, jqXHR) {
     jQ('#dialog').hide();
-    if (data.rc == 0) {
+    if (parseInt(data.rc) === 0) {
       jQ("#env_area").html(data.fragment);
       jQ('.js-edit-property').bind('click', function() {
         var params = jQ(this).data('params');
@@ -1167,7 +1167,7 @@ function serialzeCaseForm(form, table, serialized) {
 }
 
 function sortCaseRun(form, order) {
-  if (form.order_by.value == order) {
+  if (form.order_by.value === order) {
     form.order_by.value = '-' + order;
   } else {
     form.order_by.value = order;
@@ -1298,7 +1298,7 @@ function showCommentForm() {
       dataType: 'json',
       type: 'post',
       success: function(res) {
-        if (res.rc == 0) {
+        if (parseInt(res.rc) === 0) {
           reloadWindow();
         } else {
           commentsErr.html(res.response);
@@ -1323,7 +1323,7 @@ jQ(document).ready(function(){
   jQ('ul.statusOptions a').click(function() {
     var option = jQ(this).attr('value');
     var object_pks = serializeCaseRunFromInputList(jQ('#id_table_cases')[0]);
-    if (option == '') {
+    if (option === '') {
       return false;
     }
     if (!object_pks.length) {

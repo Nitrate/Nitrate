@@ -226,7 +226,7 @@ Nitrate.TestCases.Details.on_load = function() {
       var success = function(t) {
         returnobj = jQ.parseJSON(t.responseText);
 
-        if (returnobj.rc === 0) {
+        if (parseInt(returnobj.rc) === 0) {
           window.location.reload();
         } else {
           window.alert(returnobj.response);
@@ -666,7 +666,7 @@ function changeCaseOrder(parameters, callback) {
   var nsk = '';
   if (parameters.hasOwnProperty('sortkey')) {
     nsk = window.prompt('Enter your new order number', parameters['sortkey']);   // New sort key
-    if (nsk == parameters['sortkey']) {
+    if (parseInt(nsk) === parseInt(parameters['sortkey'])) {
       window.alert('Nothing changed');
       return false;
     }
@@ -700,7 +700,7 @@ function changeCaseOrder2(parameters, callback) {
   var nsk = '';
   if (parameters.hasOwnProperty('sortkey')) {
     nsk = window.prompt('Enter your new order number', parameters['sortkey']);   // New sort key
-    if (nsk == parameters['sortkey']) {
+    if (parseInt(nsk) === parseInt(parameters['sortkey'])) {
       window.alert('Nothing changed');
       return false;
     }
@@ -1244,7 +1244,7 @@ function toggleDiv(link, divId) {
 }
 
 function addCaseIssueViaEnterKey(element, e) {
-  if (e.keyCode == 13) {
+  if (e.keyCode === 13) {
     addCaseIssue(element);
   }
 }

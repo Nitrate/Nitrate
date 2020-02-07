@@ -39,7 +39,7 @@ function updateOptionOnProdChange(target, productID, targetID) {
   });
 
   // whether get related objects immediately
-  var isTargetEmpty = jQ('#' + targetID + ' option').length == 0;
+  var isTargetEmpty = jQ('#' + targetID + ' option').length === 0;
   var prodIDs = jQ('#'+productID).val();
   if (prodIDs && isTargetEmpty) {
     getProdRelatedObj(prodIDs, target, targetID);

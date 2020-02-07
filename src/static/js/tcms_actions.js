@@ -239,7 +239,7 @@ var html_failure = function() {
 var json_success_refresh_page = function(t) {
   returnobj = jQ.parseJSON(t.responseText);
 
-  if (returnobj.rc == 0) {
+  if (parseInt(returnobj.rc) === 0) {
     window.location.reload();
   } else {
     window.alert(returnobj.response);
@@ -381,7 +381,7 @@ function set_up_choices(elemSelect, values, addBlankOption) {
     }
 
     selectedIds.forEach(function (id) {
-      if (id === optionValue) {
+      if (id === parseInt(optionValue)) {
         newElemOption.selected = true;
       }
     });

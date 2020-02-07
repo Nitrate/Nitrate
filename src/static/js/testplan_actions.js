@@ -137,7 +137,7 @@ Nitrate.TestPlans.TreeView = {
       parent_obj[0].children = brother_obj;
       var brother_numbers = brother_obj.length;
       for (i = 0; i < brother_numbers; i++) {
-        if (parent_obj[0].children[i].pk == tree.data[0].pk) {
+        if (parseInt(parent_obj[0].children[i].pk) === parseInt(tree.data[0].pk)) {
            parent_obj[0].children[i] = tree.data[0];
            break;
         }
@@ -167,7 +167,7 @@ Nitrate.TestPlans.TreeView = {
             break;
 
           case 'collapse_icon':
-            if (typeof obj.children != 'object' || obj.children == []) {
+            if (typeof obj.children != 'object' || obj.children === []) {
               var cbGetChildPlans = function(t) {
                 var returnobj = jQ.parseJSON(t.responseText);
                 returnobj = Nitrate.Utils.convert('obj_to_list', returnobj);
@@ -304,11 +304,11 @@ Nitrate.TestPlans.TreeView = {
   'traverse': function(data, pk) {
     // http://stackoverflow.com/questions/3645678/javascript-get-a-reference-from-json-object-with-traverse
     for (i in data) {
-      if (data[i] == [] || typeof data[i] != 'object') {
+      if (data[i] === [] || typeof data[i] != 'object') {
         continue;
       }
 
-      if (typeof data[i].pk === 'number' && data[i].pk == pk) {
+      if (typeof data[i].pk === 'number' && parseInt(data[i].pk) === parseInt(pk)) {
         return data[i];
       }
 
@@ -364,7 +364,7 @@ Nitrate.TestPlans.TreeView = {
       }
 
       var childPlanId = window.parseInt(s);
-      var isParentOrThisPlan = childPlanId === tree.data[0].pk || childPlanId === plan_id;
+      var isParentOrThisPlan = childPlanId === parseInt(tree.data[0].pk) || childPlanId === plan_id;
       if (isParentOrThisPlan) {
         window.alert('Cannot add parent or self.');
         cleaned = false;
@@ -472,7 +472,7 @@ Nitrate.TestPlans.TreeView = {
         var c = function(t) {
           plan = Nitrate.Utils.convert('obj_to_list', jQ.parseJSON(t.responseText));
 
-          if (tree.data[0].pk == plan_id) {
+          if (tree.data[0].pk === plan_id) {
             plan[0].children = jQ.extend({}, tree.data);
             tree.data = plan;
             tree.render_page();
@@ -1032,7 +1032,7 @@ Nitrate.TestPlans.Details = {
       constructPlanComponentModificationDialog();
     });
     var treeview = jQ('#treeview')[0];
-    var planPK = jQ('#id_tree_container').data('param');
+    var planPK = parseInt(jQ('#id_tree_container').data('param'));
     jQ('#js-change-parent-node').bind('click', function() {
       Nitrate.TestPlans.TreeView.changeParentPlan(treeview, planPK);
     });
@@ -1206,7 +1206,7 @@ function unlinkCasesFromPlan(container, form, table) {
 
   var success = function(t) {
     returnobj = jQ.parseJSON(t.responseText);
-    if (returnobj.rc == 0) {
+    if (parseInt(returnobj.rc) === 0) {
       parameters.a = 'initial';
       constructPlanDetailsCasesZone(container, parameters.from_plan, parameters);
       return true;
@@ -1309,8 +1309,8 @@ function bindEventsOnLoadedCases(options) {
     });
 
     jQ(container).parent().find('.change_status_selector.js-just-loaded').bind('change', function(e) {
-      var be_confirmed = (this.value == '2');
-      var was_confirmed = (jQ(this).parent()[0].attributes['status'].value == "CONFIRMED");
+      var be_confirmed = (parseInt(this.value) === 2);
+      var was_confirmed = (jQ(this).parent()[0].attributes['status'].value === "CONFIRMED");
       var case_id = jQ(this).parent().parent()[0].id;
       changeTestCaseStatus(plan_id, this, case_id, be_confirmed, was_confirmed);
     });
@@ -1510,7 +1510,7 @@ function onTestCaseStatusChange(options) {
     var afterStatusChangedCallback = function(response) {
       var returnobj = jQ.parseJSON(response.responseText);
 
-      if (returnobj.rc == 0) {
+      if (parseInt(returnobj.rc) === 0) {
         constructPlanDetailsCasesZone(container, plan_id, postdata);
         jQ('#run_case_count').text(returnobj.run_case_count);
         jQ('#case_count').text(returnobj.case_count);
@@ -1658,7 +1658,7 @@ function onTestCaseTagFormSubmitClick(options) {
     var dialog = getDialog();
 
     var returnobj = jQ.parseJSON(response.responseText);
-    if (returnobj.rc && returnobj.rc == 1) {
+    if (returnobj.rc && parseInt(returnobj.rc) === 1) {
       window.alert(returnobj.response);
       clearDialog(dialog);
       return false;
@@ -1847,7 +1847,7 @@ function onTestCaseCategoryClick(options) {
       'case': serializeCaseFromInputList(table),
       'product': Nitrate.TestPlans.Instance.fields.product_id
     };
-    if (params['case'] && params['case'].length == 0) {
+    if (params['case'] && params['case'].length === 0) {
       window.alert(default_messages.alert.no_case_selected);
       return false;
     }
@@ -1971,7 +1971,7 @@ function onTestCaseComponentClick(options) {
       'case': serializeCaseFromInputList(table),
       'product': Nitrate.TestPlans.Instance.fields.product_id
     };
-    if (params['case'] && params['case'].length == 0) {
+    if (params['case'] && params['case'].length === 0) {
       window.alert(default_messages.alert.no_case_selected);
       return false;
     }
@@ -2496,7 +2496,7 @@ function sortCase(container, plan_id, order) {
   var parameters = Nitrate.Utils.formSerialize(form);
   parameters.a = 'sort';
 
-  if (parameters.case_sort_by == order) {
+  if (parameters.case_sort_by === order) {
     parameters.case_sort_by = '-' + order;
   } else {
     parameters.case_sort_by = order;
@@ -2584,7 +2584,7 @@ function expandCurrentPlan(element) {
     var e_pk = e_container.next('a').html();
     var expand_icon_url = '/static/images/t2.gif';
     var obj = tree.traverse(tree.data, e_pk);
-    if (typeof obj.children != 'object' || obj.children == []) {
+    if (typeof obj.children != 'object' || obj.children === []) {
       var c = function(t) {
         var returnobj = jQ.parseJSON(t.responseText);
         returnobj = Nitrate.Utils.convert('obj_to_list', returnobj);
@@ -2668,7 +2668,7 @@ Nitrate.TestPlans.Runs = {
     var that = Nitrate.TestPlans.Runs;
     var selection = jQ('.run_selector:not(:checked)')
     var controller = jQ('#id_check_all_runs');
-    if (selection.length == 0) {
+    if (selection.length === 0) {
       controller.attr('checked', true);
     } else {
       controller.attr('checked', false);
