@@ -20,13 +20,12 @@ Nitrate.Utils.enableShiftSelectOnCheckbox = function (className){
 };
 
 Nitrate.Utils.convert = function(argument, data) {
-  switch(argument) {
+  switch (argument) {
     case 'obj_to_list':
       if (data.length !== 0 && !data.length) {
-        var data = jQ.extend({}, {0: data, length: 1});
+        return jQ.extend({}, {0: data, length: 1});
       }
       return data;
-      break;
   }
 };
 
@@ -128,7 +127,6 @@ var default_messages = {
   'confirm': {
     'change_case_status': 'Are you sure you want to change the status?',
     'change_case_priority': 'Are you sure you want to change the priority?',
-    'remove_case_component': 'Are you sure you want to delete these component(s)?\nYou cannot undo.',
     'remove_case_component': 'Are you sure you want to delete these component(s)?\nYou cannot undo.',
     'remove_bookmark': 'Are you sure you wish to delete these bookmarks?',
     'remove_comment': 'Are you sure to delete the comment?',
@@ -264,12 +262,11 @@ function addBookmark(url, method, parameters, callback) {
 }
 
 function setCookie(name, value, expires, path, domain, secure) {
-  var curCookie = name + "=" + escape(value) +
+  document.cookie = name + "=" + escape(value) +
     ((expires) ? "; expires=" + expires.toGMTString() : "") +
     ((path) ? "; path=" + path : "") +
     ((domain) ? "; domain=" + domain : "") +
     ((secure) ? "; secure" : "");
-  document.cookie = curCookie;
 }
 
 function checkCookie() {
@@ -390,14 +387,14 @@ function set_up_choices(elemSelect, values, addBlankOption) {
   });
 }
 
-function getBuildsByProductId(allow_blank, product_field, build_field, is_active) {
+function getBuildsByProductId(allow_blank, product_field, build_field) {
   if (!product_field) {
-    var product_field = jQ('#id_product')[0];
+    product_field = jQ('#id_product')[0];
   }
 
   if (!build_field) {
     if (jQ('#id_build').length) {
-      var build_field = jQ('#id_build')[0];
+      build_field = jQ('#id_build')[0];
     } else {
       window.alert('Build field does not exist');
       return false;
@@ -460,7 +457,7 @@ function getBuildsByProductId(allow_blank, product_field, build_field, is_active
 
 function getEnvsByProductId(allow_blank, product_field) {
   if (!product_field) {
-    var product_field = jQ('#id_product')[0];
+    product_field = jQ('#id_product')[0];
   }
 
   let product_id = jQ(product_field).val();
@@ -515,11 +512,12 @@ function getEnvsByProductId(allow_blank, product_field) {
 }
 
 function getVersionsByProductId(allow_blank, product_field, version_field) {
-  var product_field = jQ('#id_product')[0];
+  // FIXME: why not use the passed-in value?
+  product_field = jQ('#id_product')[0];
 
   if (!version_field) {
     if (jQ('#id_product_version').length) {
-      var version_field = jQ('#id_product_version')[0];
+      version_field = jQ('#id_product_version')[0];
     } else {
       window.alert('Version field does not exist');
       return false;
@@ -567,7 +565,7 @@ function getVersionsByProductId(allow_blank, product_field, version_field) {
 
 function getComponentsByProductId(allow_blank, product_field, component_field, callback, parameters) {
   if (!parameters) {
-    var parameters = {};
+    parameters = {};
   }
 
   parameters.info_type = 'components';
@@ -575,14 +573,14 @@ function getComponentsByProductId(allow_blank, product_field, component_field, c
   // Initial the product get from
   if (!parameters || !parameters.product_id) {
     if (!product_field) {
-      var product_field = jQ('#id_product')[0];
+      product_field = jQ('#id_product')[0];
     }
     parameters.product_id = jQ(product_field).val();
   }
 
   if (!component_field) {
     if (jQ('#id_component').length) {
-      var component_field = jQ('#id_component')[0];
+      component_field = jQ('#id_component')[0];
     } else {
       window.alert('Component field does not exist');
       return false;
@@ -631,12 +629,12 @@ function getComponentsByProductId(allow_blank, product_field, component_field, c
 
 function getCategorisByProductId(allow_blank, product_field, category_field) {
   if (!product_field) {
-    var product_field = jQ('#id_product')[0];
+    product_field = jQ('#id_product')[0];
   }
 
   if (!category_field) {
     if (jQ('#id_category').length) {
-      var category_field = jQ('#id_category')[0];
+      category_field = jQ('#id_category')[0];
     } else {
       window.alert('Category field does not exist');
       return false;
@@ -690,15 +688,15 @@ function checkProductField(product_field) {
   return false;
 }
 
-function bind_build_selector_to_product(allow_blank, product_field, build_field, active) {
-  var product_field = checkProductField(product_field);
+function bind_build_selector_to_product(allow_blank, product_field, build_field) {
+  product_field = checkProductField(product_field);
 
   if (product_field) {
     jQ(product_field).bind('change', function() {
-      getBuildsByProductId(allow_blank, product_field, build_field, active);
+      getBuildsByProductId(allow_blank, product_field, build_field);
     });
 
-    getBuildsByProductId(allow_blank, product_field, build_field, active);
+    getBuildsByProductId(allow_blank, product_field, build_field);
   }
 }
 
@@ -708,7 +706,7 @@ function bind_env_selector_to_product(allow_blank) {
 }
 
 function bind_version_selector_to_product(allow_blank, load, product_field, version_field) {
-  var product_field = checkProductField(product_field);
+  product_field = checkProductField(product_field);
 
   if (product_field) {
     jQ(product_field).bind('change', function() {
@@ -721,7 +719,7 @@ function bind_version_selector_to_product(allow_blank, load, product_field, vers
 }
 
 function bind_category_selector_to_product(allow_blank, load, product_field, category_field) {
-  var product_field = checkProductField(product_field);
+  product_field = checkProductField(product_field);
 
   if (product_field) {
     jQ(product_field).bind('change', function() {
@@ -734,7 +732,7 @@ function bind_category_selector_to_product(allow_blank, load, product_field, cat
 }
 
 function bind_component_selector_to_product(allow_blank, load, product_field, component_field) {
-  var product_field = checkProductField(product_field);
+  product_field = checkProductField(product_field);
 
   if (product_field) {
     jQ(product_field).bind('change', function() {
@@ -780,6 +778,8 @@ function postToURL(path, params, method) {
   form.setAttribute("method", method);
   form.setAttribute("action", path);
 
+  let hiddenField = null;
+
   for(var key in params) {
     if (typeof params[key] === 'object') {
       for (var i in params[key]) {
@@ -787,14 +787,14 @@ function postToURL(path, params, method) {
           continue;
         }
 
-        var hiddenField = document.createElement("input");
+        hiddenField = document.createElement("input");
         hiddenField.setAttribute("type", "hidden");
         hiddenField.setAttribute("name", key);
         hiddenField.setAttribute("value", params[key][i]);
         form.appendChild(hiddenField);
       }
     } else {
-      var hiddenField = document.createElement("input");
+      hiddenField = document.createElement("input");
       hiddenField.setAttribute("type", "hidden");
       hiddenField.setAttribute("name", key);
       hiddenField.setAttribute("value", params[key]);
@@ -1080,7 +1080,7 @@ function getForm(container, app_form, parameters, callback, format) {
   };
 
   if (!parameters) {
-    var parameters = {};
+    parameters = {};
   }
 
   parameters.app_form = app_form;
@@ -1103,7 +1103,7 @@ function getForm(container, app_form, parameters, callback, format) {
 
 function updateRunStatus(content_type, object_pk, field, value, value_type, callback) {
   if (!value_type) {
-    var value_type = 'str';
+    value_type = 'str';
   }
   var url = '/ajax/update/case-run-status';
 
@@ -1132,7 +1132,7 @@ function updateRunStatus(content_type, object_pk, field, value, value_type, call
 
 function updateObject(content_type, object_pk, field, value, value_type, callback) {
   if (!value_type) {
-    var value_type = 'str';
+    value_type = 'str';
   }
 
   var url = '/ajax/update/';
@@ -1208,9 +1208,8 @@ function getInfoAndUpdateObject(parameters, content_type, object_pks, field, cal
 
 function getDialog(element) {
   if (!element) {
-    var element = jQ('#dialog')[0];
+    return jQ('#dialog')[0];
   }
-
   return element;
 }
 

@@ -65,8 +65,7 @@ Nitrate.TestPlans.TreeView = {
     if (c_plan.parent_id) {
       var p2 = { pk: c_plan.parent_id, t: 'ajax'};
       var c2 = function(t) {
-        var returnobj = jQ.parseJSON(t.responseText);
-        p_plan = returnobj[0];
+        p_plan = jQ.parseJSON(t.responseText)[0];
       };
       this.filter(p2, c2);
     }
@@ -75,8 +74,7 @@ Nitrate.TestPlans.TreeView = {
     if (c_plan.parent_id) {
       var p3 = { parent__pk: c_plan.parent_id, t: 'ajax'};
       var c3 = function(t) {
-        var returnobj = jQ.parseJSON(t.responseText);
-        b_plans = returnobj;
+        b_plans = jQ.parseJSON(t.responseText);
       };
       this.filter(p3, c3);
     }
@@ -84,8 +82,7 @@ Nitrate.TestPlans.TreeView = {
     // Get the child plans
     var p4 = { 'parent__pk': c_plan.pk, 't': 'ajax'};
     var c4 = function(t) {
-      var returnobj = jQ.parseJSON(t.responseText);
-      ch_plans = returnobj;
+      ch_plans = jQ.parseJSON(t.responseText);
     };
     this.filter(p4, c4);
 
@@ -127,8 +124,7 @@ Nitrate.TestPlans.TreeView = {
     var brother_param = { parent__pk: tree.data[0].parent_id, t: 'ajax' };
 
     var brother_callback = function(t){
-      var returnobj = jQ.parseJSON(t.responseText);
-      brother_obj = returnobj;
+      brother_obj = jQ.parseJSON(t.responseText);
     };
 
     tree.filter(brother_param, brother_callback);
@@ -195,7 +191,7 @@ Nitrate.TestPlans.TreeView = {
 
     // Add the 'Up' button
     if (!data && this.data) {
-      var data = this.data;
+      data = this.data;
       if (data && data[0].parent_id) {
         var li = jQ('<li>');
         var btn = jQ('<input>', {'type': 'button', 'value': 'Up'});
@@ -1378,12 +1374,13 @@ function bindEventsOnLoadedCases(options) {
         jQ(content).parent().find('.form_comment').bind('submit', rc_callback);
       };
 
+      let case_content_callback = null;
       switch(template_type) {
         case 'review_case':
-          var case_content_callback = review_case_content_callback;
+          case_content_callback = review_case_content_callback;
           break;
         default:
-          var case_content_callback = function(e) {};
+          case_content_callback = function(e) {};
       }
 
       toggleTestCaseReviewPane({
@@ -1423,26 +1420,25 @@ function serializeFormData(options) {
 
   // some dirty data remains in the previous criteria, remove them.
   // FIXME: however, this is not a good way. CONSIDER to reuse filter form.
-  var prevCriterias = jQ(container).find('.js-load-more')
+  let unhashableData = jQ(container).find('.js-load-more')
     .attr('data-criterias')
     .replace(/a=\w+/, '')
     .replace(/&?selectAll=1/, '')
     .replace(/&?case=\d+/g, '');
-  var unhashableData = prevCriterias;
   if (selection.selectAll) {
     unhashableData += '&selectAll=1';
   }
   var casepks = [''];
   var loopCount = selection.selectedCasesIds.length;
   var selectedCasesIds = selection.selectedCasesIds;
-  for (var i = 0; i < loopCount; i++) {
+  for (let i = 0; i < loopCount; i++) {
     casepks.push('case=' + selectedCasesIds[i]);
   }
   unhashableData += casepks.join('&');
 
   if (hashable) {
     var arr = unhashableData.split('&');
-    for (var i = 0; i < arr.length; i++) {
+    for (let i = 0; i < arr.length; i++) {
       var parts = arr[i].split('=');
       var key = parts[0], value = parts[1];
       // FIXME: not sure how key can be an empty string
@@ -2110,15 +2106,14 @@ function constructPlanDetailsCasesZoneCallback(options) {
 
     // Observe the check all selectbox
     if (jQ(form).parent().find('input[value="all"]').length) {
-      var element = jQ(form).parent().find('input[value="all"]')[0];
-
+      let element = jQ(form).parent().find('input[value="all"]')[0];
       jQ(element).bind('click', function(e) {
         clickedSelectAll(this, jQ(this).closest('.tab_list')[0], 'case');
       });
     }
 
     if (jQ(form).parent().find('.btn_filter').length) {
-      var element = jQ(form).parent().find('.btn_filter')[0];
+      let element = jQ(form).parent().find('.btn_filter')[0];
       jQ(element).bind('click', function(t) {
         if (filter.style.display === 'none') {
           jQ(filter).show();
@@ -2144,7 +2139,7 @@ function constructPlanDetailsCasesZoneCallback(options) {
 
     // Bind the sort link
     if (jQ(form).parent().find('.btn_sort').length) {
-      var element = jQ(form).parent().find('.btn_sort')[0];
+      let element = jQ(form).parent().find('.btn_sort')[0];
       jQ(element).bind('click', function(e) {
         var params = serialzeCaseForm(form, table);
         var callback = function(t) {
@@ -2362,7 +2357,7 @@ function constructPlanDetailsCasesZone(container, plan_id, parameters) {
 
 function constructPlanComponentsZone(container, parameters, callback) {
   if (!parameters) {
-    var parameters = { plan: Nitrate.TestPlans.Instance.pk };
+    parameters = { plan: Nitrate.TestPlans.Instance.pk };
   }
 
   var url = Nitrate.http.URLConf.reverse({ name: 'plan_components' });
@@ -2427,7 +2422,7 @@ function constructPlanComponentsZone(container, parameters, callback) {
 // No invocation.
 function constructPlanComponentModificationDialog(container) {
   if (!container) {
-    var container = getDialog();
+    container = getDialog();
   }
   jQ(container).show();
 
@@ -2698,13 +2693,12 @@ Nitrate.TestPlans.Runs = {
   'nextPage': function (planId) {
     var that = this;
     var url = that.makeUrlFromPlanId(planId);
-    var request = jQ.ajax({
+    return jQ.ajax({
       'dataType': 'json',
       'url': url,
       'data': that.filter(),
       'beforeSend': that.showLoading
     }).done(that.render);
-    return request;
   },
   'filter': function (data) {
     var queryString = jQ("#run_filter").serialize();

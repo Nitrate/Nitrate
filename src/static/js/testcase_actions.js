@@ -519,12 +519,14 @@ function toggleSimpleCaseRunPane(options) {
 }
 
 function toggleTestCaseContents(template_type, container, content_container, object_pk, case_text_version, case_run_id, callback) {
+  // TODO: should container and content_container be in string type?
+
   if (typeof container === 'string') {
-    var container = jQ('#' + container)[0];
+    container = jQ('#' + container)[0];
   }
 
   if(typeof content_container === 'string') {
-    var content_container = jQ('#' + content_container)[0];
+    content_container = jQ('#' + content_container)[0];
   }
 
   jQ(content_container).toggle();
@@ -930,7 +932,7 @@ function removePlanFromCase(container, plan_id, case_id) {
 function renderTagForm(container, parameters, form_observe) {
   var d = jQ('<div>');
   if (!container) {
-    var container = getDialog();
+    container = getDialog();
   }
   jQ(container).show();
 
@@ -968,7 +970,7 @@ function renderTagForm(container, parameters, form_observe) {
 function renderComponentForm(container, parameters, form_observe) {
   var d = jQ('<div>');
   if (!container) {
-    var container = getDialog();
+    container = getDialog();
   }
   jQ(container).show();
 
@@ -1005,7 +1007,7 @@ function renderComponentForm(container, parameters, form_observe) {
 function renderCategoryForm(container, parameters, form_observe) {
   var d = jQ('<div>');
   if (!container) {
-    var container = getDialog();
+    container = getDialog();
   }
   jQ(container).show();
 
@@ -1187,11 +1189,12 @@ function serializeCaseFromInputList(table) {
  *   by default. Default to true if not passed.
  */
 function serialzeCaseForm(form, table, serialized, exclude_cases) {
+  // FIXME: change the way to set argument default value
   if (typeof serialized != 'boolean') {
-    var serialized = true;
+    serialized = true;
   }
   if (exclude_cases === undefined) {
-    var exclude_cases = false;
+    exclude_cases = false;
   }
   var data;
   if (serialized) {
@@ -1214,7 +1217,7 @@ function serialzeCaseForm(form, table, serialized, exclude_cases) {
  */
 function serializeCaseForm2(form, table, serialized, exclude_cases) {
   if (typeof serialized != 'boolean') {
-    var serialized = true;
+    serialized = true;
   }
   var data;
   if (serialized) {
@@ -1230,7 +1233,7 @@ function serializeCaseForm2(form, table, serialized, exclude_cases) {
 }
 
 function toggleDiv(link, divId) {
-  var link = jQ(link);
+  link = jQ(link);
   var div = jQ('#' + divId);
   var show = 'Show All';
   var hide = 'Hide All';
