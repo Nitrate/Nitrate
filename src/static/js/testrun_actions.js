@@ -646,7 +646,7 @@ var updateCaseRunStatus = function(e) {
   // Add comment
   if (parameters['comment'] != '') {
     // Reset the content to loading
-    var ajax_loading = getAjaxLoading();
+    let ajax_loading = getAjaxLoading();
     ajax_loading.id = 'id_loading_' + parameters['case_id'];
     container.html(ajax_loading);
     var c = jQ('<div>');
@@ -660,7 +660,7 @@ var updateCaseRunStatus = function(e) {
   // Update the object when changing the status
   if (parameters['value'] != '') {
     // Reset the content to loading
-    var ajax_loading = getAjaxLoading();
+    let ajax_loading = getAjaxLoading();
     ajax_loading.id = 'id_loading_' + parameters['case_id'];
     container.html(ajax_loading);
     updateRunStatus(ctype, object_pk, field, value, vtype, callback);
@@ -1153,7 +1153,7 @@ function serializeCaseRunFromInputList(table, name) {
 
 function serialzeCaseForm(form, table, serialized) {
   if (typeof serialized !== 'boolean') {
-    var serialized = true;
+    serialized = true;
   }
   var data;
   if (serialized) {
