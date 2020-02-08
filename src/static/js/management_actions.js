@@ -61,7 +61,7 @@ Nitrate.Management.Environment.Property.on_load = function() {
 
 function addEnvGroup() {
   var success = function(t) {
-    returnobj = jQ.parseJSON(t.responseText);
+    let returnobj = jQ.parseJSON(t.responseText);
 
     if (returnobj.rc === 0) {
       if (returnobj.id) {
@@ -127,7 +127,7 @@ function selectEnvProperty(property_id) {
 
 function addEnvProperty() {
   var success = function(t) {
-    returnobj = jQ.parseJSON(t.responseText);
+    let returnobj = jQ.parseJSON(t.responseText);
 
     if (returnobj.rc === 0) {
       jQ('#id_properties_container li.focus').removeClass('focus');
@@ -169,7 +169,7 @@ function editEnvProperty(id) {
   var new_property_name = window.prompt("New property name", jQ('#id_property_name_' + id).html());
 
   var success = function(t) {
-    returnobj = jQ.parseJSON(t.responseText);
+    let returnobj = jQ.parseJSON(t.responseText);
 
     if (returnobj.rc === 0) {
       jQ('#id_property_name_' + id).html(new_property_name);

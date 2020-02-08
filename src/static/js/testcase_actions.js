@@ -224,7 +224,7 @@ Nitrate.TestCases.Details.on_load = function() {
 
       var url = '/cases/add-component/';
       var success = function(t) {
-        returnobj = jQ.parseJSON(t.responseText);
+        let returnobj = jQ.parseJSON(t.responseText);
 
         if (parseInt(returnobj.rc) === 0) {
           window.location.reload();

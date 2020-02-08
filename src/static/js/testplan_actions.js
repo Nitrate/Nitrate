@@ -136,7 +136,7 @@ Nitrate.TestPlans.TreeView = {
     if (parent_obj && brother_obj.length) {
       parent_obj[0].children = brother_obj;
       var brother_numbers = brother_obj.length;
-      for (i = 0; i < brother_numbers; i++) {
+      for (let i = 0; i < brother_numbers; i++) {
         if (parseInt(parent_obj[0].children[i].pk) === parseInt(tree.data[0].pk)) {
            parent_obj[0].children[i] = tree.data[0];
            break;
@@ -303,7 +303,7 @@ Nitrate.TestPlans.TreeView = {
   },
   'traverse': function(data, pk) {
     // http://stackoverflow.com/questions/3645678/javascript-get-a-reference-from-json-object-with-traverse
-    for (i in data) {
+    for (let i in data) {
       if (data[i] === [] || typeof data[i] != 'object') {
         continue;
       }
@@ -1205,7 +1205,7 @@ function unlinkCasesFromPlan(container, form, table) {
   }
 
   var success = function(t) {
-    returnobj = jQ.parseJSON(t.responseText);
+    let returnobj = jQ.parseJSON(t.responseText);
     if (parseInt(returnobj.rc) === 0) {
       parameters.a = 'initial';
       constructPlanDetailsCasesZone(container, parameters.from_plan, parameters);
@@ -1992,7 +1992,7 @@ function onTestCaseComponentClick(options) {
       });
 
       var cbAfterComponentChanged = function(response) {
-        returnobj = jQ.parseJSON(response.responseText);
+        let returnobj = jQ.parseJSON(response.responseText);
         if (returnobj.rc != 0) {
           window.alert(returnobj.response);
           return false;

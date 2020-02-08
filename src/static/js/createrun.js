@@ -59,7 +59,7 @@ Nitrate.CreateRunPage = {
         },
         requestHeaders: {Accept: 'application/json'},
         onSuccess: function(t) {
-          obj = jQ.parseJSON(t.responseText);
+          let obj = jQ.parseJSON(t.responseText);
           $('id_summary').setValue(obj.suggestedSummary);
         },
         // don't worry about failure
