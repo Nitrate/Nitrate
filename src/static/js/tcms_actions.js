@@ -237,7 +237,7 @@ var html_failure = function() {
 };
 
 var json_success_refresh_page = function(t) {
-  returnobj = jQ.parseJSON(t.responseText);
+  let returnobj = jQ.parseJSON(t.responseText);
 
   if (parseInt(returnobj.rc) === 0) {
     window.location.reload();
@@ -315,7 +315,7 @@ function removeItem(item, tc_estimated_time) {
 }
 
 function splitString(str, num) {
-  cut_for_dot = num - 3;
+  let cut_for_dot = num - 3;
 
   if (str.length > num) {
     return str.substring(0, cut_for_dot) + "...";
@@ -405,7 +405,7 @@ function getBuildsByProductId(allow_blank, product_field, build_field, is_active
   }
 
   var product_id = jQ(product_field).val();
-  no_product_is_selected = product_id === '' || product_id === null;
+  let no_product_is_selected = product_id === '' || product_id === null;
   if (no_product_is_selected) {
     jQ(build_field).html('<option value="">---------</option>');
     return false;
@@ -423,7 +423,7 @@ function getBuildsByProductId(allow_blank, product_field, build_field, is_active
   }
 
   var success = function(t) {
-    returnobj = jQ.parseJSON(t.responseText);
+    let returnobj = jQ.parseJSON(t.responseText);
 
     set_up_choices(
       build_field,
@@ -463,7 +463,7 @@ function getEnvsByProductId(allow_blank, product_field) {
     var product_field = jQ('#id_product')[0];
   }
 
-  product_id = jQ(product_field).val();
+  let product_id = jQ(product_field).val();
   var args = false;
   if (jQ('#value_sub_module').length) {
     if (jQ('#value_sub_module').val() === 'new_run') {
@@ -477,7 +477,7 @@ function getEnvsByProductId(allow_blank, product_field) {
   }
 
   var success = function(t) {
-    returnobj = jQ.parseJSON(t.responseText);
+    let returnobj = jQ.parseJSON(t.responseText);
 
     set_up_choices(
       jQ('#id_env_id')[0],
@@ -526,7 +526,7 @@ function getVersionsByProductId(allow_blank, product_field, version_field) {
     }
   }
 
-  product_id = jQ(product_field).val();
+  let product_id = jQ(product_field).val();
 
   if (!product_id && allow_blank) {
     jQ(version_field).html('<option value="">---------</option>');
@@ -534,7 +534,7 @@ function getVersionsByProductId(allow_blank, product_field, version_field) {
   }
 
   var success = function(t) {
-    returnobj = jQ.parseJSON(t.responseText);
+    let returnobj = jQ.parseJSON(t.responseText);
 
     set_up_choices(
       version_field,
@@ -577,8 +577,7 @@ function getComponentsByProductId(allow_blank, product_field, component_field, c
     if (!product_field) {
       var product_field = jQ('#id_product')[0];
     }
-    product_id = jQ(product_field).val();
-    parameters.product_id = product_id;
+    parameters.product_id = jQ(product_field).val();
   }
 
   if (!component_field) {
@@ -596,7 +595,7 @@ function getComponentsByProductId(allow_blank, product_field, component_field, c
   }
 
   var success = function(t) {
-    returnobj = jQ.parseJSON(t.responseText);
+    let returnobj = jQ.parseJSON(t.responseText);
 
     set_up_choices(
       component_field,
@@ -635,8 +634,6 @@ function getCategorisByProductId(allow_blank, product_field, category_field) {
     var product_field = jQ('#id_product')[0];
   }
 
-  product_id = jQ(product_field).val();
-
   if (!category_field) {
     if (jQ('#id_category').length) {
       var category_field = jQ('#id_category')[0];
@@ -646,13 +643,13 @@ function getCategorisByProductId(allow_blank, product_field, category_field) {
     }
   }
 
-  if (product_id === '') {
+  if (jQ(product_field).val() === '') {
     jQ(category_field).html('<option value="">---------</option>');
     return true;
   }
 
   var success = function(t) {
-    returnobj = jQ.parseJSON(t.responseText);
+    let returnobj = jQ.parseJSON(t.responseText);
 
     set_up_choices(
       category_field,
@@ -921,7 +918,7 @@ function removeBatchTag(parameters, callback, format) {
 function batchProcessTag(parameters, callback, format) {
   var success = function(t) {
     if (!format) {
-      returnobj = jQ.parseJSON(t.responseText);
+      let returnobj = jQ.parseJSON(t.responseText);
 
       if (returnobj.response === 'ok') {
         if (callback) {
@@ -1240,7 +1237,7 @@ function getAjaxLoading(id) {
 
 function clickedSelectAll(checkbox, form, name) {
   var checkboxes = jQ(form).parent().find('input[name='+ name + ']');
-  for (i = 0; i < checkboxes.length; i++) {
+  for (let i = 0; i < checkboxes.length; i++) {
 	checkboxes[i].checked = checkbox.checked? true:false;
   }
 }
@@ -1297,7 +1294,7 @@ var reloadWindow = function(t) {
 function popupAddAnotherWindow(triggeringLink, parameters) {
   var name = triggeringLink.id.replace(/^add_/, '');
   name = id_to_windowname(name);
-  href = triggeringLink.href;
+  let href = triggeringLink.href;
   if (href.indexOf('?') === -1) {
     href += '?_popup=1';
   } else {

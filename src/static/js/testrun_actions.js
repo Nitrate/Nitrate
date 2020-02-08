@@ -607,7 +607,7 @@ var updateCaseRunStatus = function(e) {
       // Update the case run status icon
       var crs = Nitrate.TestRuns.CaseRunStatus;
       title.find('.icon_status').each(function(index) {
-        for (i in crs) {
+        for (let i in crs) {
           if (typeof crs[i] === 'string' && jQ(this).is('.btn_' + crs[i])) {
             jQ(this).removeClass('btn_' + crs[i]);
           }
