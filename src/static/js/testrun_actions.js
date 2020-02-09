@@ -341,7 +341,7 @@ Nitrate.TestRuns.Details.on_load = function() {
   jQ('.expandable').bind('click', toggle_case_run);
 
   // Auto show the case run contents.
-  if (window.location.hash != '') {
+  if (window.location.hash !== '') {
     fireEvent(jQ('a[href=\"' + window.location.hash + '\"]')[0], 'click');
   };
 
@@ -603,7 +603,7 @@ var updateCaseRunStatus = function(e) {
   // Callback when
   var callback = function(t) {
     // Update the contents
-    if (parameters['value'] != '') {
+    if (parameters['value'] !== '') {
       // Update the case run status icon
       var crs = Nitrate.TestRuns.CaseRunStatus;
       title.find('.icon_status').each(function(index) {
@@ -630,7 +630,7 @@ var updateCaseRunStatus = function(e) {
 
     // Blind down next case
     fireEvent(link, 'click');
-    if (jQ('#id_check_box_auto_blinddown').attr('checked') && parameters['value'] != '') {
+    if (jQ('#id_check_box_auto_blinddown').attr('checked') && parameters['value'] !== '') {
       var next_title = parent.next();
       if (!next_title.length) {
         return false;
@@ -644,13 +644,13 @@ var updateCaseRunStatus = function(e) {
   };
 
   // Add comment
-  if (parameters['comment'] != '') {
+  if (parameters['comment'] !== '') {
     // Reset the content to loading
     let ajax_loading = getAjaxLoading();
     ajax_loading.id = 'id_loading_' + parameters['case_id'];
     container.html(ajax_loading);
     var c = jQ('<div>');
-    if (parameters['value'] != '') {
+    if (parameters['value'] !== '') {
       submitComment(c[0], parameters);
     } else {
       submitComment(c[0], parameters, callback);
@@ -658,7 +658,7 @@ var updateCaseRunStatus = function(e) {
   }
 
   // Update the object when changing the status
-  if (parameters['value'] != '') {
+  if (parameters['value'] !== '') {
     // Reset the content to loading
     let ajax_loading = getAjaxLoading();
     ajax_loading.id = 'id_loading_' + parameters['case_id'];
@@ -812,7 +812,7 @@ function editValue(form,hidebox,selectid,submitid) {
     var current_value = jQ("input[type=hidden][name=current_run_env]:eq(0)", form);
     var excludeValues = [];
     jQ("input[type=hidden][name=current_run_env]").each(function(index, element) {
-      if (element.value != current_value.val()) {
+      if (element.value !== current_value.val()) {
         excludeValues.push(window.parseInt(element.value));
       }
       return true;
@@ -851,7 +851,7 @@ function submitValue(run_id,value,hidebox,select_field,submitid) {
 
   var dup_values = [];
   jQ("input[type=hidden][name=current_run_env]").each(function(index, element) {
-    if (element.value != old_value) {
+    if (element.value !== old_value) {
         dup_values.push(element.value);
     }
     return true;

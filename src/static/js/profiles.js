@@ -31,7 +31,7 @@ Nitrate.Profiles.Bookmarks.on_load = function() {
     var callback = function(t) {
       var returnobj = jQ.parseJSON(t.responseText);
 
-      if (returnobj.rc != 0) {
+      if (returnobj.rc !== 0) {
         window.alert(returnobj.response);
         return returnobj;
       }

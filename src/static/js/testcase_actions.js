@@ -680,13 +680,15 @@ function changeCaseOrder(parameters, callback) {
     return false;
   }
 
-  if (nsk != window.parseInt(nsk)) {
+  if (isNaN(nsk)) {
     window.alert('The value must be an integer number and limit between 0 to 32300.');
     return false;
   }
 
+  nsk = parseInt(nsk);
+
   if (nsk > 32300 || nsk < 0) {
-    window.alert('The value must be an integer number and limit between 0 to 32300.');
+    window.alert('The value must be a number and limit between 0 to 32300.');
     return false;
   }
   var ctype = 'testcases.testcaseplan';
@@ -714,10 +716,12 @@ function changeCaseOrder2(parameters, callback) {
     return false;
   }
 
-  if (nsk != window.parseInt(nsk)) {
-    window.alert('The value must be an integer number and limit between 0 to 32300.');
+  if (isNaN(nsk)) {
+    window.alert('The value must be a number and limit between 0 to 32300.');
     return false;
   }
+
+  nsk = parseInt(nsk);
 
   if (nsk > 32300 || nsk < 0) {
     window.alert('The value must be an integer number and limit between 0 to 32300.');
@@ -1190,7 +1194,7 @@ function serializeCaseFromInputList(table) {
  */
 function serialzeCaseForm(form, table, serialized, exclude_cases) {
   // FIXME: change the way to set argument default value
-  if (typeof serialized != 'boolean') {
+  if (typeof serialized !== 'boolean') {
     serialized = true;
   }
   if (exclude_cases === undefined) {
@@ -1216,7 +1220,7 @@ function serialzeCaseForm(form, table, serialized, exclude_cases) {
  * Be default if no value is passed to exclude_cases, not exclude them.
  */
 function serializeCaseForm2(form, table, serialized, exclude_cases) {
-  if (typeof serialized != 'boolean') {
+  if (typeof serialized !== 'boolean') {
     serialized = true;
   }
   var data;

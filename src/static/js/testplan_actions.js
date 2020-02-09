@@ -163,7 +163,7 @@ Nitrate.TestPlans.TreeView = {
             break;
 
           case 'collapse_icon':
-            if (typeof obj.children != 'object' || obj.children === []) {
+            if (typeof obj.children !== 'object' || obj.children === []) {
               var cbGetChildPlans = function(t) {
                 var returnobj = jQ.parseJSON(t.responseText);
                 returnobj = Nitrate.Utils.convert('obj_to_list', returnobj);
@@ -300,7 +300,7 @@ Nitrate.TestPlans.TreeView = {
   'traverse': function(data, pk) {
     // http://stackoverflow.com/questions/3645678/javascript-get-a-reference-from-json-object-with-traverse
     for (let i in data) {
-      if (data[i] === [] || typeof data[i] != 'object') {
+      if (data[i] === [] || typeof data[i] !== 'object') {
         continue;
       }
 
@@ -310,7 +310,7 @@ Nitrate.TestPlans.TreeView = {
 
       if (typeof data[i].children === 'object') {
         var retVal = this.traverse(data[i].children, pk);
-        if (typeof retVal != 'undefined') {
+        if (typeof retVal !== 'undefined') {
           return retVal;
         }
       }
@@ -1043,7 +1043,7 @@ Nitrate.TestPlans.Details = {
 
 Nitrate.TestPlans.SearchCase.on_load = function() {
   if (jQ('#id_product').length) {
-    if (jQ('#id_product').val() != "") {
+    if (jQ('#id_product').val() !== "") {
       bind_category_selector_to_product(true, true, jQ('#id_product')[0], jQ('#id_category')[0]);
       bind_component_selector_to_product(true, true, jQ('#id_product')[0], jQ('#id_component')[0]);
     }
@@ -1356,7 +1356,7 @@ function bindEventsOnLoadedCases(options) {
           var params = Nitrate.Utils.formSerialize(this);
           var refresh_case = function(t) {
             var returnobj = jQ.parseJSON(t.responseText);
-            if (returnobj.rc != 0) {
+            if (returnobj.rc !== 0) {
               window.alert(returnobj.response);
               return false;
             }
@@ -1576,7 +1576,7 @@ function onTestCasePriorityChange(options) {
 
     var afterPriorityChangedCallback = function(response) {
       var returnobj = jQ.parseJSON(response.responseText);
-      if (returnobj.rc != 0) {
+      if (returnobj.rc !== 0) {
         window.alert(returnobj.response);
         return false;
       }
@@ -1618,7 +1618,7 @@ function onTestCaseAutomatedClick(options) {
     var dialogContainer = getDialog();
     var afterAutomatedChangedCallback = function(response) {
       var returnobj = jQ.parseJSON(response.responseText);
-      if (returnobj.rc != 0) {
+      if (returnobj.rc !== 0) {
         window.alert(returnobj.response);
         return false;
       }
@@ -1768,7 +1768,7 @@ function onTestCaseTagDeleteClick(options) {
       var url = Nitrate.http.URLConf.reverse({ name: 'cases_tag' });
       var afterTagDeletedCallback = function(response) {
         var returnobj = jQ.parseJSON(response.responseText);
-        if (returnobj.rc != 0) {
+        if (returnobj.rc !== 0) {
           window.alert(returnobj.response);
           return false;
         }
@@ -1809,7 +1809,7 @@ function onTestCaseSortNumberClick(options) {
 
     var callback = function(response) {
       var returnobj = jQ.parseJSON(response.responseText);
-      if (returnobj.rc != 0) {
+      if (returnobj.rc !== 0) {
         window.alert(returnobj.response);
         return false;
       }
@@ -1870,7 +1870,7 @@ function onTestCaseCategoryClick(options) {
       var url = Nitrate.http.URLConf.reverse({ name: 'cases_category' });
       var callback = function(response) {
         var returnobj = jQ.parseJSON(response.responseText);
-        if (returnobj.rc != 0) {
+        if (returnobj.rc !== 0) {
           window.alert(returnobj.response);
           return false;
         }
@@ -1912,7 +1912,7 @@ function onTestCaseDefaultTesterClick(options) {
 
     var cbAfterDefaultTesterChanged = function(response) {
       var returnobj = jQ.parseJSON(response.responseText);
-      if (returnobj.rc != 0) {
+      if (returnobj.rc !== 0) {
         window.alert(returnobj.response);
         return false;
       }
@@ -1989,7 +1989,7 @@ function onTestCaseComponentClick(options) {
 
       var cbAfterComponentChanged = function(response) {
         let returnobj = jQ.parseJSON(response.responseText);
-        if (returnobj.rc != 0) {
+        if (returnobj.rc !== 0) {
           window.alert(returnobj.response);
           return false;
         }
@@ -2080,7 +2080,7 @@ function constructPlanDetailsCasesZoneCallback(options) {
     var table = jQ(container).children()[2];
 
     // Presume the first form element is the form
-    if (!form.tagName === 'FORM') {
+    if (form.tagName !== 'FORM') {
       window.alert('form element of container is not a form');
       return false;
     }
@@ -2144,7 +2144,7 @@ function constructPlanDetailsCasesZoneCallback(options) {
         var params = serialzeCaseForm(form, table);
         var callback = function(t) {
           var returnobj = jQ.parseJSON(t.responseText);
-          if (returnobj.rc != 0) {
+          if (returnobj.rc !== 0) {
             window.alert(returnobj.reponse);
           }
           params.a = 'initial';
@@ -2579,7 +2579,7 @@ function expandCurrentPlan(element) {
     var e_pk = e_container.next('a').html();
     var expand_icon_url = '/static/images/t2.gif';
     var obj = tree.traverse(tree.data, e_pk);
-    if (typeof obj.children != 'object' || obj.children === []) {
+    if (typeof obj.children !== 'object' || obj.children === []) {
       var c = function(t) {
         var returnobj = jQ.parseJSON(t.responseText);
         returnobj = Nitrate.Utils.convert('obj_to_list', returnobj);
