@@ -20,7 +20,7 @@ Nitrate.TestPlans.CasesContainer = {
 
 
 Nitrate.TestPlans.TreeView = {
-  'pk': new Number(),
+  'pk': Number(),
   'data': {},
   'tree_elements': jQ('<div>')[0],
   'default_container': 'id_tree_container',
@@ -189,11 +189,13 @@ Nitrate.TestPlans.TreeView = {
     var icon_expand = '<img src="/static/images/t2.gif" class="expand_icon js-toggle-icon">';
     var icon_collapse = '<img src="/static/images/t1.gif" class="collapse_icon js-toggle-icon">';
 
+    var elemLi = null;
+
     // Add the 'Up' button
     if (!data && this.data) {
       data = this.data;
       if (data && data[0].parent_id) {
-        var li = jQ('<li>');
+        elemLi = jQ('<li>');
         var btn = jQ('<input>', {'type': 'button', 'value': 'Up'});
         li.html(btn);
         btn.bind('click', this.up);
@@ -208,7 +210,7 @@ Nitrate.TestPlans.TreeView = {
         continue;
       }
 
-      var li = jQ('<li>');
+      elemLi = jQ('<li>');
       var title = '[<a href="' + data[i].get_url_path + '">' + data[i].pk + '</a>] ';
 
       if (data[i].num_children && data[i].children) {
@@ -389,8 +391,8 @@ Nitrate.TestPlans.TreeView = {
         self.toggleRemoveChildPlanButton();
       };
 
-      updateObject('testplans.testplan', Nitrate.Utils.formSerialize(this)['plan_id'], 'parent',
-        plan_id, 'int', cbUpdateTreeView);
+      updateObject('testplans.testplan', Nitrate.Utils.formSerialize(this).plan_id,
+                   'parent', plan_id, 'int', cbUpdateTreeView);
     };
 
     // FIXME: this first argument is not being used.
@@ -435,8 +437,8 @@ Nitrate.TestPlans.TreeView = {
         self.toggleRemoveChildPlanButton();
       };
 
-      updateObject('testplans.testplan', Nitrate.Utils.formSerialize(this)['plan_id'], 'parent',
-        0, 'None', cbUpdateTreeView);
+      updateObject('testplans.testplan', Nitrate.Utils.formSerialize(this).plan_id,
+                   'parent', 0, 'None', cbUpdateTreeView);
     };
 
     constructPlanParentPreviewDialog(p, parameters, callback);
@@ -485,7 +487,7 @@ Nitrate.TestPlans.TreeView = {
       };
 
       updateObject('testplans.testplan', plan_id, 'parent',
-        Nitrate.Utils.formSerialize(this)['plan_id'], 'int', cbAfterUpdatingPlan);
+        Nitrate.Utils.formSerialize(this).plan_id, 'int', cbAfterUpdatingPlan);
     };
 
     constructPlanParentPreviewDialog(p, parameters, callback);
@@ -497,10 +499,10 @@ Nitrate.TestPlans.Create.on_load = function() {
 
   jQ('#env_group_help_link').bind('click', function(t) {
     jQ('#env_group_help').toggle();
-  })
+  });
   jQ('#env_group_help_close').bind('click', function(t) {
     jQ('#env_group_help').hide();
-  })
+  });
   jQ('#add_id_product').bind('click', function() {
     return popupAddAnotherWindow(this);
   });
@@ -535,7 +537,7 @@ Nitrate.TestPlans.Edit.on_load = function() {
 Nitrate.TestPlans.Advance_Search_List.on_load = function() {
   if (jQ('#id_product').length) {
     bind_version_selector_to_product(true);
-  };
+  }
 
   if (jQ('#id_check_all_plans').length) {
     jQ('#id_check_all_plans').bind('click', function(e) {
@@ -546,7 +548,7 @@ Nitrate.TestPlans.Advance_Search_List.on_load = function() {
         jQ('#plan_advance_printable').attr('disabled', true);
       }
     });
-  };
+  }
 
   if (jQ('#column_add').length) {
     jQ('#column_add').bind('change', function(t) {
@@ -563,14 +565,14 @@ Nitrate.TestPlans.Advance_Search_List.on_load = function() {
           break;
       }
     });
-  };
+  }
 
   jQ('input[name="plan_id"]').bind('click', function(t) {
     if (this.checked) {
       jQ(this).parent().parent().addClass('selection_row');
     } else {
       jQ(this).parent().parent().removeClass('selection_row');
-    };
+    }
   });
 
   jQ("input[type=checkbox][name=plan]").bind('click', function(){
@@ -892,7 +894,7 @@ Nitrate.TestPlans.Details = {
       if (!NTPD.testcasesTabOpened) {
         NTPD.loadConfirmedCases(plan_id);
         NTPD.testcasesTabOpened = true;
-      };
+      }
     });
 
     jQ('#tab_treeview').bind('click', function(e) {
@@ -991,7 +993,7 @@ Nitrate.TestPlans.Details = {
 
     // Bind for run form
     jQ('#id_form_run').bind('submit', function(e) {
-      if(!Nitrate.Utils.formSerialize(this)['run']) {
+      if (!Nitrate.Utils.formSerialize(this).run) {
         e.stopPropagation();
         e.preventDefault();
         window.alert(default_messages.alert.no_run_selected);
@@ -1305,7 +1307,7 @@ function bindEventsOnLoadedCases(options) {
 
     jQ(container).parent().find('.change_status_selector.js-just-loaded').bind('change', function(e) {
       var be_confirmed = (parseInt(this.value) === 2);
-      var was_confirmed = (jQ(this).parent()[0].attributes['status'].value === "CONFIRMED");
+      var was_confirmed = (jQ(this).parent()[0].attributes.status.value === "CONFIRMED");
       var case_id = jQ(this).parent().parent()[0].id;
       changeTestCaseStatus(plan_id, this, case_id, be_confirmed, was_confirmed);
     });
@@ -1334,7 +1336,7 @@ function bindEventsOnLoadedCases(options) {
           var params = Nitrate.Utils.formSerialize(this);
           var refresh_case = function(t) {
             var td = jQ('<td>', {colspan: 12});
-            var id = 'id_loading_' + params['object_pk'];
+            var id = 'id_loading_' + params.object_pk;
             td.append(getAjaxLoading(id));
             jQ(content).html(td);
             fireEvent(btn, 'click');
@@ -1361,7 +1363,7 @@ function bindEventsOnLoadedCases(options) {
             }
 
             var td = jQ('<td>', {colspan: 12});
-            var id = 'id_loading_' + params['object_pk'];
+            var id = 'id_loading_' + params.object_pk;
             td.append(getAjaxLoading(id));
             jQ(content).html(td);
             fireEvent(btn, 'click');
@@ -2131,8 +2133,11 @@ function constructPlanDetailsCasesZoneCallback(options) {
         if (filter.style.display === 'none') {
           fireEvent(jQ(form).parent().find('.filtercase')[0], 'click');
         }
-        form.tag__name__in.value = form.tag__name__in.value ? (form.tag__name__in.value
-          + ',' + this.textContent) : this.textContent;
+        if (form.tag__name__in.value) {
+          form.tag__name__in.value = form.tag__name__in.value + ',' + this.textContent;
+        } else {
+          form.tag__name__in.value = this.textContent;
+        }
       });
     }
 
@@ -2385,8 +2390,8 @@ function constructPlanComponentsZone(container, parameters, callback) {
       var component = jQ('input[type="checkbox"][name="component"]')[index];
 
       var p = Nitrate.Utils.formSerialize(jQ('#id_form_plan_components')[0]);
-      p['component'] = component.value;
-      p['a'] = 'remove';
+      p.component = component.value;
+      p.a = 'remove';
       constructPlanComponentsZone(container, p, callback);
     });
 
@@ -2435,8 +2440,10 @@ function constructPlanComponentModificationDialog(container) {
       e.stopPropagation();
       e.preventDefault();
       var submitButton = jQ(this).find(':submit')[0];
-      constructPlanComponentsZone('components', jQ(this).serialize()
-        + '&' + submitButton.name + '=' + submitButton.value);
+      constructPlanComponentsZone(
+        'components',
+        jQ(this).serialize() + '&' + submitButton.name + '=' + submitButton.value
+      );
       clearDialog();
     };
     var notice = 'Press "Ctrl" to select multiple default component';
@@ -2618,7 +2625,7 @@ Nitrate.TestPlans.Runs = {
     var btnCheckAll = jQ('#box_select_rest input:checkbox');
     if (btnCheckAll.length > 0 && btnCheckAll.is(':checked')) {
       html.find('.run_selector').attr('checked', 'checked');
-    };
+    }
     tbody.append(html);
   },
   'initializaRunTab': function () {
@@ -2660,7 +2667,7 @@ Nitrate.TestPlans.Runs = {
   },
   'reactsToRunSelection': function () {
     var that = Nitrate.TestPlans.Runs;
-    var selection = jQ('.run_selector:not(:checked)')
+    var selection = jQ('.run_selector:not(:checked)');
     var controller = jQ('#id_check_all_runs');
     if (selection.length === 0) {
       controller.attr('checked', true);

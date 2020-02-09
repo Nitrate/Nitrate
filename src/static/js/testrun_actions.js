@@ -34,7 +34,7 @@ Nitrate.TestRuns.List.on_load = function() {
           jQ('.col_plan_content').show();
           jQ('#col_plan_option').hide();
           break;
-      };
+      }
     });
   }
 
@@ -244,7 +244,11 @@ Nitrate.TestRuns.Details.on_load = function() {
 
   jQ('#id_check_box_highlight').bind('click', function(e) {
     e = jQ('.mine');
-    this.checked && e.addClass('highlight') || e.removeClass('highlight');
+    if (this.checked) {
+      e.addClass('highlight');
+    } else {
+      e.removeClass('highlight');
+    }
   });
 
   jQ('#id_blind_all_link').bind('click', function(e) {
@@ -343,7 +347,7 @@ Nitrate.TestRuns.Details.on_load = function() {
   // Auto show the case run contents.
   if (window.location.hash !== '') {
     fireEvent(jQ('a[href=\"' + window.location.hash + '\"]')[0], 'click');
-  };
+  }
 
   // Filter Case-Run
   if (jQ('#filter_case_run').length) {
@@ -362,8 +366,10 @@ Nitrate.TestRuns.Details.on_load = function() {
     var from = jQ(this).siblings('.btn_status:disabled')[0].title;
     var to = this.title;
     if (jQ('span#' + to + ' a').text() === '0') {
-      var htmlstr = "[<a href='javascript:void(0)' onclick=\"showCaseRunsWithSelectedStatus(jQ('#id_filter')[0], '"
-        + jQ(this).attr('crs_id')+"')\">0</a>]";
+      var htmlstr = "[<a href='javascript:void(0)' " +
+                    "onclick=\"showCaseRunsWithSelectedStatus(jQ('#id_filter')[0], '" +
+                    jQ(this).attr('crs_id') +
+                    "')\">0</a>]";
       jQ('span#' + to).html(htmlstr);
     }
     if (jQ('span#' + from + ' a').text() === '1') {
@@ -377,10 +383,11 @@ Nitrate.TestRuns.Details.on_load = function() {
     var errorCaseRunCount = window.parseInt(jQ('span#ERROR a').text()) || 0;
     var failedCaseRunCount = window.parseInt(jQ('span#FAILED a').text()) || 0;
     var waivedCaseRunCount = window.parseInt(jQ('span#WAIVED a').text()) || 0;
-    var completePercent = 100 * ((passedCaseRunCount + errorCaseRunCount + failedCaseRunCount
-      + waivedCaseRunCount) / caseRunCount).toFixed(2);
-    var failedPercent = 100 * ((errorCaseRunCount + failedCaseRunCount) / (passedCaseRunCount
-      + errorCaseRunCount + failedCaseRunCount + waivedCaseRunCount)).toFixed(2);
+
+    var completedCasesCount = passedCaseRunCount + errorCaseRunCount + failedCaseRunCount + waivedCaseRunCount;
+    var completePercent = 100 * (completedCasesCount / caseRunCount).toFixed(2);
+    var unsuccessfulCasesCount = errorCaseRunCount + failedCaseRunCount;
+    var failedPercent = 100 * (unsuccessfulCasesCount / completedCasesCount).toFixed(2);
 
     jQ('span#complete_percent').text(completePercent);
     jQ('div.progress-inner').attr('style', 'width:' + completePercent + '%');
@@ -594,16 +601,16 @@ var updateCaseRunStatus = function(e) {
   var title = parent.prev();
   var link = title.find('.expandable')[0];
   var parameters = Nitrate.Utils.formSerialize(this);
-  var ctype = parameters['content_type'];
-  var object_pk = parameters['object_pk'];
-  var field = parameters['field'];
-  var value = parameters['value'];
+  var ctype = parameters.content_type;
+  var object_pk = parameters.object_pk;
+  var field = parameters.field;
+  var value = parameters.value;
   var vtype = 'int';
 
   // Callback when
   var callback = function(t) {
     // Update the contents
-    if (parameters['value'] !== '') {
+    if (parameters.value !== '') {
       // Update the case run status icon
       var crs = Nitrate.TestRuns.CaseRunStatus;
       title.find('.icon_status').each(function(index) {
@@ -630,7 +637,7 @@ var updateCaseRunStatus = function(e) {
 
     // Blind down next case
     fireEvent(link, 'click');
-    if (jQ('#id_check_box_auto_blinddown').attr('checked') && parameters['value'] !== '') {
+    if (jQ('#id_check_box_auto_blinddown').attr('checked') && parameters.value !== '') {
       var next_title = parent.next();
       if (!next_title.length) {
         return false;
@@ -644,13 +651,13 @@ var updateCaseRunStatus = function(e) {
   };
 
   // Add comment
-  if (parameters['comment'] !== '') {
+  if (parameters.comment !== '') {
     // Reset the content to loading
     let ajax_loading = getAjaxLoading();
-    ajax_loading.id = 'id_loading_' + parameters['case_id'];
+    ajax_loading.id = 'id_loading_' + parameters.case_id;
     container.html(ajax_loading);
     var c = jQ('<div>');
-    if (parameters['value'] !== '') {
+    if (parameters.value !== '') {
       submitComment(c[0], parameters);
     } else {
       submitComment(c[0], parameters, callback);
@@ -658,10 +665,10 @@ var updateCaseRunStatus = function(e) {
   }
 
   // Update the object when changing the status
-  if (parameters['value'] !== '') {
+  if (parameters.value !== '') {
     // Reset the content to loading
     let ajax_loading = getAjaxLoading();
-    ajax_loading.id = 'id_loading_' + parameters['case_id'];
+    ajax_loading.id = 'id_loading_' + parameters.case_id;
     container.html(ajax_loading);
     updateRunStatus(ctype, object_pk, field, value, vtype, callback);
   }
@@ -1162,7 +1169,7 @@ function serialzeCaseForm(form, table, serialized) {
     data = jQ(form).serialize();
   }
 
-  data['case_run'] = serializeCaseFromInputList(table);
+  data.case_run = serializeCaseFromInputList(table);
   return data;
 }
 
@@ -1206,8 +1213,8 @@ function insertCasesIntoTestRun() {
   });
 
   var data_to_post = {};
-  data_to_post['testrun_ids'] = trs;
-  data_to_post['case_ids'] = case_ids;
+  data_to_post.testrun_ids = trs;
+  data_to_post.case_ids = case_ids;
 
   var url = "../chooseruns/";
   postToURL(url, data_to_post, 'POST');
