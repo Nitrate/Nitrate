@@ -33,6 +33,7 @@ Nitrate.TestCases.Clone = {};
 Nitrate.TestCases.AdvanceList.on_load = function() {
   bind_category_selector_to_product(true, true, jQ('#id_product')[0], jQ('#id_category')[0]);
   bind_component_selector_to_product(true, true, jQ('#id_product')[0], jQ('#id_component')[0]);
+
   if (jQ('#id_checkbox_all_case').length) {
     jQ('#id_checkbox_all_case').bind('click', function(e) {
       clickedSelectAll(this, jQ(this).closest('form')[0], 'case');
@@ -42,7 +43,7 @@ Nitrate.TestCases.AdvanceList.on_load = function() {
         jQ('#case_advance_printable').attr('disabled', true);
       }
     });
-  };
+  }
 
   jQ('#id_blind_all_link').bind('click', function(e) {
     if (!jQ('div[id^="id_loading_"]').length) {
@@ -257,13 +258,13 @@ Nitrate.TestCases.Details.on_load = function() {
     }
 
     var params = Nitrate.Utils.formSerialize(this.form);
-    if (!params['component']) {
+    if (!params.component) {
       return false;
     }
 
     var parameters = {
         'case': Nitrate.TestCases.Instance.pk,
-        'o_component': params['component']
+        'o_component': params.component
     };
 
     updateCaseComponent('/cases/remove-component/', parameters, json_success_refresh_page);
@@ -570,7 +571,7 @@ function changeTestCaseStatus(plan_id, selector, case_id, be_confirmed, was_conf
 
     for (var i = 0; (node = selector.options[i]); i++) {
       if (node.selected) {
-        var case_status = node.innerHTML;
+        case_status = node.innerHTML;
       }
     }
 
@@ -666,8 +667,8 @@ function blindupAllCases(element) {
 function changeCaseOrder(parameters, callback) {
   var nsk = '';
   if (parameters.hasOwnProperty('sortkey')) {
-    nsk = window.prompt('Enter your new order number', parameters['sortkey']);   // New sort key
-    if (parseInt(nsk) === parseInt(parameters['sortkey'])) {
+    nsk = window.prompt('Enter your new order number', parameters.sortkey);   // New sort key
+    if (parseInt(nsk) === parseInt(parameters.sortkey)) {
       window.alert('Nothing changed');
       return false;
     }
@@ -691,7 +692,7 @@ function changeCaseOrder(parameters, callback) {
     return false;
   }
   var ctype = 'testcases.testcaseplan';
-  var object_pk = parameters['testcaseplan'];
+  var object_pk = parameters.testcaseplan;
   var field = 'sortkey';
   var value = nsk;
   var vtype = 'int';
@@ -702,8 +703,8 @@ function changeCaseOrder(parameters, callback) {
 function changeCaseOrder2(parameters, callback) {
   var nsk = '';
   if (parameters.hasOwnProperty('sortkey')) {
-    nsk = window.prompt('Enter your new order number', parameters['sortkey']);   // New sort key
-    if (parseInt(nsk) === parseInt(parameters['sortkey'])) {
+    nsk = window.prompt('Enter your new order number', parameters.sortkey);   // New sort key
+    if (parseInt(nsk) === parseInt(parameters.sortkey)) {
       window.alert('Nothing changed');
       return false;
     }
@@ -858,7 +859,7 @@ function constructPlanCaseZone(container, case_id, parameters) {
       var callback = function(e) {
         e.stopPropagation();
         e.preventDefault();
-        var plan_ids = Nitrate.Utils.formSerialize(this)['plan_id'];
+        var plan_ids = Nitrate.Utils.formSerialize(this).plan_id;
         if (!plan_ids) {
           window.alert(default_messages.alert.no_plan_specified);
           return false;

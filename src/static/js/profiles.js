@@ -39,7 +39,7 @@ Nitrate.Profiles.Bookmarks.on_load = function() {
       window.location = window.location;
     };
     var parameters = Nitrate.Utils.formSerialize(this);
-    if (!parameters['pk']) {
+    if (parameters.pk === undefined) {
       window.alert('No bookmark selected.');
       return false;
     }

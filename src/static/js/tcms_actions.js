@@ -11,11 +11,10 @@ var nil;
     Set up a function callback for after the page has loaded
  */
 Nitrate.Utils.after_page_load = function(callback) {
-  var that = this;
   jQ(window).bind('load', callback);
 };
 
-Nitrate.Utils.enableShiftSelectOnCheckbox = function (className){
+Nitrate.Utils.enableShiftSelectOnCheckbox = function (className) {
   jQ('.' + className).shiftcheckbox();
 };
 
@@ -227,7 +226,7 @@ function json_failure(jqXHR) {
     window.alert(responseJSON);
   }
   return false;
-};
+}
 
 var html_failure = function() {
   window.alert(default_messages.alert.ajax_failure);
@@ -246,7 +245,7 @@ var json_success_refresh_page = function(t) {
 };
 
 function addBookmark(url, method, parameters, callback) {
-  parameters['a'] = 'add';
+  parameters.a = 'add';
 
   jQ.ajax({
     'url': url,
@@ -956,7 +955,7 @@ function removeComment(form, callback) {
     'type': method,
     'data': parameters,
     'success': function (data, textStatus, jqXHR) {
-      updateCommentsCount(parameters['object_pk'], false);
+      updateCommentsCount(parameters.object_pk, false);
       callback(jqXHR);
     },
     'error': function (jqXHR, textStatus, errorThrown) {
@@ -968,7 +967,7 @@ function removeComment(form, callback) {
 
 function submitComment(container, parameters, callback) {
   var complete = function(t) {
-    updateCommentsCount(parameters['case_id'], true);
+    updateCommentsCount(parameters.case_id, true);
     if (callback) {
       callback();
     }
@@ -1255,11 +1254,11 @@ function constructForm(content, action, form_observe, info, s, c) {
   }
 
   if (!s) {
-    var s = jQ('<input>', {'type': 'submit', 'value': 'Submit'});
+    s = jQ('<input>', {'type': 'submit', 'value': 'Submit'});
   }
 
   if (!c) {
-    var c = jQ('<input>', {'type': 'button', 'value': 'Cancel'});
+    c = jQ('<input>', {'type': 'button', 'value': 'Cancel'});
     c.bind('click', function(e) {
       clearDialog();
     });

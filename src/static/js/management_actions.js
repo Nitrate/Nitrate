@@ -198,8 +198,10 @@ function enableEnvProperty() {
     return false;
   }
 
-  window.location.href = Nitrate.Management.Environment.Property.Param.modify_property
-    + '?action=modify&status=1&' + jQ('#id_property_form').serialize();
+  window.location.href =
+    Nitrate.Management.Environment.Property.Param.modify_property +
+    '?action=modify&status=1&' +
+    jQ('#id_property_form').serialize();
 }
 
 
@@ -208,8 +210,10 @@ function disableEnvProperty() {
     window.alert("Please click the checkbox to choose properties");
     return false;
   }
-  window.location.href = Nitrate.Management.Environment.Property.Param.modify_property
-    + '?action=modify&status=0&' + jQ('#id_property_form').serialize();
+  window.location.href =
+    Nitrate.Management.Environment.Property.Param.modify_property +
+    '?action=modify&status=0&' +
+    jQ('#id_property_form').serialize();
 }
 
 function addEnvPropertyValue(property_id) {
