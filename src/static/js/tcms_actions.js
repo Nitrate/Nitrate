@@ -74,7 +74,7 @@ jQ(window).bind('load', function(e) {
         var c = function(t) {
           var returnobj = jQ.parseJSON(t.responseText);
 
-          if (returnobj.rc != 0) {
+          if (returnobj.rc !== 0) {
             window.alert(returnobj.response);
             return returnobj;
           }
@@ -274,7 +274,7 @@ function checkCookie() {
   exp.setTime(exp.getTime() + 1800000);
   // first write a test cookie
   setCookie("cookies", "cookies", exp, false, false, false);
-  if (document.cookie.indexOf('cookies') != -1) {
+  if (document.cookie.indexOf('cookies') !== -1) {
     // now delete the test cookie
     exp = new Date();
     exp.setTime(exp.getTime() - 1800000);
@@ -448,7 +448,7 @@ function getBuildsByProductId(allow_blank, product_field, build_field) {
       success(jqXHR);
     },
     'error': function (jqXHR, textStatus, errorThrown) {
-      if (jqXHR.readyState != 0 && errorThrown != "") {
+      if (jqXHR.readyState !== 0 && errorThrown !== "") {
         failure();
       }
     }
@@ -492,7 +492,7 @@ function getEnvsByProductId(allow_blank, product_field) {
   };
 
   var failure = function(jqXHR, textStatus, errorThrown) {
-    if (jqXHR.readyState != 0 && errorThrown != "") {
+    if (jqXHR.readyState !== 0 && errorThrown !== "") {
         alert("Update builds and envs failed");
     }
   };
@@ -556,7 +556,7 @@ function getVersionsByProductId(allow_blank, product_field, version_field) {
       success(jqXHR);
     },
     'error': function (jqXHR, textStatus, errorThrown) {
-      if (jqXHR.readyState != 0 && errorThrown != "") {
+      if (jqXHR.readyState !== 0 && errorThrown !== "") {
         failure();
       }
     }
@@ -620,7 +620,7 @@ function getComponentsByProductId(allow_blank, product_field, component_field, c
       success(jqXHR);
     },
     'error': function (jqXHR, textStatus, errorThrown) {
-      if (jqXHR.readyState != 0 && errorThrown != "") {
+      if (jqXHR.readyState !== 0 && errorThrown !== "") {
         failure();
       }
     }
@@ -669,7 +669,7 @@ function getCategorisByProductId(allow_blank, product_field, category_field) {
       success(jqXHR);
     },
     'error': function (jqXHR, textStatus, errorThrown) {
-      if (jqXHR.readyState != 0 && errorThrown != "") {
+      if (jqXHR.readyState !== 0 && errorThrown !== "") {
         failure();
       }
     }
