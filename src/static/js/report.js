@@ -3,9 +3,7 @@ Nitrate.Report.List = {};
 Nitrate.Report.CustomSearch = {};
 Nitrate.Report.CustomDetails = {};
 
-Nitrate.Report.List.on_load = function(){
-	
-}
+Nitrate.Report.List.on_load = function() {};
 
 Nitrate.Report.Builds = {};
 

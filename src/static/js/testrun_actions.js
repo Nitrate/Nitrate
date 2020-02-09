@@ -39,7 +39,7 @@ Nitrate.TestRuns.List.on_load = function() {
   }
 
   if (!jQ('#testruns_table').hasClass('js-advance-search-runs')) {
-    var oTable = jQ('#testruns_table').dataTable({
+    jQ('#testruns_table').dataTable({
       "iDisplayLength": 20,
       "sPaginationType": "full_numbers",
       "bFilter": false,

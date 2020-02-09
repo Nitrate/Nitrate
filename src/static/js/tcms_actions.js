@@ -220,7 +220,7 @@ function json_failure(jqXHR) {
   var responseJSON = jQ.parseJSON(jqXHR.responseText);
   // response property will be deprecated from server response.
   if (responseJSON.response) {
-    window.alert(returnobj.response);
+    window.alert(responseJSON.response);
   } else if (responseJSON.messages) {
     window.alert(responseJSON.messages);
   } else {
@@ -302,7 +302,7 @@ function removeItem(item, tc_estimated_time) {
   remain_estimated_time_value += second_value ? second_value + 's' : '';
 
   if (!remain_estimated_time_value.length) {
-	remain_estimated_time_value = '0m';
+    remain_estimated_time_value = '0m';
   }
 
   jQ('#estimated_time').data('time', remain_estimated_time);
@@ -1138,7 +1138,7 @@ function updateObject(content_type, object_pk, field, value, value_type, callbac
   var url = '/ajax/update/';
 
   if (typeof object_pk === 'object') {
-	object_pk = object_pk.join(',');
+    object_pk = object_pk.join(',');
   }
 
   var parameters = {
@@ -1237,7 +1237,7 @@ function getAjaxLoading(id) {
 function clickedSelectAll(checkbox, form, name) {
   var checkboxes = jQ(form).parent().find('input[name='+ name + ']');
   for (let i = 0; i < checkboxes.length; i++) {
-	checkboxes[i].checked = checkbox.checked? true:false;
+    checkboxes[i].checked = checkbox.checked? true:false;
   }
 }
 
