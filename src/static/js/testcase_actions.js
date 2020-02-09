@@ -134,8 +134,7 @@ Nitrate.TestCases.List.on_load = function() {
     blinddownAllCases();
   }
 
-  var oTable;
-  oTable = jQ('#testcases_table').dataTable({
+  jQ('#testcases_table').dataTable({
     "iDisplayLength": 20,
     "sPaginationType": "full_numbers",
     "bFilter": false,
@@ -368,9 +367,9 @@ Nitrate.TestCases.Details.on_load = function() {
  */
 function resize_tinymce_editors() {
   jQ('.mceEditor .mceIframeContainer iframe').each(function(item) {
-	  var elem = jQ(this);
-	  elem.height(elem.height() + 1);
-	});
+    var elem = jQ(this);
+    elem.height(elem.height() + 1);
+  });
 }
 
 Nitrate.TestCases.Create.on_load = function() {

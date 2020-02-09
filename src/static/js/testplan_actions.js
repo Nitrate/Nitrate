@@ -530,7 +530,7 @@ Nitrate.TestPlans.Edit.on_load = function() {
   jQ('.js-back-button').bind('click', function() {
     window.location.href = jQ(this).data('param');
   });
-}
+};
 
 Nitrate.TestPlans.Advance_Search_List.on_load = function() {
   if (jQ('#id_product').length) {
@@ -636,9 +636,8 @@ Nitrate.TestPlans.List.on_load = function() {
     }
   });
 
-  var oTable;
   if (jQ('#testplans_table').length) {
-    oTable = jQ('#testplans_table').dataTable({
+    jQ('#testplans_table').dataTable({
       "iDisplayLength": 20,
       "sPaginationType": "full_numbers",
       "bFilter": false,
@@ -1340,7 +1339,7 @@ function bindEventsOnLoadedCases(options) {
             jQ(content).html(td);
             fireEvent(btn, 'click');
             fireEvent(btn, 'click');
-          }
+          };
           submitComment(comment_container_t, params, refresh_case);
         };
         jQ(content).parent().find('.update_form').unbind('submit');
