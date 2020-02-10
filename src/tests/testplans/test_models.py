@@ -2,7 +2,7 @@
 
 from django.conf import settings
 from django import test
-from mock import patch
+from unittest.mock import patch
 
 from tcms.testplans.helpers import email
 from tcms.testplans.models import _disconnect_signals, TestPlan

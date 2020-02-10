@@ -3,7 +3,7 @@
 import unittest
 
 from django import test
-from mock import Mock
+from unittest.mock import Mock
 
 from tcms.issuetracker import services
 from tcms.issuetracker.services import IssueTrackerService

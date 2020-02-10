@@ -7,7 +7,7 @@ from datetime import timedelta
 from django_comments.models import Comment
 from django.db.models import Max, Min
 from django import test
-from mock import patch, PropertyMock
+from unittest.mock import patch, PropertyMock
 
 from tcms.core.utils import checksum
 from tcms.issuetracker.models import Issue

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.contrib.auth.models import Group
-from mock import patch
+from unittest.mock import patch
 from django import test
 from django.core.management import call_command
 

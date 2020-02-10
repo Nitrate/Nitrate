@@ -2,8 +2,7 @@
 
 import sys
 import unittest
-from mock import patch
-from mock import Mock
+from unittest.mock import patch, Mock
 
 from django import test
 from django.conf import settings

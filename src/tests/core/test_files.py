@@ -11,7 +11,7 @@ from django.db.models import Max
 from django.test import RequestFactory
 from django.urls import reverse
 from django.conf import settings
-from mock import patch
+from unittest.mock import patch
 
 from tcms.core.files import able_to_delete_attachment
 from tcms.management.models import TestAttachment

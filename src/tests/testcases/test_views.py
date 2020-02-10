@@ -7,8 +7,7 @@ import xml.etree.ElementTree
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 from operator import attrgetter, itemgetter
-
-import mock
+from unittest.mock import patch
 
 from django import test
 from django.contrib.auth.models import User
@@ -62,13 +61,13 @@ class TestGetPlanFromRequest(test.TestCase):
         pk = plan_from_request_or_none(request, pk_enough=True)
         self.assertEqual(1, pk)
 
-    @mock.patch('tcms.testcases.views.get_object_or_404')
+    @patch('tcms.testcases.views.get_object_or_404')
     def test_get_plan_object_from_get_request(self, get_object_or_404):
         request = self.factory.get('/uri', data={'from_plan': 1})
         plan = plan_from_request_or_none(request)
         self.assertEqual(get_object_or_404.return_value, plan)
 
-    @mock.patch('tcms.testcases.views.get_object_or_404')
+    @patch('tcms.testcases.views.get_object_or_404')
     def test_get_plan_object_from_post_request(self, get_object_or_404):
         request = self.factory.post('/uri', data={'from_plan': 1})
         plan = plan_from_request_or_none(request)
@@ -84,14 +83,14 @@ class TestGetPlanFromRequest(test.TestCase):
         plan = plan_from_request_or_none(request)
         self.assertIsNone(plan)
 
-    @mock.patch('tcms.testcases.views.get_object_or_404')
+    @patch('tcms.testcases.views.get_object_or_404')
     def test_nonexisting_plan_id_from_get_request(self, get_object_or_404):
         get_object_or_404.side_effect = Http404
 
         request = self.factory.get('/uri', data={'from_plan': 1})
         self.assertRaises(Http404, plan_from_request_or_none, request)
 
-    @mock.patch('tcms.testcases.views.get_object_or_404')
+    @patch('tcms.testcases.views.get_object_or_404')
     def test_nonexisting_plan_id_from_post_request(self, get_object_or_404):
         get_object_or_404.side_effect = Http404
 
@@ -352,7 +351,7 @@ class TestOperateComponentView(BasePlanCase):
         data = json.loads(resp.content)
         self.assertIn('Cannot remove component', data['response'])
 
-    @mock.patch('tcms.testcases.models.TestCase.remove_component')
+    @patch('tcms.testcases.models.TestCase.remove_component')
     def test_case_remove_component_fails(self, remove_component):
         remove_component.side_effect = Exception
 
@@ -682,8 +681,8 @@ class TestOperateCaseTag(BasePlanCase):
             TestCaseTag.objects.filter(
                 case=self.case_3.pk, tag=self.tag_python.pk).exists())
 
-    @mock.patch('tcms.testcases.models.TestCase.remove_tag',
-                side_effect=ValueError('value error'))
+    @patch('tcms.testcases.models.TestCase.remove_tag',
+           side_effect=ValueError('value error'))
     def test_ensure_response_if_error_happens_when_remove_tag(self, remove_tag):
         # This test does not care about what tags are removed from which cases
         response = self.client.post(
@@ -1535,7 +1534,7 @@ class TestCloneCase(BasePlanCase):
                           orig_plan=self.orphan_plan,
                           copy_case=False)
 
-    @mock.patch('tcms.testplans.models.TestPlan.get_case_sortkey')
+    @patch('tcms.testplans.models.TestPlan.get_case_sortkey')
     def test_clone_to_same_plan(self, get_case_sortkey):
         # Make it easier to assert the new sort key.
         get_case_sortkey.return_value = 100
@@ -1783,7 +1782,7 @@ class TestAddComponent(BasePlanCase):
         data = json.loads(resp.content)
         self.assertIn('Cannot add component', data['response'])
 
-    @mock.patch('tcms.testcases.models.TestCase.add_component')
+    @patch('tcms.testcases.models.TestCase.add_component')
     def test_failed_to_add_component(self, add_component):
         add_component.side_effect = ValueError
 
@@ -1933,7 +1932,7 @@ class TestIssueManagement(BaseCaseRun):
             ['Invalid issue tracker that does not exist.'],
             error_messages)
 
-    @mock.patch('tcms.testcases.models.TestCase.add_issue')
+    @patch('tcms.testcases.models.TestCase.add_issue')
     def test_fail_if_case_add_issue_fails(self, add_issue):
         add_issue.side_effect = Exception('Something wrong')
 
@@ -2437,14 +2436,14 @@ class TestCaseSimpleCaseRunView(BaseCaseRun):
         cls.case_run_1.notes = 'Some notes'
         cls.case_run_1.save()
 
-        with mock.patch('django.utils.timezone.now') as mock_now:
+        with patch('django.utils.timezone.now') as mock_now:
             cls.submit_date = datetime(2020, 1, 22, 19, 47, 30)
             mock_now.return_value = cls.submit_date
             add_comment(
                 cls.tester, 'testruns.testcaserun', [cls.case_run_1.pk],
                 'first comment')
 
-        with mock.patch('django.utils.timezone.now') as mock_now:
+        with patch('django.utils.timezone.now') as mock_now:
             cls.submit_date_later = cls.submit_date + timedelta(minutes=10)
             mock_now.return_value = cls.submit_date_later
             add_comment(

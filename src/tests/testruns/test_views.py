@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from http import HTTPStatus
 from operator import attrgetter
 
-from mock import patch
+from unittest.mock import patch
 from xml.etree import ElementTree
 
 from django.db.models import Max

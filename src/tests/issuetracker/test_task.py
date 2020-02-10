@@ -2,7 +2,7 @@
 
 import unittest
 
-from mock import patch, Mock
+from unittest.mock import patch, Mock
 from tcms.issuetracker.task import bugzilla_external_track
 
 
