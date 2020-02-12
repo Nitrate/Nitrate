@@ -1,28 +1,28 @@
 # -*- coding: utf-8 -*-
 
-from django.conf.urls import url
+from django.urls import path
 from .. import views
 
 urlpatterns = [
-    url(r'^new/$', views.new, name='cases-new'),
-    url(r'^$', views.all, name='cases-all'),
-    url(r'^search/$', views.search, name='cases-search'),
-    url(r'^load-more/$', views.load_more_cases, name='cases-load-more'),
-    url(r'^ajax/$', views.ajax_search, name='cases-ajax-search'),
+    path('new/', views.new, name='cases-new'),
+    path('', views.all, name='cases-all'),
+    path('search/', views.search, name='cases-search'),
+    path('load-more/', views.load_more_cases, name='cases-load-more'),
+    path('ajax/', views.ajax_search, name='cases-ajax-search'),
 
-    url(r'^automated/$', views.ChangeCaseAutomatedPropertyView.as_view(),
-        name='cases-automated'),
+    path('automated/', views.ChangeCaseAutomatedPropertyView.as_view(),
+         name='cases-automated'),
 
-    url(r'^tag/$', views.tag, name='cases-tag'),
-    url(r'^category/$', views.category, name='cases-category'),
-    url(r'^clone/$', views.clone, name='cases-clone'),
-    url(r'^printable/$', views.printable, name='cases-printable'),
-    url(r'^export/$', views.export, name='cases-export'),
+    path('tag/', views.tag, name='cases-tag'),
+    path('category/', views.category, name='cases-category'),
+    path('clone/', views.clone, name='cases-clone'),
+    path('printable/', views.printable, name='cases-printable'),
+    path('export/', views.export, name='cases-export'),
 
-    url(r'^add-component/$', views.AddComponentView.as_view(),
-        name='cases-add-component'),
-    url(r'^remove-component/$', views.RemoveComponentView.as_view(),
-        name='cases-remove-component'),
-    url(r'^get-component-form/$', views.GetComponentFormView.as_view(),
-        name='cases-get-component-form'),
+    path('add-component/', views.AddComponentView.as_view(),
+         name='cases-add-component'),
+    path('remove-component/', views.RemoveComponentView.as_view(),
+         name='cases-remove-component'),
+    path('get-component-form/', views.GetComponentFormView.as_view(),
+         name='cases-get-component-form'),
 ]

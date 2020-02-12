@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from django.conf import settings
-from django.conf.urls import include, url
+from django.urls import include, path
 from django.contrib import admin
 from django.views.i18n import JavaScriptCatalog
 
 from tcms.testruns import views as testruns_views
-from tcms.testruns import ajax as testruns_ajax
 from tcms.core import ajax as tcms_core_ajax
 
 # XML RPC handler
@@ -14,40 +13,41 @@ from kobo.django.xmlrpc.views import XMLRPCHandlerFactory
 xmlrpc_handler = XMLRPCHandlerFactory('TCMS_XML_RPC')
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
-    url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
+    path('admin/', admin.site.urls),
+    path('admin/doc/', include('django.contrib.admindocs.urls')),
 
-    url(r'', include('tcms.core.urls')),
-    url(r'', include('tcms.management.urls')),
+    path('', include('tcms.core.urls')),
+    path('', include('tcms.management.urls')),
 
     # Testplans zone
-    url(r'^plan/', include('tcms.testplans.urls.plan_urls')),
-    url(r'^plans/', include('tcms.testplans.urls.plans_urls')),
+    path('plan/', include('tcms.testplans.urls.plan_urls')),
+    path('plans/', include('tcms.testplans.urls.plans_urls')),
 
     # Testcases zone
-    url(r'^case/', include('tcms.testcases.urls.case_urls')),
-    url(r'^cases/', include('tcms.testcases.urls.cases_urls')),
+    path('case/', include('tcms.testcases.urls.case_urls')),
+    path('cases/', include('tcms.testcases.urls.cases_urls')),
 
     # Testruns zone
-    url(r'^run/', include('tcms.testruns.urls.run_urls')),
-    url(r'^runs/', include('tcms.testruns.urls.runs_urls')),
+    path('run/', include('tcms.testruns.urls.run_urls')),
+    path('runs/', include('tcms.testruns.urls.runs_urls')),
 
-    url(r'^caseruns/$', testruns_views.caseruns),
+    path('caseruns/', testruns_views.caseruns),
 
-    url(r'^caserun/comment-many/', tcms_core_ajax.comment_case_runs,
-        name='caserun-comment-caseruns'),
+    path('caserun/comment-many/', tcms_core_ajax.comment_case_runs,
+         name='caserun-comment-caseruns'),
 
-    url(r'^accounts/', include('tcms.profiles.urls')),
-    url(r'^linkref/', include('tcms.linkreference.urls')),
-    url(r'^comments/', include('tcms.comments.urls')),
-    url(r'^advance-search/', include('tcms.search.urls')),
-    url(r'^report/', include('tcms.report.urls')),
-    url(r'^xmlrpc/$', xmlrpc_handler),
-    url(r'^tinymce/', include('tinymce.urls')),
+    path('accounts/', include('tcms.profiles.urls')),
+    path('linkref/', include('tcms.linkreference.urls')),
+    path('comments/', include('tcms.comments.urls')),
+    path('advance-search/', include('tcms.search.urls')),
+    path('report/', include('tcms.report.urls')),
+
+    path('xmlrpc/', xmlrpc_handler),
+    path('tinymce/', include('tinymce.urls')),
 
     # Using admin js without admin permission
     # refer: https://docs.djangoproject.com/en/1.6/topics/i18n/translation/#module-django.views.i18n
-    url(r'^jsi18n/$', JavaScriptCatalog.as_view(), name='javascript-catalog'),
+    path('jsi18n/', JavaScriptCatalog.as_view(), name='javascript-catalog'),
 ]
 
 # Debug zone
@@ -55,7 +55,7 @@ urlpatterns = [
 if settings.DEBUG:
     import debug_toolbar
     urlpatterns += [
-        url(r'^__debug__/', include(debug_toolbar.urls)),
+        path('__debug__/', include(debug_toolbar.urls)),
     ]
 
 # Overwrite default 500 handler

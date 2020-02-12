@@ -1,36 +1,36 @@
 # -*- coding: utf-8 -*-
 
-from django.conf.urls import url
+from django.urls import path
 
 from tcms.testruns import views
 from tcms.testruns import ajax
 
 urlpatterns = [
-    url(r'^new/$', views.new, name='run-new'),
-    url(r'^(?P<run_id>\d+)/$', views.get, name='run-get'),
-    url(r'^(?P<run_id>\d+)/clone/$', views.new_run_with_caseruns, name='run-clone'),
-    url(r'^(?P<run_id>\d+)/delete/$', views.delete, name='run-delete'),
-    url(r'^(?P<run_id>\d+)/edit/$', views.edit, name='run-edit'),
+    path('new/', views.new, name='run-new'),
+    path('<int:run_id>/', views.get, name='run-get'),
+    path('<int:run_id>/clone/', views.new_run_with_caseruns, name='run-clone'),
+    path('<int:run_id>/delete/', views.delete, name='run-delete'),
+    path('<int:run_id>/edit/', views.edit, name='run-edit'),
 
-    url(r'^(?P<run_id>\d+)/report/$', views.TestRunReportView.as_view(),
-        name='run-report'),
+    path('<int:run_id>/report/', views.TestRunReportView.as_view(),
+         name='run-report'),
 
-    url(r'^(?P<run_id>\d+)/ordercase/$', views.order_case, name='run-order-case'),
-    url(r'^(?P<run_id>\d+)/changestatus/$', views.ChangeRunStatusView.as_view(),
-        name='run-change-status'),
-    url(r'^(?P<run_id>\d+)/ordercaserun/$', views.order_case, name='run-order-caserun'),
-    url(r'^(?P<run_id>\d+)/removecaserun/$', views.RemoveCaseRunView.as_view(),
-        name='run-remove-caserun'),
+    path('<int:run_id>/ordercase/', views.order_case, name='run-order-case'),
+    path('<int:run_id>/changestatus/', views.ChangeRunStatusView.as_view(),
+         name='run-change-status'),
+    path('<int:run_id>/ordercaserun/', views.order_case, name='run-order-caserun'),
+    path('<int:run_id>/removecaserun/', views.RemoveCaseRunView.as_view(),
+         name='run-remove-caserun'),
 
-    url(r'^(?P<run_id>\d+)/assigncase/$', views.AddCasesToRunView.as_view(),
-        name='add-cases-to-run'),
+    path('<int:run_id>/assigncase/', views.AddCasesToRunView.as_view(),
+         name='add-cases-to-run'),
 
-    url(r'^(?P<run_id>\d+)/cc/$', views.cc, name='run-cc'),
-    url(r'^(?P<run_id>\d+)/update/$', views.update_case_run_text, name='run-update'),
-    url(r'^(?P<run_id>\d+)/export/$', views.export, name='run-export'),
+    path('<int:run_id>/cc/', views.cc, name='run-cc'),
+    path('<int:run_id>/update/', views.update_case_run_text, name='run-update'),
+    path('<int:run_id>/export/', views.export, name='run-export'),
 
-    url(r'^(?P<run_id>\d+)/case-run/(?P<case_run_id>\d+)/file-issue/$',
-        views.FileIssueForCaseRun.as_view(), name='run-caserun-file-issue'),
+    path('<int:run_id>/case-run/<int:case_run_id>/file-issue/',
+         views.FileIssueForCaseRun.as_view(), name='run-caserun-file-issue'),
 
-    url(r'^(?P<run_id>\d+)/issues/$', ajax.manage_case_run_issues, name='run-issues'),
+    path('<int:run_id>/issues/', ajax.manage_case_run_issues, name='run-issues'),
 ]
