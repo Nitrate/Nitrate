@@ -745,14 +745,6 @@ function changeCaseOrder2(parameters, callback) {
   });
 }
 
-// Deprecated. dead code.
-function changeCasePriority(object_pk, value, callback) {
-  var ctype = 'testcases.testcase';
-  var field = 'priority';
-  var vtype = 'int';
-  updateObject(ctype, object_pk, field, value, vtype, callback);
-}
-
 function addCaseIssue(form) {
   var addIssueForm = jQ(form);
   var issueKey = addIssueForm.find('input#issue_key').val().trim();
