@@ -189,13 +189,13 @@ Nitrate.TestPlans.TreeView = {
     var icon_expand = '<img src="/static/images/t2.gif" class="expand_icon js-toggle-icon">';
     var icon_collapse = '<img src="/static/images/t1.gif" class="collapse_icon js-toggle-icon">';
 
-    var elemLi = null;
+    var li = null;
 
     // Add the 'Up' button
     if (!data && this.data) {
       data = this.data;
       if (data && data[0].parent_id) {
-        elemLi = jQ('<li>');
+        li = jQ('<li>');
         var btn = jQ('<input>', {'type': 'button', 'value': 'Up'});
         li.html(btn);
         btn.bind('click', this.up);
@@ -210,7 +210,7 @@ Nitrate.TestPlans.TreeView = {
         continue;
       }
 
-      elemLi = jQ('<li>');
+      li = jQ('<li>');
       var title = '[<a href="' + data[i].get_url_path + '">' + data[i].pk + '</a>] ';
 
       if (data[i].num_children && data[i].children) {
