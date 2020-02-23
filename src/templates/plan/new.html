@@ -1,4 +1,5 @@
 {% extends "tcms_base.html" %}
+{% load static %}
 
 {% block subtitle %}Create new test plan{% endblock %}
 
@@ -10,8 +11,8 @@
 {% endblock %}
 
 {% block custom_javascript %}
-<script type="text/javascript" src="{{ STATIC_URL }}js/testplan_actions.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}admin/js/admin/RelatedObjectLookups.js"></script>
+<script type="text/javascript" src="{% static "js/testplan_actions.js" %}"></script>
+<script type="text/javascript" src="{% static "admin/js/admin/RelatedObjectLookups.js" %}"></script>
 <script type="text/javascript">
 Nitrate.Utils.after_page_load(Nitrate.TestPlans.Create.on_load);
 </script>
