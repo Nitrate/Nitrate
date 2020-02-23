@@ -43,7 +43,7 @@ def log_call(*args, **kwargs):
         namespace = namespace + '.'
 
     def decorator(function):
-        argspec = inspect.getargspec(function)
+        argspec = inspect.getfullargspec(function)
         # Each XMLRPC method has an HttpRequest argument as the first one,
         # it'll be ignored in the log.
         arg_names = argspec.args[1:]
