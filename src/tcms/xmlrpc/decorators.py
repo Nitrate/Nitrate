@@ -51,17 +51,19 @@ def log_call(*args, **kwargs):
         @wraps(function)
         def _new_function(request, *args, **kwargs):
             try:
-                known_args = zip(arg_names, args)
+                known_args = list(zip(arg_names, args))
                 unknown_args = list(enumerate(args[len(arg_names):]))
-                keyword_args = [(key, value) for key, value in
-                                kwargs.items()
-                                if (key, value) not in known_args]
+                keyword_args = [
+                    (key, value) for key, value in kwargs.items()
+                    if (key, value) not in known_args
+                ]
 
                 create_log(user=request.user,
                            method=f'{namespace}{function.__name__}',
                            args=str(known_args + unknown_args + keyword_args))
             except Exception:
-                pass
+                logger.exception(
+                    f'Fail to log XMLRPC call on {function.__name__}')
             return function(request, *args, **kwargs)
 
         return _new_function
