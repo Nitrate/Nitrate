@@ -1,5 +1,6 @@
 {% load comments %}
 {% load testcase_tags %}
+{% load static %}
 <form id="js-review-cases-nav-form" action="{% url "cases-all" %}" method="get">
 	<input type="hidden" name="template_type" value="review_case" />
 	<input type="hidden" name="case_sort_by" value="{{ REQUEST_CONTENTS.case_sort_by }}" />
