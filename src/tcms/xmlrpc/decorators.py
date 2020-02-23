@@ -28,7 +28,7 @@ else:
 def log_call(*args, **kwargs):
     """Log XMLRPC-specific invocations
 
-    This is copied from kobo.django.xmlrpc.decorators to add custom abitlities,
+    This is copied from kobo.django.xmlrpc.decorators to add custom abilities,
     so that we don't have to wait upstream to make the changes.
 
     Usage::
