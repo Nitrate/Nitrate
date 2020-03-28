@@ -663,7 +663,7 @@ function getCategorisByProductId(allow_blank, product_field, category_field) {
   jQ.ajax({
     'url': url,
     'type': 'GET',
-    'data': {'info_type': 'categories', 'product_id': product_id},
+    'data': {'info_type': 'categories', 'product_id': product_field.selectedOptions[0].value},
     'success': function (data, textStatus, jqXHR) {
       success(jqXHR);
     },
