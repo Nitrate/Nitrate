@@ -376,7 +376,7 @@ function resize_tinymce_editors() {
 Nitrate.TestCases.Create.on_load = function() {
   SelectFilter.init("id_component", "component", 0, "/static/admin/");
   //init category and components
-  getCategorisByProductId(false, jQ('#id_product')[0], jQ('#id_category')[0]);
+  getCategoriesByProductId(false, jQ('#id_product')[0], jQ('#id_category')[0]);
   var from = 'id_component_from';
   var to = 'id_component_to';
   var from_field = jQ('#' + from)[0];
@@ -403,7 +403,7 @@ Nitrate.TestCases.Create.on_load = function() {
         SelectBox.cache[from].push({value: node.value, text: node.text, displayed: 1});
       }
     });
-    getCategorisByProductId(false, jQ('#id_product')[0], jQ('#id_category')[0]);
+    getCategoriesByProductId(false, jQ('#id_product')[0], jQ('#id_category')[0]);
   });
 
   resize_tinymce_editors();

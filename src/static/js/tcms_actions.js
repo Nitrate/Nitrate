@@ -626,7 +626,13 @@ function getComponentsByProductId(allow_blank, product_field, component_field, c
   });
 }
 
-function getCategorisByProductId(allow_blank, product_field, category_field) {
+/**
+ * Refresh categories related to a product and fill in a SELECT element.
+ * @param {boolean} allow_blank - whether to add a special option item to SELECT as a blank selected option.
+ * @param product_field - the SELECT element.
+ * @param category_field - the category element to fill in.
+ */
+function getCategoriesByProductId(allow_blank, product_field, category_field) {
   if (!product_field) {
     product_field = jQ('#id_product')[0];
   }
@@ -645,31 +651,24 @@ function getCategorisByProductId(allow_blank, product_field, category_field) {
     return true;
   }
 
-  var success = function(t) {
-    let returnobj = jQ.parseJSON(t.responseText);
-
-    set_up_choices(
-      category_field,
-      returnobj.map(function(o) {
-        return [o.pk, o.fields.name];
-      }),
-      allow_blank
-    );
-  };
-
-  var failure = function(t) { alert("Update category failed"); };
-
-  var url = Nitrate.http.URLConf.reverse({ name: 'get_product_info' });
   jQ.ajax({
-    'url': url,
+    'url': Nitrate.http.URLConf.reverse({ name: 'get_product_info' }),
     'type': 'GET',
     'data': {'info_type': 'categories', 'product_id': product_field.selectedOptions[0].value},
     'success': function (data, textStatus, jqXHR) {
-      success(jqXHR);
+      let returnobj = jQ.parseJSON(jqXHR.responseText);
+
+      set_up_choices(
+        category_field,
+        returnobj.map(function(o) {
+          return [o.pk, o.fields.name];
+        }),
+        allow_blank
+      );
     },
     'error': function (jqXHR, textStatus, errorThrown) {
       if (jqXHR.readyState !== 0 && errorThrown !== "") {
-        failure();
+        alert("Update category failed");
       }
     }
   });
@@ -722,10 +721,10 @@ function bind_category_selector_to_product(allow_blank, load, product_field, cat
 
   if (product_field) {
     jQ(product_field).bind('change', function() {
-      getCategorisByProductId(allow_blank, product_field, category_field);
+      getCategoriesByProductId(allow_blank, product_field, category_field);
     });
     if (load) {
-      getCategorisByProductId(allow_blank);
+      getCategoriesByProductId(allow_blank);
     }
   }
 }
