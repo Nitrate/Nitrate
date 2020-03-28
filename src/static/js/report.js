@@ -48,7 +48,7 @@ Nitrate.Report.CustomSearch.on_load = function() {
   jQ('.build_link').bind('click', function(e) {
     e.stopPropagation();
     e.preventDefault();
-    var params = Nitrate.Utils.formSerialize(jQ('#id_form_search')[0]);
+    let params = Nitrate.Utils.formSerialize(jQ('#id_form_search')[0]);
     params.pk__in = jQ(this).siblings().eq(0).val();
 
     postToURL(this.href, params, 'get');

@@ -1,15 +1,14 @@
 function deleConfirm(attachment_id, home, plan_id) {
-  var url = "/management/deletefile/" + attachment_id + "?" + home + "=" + plan_id;
-  var answer = window.confirm("Arey you sure to delete the attachment?");
+  let answer = window.confirm("Arey you sure to delete the attachment?");
   if (!answer) {
     return false;
   }
 
   jQ.ajax({
-    'url': url,
+    'url': "/management/deletefile/" + attachment_id + "?" + home + "=" + plan_id,
     'type': 'GET',
     'success': function(data, textStatus, jqXHR) {
-      var returnobj = jQ.parseJSON(jqXHR.responseText);
+      let returnobj = jQ.parseJSON(jqXHR.responseText);
       if (returnobj.rc === 0) {
         jQ('#' + attachment_id).remove();
         jQ('#attachment_count').text(parseInt(jQ('#attachment_count').text()) - 1);

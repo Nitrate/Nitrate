@@ -1741,47 +1741,39 @@ function onTestCaseTagAddClick(options) {
 }
 
 function onTestCaseTagDeleteClick(options) {
-  var form = options.form;
-  var table = options.table;
-  var plan_id = options.planId;
-  var container = options.container;
-  var parameters = options.parameters;
+  let parameters = options.parameters;
 
   return function(e) {
-    var c = getDialog();
-    var selection = serializeCaseFromInputList2(table);
+    let c = getDialog();
+    let selection = serializeCaseFromInputList2(options.table);
     if (selection.empty()) {
       window.alert(default_messages.alert.no_case_selected);
       return false;
     }
-    var form_observe = function(e) {
+
+    renderTagForm(c, {case: selection.selectedCasesIds}, function (e) {
       e.stopPropagation();
       e.preventDefault();
 
-      // FIXME: params is not used.
-      // FIXME: passing this is correct?
-      var params = serializeFormData({
-        'form': this,
-        'zoneContainer': container,
-        'casesSelection': selection
-      });
-
-      var url = Nitrate.http.URLConf.reverse({ name: 'cases_tag' });
-      var afterTagDeletedCallback = function(response) {
-        var returnobj = jQ.parseJSON(response.responseText);
-        if (returnobj.rc !== 0) {
-          window.alert(returnobj.response);
-          return false;
-        }
-        // TODO: test whether params is enough instead of referencing parameters.
-        parameters['case'] = selection.selectedCasesIds;
-        constructPlanDetailsCasesZone(container, plan_id, parameters);
-        clearDialog(c);
-      };
-
-      updateCaseTag(url, params, afterTagDeletedCallback);
-    };
-    renderTagForm(c, {case: selection.selectedCasesIds}, form_observe);
+      updateCaseTag(
+        Nitrate.http.URLConf.reverse({name: 'cases_tag'}),
+        serializeFormData({
+          'form': this,
+          'zoneContainer': options.container,
+          'casesSelection': selection
+        }),
+        function (jqXHR) {
+          let returnobj = jQ.parseJSON(jqXHR.responseText);
+          if (returnobj.rc !== 0) {
+            window.alert(returnobj.response);
+            return false;
+          }
+          // TODO: test whether params is enough instead of referencing parameters.
+          parameters['case'] = selection.selectedCasesIds;
+          constructPlanDetailsCasesZone(options.container, options.planId, parameters);
+          clearDialog(c);
+        });
+    });
   };
 }
 
@@ -1789,35 +1781,32 @@ function onTestCaseTagDeleteClick(options) {
  * To change selected cases' sort number.
  */
 function onTestCaseSortNumberClick(options) {
-  var form = options.form;
-  var table = options.table;
-  var plan_id = options.planId;
-  var container = options.container;
-
   return function(e) {
-    // NOTE: new implemenation does not use testcaseplan.pk
-    var selection = serializeCaseFromInputList2(table);
+    // NOTE: new implementation does not use testcaseplan.pk
+    let selection = serializeCaseFromInputList2(options.table);
     if (selection.empty()) {
       window.alert(default_messages.alert.no_case_selected);
       return false;
     }
-    var postdata = serializeFormData({
-      'form': form,
-      'zoneContainer': container,
+
+    let postdata = serializeFormData({
+      'form': options.form,
+      'zoneContainer': options.container,
       'casesSelection': selection,
       'hashable': true
     });
 
-    var callback = function(response) {
-      var returnobj = jQ.parseJSON(response.responseText);
-      if (returnobj.rc !== 0) {
-        window.alert(returnobj.response);
-        return false;
-      }
-      postdata.case = selection.selectedCasesIds;
-      constructPlanDetailsCasesZone(container, plan_id, postdata);
-    };
-    changeCaseOrder2(postdata, callback);
+    changeCaseOrder2(
+      postdata,
+      function (jqXHR) {
+        let returnobj = jQ.parseJSON(jqXHR.responseText);
+        if (returnobj.rc !== 0) {
+          window.alert(returnobj.response);
+          return false;
+        }
+        postdata.case = selection.selectedCasesIds;
+        constructPlanDetailsCasesZone(options.container, options.planId, postdata);
+      });
   };
 }
 
@@ -1825,40 +1814,38 @@ function onTestCaseSortNumberClick(options) {
  * To change selected cases' category.
  */
 function onTestCaseCategoryClick(options) {
-  var form = options.form;
-  var table = options.table;
-  var plan_id = options.planId;
-  var container = options.container;
-  var parameters = options.parameters;
+  let container = options.container;
+  let parameters = options.parameters;
 
   return function(e) {
-    if (this.diabled) {
+    if (this.disabled) {
       return false;
     }
-    var c = getDialog();
-    var params = {
+    let c = getDialog();
+    let params = {
       /*
        * FIXME: the first time execute this code, it's unnecessary
        *        to pass selected cases' ids to the server.
        */
-      'case': serializeCaseFromInputList(table),
+      'case': serializeCaseFromInputList(options.table),
       'product': Nitrate.TestPlans.Instance.fields.product_id
     };
     if (params['case'] && params['case'].length === 0) {
       window.alert(default_messages.alert.no_case_selected);
       return false;
     }
-    var form_observe = function(e) {
+
+    renderCategoryForm(c, params, function (e) {
       e.stopPropagation();
       e.preventDefault();
 
-      var selection = serializeCaseFromInputList2(table);
+      let selection = serializeCaseFromInputList2(options.table);
       if (selection.empty()) {
         window.alert(default_messages.alert.no_case_selected);
         return false;
       }
 
-      var params = serializeFormData({
+      let params = serializeFormData({
         'form': this,
         'zoneContainer': container,
         'casesSelection': selection
@@ -1868,22 +1855,18 @@ function onTestCaseCategoryClick(options) {
         return false;
       }
 
-      var url = Nitrate.http.URLConf.reverse({ name: 'cases_category' });
-      var callback = function(response) {
-        var returnobj = jQ.parseJSON(response.responseText);
+      updateCaseCategory(Nitrate.http.URLConf.reverse({name: 'cases_category'}), params, function (jqXHR) {
+        let returnobj = jQ.parseJSON(jqXHR.responseText);
         if (returnobj.rc !== 0) {
           window.alert(returnobj.response);
           return false;
         }
         // TODO: whether can use params rather than parameters.
         parameters['case'] = selection.selectedCasesIds;
-        constructPlanDetailsCasesZone(container, plan_id, parameters);
+        constructPlanDetailsCasesZone(container, options.planId, parameters);
         clearDialog(c);
-      };
-
-      updateCaseCategory(url, params, callback);
-    };
-    renderCategoryForm(c, params, form_observe);
+      });
+    });
   };
 }
 
@@ -1891,54 +1874,43 @@ function onTestCaseCategoryClick(options) {
  * To change selected cases' default tester.
  */
 function onTestCaseDefaultTesterClick(options) {
-  var form = options.form;
-  var table = options.table;
-  var plan_id = options.planId;
-  var container = options.container;
-
   return function(e) {
-    var selection = serializeCaseFromInputList2(table);
+    let selection = serializeCaseFromInputList2(options.table);
     if (selection.empty()) {
       window.alert(default_messages.alert.no_case_selected);
       return false;
     }
 
-    var params = serializeFormData({
-      'form': form,
-      'zoneContainer': container,
+    let email_or_username = window.prompt('Please type new email or username');
+    if (!email_or_username) {
+      return false;
+    }
+
+    let params = serializeFormData({
+      'form': options.form,
+      'zoneContainer': options.container,
       'casesSelection': selection,
       'hashable': true
     });
     params.a = 'update';
 
-    var cbAfterDefaultTesterChanged = function(response) {
-      var returnobj = jQ.parseJSON(response.responseText);
-      if (returnobj.rc !== 0) {
-        window.alert(returnobj.response);
-        return false;
-      }
-      constructPlanDetailsCasesZone(container, plan_id, params);
-    };
-
-    var email_or_username = window.prompt('Please type new email or username');
-    if (!email_or_username) {
-      return false;
-    }
-
-    var update_default_tester_data = {
-      'from_plan': params.from_plan,
-      'case': params.case,
-      'target_field': 'default_tester',
-      'new_value': email_or_username
-    };
-
     jQ.ajax({
       'type': 'POST',
       'url': '/ajax/update/cases-default-tester/',
-      'data': update_default_tester_data,
+      'data': {
+        'from_plan': params.from_plan,
+        'case': params.case,
+        'target_field': 'default_tester',
+        'new_value': email_or_username
+      },
       'traditional': true,
       'success': function (data, textStatus, jqXHR) {
-        cbAfterDefaultTesterChanged(jqXHR);
+        let returnobj = jQ.parseJSON(jqXHR.responseText);
+        if (returnobj.rc !== 0) {
+          window.alert(returnobj.response);
+          return false;
+        }
+        constructPlanDetailsCasesZone(options.container, options.planId, params);
       },
       'error': function (jqXHR, textStatus, errorThrown) {
         json_failure(jqXHR);
@@ -1952,57 +1924,52 @@ function onTestCaseDefaultTesterClick(options) {
  * To change selected cases' component.
  */
 function onTestCaseComponentClick(options) {
-  var form = options.form;
-  var table = options.table;
-  var plan_id = options.planId;
-  var container = options.container;
-  var parameters = options.parameters;
+  let container = options.container;
+  let parameters = options.parameters;
 
   return function(e) {
-    if (this.diabled) {
+    if (this.disabled) {
       return false;
     }
-    var c = getDialog();
-    var params = {
+    let c = getDialog();
+    let params = {
       // FIXME: remove this line. It's unnecessary any more.
-      'case': serializeCaseFromInputList(table),
+      'case': serializeCaseFromInputList(options.table),
       'product': Nitrate.TestPlans.Instance.fields.product_id
     };
     if (params['case'] && params['case'].length === 0) {
       window.alert(default_messages.alert.no_case_selected);
       return false;
     }
-    var form_observe = function(e) {
+
+    renderComponentForm(c, params, function (e) {
       e.stopPropagation();
       e.preventDefault();
 
-      var selection = serializeCaseFromInputList2(table);
+      let selection = serializeCaseFromInputList2(options.table);
       if (selection.empty()) {
         window.alert(default_messages.alert.no_case_selected);
         return false;
       }
 
-      var params = serializeFormData({
-        'form': this,
-        'zoneContainer': container,
-        'casesSelection': selection
-      });
-
-      var cbAfterComponentChanged = function(response) {
-        let returnobj = jQ.parseJSON(response.responseText);
-        if (returnobj.rc !== 0) {
-          window.alert(returnobj.response);
-          return false;
-        }
-        parameters['case'] = selection.selectedCasesIds;
-        constructPlanDetailsCasesZone(container, plan_id, parameters);
-        clearDialog(c);
-      };
-
-      var url = '/cases/add-component/';
-      updateCaseComponent(url, params, cbAfterComponentChanged);
-    };
-    renderComponentForm(c, params, form_observe);
+      updateCaseComponent(
+        '/cases/add-component/',
+        serializeFormData({
+          'form': this,
+          'zoneContainer': container,
+          'casesSelection': selection
+        }),
+        function (jqXHR) {
+          let returnobj = jQ.parseJSON(jqXHR.responseText);
+          if (returnobj.rc !== 0) {
+            window.alert(returnobj.response);
+            return false;
+          }
+          parameters['case'] = selection.selectedCasesIds;
+          constructPlanDetailsCasesZone(container, options.planId, parameters);
+          clearDialog(c);
+        });
+    });
   };
 }
 
@@ -2011,55 +1978,46 @@ function onTestCaseComponentClick(options) {
  * To change selected cases' reviewer.
  */
 function onTestCaseReviewerClick(options) {
-  var form = options.form;
-  var table = options.table;
-  var plan_id = options.planId;
-  var container = options.container;
-  var parameters = options.parameters;
+  let form = options.form;
+  let parameters = options.parameters;
 
   return function(e) {
-    var selection = serializeCaseFromInputList2(table);
+    let selection = serializeCaseFromInputList2(options.table);
     if (selection.empty()) {
       window.alert(default_messages.alert.no_case_selected);
       return false;
     }
 
-    var email_or_username = window.prompt('Please type new email or username');
+    let email_or_username = window.prompt('Please type new email or username');
     if (!email_or_username) {
       return false;
     }
 
-    var postData = serializeFormData({
+    let postdata = serializeFormData({
       'form': form,
-      'zoneContainer': container,
+      'zoneContainer': options.container,
       'casesSelection': selection,
       'hashable': true
     });
-    postData.a = 'update';
-
-    var update_reviewer_data = {
-      'from_plan': postData.plan,
-      'case': postData.case,
-      'target_field': 'reviewer',
-      'new_value': email_or_username
-    };
-
-    var cbAfterReviewerChanged = function(response) {
-      var returnobj = jQ.parseJSON(response.responseText);
-      if (returnobj.rc !== 0) {
-        window.alert(returnobj.response);
-        return false;
-      }
-      constructPlanDetailsCasesZone(container, plan_id, parameters);
-    };
+    postdata.a = 'update';
 
     jQ.ajax({
       'type': 'POST',
       'url': '/ajax/update/cases-reviewer/',
-      'data': update_reviewer_data,
+      'data': {
+        'from_plan': postdata.plan,
+        'case': postdata.case,
+        'target_field': 'reviewer',
+        'new_value': email_or_username
+      },
       'traditional': true,
       'success': function (data, textStatus, jqXHR) {
-        cbAfterReviewerChanged(jqXHR);
+        let returnobj = jQ.parseJSON(jqXHR.responseText);
+        if (returnobj.rc !== 0) {
+          window.alert(returnobj.response);
+          return false;
+        }
+        constructPlanDetailsCasesZone(options.container, options.planId, parameters);
       },
       'error': function (jqXHR, textStatus, errorThrown) {
         json_failure(jqXHR);
@@ -2092,8 +2050,8 @@ function constructPlanDetailsCasesZoneCallback(options) {
     jQ(form).bind('submit', function(e) {
       e.stopPropagation();
       e.preventDefault();
-      var params = serializeCaseForm2(form, table, true, true);
-      constructPlanDetailsCasesZone(container, plan_id, params);
+      constructPlanDetailsCasesZone(
+        container, plan_id, serializeCaseForm2(form, table, true, true));
     });
 
     // Change the case backgroud after selected
@@ -2128,8 +2086,7 @@ function constructPlanDetailsCasesZoneCallback(options) {
 
     // Bind click the tags in tags list to tags field in filter
     if (jQ(form).parent().find('.taglist a[href="#testcases"]').length) {
-      var elements = jQ(form).parent().find('.taglist a');
-      elements.bind('click', function(e) {
+      jQ(form).parent().find('.taglist a').bind('click', function(e) {
         if (filter.style.display === 'none') {
           fireEvent(jQ(form).parent().find('.filtercase')[0], 'click');
         }
@@ -2145,16 +2102,15 @@ function constructPlanDetailsCasesZoneCallback(options) {
     if (jQ(form).parent().find('.btn_sort').length) {
       let element = jQ(form).parent().find('.btn_sort')[0];
       jQ(element).bind('click', function(e) {
-        var params = serialzeCaseForm(form, table);
-        var callback = function(t) {
-          var returnobj = jQ.parseJSON(t.responseText);
+        let params = serialzeCaseForm(form, table);
+        resortCasesDragAndDrop(container, this, form, table, params, function (jqXHR) {
+          let returnobj = jQ.parseJSON(jqXHR.responseText);
           if (returnobj.rc !== 0) {
-            window.alert(returnobj.reponse);
+            window.alert(returnobj.response);
           }
           params.a = 'initial';
           constructPlanDetailsCasesZone(container, plan_id, params);
-        };
-        resortCasesDragAndDrop(container, this, form, table, params, callback);
+        });
       });
     }
 
@@ -2236,12 +2192,9 @@ function constructPlanDetailsCasesZoneCallback(options) {
         Nitrate.TestPlans.Details.toggleSelectAllInput(jQ(container));
     });
 
-    var _bindEventsOnLoadedCases = bindEventsOnLoadedCases({
-      'cases_container': container,
-      'plan_id': plan_id,
-      'parameters': parameters
-    });
-    _bindEventsOnLoadedCases(table, form);
+    bindEventsOnLoadedCases(
+      {'cases_container': container, 'plan_id': plan_id, 'parameters': parameters}
+    )(table, form);
 
     // Register event handler for loading more cases.
     Nitrate.TestPlans.Details.observeLoadMore(container.id);
@@ -2269,9 +2222,8 @@ function constructPlanDetailsCasesZone(container, plan_id, parameters) {
     'parameters': postData
   });
 
-  var url = Nitrate.http.URLConf.reverse({ name: 'search_case' });
   jQ.ajax({
-    'url': url,
+    'url': Nitrate.http.URLConf.reverse({ name: 'search_case' }),
     'type': 'POST',
     'data': postData,
     'traditional': true,
@@ -2292,7 +2244,7 @@ function constructPlanDetailsCasesZone(container, plan_id, parameters) {
       var navForm = jQ('#js' + type + 'cases-nav-form')[0];
 
       jQ('#js' + type + 'case-menu, #js' + type + 'new-case').bind('click', function() {
-        var params = jQ(this).data('params');
+        let params = jQ(this).data('params');
         window.location.href = params[0] + '?from_plan=' + params[1];
       });
       jQ('#js' + type + 'import-case').bind('click', function() {

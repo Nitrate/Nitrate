@@ -190,7 +190,7 @@ Nitrate.TestCases.List.on_load = function() {
 };
 
 Nitrate.TestCases.Details.on_load = function() {
-  var case_id = Nitrate.TestCases.Instance.pk;
+  let case_id = Nitrate.TestCases.Instance.pk;
   constructTagZone(jQ('#tag')[0], { 'case': case_id });
   constructPlanCaseZone(jQ('#plan')[0], case_id);
   jQ('li.tab a').bind('click', function(i) {
@@ -209,117 +209,106 @@ Nitrate.TestCases.Details.on_load = function() {
       return false;
     }
 
-    var params = {
-      'case': Nitrate.TestCases.Instance.pk,
-      'product': Nitrate.TestCases.Instance.product_id,
-      'category': Nitrate.TestCases.Instance.category_id
-    };
+    renderComponentForm(
+      getDialog(),
+      {
+        'case': Nitrate.TestCases.Instance.pk,
+        'product': Nitrate.TestCases.Instance.product_id,
+        'category': Nitrate.TestCases.Instance.category_id
+      },
+      function (e) {
+        e.stopPropagation();
+        e.preventDefault();
 
-    var form_observe = function(e) {
-      e.stopPropagation();
-      e.preventDefault();
+        let params = Nitrate.Utils.formSerialize(this);
+        params['case'] = Nitrate.TestCases.Instance.pk;
 
-      var params = Nitrate.Utils.formSerialize(this);
-      params['case'] = Nitrate.TestCases.Instance.pk;
+        jQ.ajax({
+          'url': '/cases/add-component/',
+          'type': 'POST',
+          'data': params,
+          'traditional': true,
+          'success': function (data, textStatus, jqXHR) {
+            let returnobj = jQ.parseJSON(jqXHR.responseText);
 
-      var url = '/cases/add-component/';
-      var success = function(t) {
-        let returnobj = jQ.parseJSON(t.responseText);
-
-        if (parseInt(returnobj.rc) === 0) {
-          window.location.reload();
-        } else {
-          window.alert(returnobj.response);
-          return false;
-        }
-      };
-
-      jQ.ajax({
-        'url': url,
-        'type': 'POST',
-        'data': params,
-        'traditional': true,
-        'success': function (data, textStatus, jqXHR) {
-          success(jqXHR);
-        },
-        'error': function (jqXHR, textStatus, errorThrown) {
-          json_failure(jqXHR);
-        }
-      });
-    };
-
-    renderComponentForm(getDialog(), params, form_observe);
+            if (parseInt(returnobj.rc) === 0) {
+              window.location.reload();
+            } else {
+              window.alert(returnobj.response);
+              return false;
+            }
+          },
+          'error': function (jqXHR, textStatus, errorThrown) {
+            json_failure(jqXHR);
+          }
+        });
+      }
+    );
   });
 
   jQ('#id_remove_component').bind('click', function() {
-    var c = window.confirm(default_messages.confirm.remove_case_component);
-    if (!c) {
+    if (! window.confirm(default_messages.confirm.remove_case_component)) {
       return false;
     }
 
-    var params = Nitrate.Utils.formSerialize(this.form);
+    let params = Nitrate.Utils.formSerialize(this.form);
     if (!params.component) {
       return false;
     }
 
-    var parameters = {
+    updateCaseComponent(
+      '/cases/remove-component/',
+      {
         'case': Nitrate.TestCases.Instance.pk,
         'o_component': params.component
-    };
-
-    updateCaseComponent('/cases/remove-component/', parameters, json_success_refresh_page);
+      },
+      json_success_refresh_page);
   });
 
   jQ('.link_remove_component').bind('click', function(e) {
-    var c = window.confirm(default_messages.confirm.remove_case_component);
-    if (!c) {
+    if (! window.confirm(default_messages.confirm.remove_case_component)) {
       return false;
     }
 
-    var form = jQ('#id_form_case_component')[0];
-    var parameters = {
-      'case': Nitrate.TestCases.Instance.pk,
-      'o_component': jQ('input[name="component"]')[jQ('.link_remove_component').index(this)].value
-    };
-    updateCaseComponent('/cases/remove-component/', parameters, json_success_refresh_page);
+    updateCaseComponent(
+      '/cases/remove-component/',
+      {
+        'case': Nitrate.TestCases.Instance.pk,
+        'o_component': jQ('input[name="component"]')[jQ('.link_remove_component').index(this)].value
+      },
+      json_success_refresh_page);
   });
 
   bindSelectAllCheckbox(jQ('#id_checkbox_all_components')[0], jQ('#id_form_case_component')[0], 'component');
 
   var toggle_case_run = function(e) {
-    var c = jQ(this).parent(); // Container
-    var c_container = c.next(); // Content Containers
-    var case_id = c.find('input[name="case"]')[0].value;
-    var case_run_id = c.find('input[name="case_run"]')[0].value;
+    let c = jQ(this).parent(); // Container
     // FIXME: case_text_version is not used in the backend to show caserun
-    // information, notes, logs, and comments.
-    var case_text_version = c.find('input[name="case_text_version"]')[0].value;
-    var type = 'case_case_run';
+    //        information, notes, logs, and comments.
+    // let case_text_version = c.find('input[name="case_text_version"]')[0].value;
+    // let type = 'case_case_run';
     toggleSimpleCaseRunPane({
       caserunRowContainer: c,
-      expandPaneContainer: c_container,
-      caseId: case_id,
-      caserunId: case_run_id
+      expandPaneContainer: c.next(),
+      caseId: c.find('input[name="case"]')[0].value,
+      caserunId: c.find('input[name="case_run"]')[0].value
     });
   };
 
-  var toggle_case_runs_by_plan = function(e) {
-    var c = jQ(this).parent();
-    var case_id = c.find('input').first().val();
-    var params = {
-      'type' : 'case_run_list',
-      'container': c[0],
-      'c_container': c.next()[0],
-      'case_id': case_id,
-      'case_run_plan_id': c[0].id
-    };
-    var callback = function(e) {
+  jQ('.plan_expandable').bind('click', function (e) {
+    let c = jQ(this).parent();
+    toggleCaseRunsByPlan(
+      {
+        'type' : 'case_run_list',
+        'container': c[0],
+        'c_container': c.next()[0],
+        'case_id': c.find('input').first().val(),
+        'case_run_plan_id': c[0].id
+      },
+      function (e) {
       jQ('#table_case_runs_by_plan .expandable').bind('click', toggle_case_run);
-    };
-    toggleCaseRunsByPlan(params, callback);
-  };
-
-  jQ('.plan_expandable').bind('click', toggle_case_runs_by_plan);
+    });
+  });
 
   jQ('#testplans_table').dataTable({
     "bFilter": false,
@@ -344,12 +333,12 @@ Nitrate.TestCases.Details.on_load = function() {
   });
 
   jQ('.js-del-button').bind('click', function(event) {
-    var params = jQ(event.target).data('params');
+    let params = jQ(event.target).data('params');
     deleConfirm(params.attachmentId, params.source, params.sourceId);
   });
 
   jQ('.js-remove-issue').bind('click', function(event) {
-    var params = jQ(event.target).data('params');
+    let params = jQ(event.target).data('params');
     removeCaseIssue(params.issueKey, params.caseId, params.caseRunId);
   });
 
@@ -368,7 +357,7 @@ Nitrate.TestCases.Details.on_load = function() {
  */
 function resize_tinymce_editors() {
   jQ('.mceEditor .mceIframeContainer iframe').each(function(item) {
-    var elem = jQ(this);
+    let elem = jQ(this);
     elem.height(elem.height() + 1);
   });
 }
@@ -385,7 +374,7 @@ Nitrate.TestCases.Create.on_load = function() {
   getComponentsByProductId(false, jQ('#id_product')[0], from_field, function() {
     SelectBox.cache[from] = [];
     SelectBox.cache[to] = [];
-    for (var i = 0; (node = from_field.options[i]); i++) {
+    for (let i = 0; (node = from_field.options[i]); i++) {
       SelectBox.cache[from].push({value: node.value, text: node.text, displayed: 1});
     }
   });
@@ -434,12 +423,11 @@ Nitrate.TestCases.Clone.on_load = function() {
     e.stopPropagation();
     e.preventDefault();
 
-    var url = '/plans/';
-    var container = jQ('#id_plan_container');
+    let container = jQ('#id_plan_container');
     container.show();
 
     jQ.ajax({
-      'url': url,
+      'url': '/plans/',
       'type': 'GET',
       'data': jQ(this).serialize(),
       'success': function (data, textStatus, jqXHR) {
@@ -499,23 +487,22 @@ function toggleExpandArrow(options) {
  * Toggle simple caserun pane in Case Runs tab in case page.
  */
 function toggleSimpleCaseRunPane(options) {
-  var container = options.caserunRowContainer;
-  var content_container = options.expandPaneContainer;
-  var caseId = options.caseId;
-  var caserunId = options.caserunId;
+  options.expandPaneContainer.toggle();
 
-  content_container.toggle();
-
-  if (container.next().find('.ajax_loading').length) {
-    var url = '/case/' + caseId + '/caserun-simple-pane/';
-    var data = {case_run_id: caserunId};
-
-    jQ.get(url, data, function(data, textStatus) {
-      content_container.html(data);
-    },'html');
+  if (options.caserunRowContainer.next().find('.ajax_loading').length) {
+    jQ.get(
+      '/case/' + options.caseId + '/caserun-simple-pane/',
+      {case_run_id: options.caserunId},
+      function(data, textStatus) {
+        options.expandPaneContainer.html(data);
+      },
+      'html');
   }
 
-  toggleExpandArrow({ caseRowContainer: container, expandPaneContainer: content_container });
+  toggleExpandArrow({
+    caseRowContainer: options.caserunRowContainer,
+    expandPaneContainer: options.expandPaneContainer
+  });
 }
 
 function toggleTestCaseContents(template_type, container, content_container, object_pk, case_text_version, case_run_id, callback) {
@@ -532,16 +519,13 @@ function toggleTestCaseContents(template_type, container, content_container, obj
   jQ(content_container).toggle();
 
   if (jQ('#id_loading_' + object_pk).length) {
-    var url = Nitrate.http.URLConf.reverse({ name: 'case_details', arguments: {id: object_pk} });
-    var parameters = {
-      template_type: template_type,
-      case_text_version: case_text_version,
-      case_run_id: case_run_id
-    };
-
     jQ.ajax({
-      'url': url,
-      'data': parameters,
+      'url': Nitrate.http.URLConf.reverse({ name: 'case_details', arguments: {id: object_pk} }),
+      'data': {
+        template_type: template_type,
+        case_text_version: case_text_version,
+        case_run_id: case_run_id
+      },
       'success': function (data, textStatus, jqXHR) {
         jQ(content_container).html(data);
       },
@@ -558,54 +542,47 @@ function toggleTestCaseContents(template_type, container, content_container, obj
 }
 
 function changeTestCaseStatus(plan_id, selector, case_id, be_confirmed, was_confirmed) {
-  var value = selector.value;
-  var label = jQ(selector).prev()[0];
-
-  var success = function(data, textStatus, jqXHR) {
-    var returnobj = jQ.parseJSON(jqXHR.responseText);
-    if (returnobj.rc !== 0) {
-      window.alert(returnobj.response);
-      return false;
-    }
-    var case_status_id = returnobj.case_status_id;
-
-    for (var i = 0; (node = selector.options[i]); i++) {
-      if (node.selected) {
-        case_status = node.innerHTML;
-      }
-    }
-
-    // container should be got before selector is hidden.
-    var curCasesContainer = jQ(selector).parents('.tab_list');
-
-    jQ(label).html(case_status).show();
-    jQ(selector).hide();
-
-    if (be_confirmed || was_confirmed) {
-      jQ('#run_case_count').text(returnobj.run_case_count);
-      jQ('#case_count').text(returnobj.case_count);
-      jQ('#review_case_count').text(returnobj.review_case_count);
-      jQ('#' + case_id).next().remove();
-      jQ('#' + case_id).remove();
-
-      // We have to reload the other side of cases to reflect the status
-      // change. This MUST be done before selector is hided.
-      Nitrate.TestPlans.Details.reopenTabHelper(curCasesContainer);
-    }
-  };
-
-  var data = {
-    'from_plan': plan_id,
-    'case': case_id,
-    'target_field': 'case_status',
-    'new_value': value,
-  };
-
   jQ.ajax({
     'url': '/ajax/update/case-status/',
     'type': 'POST',
-    'data': data,
-    'success': success,
+    'data': {
+      'from_plan': plan_id,
+      'case': case_id,
+      'target_field': 'case_status',
+      'new_value': selector.value,
+    },
+    'success': function(data, textStatus, jqXHR) {
+      let returnobj = jQ.parseJSON(jqXHR.responseText);
+      if (returnobj.rc !== 0) {
+        window.alert(returnobj.response);
+        return false;
+      }
+
+      for (let i = 0; (node = selector.options[i]); i++) {
+        if (node.selected) {
+          case_status = node.innerHTML;
+        }
+      }
+
+      // container should be got before selector is hidden.
+      let curCasesContainer = jQ(selector).parents('.tab_list');
+
+      let label = jQ(selector).prev()[0];
+      jQ(label).html(case_status).show();
+      jQ(selector).hide();
+
+      if (be_confirmed || was_confirmed) {
+        jQ('#run_case_count').text(returnobj.run_case_count);
+        jQ('#case_count').text(returnobj.case_count);
+        jQ('#review_case_count').text(returnobj.review_case_count);
+        jQ('#' + case_id).next().remove();
+        jQ('#' + case_id).remove();
+
+        // We have to reload the other side of cases to reflect the status
+        // change. This MUST be done before selector is hided.
+        Nitrate.TestPlans.Details.reopenTabHelper(curCasesContainer);
+      }
+    },
     'error': function (jqXHR, textStatus, errorThrown) {
       json_failure(jqXHR);
     }
@@ -761,22 +738,6 @@ function addCaseIssue(form) {
     return false;
   }
 
-  var complete = function(t) {
-    jQ('.js-add-issue').bind('click', function(event) {
-      addCaseIssue(jQ('#id_case_issue_form')[0]);
-    });
-    jQ('.js-remove-issue').bind('click', function(event) {
-      var params = jQ(event.target).data('params');
-      removeCaseIssue(params.issueKey, params.caseId, params.caseRunId);
-    });
-    if (jQ('#response').length) {
-      window.alert(jQ('#response').html());
-      return false;
-    }
-
-    jQ('#case_issues_count').text(jQ('table#issues').attr('count'));
-  };
-
   jQ.ajax({
     url: form.action,
     // URL has the case ID, hence no need to pass case ID again through request
@@ -791,9 +752,23 @@ function addCaseIssue(form) {
       jQ('#issues').html(responseJSON.html);
     },
     complete: function (jqXHR, textStatus) {
-      if (textStatus !== 'error') {
-        complete();
+      if (textStatus === 'error') {
+        return;
       }
+
+      jQ('.js-add-issue').bind('click', function(event) {
+        addCaseIssue(jQ('#id_case_issue_form')[0]);
+      });
+      jQ('.js-remove-issue').bind('click', function(event) {
+        let params = jQ(event.target).data('params');
+        removeCaseIssue(params.issueKey, params.caseId, params.caseRunId);
+      });
+      if (jQ('#response').length) {
+        window.alert(jQ('#response').html());
+        return false;
+      }
+
+      jQ('#case_issues_count').text(jQ('table#issues').attr('count'));
     },
     error: function(jqXHR, textStatus, errorThrown) {
       json_failure(jqXHR);
@@ -806,35 +781,31 @@ function removeCaseIssue(issue_key, case_id, case_run_id) {
     return false;
   }
 
-  var parameteres = {
-    'handle': 'remove',
-    'issue_key': issue_key,
-    'case_run': case_run_id
-  };
-
-  var complete = function(t) {
-    jQ('.js-remove-issue').bind('click', function(event) {
-      var params = jQ(event.target).data('params');
-      removeCaseIssue(params.issueKey, params.caseId, params.caseRunId);
-    });
-    jQ('.js-add-issue').bind('click', function(event) {
-      addCaseIssue(jQ('#id_case_issue_form')[0]);
-    });
-
-    jQ('#case_issues_count').text(jQ('table#issues').attr('count'));
-  };
-
   jQ.ajax({
     'url': '/case/' + case_id + '/issue/',
     'type': 'GET',
-    'data': parameteres,
+    'data': {
+      'handle': 'remove',
+      'issue_key': issue_key,
+      'case_run': case_run_id
+    },
     'success': function (data, textStatus, jqXHR) {
       jQ('#issues').html(data.html);
     },
     'complete': function (jqXHR, textStatus) {
-      if (textStatus !== 'error') {
-        complete();
+      if (textStatus === 'error') {
+        return;
       }
+
+      jQ('.js-remove-issue').bind('click', function(event) {
+        let params = jQ(event.target).data('params');
+        removeCaseIssue(params.issueKey, params.caseId, params.caseRunId);
+      });
+      jQ('.js-add-issue').bind('click', function(event) {
+        addCaseIssue(jQ('#id_case_issue_form')[0]);
+      });
+
+      jQ('#case_issues_count').text(jQ('table#issues').attr('count'));
     },
     'error': function(jqXHR, textStatus, errorThrown) {
       json_failure(jqXHR);
@@ -843,66 +814,8 @@ function removeCaseIssue(issue_key, case_id, case_run_id) {
 }
 
 function constructPlanCaseZone(container, case_id, parameters) {
-  var complete = function(t) {
-    jQ('#id_plan_form').bind('submit', function(e) {
-      e.stopPropagation();
-      e.preventDefault();
-
-      var callback = function(e) {
-        e.stopPropagation();
-        e.preventDefault();
-        var plan_ids = Nitrate.Utils.formSerialize(this).plan_id;
-        if (!plan_ids) {
-          window.alert(default_messages.alert.no_plan_specified);
-          return false;
-        }
-
-        var p = { a: 'add', plan_id: plan_ids };
-        constructPlanCaseZone(container, case_id, p);
-        clearDialog();
-        jQ('#plan_count').text(jQ('table#testplans_table').attr('count'));
-      };
-
-      var p = Nitrate.Utils.formSerialize(this);
-      if (!p.pk__in) {
-        window.alert(default_messages.alert.no_plan_specified);
-        return false;
-      }
-
-      var url = Nitrate.http.URLConf.reverse({ name: 'case_plan', arguments: {id: case_id} });
-      previewPlan(p, url, callback);
-    });
-    if (jQ('#testplans_table td a').length) {
-      jQ('#testplans_table').dataTable({
-        "bFilter": false,
-        "bLengthChange": false,
-        "bPaginate": false,
-        "bInfo": false,
-        "bAutoWidth": false,
-        "aaSorting": [[ 0, "desc" ]],
-        "aoColumns": [
-          {"sType": "num-html"},
-          null,
-          {"sType": "html"},
-          {"sType": "html"},
-          {"sType": "html"},
-          null,
-          {"bSortable": false}
-        ]
-      });
-    }
-
-    jQ('.js-remove-plan').bind('click', function() {
-      var params = jQ(this).data('params');
-      removePlanFromCase(jQ('#testplans_table_wrapper')[0], params[0], params[1]);
-    });
-
-  };
-
-  var url = Nitrate.http.URLConf.reverse({ name: 'case_plan', arguments: {id: case_id} });
-
   jQ.ajax({
-    'url': url,
+    'url': Nitrate.http.URLConf.reverse({ name: 'case_plan', arguments: {id: case_id} }),
     'type': 'GET',
     'data': parameters,
     'traditional': true,
@@ -910,44 +823,79 @@ function constructPlanCaseZone(container, case_id, parameters) {
       jQ(container).html(data);
     },
     'complete': function (jqXHR, textStatus, errorThrown) {
-      complete();
+      jQ('#id_plan_form').bind('submit', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+
+        let params = Nitrate.Utils.formSerialize(this);
+        if (!params.pk__in) {
+          window.alert(default_messages.alert.no_plan_specified);
+          return false;
+        }
+
+        previewPlan(
+          params,
+          Nitrate.http.URLConf.reverse({ name: 'case_plan', arguments: {id: case_id} }),
+          function (e) {
+          e.stopPropagation();
+          e.preventDefault();
+          let plan_ids = Nitrate.Utils.formSerialize(this).plan_id;
+          if (!plan_ids) {
+            window.alert(default_messages.alert.no_plan_specified);
+            return false;
+          }
+
+          constructPlanCaseZone(container, case_id, {a: 'add', plan_id: plan_ids});
+          clearDialog();
+          jQ('#plan_count').text(jQ('table#testplans_table').attr('count'));
+        });
+      });
+
+      if (jQ('#testplans_table td a').length) {
+        jQ('#testplans_table').dataTable({
+          "bFilter": false,
+          "bLengthChange": false,
+          "bPaginate": false,
+          "bInfo": false,
+          "bAutoWidth": false,
+          "aaSorting": [[ 0, "desc" ]],
+          "aoColumns": [
+            {"sType": "num-html"},
+            null,
+            {"sType": "html"},
+            {"sType": "html"},
+            {"sType": "html"},
+            null,
+            {"bSortable": false}
+          ]
+        });
+      }
+
+      jQ('.js-remove-plan').bind('click', function() {
+        let params = jQ(this).data('params');
+        removePlanFromCase(jQ('#testplans_table_wrapper')[0], params[0], params[1]);
+      });
     }
   });
 }
 
 function removePlanFromCase(container, plan_id, case_id) {
-  var c = window.confirm('Are you sure to remove the case from this plan?');
-  if (!c) {
+  if (! window.confirm('Are you sure to remove the case from this plan?')) {
     return false;
   }
-  var parameters = { a: 'remove', plan_id: plan_id };
-  constructPlanCaseZone(container, case_id, parameters);
+  constructPlanCaseZone(container, case_id, {a: 'remove', plan_id: plan_id});
   jQ('#plan_count').text(jQ('table#testplans_table').attr('count'));
 }
 
 function renderTagForm(container, parameters, form_observe) {
-  var d = jQ('<div>');
+  let d = jQ('<div>');
   if (!container) {
     container = getDialog();
   }
   jQ(container).show();
 
-  var callback = function(t) {
-    var action = Nitrate.http.URLConf.reverse({ name: 'cases_tag' });
-    var notice = 'Press "Ctrl" to select multiple default component';
-    var h = jQ('<input>', {'type': 'hidden', 'name': 'a', 'value': 'remove'});
-    var a = jQ('<input>', {'type': 'submit', 'value': 'Remove'});
-    var c = jQ('<label>');
-    c.append(h);
-    c.append(a);
-    a.bind('click', function(e) { h.val('remove'); });
-    var f = constructForm(d.html(), action, form_observe, notice, c[0]);
-    jQ(container).html(f);
-    bind_component_selector_to_product(false, false, jQ('#id_product')[0], jQ('#id_o_component')[0]);
-  };
-  var url = Nitrate.http.URLConf.reverse({ name: 'cases_tag' });
   jQ.ajax({
-    'url': url,
+    'url': Nitrate.http.URLConf.reverse({ name: 'cases_tag' }),
     'type': 'POST',
     'data': parameters,
     'traditional': true,
@@ -958,33 +906,33 @@ function renderTagForm(container, parameters, form_observe) {
       html_failure();
     },
     'complete': function() {
-      callback();
+      let h = jQ('<input>', {'type': 'hidden', 'name': 'a', 'value': 'remove'});
+      let a = jQ('<input>', {'type': 'submit', 'value': 'Remove'});
+      let c = jQ('<label>');
+      c.append(h);
+      c.append(a);
+      a.bind('click', function(e) { h.val('remove'); });
+      jQ(container).html(constructForm(
+        d.html(),
+        Nitrate.http.URLConf.reverse({name: 'cases_tag'}),
+        form_observe,
+        'Press "Ctrl" to select multiple default component',
+        c[0])
+      );
+      bind_component_selector_to_product(false, false, jQ('#id_product')[0], jQ('#id_o_component')[0]);
     }
   });
 }
 
 function renderComponentForm(container, parameters, form_observe) {
-  var d = jQ('<div>');
+  let d = jQ('<div>');
   if (!container) {
     container = getDialog();
   }
   jQ(container).show();
 
-  var callback = function(t) {
-    var action = '/cases/add-component/';
-    var notice = 'Press "Ctrl" to select multiple default component';
-    var a = jQ('<input>', {'type': 'submit', 'value': 'Add'});
-    var c = jQ('<label>');
-    c.append(a);
-    var f = constructForm(d.html(), action, form_observe, notice, c[0]);
-    jQ(container).html(f);
-    bind_component_selector_to_product(false, false, jQ('#id_product')[0], jQ('#id_o_component')[0]);
-  };
-
-  var url = '/cases/get-component-form/';
-
   jQ.ajax({
-    'url': url,
+    'url': '/cases/get-component-form/',
     'type': 'POST',
     'data': parameters,
     'success': function (data, textStatus, jqXHR) {
@@ -994,37 +942,33 @@ function renderComponentForm(container, parameters, form_observe) {
       html_failure();
     },
     'complete': function() {
-      callback();
+      let a = jQ('<input>', {'type': 'submit', 'value': 'Add'});
+      let c = jQ('<label>');
+      c.append(a);
+      jQ(container).html(
+        constructForm(
+          d.html(),
+          '/cases/add-component/',
+          form_observe,
+          'Press "Ctrl" to select multiple default component',
+          c[0])
+      );
+      bind_component_selector_to_product(
+        false, false, jQ('#id_product')[0], jQ('#id_o_component')[0]);
     }
   });
 }
 
 
 function renderCategoryForm(container, parameters, form_observe) {
-  var d = jQ('<div>');
+  let d = jQ('<div>');
   if (!container) {
     container = getDialog();
   }
   jQ(container).show();
 
-  var callback = function(t) {
-    var action = Nitrate.http.URLConf.reverse({ name: 'cases_category' });
-    var notice = 'Select Category';
-    var h = jQ('<input>', {'type': 'hidden', 'name': 'a', 'value': 'add'});
-    var a = jQ('<input>', {'type': 'submit', 'value': 'Select'});
-    var c = jQ('<label>');
-    c.append(h);
-    c.append(a);
-    a.bind('click', function(e) { h.val('update'); });
-    var f = constructForm(d.html(), action, form_observe, notice, c[0]);
-    jQ(container).html(f);
-    bind_category_selector_to_product(false, false, jQ('#id_product')[0], jQ('#id_o_category')[0]);
-  };
-
-  var url = Nitrate.http.URLConf.reverse({ name: 'cases_category' });
-
   jQ.ajax({
-    'url': url,
+    'url': Nitrate.http.URLConf.reverse({ name: 'cases_category' }),
     'type': 'POST',
     'data': parameters,
     'success': function (data, textStatus, jqXHR) {
@@ -1034,7 +978,23 @@ function renderCategoryForm(container, parameters, form_observe) {
       html_failure();
     },
     'complete': function() {
-      callback();
+      let h = jQ('<input>', {'type': 'hidden', 'name': 'a', 'value': 'add'});
+      let a = jQ('<input>', {'type': 'submit', 'value': 'Select'});
+      let c = jQ('<label>');
+      c.append(h);
+      c.append(a);
+      a.bind('click', function(e) { h.val('update'); });
+      jQ(container).html(
+        constructForm(
+          d.html(),
+          Nitrate.http.URLConf.reverse({ name: 'cases_category' }),
+          form_observe,
+          'Select Category',
+          c[0]
+        )
+      );
+      bind_category_selector_to_product(
+        false, false, jQ('#id_product')[0], jQ('#id_o_category')[0]);
     }
   });
 }
@@ -1088,11 +1048,12 @@ function updateCaseCategory(url, parameters, callback) {
 function constructCaseAutomatedForm(container, callback, options) {
   jQ(container).html(getAjaxLoading());
   jQ(container).show();
-  var d = jQ('<div>', { 'class': 'automated_form' })[0];
-  var c = function(t) {
-    var returntext = t.responseText;
-    var action = '/cases/automated/';
-    var form_observe = function(e) {
+  let d = jQ('<div>', { 'class': 'automated_form' })[0];
+
+  getForm(d, 'testcases.CaseAutomatedForm', {}, function (jqXHR) {
+    let returntext = jqXHR.responseText;
+
+    let form_observe = function(e) {
       e.stopPropagation();
       e.preventDefault();
 
@@ -1101,7 +1062,7 @@ function constructCaseAutomatedForm(container, callback, options) {
         return false;
       }
 
-      var params = serializeFormData({
+      let params = serializeFormData({
         form: this,
         zoneContainer: options.zoneContainer,
         casesSelection: options.casesSelection
@@ -1112,9 +1073,8 @@ function constructCaseAutomatedForm(container, callback, options) {
        * only value `change', here.
        */
       params = params.replace(/a=\w*/, 'a=change');
-      var url = Nitrate.http.URLConf.reverse({ name: 'cases_automated' });
       jQ.ajax({
-        'url': url,
+        'url': Nitrate.http.URLConf.reverse({ name: 'cases_automated' }),
         'type': 'POST',
         'data': params,
         'success': function (data, textStatus, jqXHR) {
@@ -1122,18 +1082,18 @@ function constructCaseAutomatedForm(container, callback, options) {
         }
       });
     };
-    var f = constructForm(returntext, action, form_observe);
-    jQ(container).html(f);
-  };
 
-  getForm(d, 'testcases.CaseAutomatedForm', {}, c);
+    jQ(container).html(
+      constructForm(returntext, '/cases/automated/', form_observe)
+    );
+  });
 }
 
-/*
+/**
  * Serialize selected cases' Ids.
  *
  * This function inherits the ability from original definition named
- * serializeCaseFromInputList, except that it also collects whehter all cases
+ * serializeCaseFromInputList, except that it also collects whether all cases
  * are also selected even through not all of cases are displayed.
  *
  * Return value is an object of dictionary holding two properties. `selectAll'
@@ -1145,24 +1105,23 @@ function constructCaseAutomatedForm(container, callback, options) {
  * proper value.
  */
 function serializeCaseFromInputList2(table) {
-  var selectAll = jQ(table).parent().find('.js-cases-select-all input[type="checkbox"]')[0].checked;
-  var case_ids = [];
-  var checkedCases = jQ(table).find('input[name="case"]:checked');
+  let selectAll = jQ(table).parent().find('.js-cases-select-all input[type="checkbox"]')[0].checked;
+  let case_ids = [];
+  let checkedCases = jQ(table).find('input[name="case"]:checked');
   checkedCases.each(function(i, checkedCase) {
     if (typeof checkedCase.value === 'string') {
       case_ids.push(checkedCase.value);
     }
   });
-  var selectedCasesIds = case_ids;
 
   return new Nitrate.TestCases.CasesSelection({
-    selectedCasesIds: selectedCasesIds,
+    selectedCasesIds: case_ids,
     selectAll: selectAll
   });
 }
 
 function serializeCaseFromInputList(table) {
-  var case_ids = [];
+  let case_ids = [];
   jQ(table).parent().find('input[name="case"]:checked').each(function(i) {
     if (typeof this.value === 'string') {
       case_ids.push(this.value);
@@ -1171,11 +1130,11 @@ function serializeCaseFromInputList(table) {
   return case_ids;
 }
 
-/*
- * Serialize criterias for searching cases.
+/**
+ * Serialize criteria for searching cases.
  *
  * Arguments:
- * - form: the form from which criterias are searched
+ * - form: the form from which criteria are searched
  * - table: the table containing all loaded cases
  * - serialized: whether to serialize the form data. true is default, if not
  *   passed.
@@ -1192,7 +1151,7 @@ function serialzeCaseForm(form, table, serialized, exclude_cases) {
   if (exclude_cases === undefined) {
     exclude_cases = false;
   }
-  var data;
+  let data;
   if (serialized) {
     data = Nitrate.Utils.formSerialize(form);
   } else {
@@ -1205,7 +1164,7 @@ function serialzeCaseForm(form, table, serialized, exclude_cases) {
   return data;
 }
 
-/*
+/**
  * New implementation of serialzeCaseForm to allow to choose whether the
  * TestCases' Ids are necessary to be serialized.
  *
@@ -1215,13 +1174,13 @@ function serializeCaseForm2(form, table, serialized, exclude_cases) {
   if (typeof serialized !== 'boolean') {
     serialized = true;
   }
-  var data;
+  let data;
   if (serialized) {
     data = Nitrate.Utils.formSerialize(form);
   } else {
     data = jQ(form).serialize();
   }
-  var _exclude = exclude_cases === undefined ? false : exclude_cases;
+  let _exclude = exclude_cases === undefined ? false : exclude_cases;
   if (!_exclude) {
     data['case'] = serializeCaseFromInputList(table);
   }
@@ -1230,11 +1189,11 @@ function serializeCaseForm2(form, table, serialized, exclude_cases) {
 
 function toggleDiv(link, divId) {
   link = jQ(link);
-  var div = jQ('#' + divId);
-  var show = 'Show All';
-  var hide = 'Hide All';
+  let div = jQ('#' + divId);
+  let show = 'Show All';
+  let hide = 'Hide All';
   div.toggle();
-  var text = link.html();
+  let text = link.html();
   if (text !== show) {
     link.html(show);
   } else {
@@ -1249,15 +1208,15 @@ function addCaseIssueViaEnterKey(element, e) {
 }
 
 function toggleCaseRunsByPlan(params, callback) {
-  var container = params.container;
-  var content_container = params.c_container;
-  var case_run_plan_id = params.case_run_plan_id;
-  var case_id = params.case_id;
+  let container = params.container;
+
   if (typeof container === 'string') {
     container = jQ('#' + container);
   } else {
     container = jQ(container);
   }
+
+  let content_container = params.c_container;
 
   if(typeof content_container === 'string') {
     content_container = jQ('#' + content_container);
@@ -1267,14 +1226,11 @@ function toggleCaseRunsByPlan(params, callback) {
 
   content_container.toggle();
 
-  if (jQ('#id_loading_' + case_run_plan_id).length) {
-    var url = '/case/' + case_id + '/caserun-list-pane/';
-    var parameters = { plan_id: case_run_plan_id };
-
+  if (jQ('#id_loading_' + params.case_run_plan_id).length) {
     jQ.ajax({
-      'url': url,
+      'url': '/case/' + params.case_id + '/caserun-list-pane/',
       'type': 'GET',
-      'data': parameters,
+      'data': {plan_id: params.case_run_plan_id},
       'success': function (data, textStatus, jqXHR) {
         content_container.html(data);
       },
@@ -1285,10 +1241,9 @@ function toggleCaseRunsByPlan(params, callback) {
         callback();
       }
     });
-
   }
 
-  var blind_icon = container.find('img').first();
+  let blind_icon = container.find('img').first();
   if (content_container.is(':hidden')) {
     blind_icon.removeClass('collapse').addClass('expand').attr('src', '/static/images/t1.gif');
   } else {

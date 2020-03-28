@@ -89,7 +89,7 @@ function showTheNumberOfCaseRunIssues(newIssuesCount, runId) {
     //       the run statistics section with an AJAX call to server-side API.
     //       This could be also a good point for creating a reusable run
     //       statistics API for general use.
-    var runReportUrl = '/run/' + runId + '/report/#issues';
+    let runReportUrl = '/run/' + runId + '/report/#issues';
     jQ('div#run-statistics')
       .find('span#total_run_issues_count')
       .html('<a title="Show All Issues" href=' + runReportUrl + '>Issues [' + newIssuesCount + ']</a>');
@@ -98,7 +98,7 @@ function showTheNumberOfCaseRunIssues(newIssuesCount, runId) {
 
 
 function updateIssuesCountInCaseRunRow(caseRunRow, caseRunIssuesCount) {
-  var caseRunIssuesCountSpan = jQ(caseRunRow).find('span[id$="_case_issues_count"]');
+  let caseRunIssuesCountSpan = jQ(caseRunRow).find('span[id$="_case_issues_count"]');
   caseRunIssuesCountSpan.text(caseRunIssuesCount);
   if (caseRunIssuesCount > 0) {
     caseRunIssuesCountSpan.addClass('have_issue');
@@ -138,7 +138,7 @@ function AddIssueDialog() {
           return;
         }
 
-        var data = {
+        let data = {
           'a': 'add',
           'issue_key': issueKey,
           'tracker': issueTrackerID,
@@ -165,14 +165,14 @@ function AddIssueDialog() {
             // After succeeding to add issue, we close the add dialog.
             dialog.dialog('close');
 
-            var reloadInfo = dialog.dialog('option', 'reloadInfo');
+            let reloadInfo = dialog.dialog('option', 'reloadInfo');
 
             // TODO: consider now to reload whole page.
             //       consider with the else section to update partial page
             //       content and reload expanded case run details.
 
             if (reloadInfo.reloadPage) {
-              reloadWindow();
+              window.location.reload();
             } else {
               // When add issue to a case run, only need to reload the updated case run.
               // Update issues count associated with just updated case run
@@ -272,13 +272,12 @@ Nitrate.TestRuns.Details.on_load = function() {
   });
 
   // Observe the case run toggle and the comment form
-  var toggle_case_run = function(e) {
+  jQ('.expandable').bind('click', function (e) {
     var c = jQ(this).parent(); // Case run row
     var c_container = c.next(); // Next row to show case run details
     var case_id = c.find('input[name="case"]')[0].value;
     var case_run_id = c.find('input[name="case_run"]')[0].value;
     var case_text_version = c.find('input[name="case_text_version"]')[0].value;
-    var type = 'case_run';
     var callback = function(t) {
       // Observe the update case run stauts/comment form
       c_container.parent().find('.update_form')
@@ -341,8 +340,7 @@ Nitrate.TestRuns.Details.on_load = function() {
       'caserunRowContainer': c,
       'expandPaneContainer': c_container
     });
-  };
-  jQ('.expandable').bind('click', toggle_case_run);
+  });
 
   // Auto show the case run contents.
   if (window.location.hash !== '') {
@@ -593,7 +591,7 @@ Nitrate.TestRuns.AssignCase.on_load = function() {
   });
 };
 
-var updateCaseRunStatus = function(e) {
+function updateCaseRunStatus(e) {
   e.stopPropagation();
   e.preventDefault();
   var container = jQ(this).parents().eq(3);
@@ -672,7 +670,7 @@ var updateCaseRunStatus = function(e) {
     container.html(ajax_loading);
     updateRunStatus(ctype, object_pk, field, value, vtype, callback);
   }
-};
+}
 
 function changeCaseRunOrder(run_id, case_run_id, sort_key) {
   var nsk = window.prompt('Enter your new order number', sort_key); // New sort key
@@ -717,9 +715,7 @@ function changeCaseRunOrder(run_id, case_run_id, sort_key) {
 }
 
 function taggleSortCaseRun(event) {
-  var element = event.target;
-
-  if (element.innerHTML !== 'Done Sorting') {
+  if (event.target.innerHTML !== 'Done Sorting') {
     jQ('#id_blind_all_link').remove(); // Remove blind all link
 
     // Remove case text
@@ -753,9 +749,9 @@ function taggleSortCaseRun(event) {
 }
 
 function constructCaseRunZone(container, title_container, case_id) {
-  var link = jQ(title_container).find('.expandable')[0];
+  let link = jQ(title_container).find('.expandable')[0];
   if (container) {
-    var td = jQ('<td>', {'id': 'id_loading_' + case_id, 'colspan': 12 });
+    let td = jQ('<td>', {'id': 'id_loading_' + case_id, 'colspan': 12});
     td.html(getAjaxLoading());
     jQ(container).html(td);
   }
@@ -782,9 +778,9 @@ function removeIssueFromCaseRuns(removeIssueInfo, reloadInfo) {
     traditional: true,
     success: function(responseJSON, textStatus, jqXHR) {
       if (reloadInfo.reloadPage) {
-        reloadWindow();
+        window.location.reload();
       } else {
-        var caseRunIssuesCount = responseJSON.caserun_issues_count[removeIssueInfo.caseRunId];
+        let caseRunIssuesCount = responseJSON.caserun_issues_count[removeIssueInfo.caseRunId];
         updateIssuesCountInCaseRunRow(reloadInfo.caseRunRow, caseRunIssuesCount);
         showTheNumberOfCaseRunIssues(responseJSON.run_issues_count, removeIssueInfo.runId);
         constructCaseRunZone(
@@ -806,57 +802,50 @@ function delCaseRun(run_id) {
   }
 }
 
-function editValue(form,hidebox,selectid,submitid) {
+function editValue(form, hidebox, selectid, submitid) {
   jQ('#' + hidebox).hide();
   jQ('#' + selectid).show();
   jQ('#' + submitid).show();
 
-  var data = Nitrate.Utils.formSerialize(form);
-  var env_property_id = data.env_property_id;
+  let data = Nitrate.Utils.formSerialize(form);
+  let env_property_id = data.env_property_id;
 
-  var success = function(t) {
-    var returnobj = jQ.parseJSON(t.responseText);
-    var current_value = jQ("input[type=hidden][name=current_run_env]:eq(0)", form);
-    var excludeValues = [];
-    jQ("input[type=hidden][name=current_run_env]").each(function(index, element) {
-      if (element.value !== current_value.val()) {
-        excludeValues.push(window.parseInt(element.value));
-      }
-      return true;
-    });
-
-    var values = [];
-    jQ.each(returnobj, function(index, value){
-      if (jQ.inArray(value.pk, excludeValues) < 0) {
-        values.push([value.pk, value.fields.value]);
-      }
-      return true;
-    });
-
-    set_up_choices(jQ('#' + selectid)[0], values, 0);
-  };
-
-  var failure = function(t) { window.alert("Update values failed"); };
-
-  var url = '/management/getinfo/';
   jQ.ajax({
-    'url': url,
+    'url': '/management/getinfo/',
     'type': 'GET',
     'data': {'info_type': 'env_values', 'env_property_id': env_property_id},
     'success': function(data, textStatus, jqXHR) {
-      success(jqXHR);
+      let returnobj = jQ.parseJSON(jqXHR.responseText);
+      let current_value = jQ("input[type=hidden][name=current_run_env]:eq(0)", form);
+      let excludeValues = [];
+      jQ("input[type=hidden][name=current_run_env]").each(function(index, element) {
+        if (element.value !== current_value.val()) {
+          excludeValues.push(window.parseInt(element.value));
+        }
+        return true;
+      });
+
+      let values = [];
+      jQ.each(returnobj, function(index, value) {
+        if (jQ.inArray(value.pk, excludeValues) < 0) {
+          values.push([value.pk, value.fields.value]);
+        }
+        return true;
+      });
+
+      set_up_choices(jQ('#' + selectid)[0], values, 0);
     },
     'error': function(jqXHR, textStatus, errorThrown) {
-      failure();
+      window.alert("Update values failed");
     }
   });
 }
 
-function submitValue(run_id,value,hidebox,select_field,submitid) {
-  var new_value = select_field.options[select_field.selectedIndex].innerHTML;
-  var old_value = jQ(select_field).prev().prev().val();
+function submitValue(run_id, value, hidebox, select_field, submitid) {
+  let new_value = select_field.options[select_field.selectedIndex].innerHTML;
+  let old_value = jQ(select_field).prev().prev().val();
 
-  var dup_values = [];
+  let dup_values = [];
   jQ("input[type=hidden][name=current_run_env]").each(function(index, element) {
     if (element.value !== old_value) {
         dup_values.push(element.value);
@@ -868,31 +857,28 @@ function submitValue(run_id,value,hidebox,select_field,submitid) {
     return false;
   }
 
-  var success = function(t) {
-    var returnobj = jQ.parseJSON(t.responseText);
-    if (parseInt(returnobj.rc) === 0) {
-      jQ('#' + hidebox).html(new_value).show();
-      jQ(select_field).hide();
-      jQ('#' + submitid).hide();
-      jQ(select_field).prev().prev().val(select_field.value);
-    } else {
-      window.alert(returnobj.response);
-    }
-  };
-
-  var failure = function(t) { window.alert("Edit value failed"); };
-
-  var url  = '/runs/env_value/';
   jQ.ajax({
-    'url': url,
+    'url': '/runs/env_value/',
     'type': 'GET',
-    'data': {'a': 'change', 'old_env_value_id': old_value,
-      'new_env_value_id': select_field.value, 'run_id': run_id},
+    'data': {
+      'a': 'change',
+      'old_env_value_id': old_value,
+      'new_env_value_id': select_field.value,
+      'run_id': run_id
+    },
     'success': function(data, textStatus, jqXHR) {
-      success(jqXHR);
+      let returnobj = jQ.parseJSON(jqXHR.responseText);
+      if (parseInt(returnobj.rc) === 0) {
+        jQ('#' + hidebox).html(new_value).show();
+        jQ(select_field).hide();
+        jQ('#' + submitid).hide();
+        jQ(select_field).prev().prev().val(select_field.value);
+      } else {
+        window.alert(returnobj.response);
+      }
     },
     'error': function(jqXHR, textStatus, errorThrown) {
-      failure();
+      window.alert("Edit value failed");
     }
   });
 }
@@ -902,63 +888,56 @@ function removeProperty(run_id, element) {
     return false;
   }
 
-  var parent = jQ(element).closest("form");
-  var emptySelf = jQ(element).closest("li");
-  var env_value_id = jQ("input[type=hidden][name=current_run_env]", parent).get(0).value;
+  let parent = jQ(element).closest("form");
+  let emptySelf = jQ(element).closest("li");
+  let env_value_id = jQ("input[type=hidden][name=current_run_env]", parent).get(0).value;
 
-  var success = function(t) {
-    var returnobj = jQ.parseJSON(t.responseText);
-    if (parseInt(returnobj.rc) === 0) {
-      emptySelf.remove();
-    } else {
-      window.alert(returnobj.response);
-    }
-  };
-
-  var failure = function(t) { window.alert("Edit value failed"); };
-  var url = '/runs/env_value/';
   jQ.ajax({
-    'url': url,
+    'url': '/runs/env_value/',
     'type': 'GET',
-    'data': {'a': 'remove', 'info_type': 'env_values', 'env_value_id': env_value_id, 'run_id': run_id},
+    'data': {
+      'a': 'remove',
+      'info_type': 'env_values',
+      'env_value_id': env_value_id,
+      'run_id': run_id
+    },
     'success': function(data, textStatus, jqXHR) {
-      success(jqXHR);
+      let returnobj = jQ.parseJSON(jqXHR.responseText);
+      if (parseInt(returnobj.rc) === 0) {
+        emptySelf.remove();
+      } else {
+        window.alert(returnobj.response);
+      }
     },
     'error': function(jqXHR, textStatus, errorThrown) {
-      failure();
+      window.alert("Edit value failed");
     }
   });
 }
 
 function addProperty(run_id,env_group_id) {
-  var template = Handlebars.compile(jQ('#add_property_template').html());
+  let template = Handlebars.compile(jQ('#add_property_template').html());
   jQ('#dialog').html(template())
     .find('.js-close-button, .js-cancel-button').bind('click', function() {
       jQ('#dialog').hide();
     })
     .end().show();
 
-  var success = function(t) {
-    var returnobj = jQ.parseJSON(t.responseText);
-    var values = returnobj.map(function(o) {
-      return [o.pk, o.fields.name];
-    });
 
-    set_up_choices(jQ('#id_add_env_property')[0], values, 0);
-  };
-
-  var failure = function(t) { window.alert("Update properties failed"); };
-
-  var url = '/management/getinfo/';
   jQ.ajax({
-    'url': url,
+    'url': '/management/getinfo/',
     'type': 'GET',
     'data': {'info_type': 'env_properties', 'env_group_id': env_group_id},
     'success': function (data, textStatus, jqXHR) {
-      success(jqXHR);
+      let returnobj = jQ.parseJSON(jqXHR.responseText);
+      let values = returnobj.map(function(o) {
+        return [o.pk, o.fields.name];
+      });
+
+      set_up_choices(jQ('#id_add_env_property')[0], values, 0);
     },
     'error': function (jqXHR, textStatus, errorThrown) {
-      failure();
+      window.alert("Update properties failed");
     }
   });
 
@@ -971,82 +950,69 @@ function addProperty(run_id,env_group_id) {
   });
 }
 
-function change_value(env_property_id,selectid) {
-  var success = function(t) {
-    var returnobj = jQ.parseJSON(t.responseText);
-    var values = returnobj.map(function(o) {
-      return [o.pk, o.fields.value];
-    });
-
-    set_up_choices(jQ('#' + selectid)[0], values, 0);
-  };
-
-  var failure = function(t) { window.alert("Update values failed"); };
-
-  var url = '/management/getinfo/';
+function change_value(env_property_id, selectid) {
   jQ.ajax({
-    'url': url,
+    'url': '/management/getinfo/',
     'type': 'GET',
     'data': {'info_type': 'env_values', 'env_property_id': env_property_id},
     'success': function (data, textStatus, jqXHR) {
-      success(jqXHR);
+      let returnobj = jQ.parseJSON(jqXHR.responseText);
+      let values = returnobj.map(function(o) {
+        return [o.pk, o.fields.value];
+      });
+
+      set_up_choices(jQ('#' + selectid)[0], values, 0);
     },
     'error': function (jqXHR, textStatus, errorThrown) {
-      failure();
+      window.alert("Update values failed");
     }
   });
 }
 
 function add_property_to_env(run_id, env_value_id) {
-  var callback = function(data, textStatus, jqXHR) {
-    jQ('#dialog').hide();
-    if (parseInt(data.rc) === 0) {
-      jQ("#env_area").html(data.fragment);
-      jQ('.js-edit-property').bind('click', function() {
-        var params = jQ(this).data('params');
-        editValue(jQ(this).parents('form.js-run-env')[0], params[0], params[1], params[2]);
-      });
-      jQ('.js-remove-property').bind('click', function() {
-        removeProperty(jQ(this).data('param'), this);
-      });
-      jQ('.js-env-submit').bind('click', function() {
-        var params = jQ(this).data('params');
-        submitValue(params[0],params[1],params[2], jQ(this).prev()[0], params[3]);
-      });
-    } else {
-      window.alert(data.response);
-    }
-  };
-
-  var failure = function(t) { window.alert("Edit value failed"); };
-  var url = '/runs/env_value/';
   jQ.ajax({
-    'url': url,
+    'url': '/runs/env_value/',
     'type': 'GET',
     'data': {'a': 'add', 'info_type': 'env_values', 'env_value_id':env_value_id, 'run_id': run_id},
     'dataType': 'json',
-    'success': callback,
+    'success': function(data, textStatus, jqXHR) {
+      jQ('#dialog').hide();
+      if (parseInt(data.rc) === 0) {
+        jQ("#env_area").html(data.fragment);
+        jQ('.js-edit-property').bind('click', function() {
+          var params = jQ(this).data('params');
+          editValue(jQ(this).parents('form.js-run-env')[0], params[0], params[1], params[2]);
+        });
+        jQ('.js-remove-property').bind('click', function() {
+          removeProperty(jQ(this).data('param'), this);
+        });
+        jQ('.js-env-submit').bind('click', function() {
+          let params = jQ(this).data('params');
+          submitValue(params[0], params[1], params[2], jQ(this).prev()[0], params[3]);
+        });
+      } else {
+        window.alert(data.response);
+      }
+    },
     'error': function (jqXHR, textStatus, errorThrown) {
-      failure();
+      window.alert("Edit value failed");
     }
   });
 }
 
 function addRunTag(container, run_id) {
-  var tag = window.prompt('Please type new tag.');
-  if (!tag) {
+  if (! window.prompt('Please type new tag.')) {
     return false;
   }
 
-  var url = '/management/tags/';
   jQ.ajax({
-    'url': url,
+    'url': '/management/tags/',
     'type': 'GET',
     'data': {'a': 'add', 'run': run_id, 'tags': tag},
     'success': function (data, textStatus, jqXHR) {
       jQ(container).html(data);
       jQ('.js-remove-tag').bind('click', function() {
-        var params = jQ(this).data('params');
+        let params = jQ(this).data('params');
         removeRuntag(jQ('.js-tag-ul')[0], params[0], params[1]);
       });
     }
@@ -1054,15 +1020,14 @@ function addRunTag(container, run_id) {
 }
 
 function removeRuntag(container, run_id, tag) {
-  var url = '/management/tags/';
   jQ.ajax({
-    'url': url,
+    'url': '/management/tags/',
     'type': 'GET',
     'data': {'a': 'remove', 'run': run_id, 'tags': tag},
     'success': function (data, textStatus, jqXHR) {
       jQ(container).html(data);
       jQ('.js-remove-tag').bind('click', function() {
-        var params = jQ(this).data('params');
+        let params = jQ(this).data('params');
         removeRuntag(jQ('.js-tag-ul')[0], params[0], params[1]);
       });
     }
@@ -1070,65 +1035,55 @@ function removeRuntag(container, run_id, tag) {
 }
 
 function constructRunCC(container, run_id, parameters) {
-  var complete = function(t) {
-    jQ('.js-remove-cc').bind('click', function() {
-      var params = jQ(this).data('params');
-      removeRunCC(params[0], params[1], jQ('.js-cc-ul')[0]);
-    });
-    if (jQ('#message').length) {
-      window.alert(jQ('#message').html());
-      return false;
-    }
-  };
-  var url = '/run/' + run_id + '/cc/';
   jQ.ajax({
-    'url': url,
+    'url': '/run/' + run_id + '/cc/',
     'type': 'GET',
     'data': parameters,
     'success': function (data, textStatus, jqXHR) {
       jQ(container).html(data);
     },
     'complete': function() {
-      complete();
+      jQ('.js-remove-cc').bind('click', function() {
+        let params = jQ(this).data('params');
+        removeRunCC(params[0], params[1], jQ('.js-cc-ul')[0]);
+      });
+      if (jQ('#message').length) {
+        window.alert(jQ('#message').html());
+        return false;
+      }
     }
   });
 }
 
 function addRunCC(run_id, container) {
-  var user = window.prompt('Please type new email or username for CC.');
+  let user = window.prompt('Please type new email or username for CC.');
   if (!user) {
     return false;
   }
-  var parameters = {'do': 'add', 'user': user};
-  constructRunCC(container, run_id, parameters);
+  constructRunCC(container, run_id, {'do': 'add', 'user': user});
 }
 
 function removeRunCC(run_id, user, container) {
-  var c = window.confirm('Are you sure to delete this user from CC?');
-
-  if (!c) {
+  if (! window.confirm('Are you sure to delete this user from CC?')) {
     return false;
   }
-
-  var parameters = { 'do': 'remove', 'user': user };
-  constructRunCC(container, run_id, parameters);
+  constructRunCC(container, run_id, {'do': 'remove', 'user': user});
 }
 
 function changeCaseRunAssignee() {
-  var selectedCaseRunIDs = serializeCaseRunFromInputList(jQ('#id_table_cases')[0]);
+  let selectedCaseRunIDs = serializeCaseRunFromInputList(jQ('#id_table_cases')[0]);
   if (!selectedCaseRunIDs.length) {
     window.alert(default_messages.alert.no_case_selected);
     return false;
   }
 
-  var p = window.prompt('Please type new email or username for assignee');
-  if (!p) {
+  let emailOrUsername = window.prompt('Please type new email or username for assignee');
+  if (!emailOrUsername) {
     return false;
   }
 
-  var parameters = {'info_type': 'users', 'username': p};
   getInfoAndUpdateObject(
-    parameters,
+    {'info_type': 'users', 'username': emailOrUsername},
     'testruns.testcaserun',
     serializeCaseRunFromInputList(jQ('#id_table_cases')[0]),
     'assignee'
@@ -1136,23 +1091,22 @@ function changeCaseRunAssignee() {
 }
 
 function serializeCaseRunFromInputList(table, name) {
-  var elements;
+  let elements;
   if (typeof table === 'string') {
     elements = jQ('#' + table).parent().find('input[name="case_run"]:checked');
   } else {
     elements = jQ(table).parent().find('input[name="case_run"]:checked');
   }
 
-  var returnobj_list = [];
+  let returnobj_list = [];
   elements.each(function(i) {
     if (typeof this.value === 'string') {
       returnobj_list.push(this.value);
     }
   });
+
   if (name) {
-    var returnobj = {};
-    returnobj[name] = returnobj_list;
-    return returnobj;
+    return {name: returnobj_list}
   }
 
   return returnobj_list;
@@ -1162,7 +1116,7 @@ function serialzeCaseForm(form, table, serialized) {
   if (typeof serialized !== 'boolean') {
     serialized = true;
   }
-  var data;
+  let data;
   if (serialized) {
     data = Nitrate.Utils.formSerialize(form);
   } else {
@@ -1189,8 +1143,8 @@ function showCaseRunsWithSelectedStatus(form, status_id) {
 
 //Added for choose runs and add cases to those runs
 function serializeRunsFromInputList(table) {
-  var elements = jQ('#' + table).parent().find('input[name="run"]:checked');
-  var case_ids = [];
+  let elements = jQ('#' + table).parent().find('input[name="run"]:checked');
+  let case_ids = [];
   elements.each(function(i) {
     if (typeof this.value === 'string') {
       case_ids.push(this.value);
@@ -1200,24 +1154,22 @@ function serializeRunsFromInputList(table) {
 }
 
 function insertCasesIntoTestRun() {
-  var answer = window.confirm("Are you sure to add cases to the run?");
-  if (!answer) {
+  if (! window.confirm("Are you sure to add cases to the run?")) {
     return false;
   }
 
-  var trs = serializeRunsFromInputList("id_table_runs");
-  var elements = jQ('[name="case"]');
-  var case_ids = [];
-  elements.each(function(i) {
+  let case_ids = [];
+  jQ('[name="case"]').each(function(i) {
     case_ids.push(this.value);
   });
 
-  var data_to_post = {};
-  data_to_post.testrun_ids = trs;
-  data_to_post.case_ids = case_ids;
-
-  var url = "../chooseruns/";
-  postToURL(url, data_to_post, 'POST');
+  postToURL(
+    '../chooseruns/',
+    {
+      testrun_ids: serializeRunsFromInputList("id_table_runs"),
+      case_ids: case_ids
+    },
+    'POST');
 }
 
 
@@ -1243,17 +1195,17 @@ function addIssueToBatchCaseRunsHandler() {
  * Click event handler for A .js-remove-issues
  */
 function removeIssueFromBatchCaseRunsHandler() {
-  var caseRunIds = serializeCaseRunFromInputList(jQ('#id_table_cases')[0]);
+  let caseRunIds = serializeCaseRunFromInputList(jQ('#id_table_cases')[0]);
   caseRunIds = caseRunIds.map(function(s) { return parseInt(s); });
 
   if (caseRunIds.length === 0) {
     window.alert(default_messages.alert.no_case_selected);
   } else {
-    var reloadInfo = jQ(this).data('reloadInfo');
-    var removeIssueInfo = jQ(this).data('removeIssueInfo');
+    let reloadInfo = jQ(this).data('reloadInfo');
+    let removeIssueInfo = jQ(this).data('removeIssueInfo');
     removeIssueInfo.caseRunIds = caseRunIds;
 
-    var removeIssueDialog = jQ('div[id=showDialog]').dialog({
+    let removeIssueDialog = jQ('div[id=showDialog]').dialog({
       title: 'Remove issue key',
       modal: true,
       resizable: false,
@@ -1306,7 +1258,7 @@ function showCommentForm() {
       type: 'post',
       success: function(res) {
         if (parseInt(res.rc) === 0) {
-          reloadWindow();
+          window.location.reload();
         } else {
           commentsErr.html(res.response);
           return false;
@@ -1328,11 +1280,11 @@ jQ(document).ready(function(){
     jQ(this).find('ul').hide();
   });
   jQ('ul.statusOptions a').click(function() {
-    var option = jQ(this).attr('value');
-    var object_pks = serializeCaseRunFromInputList(jQ('#id_table_cases')[0]);
+    let option = jQ(this).attr('value');
     if (option === '') {
       return false;
     }
+    let object_pks = serializeCaseRunFromInputList(jQ('#id_table_cases')[0]);
     if (!object_pks.length) {
       window.alert(default_messages.alert.no_case_selected);
       return false;
@@ -1348,11 +1300,11 @@ function get_addlink_dialog() {
   return jQ('#addlink_dialog');
 }
 
-/*
+/**
  * Do AJAX request to backend to remove a link
  *
- * - sender:
- * - link_id: the ID of an arbitrary link.
+ * @param sender:
+ * @param {number} link_id - the ID of an arbitrary link.
  */
 function removeLink(sender, link_id) {
   jQ.ajax({
@@ -1364,44 +1316,43 @@ function removeLink(sender, link_id) {
         window.alert(data.response);
         return false;
       }
-      var li_node = sender.parentNode;
+      let li_node = sender.parentNode;
       li_node.parentNode.removeChild(li_node);
     },
     error: function(jqXHR, textStatus, errorThrown) {
-      var data = JSON.parse(jqXHR.responseText);
-      window.alert(data.message);
+      window.alert(JSON.parse(jqXHR.responseText).message);
     }
   });
 }
 
-/*
+/**
  * Add link to case run
  *
- * - sender: the Add link button, which is pressed to fire this event.
- * - target_id: to which TestCaseRun the new link will be linked.
+ * @param sender - the Add link button, which is pressed to fire this event.
+ * @param {number} case_id
+ * @param {number} case_run_id
  */
 function addLinkToCaseRun(sender, case_id, case_run_id) {
-  var dialog_p = get_addlink_dialog();
+  let dialog_p = get_addlink_dialog();
 
   dialog_p.dialog('option', 'target_id', case_run_id);
   // These two options are used for reloading TestCaseRun when successfully.
-  var container = jQ(sender).parents('.case_content.hide')[0];
+  let container = jQ(sender).parents('.case_content.hide')[0];
   dialog_p.dialog('option', 'container', container);
-  var title_container = jQ(container).prev()[0];
+  let title_container = jQ(container).prev()[0];
   dialog_p.dialog('option', 'title_container', title_container);
   dialog_p.dialog('option', 'case_id', case_id);
   dialog_p.dialog('open');
 }
 
-/*
+/**
  * Initialize dialog for getting information about new link, which is attached
  * to an arbitrary instance of TestCaseRun
  *
- * - link_target: string, the name of Model to whose instance new link will be
- *   linked.
+ * @param link_target - string, the name of Model to whose instance new link will be linked.
  */
 function initialize_addlink_dialog(link_target) {
-  var dialog_p = get_addlink_dialog();
+  let dialog_p = get_addlink_dialog();
 
   dialog_p.dialog({
     autoOpen: false,
@@ -1419,15 +1370,15 @@ function initialize_addlink_dialog(link_target) {
     buttons: {
       "OK": function() {
         // TODO: validate name and url
-        var name = jQ('#testlog_name').attr('value');
-        var url = jQ('#testlog_url').attr('value');
-        var target = jQ(this).dialog('option', 'target');
-        var target_id = jQ(this).dialog('option', 'target_id');
-
         jQ.ajax({
           url: '/linkref/add/',
           type: 'POST',
-          data: { name: name, url: url, target: target, target_id: target_id },
+          data: {
+            name: jQ('#testlog_name').attr('value'),
+            url: jQ('#testlog_url').attr('value'),
+            target: jQ(this).dialog('option', 'target'),
+            target_id: jQ(this).dialog('option', 'target_id')
+          },
           dataType: 'json',
           success: function(data, textStatus, jqXHR) {
             if (data.rc !== 0) {
@@ -1437,14 +1388,13 @@ function initialize_addlink_dialog(link_target) {
             dialog_p.dialog('close');
 
             // Begin to construct case run area
-            var container = dialog_p.dialog('option', 'container');
-            var title_container = dialog_p.dialog('option', 'title_container');
-            var case_id = dialog_p.dialog('option', 'case_id');
-            constructCaseRunZone(container, title_container, case_id);
+            constructCaseRunZone(
+              dialog_p.dialog('option', 'container'),
+              dialog_p.dialog('option', 'title_container'),
+              dialog_p.dialog('option', 'case_id'));
           },
           error: function (jqXHR, textStatus, errorThrown) {
-            var data = JSON.parse(jqXHR.responseText);
-            window.alert(data.response);
+            window.alert(JSON.parse(jqXHR.responseText).response);
           }
         });
       },
@@ -1470,7 +1420,7 @@ function initialize_addlink_dialog(link_target) {
 }
 
 
-/*
+/**
  * Toggle TestCaseRun panel to edit a case run in run page.
  *
  * Arguments:
@@ -1482,21 +1432,26 @@ function initialize_addlink_dialog(link_target) {
  * options.callback:
  */
 function toggleTestCaseRunPane(options) {
-  var container = options.caserunRowContainer;
-  var content_container = options.expandPaneContainer;
-  var callback = options.callback;
+  let content_container = options.expandPaneContainer;
 
   content_container.toggle();
 
   if (content_container.find('.ajax_loading').length) {
-    var url = '/case/' + options.caseId + '/caserun-detail-pane/';
-    var data = { case_run_id: options.caserunId, case_text_version: options.caseTextVersion };
-
-    jQ.get(url, data, function(data, textStatus) {
-      content_container.html(data);
-      callback();
-    }, 'html');
+    jQ.get(
+      '/case/' + options.caseId + '/caserun-detail-pane/',
+      {
+        case_run_id: options.caserunId,
+        case_text_version: options.caseTextVersion
+      },
+      function(data, textStatus) {
+        content_container.html(data);
+        options.callback();
+      },
+      'html');
   }
 
-  toggleExpandArrow({ caseRowContainer: container, expandPaneContainer: content_container });
+  toggleExpandArrow({
+    caseRowContainer: options.caserunRowContainer,
+    expandPaneContainer: content_container
+  });
 }

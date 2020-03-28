@@ -33,7 +33,7 @@ Nitrate.Utils.convert = function(argument, data) {
  * @param {HTMLForm} f - A HTML form from where to collect data.
  */
 Nitrate.Utils.formSerialize = function(f) {
-  var params = {};
+  let params = {};
   jQ(f).serializeArray().forEach(function(param) {
     if (params[param.name]) {
       if (!jQ.isArray(params[param.name])) {
@@ -61,7 +61,6 @@ jQ(window).bind('load', function(e) {
       e.preventDefault();
       var url = this.action;
       var dialog = showDialog();
-      var username = Nitrate.User.username;
       var parameters = Nitrate.Utils.formSerialize(this);
       parameters.url = window.location.href;
 
@@ -216,7 +215,7 @@ var default_messages = {
 
 // Exceptions for Ajax
 function json_failure(jqXHR) {
-  var responseJSON = jQ.parseJSON(jqXHR.responseText);
+  let responseJSON = jQ.parseJSON(jqXHR.responseText);
   // response property will be deprecated from server response.
   if (responseJSON.response) {
     window.alert(responseJSON.response);
@@ -228,12 +227,12 @@ function json_failure(jqXHR) {
   return false;
 }
 
-var html_failure = function() {
+function html_failure() {
   window.alert(default_messages.alert.ajax_failure);
   return false;
-};
+}
 
-var json_success_refresh_page = function(t) {
+function json_success_refresh_page(t) {
   let returnobj = jQ.parseJSON(t.responseText);
 
   if (parseInt(returnobj.rc) === 0) {
@@ -242,7 +241,7 @@ var json_success_refresh_page = function(t) {
     window.alert(returnobj.response);
     return false;
   }
-};
+}
 
 function addBookmark(url, method, parameters, callback) {
   parameters.a = 'add';
@@ -400,14 +399,14 @@ function getBuildsByProductId(allow_blank, product_field, build_field) {
     }
   }
 
-  var product_id = jQ(product_field).val();
+  let product_id = jQ(product_field).val();
   let no_product_is_selected = product_id === '' || product_id === null;
   if (no_product_is_selected) {
     jQ(build_field).html('<option value="">---------</option>');
     return false;
   }
 
-  var is_active = '';
+  let is_active = '';
   if (jQ('#value_sub_module').length) {
     if (jQ('#value_sub_module').val() === "new_run") {
       is_active = true;
@@ -418,37 +417,28 @@ function getBuildsByProductId(allow_blank, product_field, build_field) {
     is_active = true;
   }
 
-  var success = function(t) {
-    let returnobj = jQ.parseJSON(t.responseText);
-
-    set_up_choices(
-      build_field,
-      returnobj.map(function(o) { return [o.pk, o.fields.name]; }),
-      allow_blank
-    );
-
-    if (jQ('#value_sub_module').length && jQ('#value_sub_module').val() === 'new_run') {
-      if(jQ(build_field).html() === '') {
-        window.alert('You should create new build first before create new run');
-      }
-    }
-  };
-
-  var failure = function(t) {
-    window.alert("Update builds and envs failed");
-  };
-
-  var url = Nitrate.http.URLConf.reverse({ name: 'get_product_info' });
   jQ.ajax({
-    'url': url,
+    'url': Nitrate.http.URLConf.reverse({ name: 'get_product_info' }),
     'type': 'GET',
     'data': {'info_type': 'builds', 'product_id': product_id, 'is_active': is_active},
     'success': function (data, textStatus, jqXHR) {
-      success(jqXHR);
+      let returnobj = jQ.parseJSON(jqXHR.responseText);
+
+      set_up_choices(
+        build_field,
+        returnobj.map(function(o) { return [o.pk, o.fields.name]; }),
+        allow_blank
+      );
+
+      if (jQ('#value_sub_module').length && jQ('#value_sub_module').val() === 'new_run') {
+        if(jQ(build_field).html() === '') {
+          window.alert('You should create new build first before create new run');
+        }
+      }
     },
     'error': function (jqXHR, textStatus, errorThrown) {
       if (jqXHR.readyState !== 0 && errorThrown !== "") {
-        failure();
+        window.alert("Update builds and envs failed");
       }
     }
   });
@@ -460,7 +450,7 @@ function getEnvsByProductId(allow_blank, product_field) {
   }
 
   let product_id = jQ(product_field).val();
-  var args = false;
+  let args = false;
   if (jQ('#value_sub_module').length) {
     if (jQ('#value_sub_module').val() === 'new_run') {
       args = 'is_active';
@@ -472,41 +462,39 @@ function getEnvsByProductId(allow_blank, product_field) {
     return true;
   }
 
-  var success = function(t) {
-    let returnobj = jQ.parseJSON(t.responseText);
-
-    set_up_choices(
-      jQ('#id_env_id')[0],
-      returnobj.map(function(o) {
-        return [o.pk, o.fields.name];
-      }),
-      allow_blank
-    );
-
-    if (document.title === "Create new test run") {
-      if (jQ('#id_env_id').html() === '') {
-        window.alert('You should create new enviroment first before create new run');
-      }
-    }
-  };
-
-  var failure = function(jqXHR, textStatus, errorThrown) {
-    if (jqXHR.readyState !== 0 && errorThrown !== "") {
-        alert("Update builds and envs failed");
-    }
-  };
-
-  var url = Nitrate.http.URLConf.reverse({ name: 'get_product_info' });
-  new Ajax.Request(url, {
-    method:'get',
-    parameters:{
+  new Ajax.Request(
+    Nitrate.http.URLConf.reverse({ name: 'get_product_info' }),
+    {
+      method:'get',
+      parameters: {
         info_type: 'envs',
         product_id: product_id,
         args: args,
+      },
+      requestHeaders: {Accept: 'application/json'
     },
-    requestHeaders: {Accept: 'application/json'},
-    onSuccess: success,
-    onFailure: failure
+    onSuccess: function(t) {
+      let returnobj = jQ.parseJSON(t.responseText);
+
+      set_up_choices(
+        jQ('#id_env_id')[0],
+        returnobj.map(function(o) {
+          return [o.pk, o.fields.name];
+        }),
+        allow_blank
+      );
+
+      if (document.title === "Create new test run") {
+        if (jQ('#id_env_id').html() === '') {
+          window.alert('You should create new enviroment first before create new run');
+        }
+      }
+    },
+    onFailure: function(jqXHR, textStatus, errorThrown) {
+      if (jqXHR.readyState !== 0 && errorThrown !== "") {
+        alert("Update builds and envs failed");
+      }
+    }
   });
 }
 
@@ -530,33 +518,22 @@ function getVersionsByProductId(allow_blank, product_field, version_field) {
       return true;
   }
 
-  var success = function(t) {
-    let returnobj = jQ.parseJSON(t.responseText);
-
-    set_up_choices(
-      version_field,
-      returnobj.map(function(o) {
-        return [o.pk, o.fields.value];
-      }),
-      allow_blank
-    );
-  };
-
-  var failure = function(t) {
-    window.alert("Update versions failed");
-  };
-
-  var url = Nitrate.http.URLConf.reverse({ name: 'get_product_info' });
   jQ.ajax({
-    'url': url,
+    'url': Nitrate.http.URLConf.reverse({ name: 'get_product_info' }),
     'type': 'GET',
     'data': {'info_type': 'versions', 'product_id': product_id},
     'success': function (data, textStatus, jqXHR) {
-      success(jqXHR);
+      set_up_choices(
+        version_field,
+        jQ.parseJSON(jqXHR.responseText).map(function(o) {
+          return [o.pk, o.fields.value];
+        }),
+        allow_blank
+      );
     },
     'error': function (jqXHR, textStatus, errorThrown) {
       if (jqXHR.readyState !== 0 && errorThrown !== "") {
-        failure();
+        window.alert("Update versions failed");
       }
     }
   });
@@ -591,36 +568,26 @@ function getComponentsByProductId(allow_blank, product_field, component_field, c
     return true;
   }
 
-  var success = function(t) {
-    let returnobj = jQ.parseJSON(t.responseText);
-
-    set_up_choices(
-      component_field,
-      returnobj.map(function(o) {
-        return [o.pk, o.fields.name];
-      }),
-      allow_blank
-    );
-
-    if (typeof callback === 'function') {
-      callback.call();
-    }
-  };
-
-  var failure = function(t) { window.alert("Update components failed"); };
-
-  var url = Nitrate.http.URLConf.reverse({ name: 'get_product_info' });
-
   jQ.ajax({
-    'url': url,
+    'url': Nitrate.http.URLConf.reverse({ name: 'get_product_info' }),
     'type': 'GET',
     'data': parameters,
     'success': function (data, textStatus, jqXHR) {
-      success(jqXHR);
+      set_up_choices(
+        component_field,
+        jQ.parseJSON(jqXHR.responseText).map(function(o) {
+          return [o.pk, o.fields.name];
+        }),
+        allow_blank
+      );
+
+      if (typeof callback === 'function') {
+        callback.call();
+      }
     },
     'error': function (jqXHR, textStatus, errorThrown) {
       if (jqXHR.readyState !== 0 && errorThrown !== "") {
-        failure();
+        window.alert("Update components failed");
       }
     }
   });
@@ -656,11 +623,9 @@ function getCategoriesByProductId(allow_blank, product_field, category_field) {
     'type': 'GET',
     'data': {'info_type': 'categories', 'product_id': product_field.selectedOptions[0].value},
     'success': function (data, textStatus, jqXHR) {
-      let returnobj = jQ.parseJSON(jqXHR.responseText);
-
       set_up_choices(
         category_field,
-        returnobj.map(function(o) {
+        jQ.parseJSON(jqXHR.responseText).map(function(o) {
           return [o.pk, o.fields.name];
         }),
         allow_blank
@@ -743,17 +708,6 @@ function bind_component_selector_to_product(allow_blank, load, product_field, co
   }
 }
 
-// debug_output function is implement with firebug plugin for firefox
-function debug_output(value) {
-  try {
-    console.log(value);
-  } catch(err) {}
-}
-
-function myCustomURLConverter(url, node, on_save) {
-  return url;
-}
-
 // Stolen from http://www.webdeveloper.com/forum/showthread.php?t=161317
 function fireEvent(obj,evt) {
   var fireOnThis = obj;
@@ -807,43 +761,6 @@ function postToURL(path, params, method) {
 function constructTagZone(container, parameters) {
   jQ(container).html('<div class="ajax_loading"></div>');
 
-  var complete = function(t) {
-    var url = Nitrate.http.URLConf.reverse({ name: 'get_product_info' });
-
-    jQ('#id_tags').autocomplete({
-      'source': function(request, response) {
-        jQ.ajax({
-          'url': url,
-          'data': {
-            'name__startswith': request.term,
-            'info_type': 'tags',
-            'format': 'ulli',
-            'field': 'name'
-          },
-          'success': function(data) {
-            var processedData = [];
-            if (data.indexOf('<li>') > -1) {
-              processedData = data.slice(data.indexOf('<li>') + 4, data.lastIndexOf('</li>'))
-              .split('<li>').join('').split('</li>');
-            }
-            response(processedData);
-          }
-        });
-      },
-      'minLength': 2,
-      'appendTo': '#id_tags_autocomplete'
-    });
-
-    jQ('#id_tag_form').bind('submit', function(e){
-      e.stopPropagation();
-      e.preventDefault();
-
-      constructTagZone(container, Nitrate.Utils.formSerialize(this));
-    });
-    var count = jQ('tbody#tag').attr('count');
-    jQ('#tag_count').text(count);
-  };
-
   jQ.ajax({
     'url': '/management/tags/',
     'type': 'GET',
@@ -852,14 +769,45 @@ function constructTagZone(container, parameters) {
       jQ(container).html(data);
     },
     'complete': function () {
-      complete();
+      jQ('#id_tags').autocomplete({
+        'source': function(request, response) {
+          jQ.ajax({
+            'url': Nitrate.http.URLConf.reverse({ name: 'get_product_info' }),
+            'data': {
+              'name__startswith': request.term,
+              'info_type': 'tags',
+              'format': 'ulli',
+              'field': 'name'
+            },
+            'success': function(data) {
+              let processedData = [];
+              if (data.indexOf('<li>') > -1) {
+                processedData = data.slice(data.indexOf('<li>') + 4, data.lastIndexOf('</li>'))
+                  .split('<li>').join('').split('</li>');
+              }
+              response(processedData);
+            }
+          });
+        },
+        'minLength': 2,
+        'appendTo': '#id_tags_autocomplete'
+      });
+
+      jQ('#id_tag_form').bind('submit', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+
+        constructTagZone(container, Nitrate.Utils.formSerialize(this));
+      });
+
+      jQ('#tag_count').text(jQ('tbody#tag').attr('count'));
     }
   });
 }
 
 
 function addTag(container) {
-  var tag_name = jQ('#id_tags').attr('value');
+  let tag_name = jQ('#id_tags').attr('value');
   if (!tag_name.length) {
     jQ('#id_tags').focus();
   } else {
@@ -870,31 +818,30 @@ function addTag(container) {
 function removeTag(container, tag) {
   jQ('#id_tag_form').parent().find('input[name="a"]')[0].value = 'remove';
 
-  var parameters = Nitrate.Utils.formSerialize(jQ('#id_tag_form')[0]);
+  let parameters = Nitrate.Utils.formSerialize(jQ('#id_tag_form')[0]);
   parameters.tags = tag;
 
   constructTagZone(container, parameters);
 }
 
 function editTag(container, tag) {
-  var nt = prompt(default_messages.prompt.edit_tag, tag);
+  let nt = prompt(default_messages.prompt.edit_tag, tag);
   if (!nt) {
     return false;
   }
 
-  var parameters = Nitrate.Utils.formSerialize(jQ('#id_tag_form')[0]);
+  let parameters = Nitrate.Utils.formSerialize(jQ('#id_tag_form')[0]);
   parameters.tags = nt;
-  var complete = function(t) { removeTag(container, tag); };
-  var url = '/management/tags/';
+
   jQ.ajax({
-    'url': url,
+    'url': '/management/tags/',
     'type': 'GET',
     'data': parameters,
     'success': function (data, textStatus, jqXHR) {
       jQ(container).html(data);
     },
     'complete': function () {
-      complete();
+      removeTag(container, tag);
     }
   });
 }
@@ -914,44 +861,37 @@ function removeBatchTag(parameters, callback, format) {
 }
 
 function batchProcessTag(parameters, callback, format) {
-  var success = function(t) {
-    if (!format) {
-      let returnobj = jQ.parseJSON(t.responseText);
-
-      if (returnobj.response === 'ok') {
-        if (callback) {
-          callback.call();
-        }
-      } else {
-        window.alert(returnobj.response);
-        return false;
-      }
-    } else {
-      callback(t);
-    }
-  };
-
-  var url = '/management/tags/';
   jQ.ajax({
-    'url': url,
+    'url': '/management/tags/',
     'type': 'GET',
     'data': parameters,
     'traditional': true,
     'success': function (data, textStatus, jqXHR) {
-      success(jqXHR);
+      if (!format) {
+        let returnobj = jQ.parseJSON(jqXHR.responseText);
+
+        if (returnobj.response === 'ok') {
+          if (callback) {
+            callback.call();
+          }
+        } else {
+          window.alert(returnobj.response);
+          return false;
+        }
+      } else {
+        callback(jqXHR);
+      }
     }
   });
 }
 
 
 function removeComment(form, callback) {
-  var url = form.action;
-  var method = form.method;
-  var parameters = Nitrate.Utils.formSerialize(form);
+  let parameters = Nitrate.Utils.formSerialize(form);
 
   jQ.ajax({
-    'url': url,
-    'type': method,
+    'url': form.action,
+    'type': form.method,
     'data': parameters,
     'success': function (data, textStatus, jqXHR) {
       updateCommentsCount(parameters.object_pk, false);
@@ -965,40 +905,34 @@ function removeComment(form, callback) {
 
 
 function submitComment(container, parameters, callback) {
-  var complete = function(t) {
-    updateCommentsCount(parameters.case_id, true);
-    if (callback) {
-      callback();
-    }
-  };
-
   jQ(container).html('<div class="ajax_loading"></div>');
 
-  var url = '/comments/post/';
   jQ.ajax({
-    'url': url,
+    'url': '/comments/post/',
     'type': 'POST',
     'data': parameters,
     'success': function (data, textStatus, jqXHR) {
       jQ(container).html(data);
     },
     'complete': function () {
-      complete();
+      updateCommentsCount(parameters.case_id, true);
+      if (callback) {
+        callback();
+      }
     }
   });
 }
 
 function updateCommentsCount(caseId, increase) {
-  var commentDiv = jQ("#"+caseId+"_case_comment_count");
-  var countText = jQ("#"+caseId+"_comments_count");
+  let commentDiv = jQ("#" + caseId + "_case_comment_count");
+  let countText = jQ("#" + caseId + "_comments_count");
   if (increase) {
     if (commentDiv.children().length === 1) {
       commentDiv.prepend("<img src=\"/static/images/comment.png\" style=\"vertical-align: middle;\">");
     }
     countText.text(" " + (parseInt(countText.text()) + 1));
   } else {
-    var count = parseInt(countText.text(), 10);
-    if (count === 1) {
+    if (parseInt(countText.text(), 10) === 1) {
       commentDiv.html("<span id=\""+caseId+"_comments_count\"> 0</span>");
     } else {
       countText.text(" " + (parseInt(commentDiv.text()) - 1));
@@ -1007,7 +941,7 @@ function updateCommentsCount(caseId, increase) {
 }
 
 function previewPlan(parameters, action, callback, notice, s, c) {
-  var dialog = getDialog();
+  let dialog = getDialog();
 
   clearDialog();
   jQ(dialog).show();
@@ -1015,25 +949,18 @@ function previewPlan(parameters, action, callback, notice, s, c) {
   parameters.t = 'html';
   parameters.f = 'preview';
 
-  var url = '/plans/';
-  var success = function(t) {
-    // Not a very general way to resolve...
-    var text = t.responseText;
-    try {
-      notice = "";
-    } catch (e) {
-      // do nothing
-    }
-    var form = constructForm(text, action, callback, notice, s, c);
-    jQ(dialog).html(form);
-  };
-
   jQ.ajax({
-    'url': url,
+    'url': '/plans/',
     'type': 'GET',
     'data': parameters,
     'success': function (data, textStatus, jqXHR) {
-      success(jqXHR);
+      try {
+        notice = "";
+      } catch (e) {
+        // do nothing
+      }
+      let form = constructForm(jqXHR.responseText, action, callback, notice, s, c);
+      jQ(dialog).html(form);
     },
     'error': function (jqXHR, textStatus, errorThrown) {
       html_failure();
@@ -1042,41 +969,27 @@ function previewPlan(parameters, action, callback, notice, s, c) {
 }
 
 function getInfo(parameters, callback, container, allow_blank, format) {
-  var success = function(t) {
-    if (callback) {
-      callback(t, allow_blank, container);
-    }
-  };
-
-  var failure = function(t) {
-    window.alert("Get info " + parameters.info_type + " failed");
-    return false;
-  };
-
   if (format) {
     parameters.format = format;
   }
 
-  var url = Nitrate.http.URLConf.reverse({ name: 'get_product_info' });
   jQ.ajax({
-    'url': url,
+    'url': Nitrate.http.URLConf.reverse({ name: 'get_product_info' }),
     'type': 'GET',
     'data': parameters,
     'success': function (data, textStatus, jqXHR) {
-      success(jqXHR);
+      if (callback) {
+        callback(jqXHR, allow_blank, container);
+      }
     },
     'error': function (jqXHR, textStatus, errorThrown) {
-      failure();
+      window.alert("Get info " + parameters.info_type + " failed");
+      return false;
     }
   });
 }
 
 function getForm(container, app_form, parameters, callback, format) {
-  var failure = function(t) {
-    window.alert('Getting form get errors');
-    return false;
-  };
-
   if (!parameters) {
     parameters = {};
   }
@@ -1084,9 +997,8 @@ function getForm(container, app_form, parameters, callback, format) {
   parameters.app_form = app_form;
   parameters.format = format;
 
-  var url = Nitrate.http.URLConf.reverse({ name: 'get_form'});
   jQ.ajax({
-    'url': url,
+    'url': Nitrate.http.URLConf.reverse({ name: 'get_form'}),
     'type': 'GET',
     'data': parameters,
     'success': function (data, textStatus, jqXHR) {
@@ -1094,7 +1006,8 @@ function getForm(container, app_form, parameters, callback, format) {
       callback(jqXHR);
     },
     'error': function (jqXHR, textStatus, errorThrown) {
-      failure();
+      window.alert('Getting form get errors');
+      return false;
     }
   });
 }
@@ -1103,22 +1016,20 @@ function updateRunStatus(content_type, object_pk, field, value, value_type, call
   if (!value_type) {
     value_type = 'str';
   }
-  var url = '/ajax/update/case-run-status';
 
   if (typeof object_pk === 'object') {
     object_pk = object_pk.join(',');
   }
-  var parameters = {
-    'content_type': content_type,
-    'object_pk': object_pk,
-    'field': field,
-    'value': value,
-    'value_type': value_type
-  };
   jQ.ajax({
-    'url': url,
+    'url': '/ajax/update/case-run-status',
     'type': 'POST',
-    'data': parameters,
+    'data': {
+      'content_type': content_type,
+      'object_pk': object_pk,
+      'field': field,
+      'value': value,
+      'value_type': value_type
+    },
     'success': function (data, textStatus, jqXHR) {
       callback();
     },
@@ -1133,24 +1044,20 @@ function updateObject(content_type, object_pk, field, value, value_type, callbac
     value_type = 'str';
   }
 
-  var url = '/ajax/update/';
-
   if (typeof object_pk === 'object') {
     object_pk = object_pk.join(',');
   }
 
-  var parameters = {
-    'content_type': content_type,
-    'object_pk': object_pk,
-    'field': field,
-    'value': value,
-    'value_type': value_type
-  };
-
   jQ.ajax({
-    'url': url,
+    'url': '/ajax/update/',
     'type': 'POST',
-    'data': parameters,
+    'data': {
+      'content_type': content_type,
+      'object_pk': object_pk,
+      'field': field,
+      'value': value,
+      'value_type': value_type
+    },
     'success': function (data, textStatus, jqXHR) {
       callback(jqXHR);
     },
@@ -1160,27 +1067,26 @@ function updateObject(content_type, object_pk, field, value, value_type, callbac
   });
 }
 
-/*
- *  Arguments:
- *  parameters: Hash - Use for getInfo method
- *  content_type: String - use for updateObject method
- *  object_pk: Int/Array - use for updateObject method
- *  field: String - use for updateObject method
- *  callback: Function - use for updateObject method
+function reloadWindow(jqXHR) {
+  let returnobj = jQ.parseJSON(jqXHR.responseText);
+  if (returnobj.rc !== 0) {
+    window.alert(returnobj.response);
+    return false;
+  }
+  window.location.reload();
+}
+
+/**
+ * Get info and update specific objects
+ * @param {object} parameters - Use for getInfo method
+ * @param {string} content_type - use for updateObject method
+ * @param object_pks - Int/Array - use for updateObject method
+ * @param {string} field - use for updateObject method
+ * @param {function} callback - use for updateObject method
  */
 function getInfoAndUpdateObject(parameters, content_type, object_pks, field, callback) {
-  var refresh_window = function(t) {
-    var returnobj = jQ.parseJSON(t.responseText);
-    if (returnobj.rc !== 0) {
-      window.alert(returnobj.response);
-      return false;
-    }
-
-    window.location.reload();
-  };
-
-  var get_info_callback = function(t) {
-    var returnobj = jQ.parseJSON(t.responseText);
+  getInfo(parameters, function (jqXHR) {
+    let returnobj = jQ.parseJSON(jqXHR.responseText);
 
     // FIXME: Display multiple items and let user to select one
     if (returnobj.length === 0) {
@@ -1189,19 +1095,12 @@ function getInfoAndUpdateObject(parameters, content_type, object_pks, field, cal
     }
 
     if (returnobj.length > 1) {
-      window.alert('Mutiple instances reached, please define the condition more clear.');
+      window.alert('Multiple instances reached, please define the condition more clear.');
       return false;
     }
 
-    var value = returnobj[0].pk;
-
-    if (!callback) {
-      callback = refresh_window;
-    }
-    updateObject(content_type, object_pks, field, value, 'str', callback);
-  };
-
-  getInfo(parameters, get_info_callback);
+    updateObject(content_type, object_pks, field, returnobj[0].pk, 'str', callback || reloadWindow);
+  });
 }
 
 function getDialog(element) {
@@ -1211,20 +1110,19 @@ function getDialog(element) {
   return element;
 }
 
-var showDialog = function(element) {
-  var dialog = getDialog(element);
-  return jQ(dialog).show()[0];
+function showDialog(element) {
+  return jQ(getDialog(element)).show()[0];
 };
 
-var clearDialog = function(element) {
-  var dialog = getDialog(element);
+function clearDialog(element) {
+  let dialog = getDialog(element);
 
   jQ(dialog).html(getAjaxLoading());
   return jQ(dialog).hide()[0];
 };
 
 function getAjaxLoading(id) {
-  var e = jQ('<div>', {'class': 'ajax_loading'})[0];
+  let e = jQ('<div>', {'class': 'ajax_loading'})[0];
   if (id) {
     e.id = id;
   }
@@ -1233,7 +1131,7 @@ function getAjaxLoading(id) {
 }
 
 function clickedSelectAll(checkbox, form, name) {
-  var checkboxes = jQ(form).parent().find('input[name='+ name + ']');
+  let checkboxes = jQ(form).parent().find('input[name='+ name + ']');
   for (let i = 0; i < checkboxes.length; i++) {
     checkboxes[i].checked = checkbox.checked? true:false;
   }
@@ -1246,8 +1144,8 @@ function bindSelectAllCheckbox(element, form, name) {
 }
 
 function constructForm(content, action, form_observe, info, s, c) {
-  var f = jQ('<form>', {'action': action});
-  var i = jQ('<div>', {'class': 'alert'});
+  let f = jQ('<form>', {'action': action});
+  let i = jQ('<div>', {'class': 'alert'});
   if (info) {
     i.html(info);
   }
@@ -1275,21 +1173,9 @@ function constructForm(content, action, form_observe, info, s, c) {
   return f[0];
 }
 
-var reloadWindow = function(t) {
-  if (t) {
-    var returnobj = jQ.parseJSON(t.responseText);
-    if (returnobj.rc !== 0) {
-      window.alert(returnobj.response);
-      return false;
-    }
-  }
-
-  window.location.reload(true);
-};
-
 // Enhanced from showAddAnotherPopup in RelatedObjectLookups.js for Admin
 function popupAddAnotherWindow(triggeringLink, parameters) {
-  var name = triggeringLink.id.replace(/^add_/, '');
+  let name = triggeringLink.id.replace(/^add_/, '');
   name = id_to_windowname(name);
   let href = triggeringLink.href;
   if (href.indexOf('?') === -1) {
@@ -1304,7 +1190,7 @@ function popupAddAnotherWindow(triggeringLink, parameters) {
     href += '&' + parameters + '=' + jQ('#id_' + parameters).val();
   }
 
-  var win = window.open(href, name, 'height=500,width=800,resizable=yes,scrollbars=yes');
+  let win = window.open(href, name, 'height=500,width=800,resizable=yes,scrollbars=yes');
   win.focus();
   return false;
 }

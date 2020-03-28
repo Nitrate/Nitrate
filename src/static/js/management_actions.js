@@ -8,12 +8,10 @@ Nitrate.Management.Environment.Edit.on_load = function() {
 
   jQ('#js-edit-group').submit(function(e) {
     e.preventDefault();
-    var jqForm = jQ(this);
-
     jQ.ajax({
-      'url': jqForm.attr('action'),
+      'url': jQ(this).attr('action'),
       'type': 'GET',
-      'data': jqForm.serialize(),
+      'data': jQ(this).serialize(),
       'success': function() {
         window.location = '/environment/groups';
       }
@@ -60,47 +58,42 @@ Nitrate.Management.Environment.Property.on_load = function() {
 };
 
 function addEnvGroup() {
-  var success = function(t) {
-    let returnobj = jQ.parseJSON(t.responseText);
+  let group_name = window.prompt("New environment group name");
+  if (!group_name)
+    return;
 
-    if (returnobj.rc === 0) {
-      if (returnobj.id) {
-        window.location.href = Nitrate.Management.Environment.Param.edit_group + '?id=' + returnobj.id;
+  jQ.ajax({
+    'url': Nitrate.Management.Environment.Param.add_group,
+    'type': 'GET',
+    'data': {'action': 'add', 'name': group_name},
+    'success': function (data, textStatus, jqXHR) {
+      let returnobj = jQ.parseJSON(jqXHR.responseText);
+
+      if (returnobj.rc === 0) {
+        if (returnobj.id) {
+          window.location.href = Nitrate.Management.Environment.Param.edit_group + '?id=' + returnobj.id;
+        }
+        return true;
+      } else {
+        window.alert(returnobj.response);
+        return false;
       }
-      return true;
-    } else {
-      window.alert(returnobj.response);
-      return false;
     }
-  };
-
-  var group_name = window.prompt("New environment group name");
-
-  if (group_name) {
-    jQ.ajax({
-      'url': Nitrate.Management.Environment.Param.add_group,
-      'type': 'GET',
-      'data': {'action': 'add', 'name': group_name},
-      'success': function (data, textStatus, jqXHR) {
-        success(jqXHR);
-      }
-    });
-  }
+  });
 }
 
 function deleteEnvGroup(id, env_group_name) {
-  var answer = window.confirm("Are you sure you wish to remove environment group - " + env_group_name);
-
+  let answer = window.confirm("Are you sure you wish to remove environment group - " + env_group_name);
   if (!answer) {
     return false;
   }
 
-  var url = Nitrate.Management.Environment.Param.delete_group + '?action=del&id=' + id;
+
   jQ.ajax({
-    'url': url,
+    'url': Nitrate.Management.Environment.Param.delete_group + '?action=del&id=' + id,
     'type': 'GET',
     'complete': function (jqXHR, textStatus) {
-      var returnobj = jQ.parseJSON(jqXHR.responseText);
+      let returnobj = jQ.parseJSON(jqXHR.responseText);
       if (returnobj.rc === 1) {
         window.alert(returnobj.response);
       } else {
@@ -127,68 +120,61 @@ function selectEnvProperty(property_id) {
 
 function addEnvProperty() {
   var success = function(t) {
-    let returnobj = jQ.parseJSON(t.responseText);
+  };
 
-    if (returnobj.rc === 0) {
-      jQ('#id_properties_container li.focus').removeClass('focus');
+  let property_name = window.prompt("New property name");
+  if (!property_name)
+    return;
 
-      var id = returnobj.id;
-      var name = returnobj.name;
-      var template = Handlebars.compile(jQ('#properties_container_template').html());
-      var context = {'id': id, 'name': name};
-      jQ('#id_properties_container').append(template(context))
-        .find('.js-prop-name').bind('click', function() {
+  jQ.ajax({
+    'url': Nitrate.Management.Environment.Property.Param.add_property,
+    'type': 'GET',
+    'data': {'action': 'add', 'name': property_name},
+    'success': function (data, textStatus, jqXHR) {
+      let returnobj = jQ.parseJSON(jqXHR.responseText);
+
+      if (returnobj.rc === 0) {
+        jQ('#id_properties_container li.focus').removeClass('focus');
+
+        let template = Handlebars.compile(jQ('#properties_container_template').html());
+        let context = {'id': returnobj.id, 'name': returnobj.name};
+        jQ('#id_properties_container').append(template(context))
+          .find('.js-prop-name').bind('click', function() {
           selectEnvProperty(jQ(this).parent().data('param'));
         })
-        .end().find('.js-rename-prop').bind('click', function() {
+          .end().find('.js-rename-prop').bind('click', function() {
           editEnvProperty(jQ(this).parent().data('param'));
         });
 
-      selectEnvProperty(id);
-    } else {
-      window.alert(returnobj.response);
-      return false;
-    }
-  };
-
-  var property_name = window.prompt("New property name");
-
-  if(property_name) {
-    jQ.ajax({
-      'url': Nitrate.Management.Environment.Property.Param.add_property,
-      'type': 'GET',
-      'data': {'action': 'add', 'name': property_name},
-      'success': function (data, textStatus, jqXHR) {
-        success(jqXHR);
+        selectEnvProperty(returnobj.id);
+      } else {
+        window.alert(returnobj.response);
+        return false;
       }
-    });
-  }
+    }
+  });
 }
 
 function editEnvProperty(id) {
-  var new_property_name = window.prompt("New property name", jQ('#id_property_name_' + id).html());
+  let new_property_name = window.prompt("New property name", jQ('#id_property_name_' + id).html());
+  if (!new_property_name)
+    return;
 
-  var success = function(t) {
-    let returnobj = jQ.parseJSON(t.responseText);
+  jQ.ajax({
+    'url': Nitrate.Management.Environment.Property.Param.edit_property,
+    'type': 'GET',
+    'data': {'action': 'edit', 'id': id, 'name': new_property_name},
+    'success': function (data, textStatus, jqXHR) {
+      let returnobj = jQ.parseJSON(jqXHR.responseText);
 
-    if (returnobj.rc === 0) {
-      jQ('#id_property_name_' + id).html(new_property_name);
-    } else {
-      window.alert(returnobj.response);
-      return false;
-    }
-  };
-
-  if (new_property_name) {
-    jQ.ajax({
-      'url': Nitrate.Management.Environment.Property.Param.edit_property,
-      'type': 'GET',
-      'data': {'action': 'edit', 'id': id, 'name': new_property_name},
-      'success': function (data, textStatus, jqXHR) {
-        success(jqXHR);
+      if (returnobj.rc === 0) {
+        jQ('#id_property_name_' + id).html(new_property_name);
+      } else {
+        window.alert(returnobj.response);
+        return false;
       }
-    });
-  }
+    }
+  });
 }
 
 
@@ -217,44 +203,49 @@ function disableEnvProperty() {
 }
 
 function addEnvPropertyValue(property_id) {
-  var value_name = jQ('#id_value_name').val();
+  let value_name = jQ('#id_value_name').val();
+  if (!value_name)
+    return;
 
   if (!value_name.replace(/\040/g, "").replace(/%20/g, "").length) {
     window.alert('Value name could not be blank or space.');
     return false;
   }
 
-  if (value_name) {
-    jQ.ajax({
-      'url': Nitrate.Management.Environment.Property.Param.add_property_value,
-      'type': 'GET',
-      'data': {'action': 'add', 'property_id': property_id, 'value': value_name},
-      'success': function (data, textStatus, jqXHR) {
-        jQ('#id_values_container').html(data);
-        bindPropertyValueActions();
-      }
-    });
-  }
+  jQ.ajax({
+    'url': Nitrate.Management.Environment.Property.Param.add_property_value,
+    'type': 'GET',
+    'data': {'action': 'add', 'property_id': property_id, 'value': value_name},
+    'success': function (data, textStatus, jqXHR) {
+      jQ('#id_values_container').html(data);
+      bindPropertyValueActions();
+    }
+  });
 }
 
 function editEnvPropertyValue(property_id, value_id) {
-  var value_name = prompt('New value name', jQ('#id_value_' + value_id).html());
+  let value_name = prompt('New value name', jQ('#id_value_' + value_id).html());
+  if (!value_name)
+    return;
 
-  if (value_name) {
-    jQ.ajax({
-      'url': Nitrate.Management.Environment.Property.Param.add_property_value,
-      'type': 'GET',
-      'data': {'action': 'edit', 'property_id': property_id, 'id': value_id, 'value': value_name},
-      'success': function (data, textStatus, jqXHR) {
-        jQ('#id_values_container').html(data);
-        bindPropertyValueActions();
-      }
-    });
-  }
+  jQ.ajax({
+    'url': Nitrate.Management.Environment.Property.Param.add_property_value,
+    'type': 'GET',
+    'data': {
+      'action': 'edit',
+      'property_id': property_id,
+      'id': value_id,
+      'value': value_name
+    },
+    'success': function (data, textStatus, jqXHR) {
+      jQ('#id_values_container').html(data);
+      bindPropertyValueActions();
+    }
+  });
 }
 
 function getPropValueId() {
-  var ids = [];
+  let ids = [];
   jQ('#id_value_form').serializeArray().forEach(function(param) {
     if(param.name === 'id') {
       ids.push(param.value);
@@ -303,7 +294,7 @@ function disableEnvPropertyValue(property_id) {
 }
 
 function bindPropertyValueActions() {
-  var propId = jQ('.js-prop-value-action').data('param');
+  let propId = jQ('.js-prop-value-action').data('param');
   jQ('#js-add-prop-value').bind('click', function() {
     addEnvPropertyValue(propId);
   });

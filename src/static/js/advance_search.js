@@ -2,14 +2,11 @@ function getProdRelatedObj(prodIDs, target, targetID) {
   if (typeof prodIDs ==='string') {
     prodIDs = [prodIDs];
   }
-  var data_api = '/ajax/get-prod-relate-obj/';
-  var sep = ','; // used to join/split values
-  var params = {'p_ids': prodIDs.join(sep), 'target': target, 'sep': sep};
-  var results;
+  // Separator , used to join/split values
   jQ.ajax({
-    url: data_api,
+    url: '/ajax/get-prod-relate-obj/',
     dataType: 'json',
-    data: params,
+    data: {'p_ids': prodIDs.join(','), 'target': target, 'sep': ','},
     success: function(res){
       buildOptions(res, targetID);
     }

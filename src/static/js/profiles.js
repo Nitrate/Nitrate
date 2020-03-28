@@ -28,8 +28,13 @@ Nitrate.Profiles.Bookmarks.on_load = function() {
       return false;
     }
 
-    var callback = function(t) {
-      var returnobj = jQ.parseJSON(t.responseText);
+    let parameters = Nitrate.Utils.formSerialize(this);
+    if (parameters.pk === undefined) {
+      window.alert('No bookmark selected.');
+      return false;
+    }
+    removeBookmark(this.action, this.method, parameters, function (jqXHR) {
+      let returnobj = jQ.parseJSON(jqXHR.responseText);
 
       if (returnobj.rc !== 0) {
         window.alert(returnobj.response);
@@ -37,13 +42,7 @@ Nitrate.Profiles.Bookmarks.on_load = function() {
       }
       // using location.reload will cause firefox(tested) remember the checking status
       window.location = window.location;
-    };
-    var parameters = Nitrate.Utils.formSerialize(this);
-    if (parameters.pk === undefined) {
-      window.alert('No bookmark selected.');
-      return false;
-    }
-    removeBookmark(this.action, this.method, parameters, callback);
+    });
   });
 };
 
