@@ -65,17 +65,16 @@ function addEnvGroup() {
   jQ.ajax({
     'url': Nitrate.Management.Environment.Param.add_group,
     'type': 'GET',
+    'dataType': 'json',
     'data': {'action': 'add', 'name': group_name},
     'success': function (data, textStatus, jqXHR) {
-      let returnobj = jQ.parseJSON(jqXHR.responseText);
-
-      if (returnobj.rc === 0) {
-        if (returnobj.id) {
-          window.location.href = Nitrate.Management.Environment.Param.edit_group + '?id=' + returnobj.id;
+      if (data.rc === 0) {
+        if (data.id) {
+          window.location.href = Nitrate.Management.Environment.Param.edit_group + '?id=' + data.id;
         }
         return true;
       } else {
-        window.alert(returnobj.response);
+        window.alert(data.response);
         return false;
       }
     }
@@ -88,14 +87,13 @@ function deleteEnvGroup(id, env_group_name) {
     return false;
   }
 
-
   jQ.ajax({
     'url': Nitrate.Management.Environment.Param.delete_group + '?action=del&id=' + id,
     'type': 'GET',
-    'complete': function (jqXHR, textStatus) {
-      let returnobj = jQ.parseJSON(jqXHR.responseText);
-      if (returnobj.rc === 1) {
-        window.alert(returnobj.response);
+    'dataType': 'json',
+    'success': function (data, textStatus, jqXHR) {
+      if (data.rc === 1) {
+        window.alert(data.response);
       } else {
         jQ('#' + id).remove();
       }
@@ -119,9 +117,6 @@ function selectEnvProperty(property_id) {
 }
 
 function addEnvProperty() {
-  var success = function(t) {
-  };
-
   let property_name = window.prompt("New property name");
   if (!property_name)
     return;
@@ -129,15 +124,14 @@ function addEnvProperty() {
   jQ.ajax({
     'url': Nitrate.Management.Environment.Property.Param.add_property,
     'type': 'GET',
+    'dataType': 'json',
     'data': {'action': 'add', 'name': property_name},
     'success': function (data, textStatus, jqXHR) {
-      let returnobj = jQ.parseJSON(jqXHR.responseText);
-
-      if (returnobj.rc === 0) {
+      if (data.rc === 0) {
         jQ('#id_properties_container li.focus').removeClass('focus');
 
         let template = Handlebars.compile(jQ('#properties_container_template').html());
-        let context = {'id': returnobj.id, 'name': returnobj.name};
+        let context = {'id': data.id, 'name': data.name};
         jQ('#id_properties_container').append(template(context))
           .find('.js-prop-name').bind('click', function() {
           selectEnvProperty(jQ(this).parent().data('param'));
@@ -146,9 +140,9 @@ function addEnvProperty() {
           editEnvProperty(jQ(this).parent().data('param'));
         });
 
-        selectEnvProperty(returnobj.id);
+        selectEnvProperty(data.id);
       } else {
-        window.alert(returnobj.response);
+        window.alert(data.response);
         return false;
       }
     }
@@ -163,14 +157,13 @@ function editEnvProperty(id) {
   jQ.ajax({
     'url': Nitrate.Management.Environment.Property.Param.edit_property,
     'type': 'GET',
+    'dataType': 'json',
     'data': {'action': 'edit', 'id': id, 'name': new_property_name},
     'success': function (data, textStatus, jqXHR) {
-      let returnobj = jQ.parseJSON(jqXHR.responseText);
-
-      if (returnobj.rc === 0) {
+      if (data.rc === 0) {
         jQ('#id_property_name_' + id).html(new_property_name);
       } else {
-        window.alert(returnobj.response);
+        window.alert(data.response);
         return false;
       }
     }

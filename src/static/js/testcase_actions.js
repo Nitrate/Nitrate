@@ -226,15 +226,14 @@ Nitrate.TestCases.Details.on_load = function() {
         jQ.ajax({
           'url': '/cases/add-component/',
           'type': 'POST',
+          'dataType': 'json',
           'data': params,
           'traditional': true,
           'success': function (data, textStatus, jqXHR) {
-            let returnobj = jQ.parseJSON(jqXHR.responseText);
-
-            if (parseInt(returnobj.rc) === 0) {
+            if (data.rc === 0) {
               window.location.reload();
             } else {
-              window.alert(returnobj.response);
+              window.alert(data.response);
               return false;
             }
           },
@@ -306,8 +305,8 @@ Nitrate.TestCases.Details.on_load = function() {
         'case_run_plan_id': c[0].id
       },
       function (e) {
-      jQ('#table_case_runs_by_plan .expandable').bind('click', toggle_case_run);
-    });
+        jQ('#table_case_runs_by_plan .expandable').bind('click', toggle_case_run);
+      });
   });
 
   jQ('#testplans_table').dataTable({
@@ -545,6 +544,7 @@ function changeTestCaseStatus(plan_id, selector, case_id, be_confirmed, was_conf
   jQ.ajax({
     'url': '/ajax/update/case-status/',
     'type': 'POST',
+    'dataType': 'json',
     'data': {
       'from_plan': plan_id,
       'case': case_id,
@@ -552,9 +552,8 @@ function changeTestCaseStatus(plan_id, selector, case_id, be_confirmed, was_conf
       'new_value': selector.value,
     },
     'success': function(data, textStatus, jqXHR) {
-      let returnobj = jQ.parseJSON(jqXHR.responseText);
-      if (returnobj.rc !== 0) {
-        window.alert(returnobj.response);
+      if (data.rc !== 0) {
+        window.alert(data.response);
         return false;
       }
 
@@ -572,9 +571,9 @@ function changeTestCaseStatus(plan_id, selector, case_id, be_confirmed, was_conf
       jQ(selector).hide();
 
       if (be_confirmed || was_confirmed) {
-        jQ('#run_case_count').text(returnobj.run_case_count);
-        jQ('#case_count').text(returnobj.case_count);
-        jQ('#review_case_count').text(returnobj.review_case_count);
+        jQ('#run_case_count').text(data.run_case_count);
+        jQ('#case_count').text(data.case_count);
+        jQ('#review_case_count').text(data.review_case_count);
         jQ('#' + case_id).next().remove();
         jQ('#' + case_id).remove();
 
@@ -711,10 +710,11 @@ function changeCaseOrder2(parameters, callback) {
   jQ.ajax({
     'url': '/ajax/update/cases-sortkey/',
     'type': 'POST',
+    'dataType': 'json',
     'data': parameters,
     'traditional': true,
     'success': function (data, textStatus, jqXHR) {
-      callback(jqXHR);
+      callback(data);
     },
     'error': function (jqXHR, textStatus, errorThrown) {
       json_failure(jqXHR);
@@ -1004,9 +1004,10 @@ function updateCaseTag(url, parameters, callback) {
   jQ.ajax({
     'url': url,
     'type': 'POST',
+    'dataType': 'json',
     'data': parameters,
     'success': function (data, textStatus, jqXHR) {
-      callback(jqXHR);
+      callback(data);
     },
     'error': function (jqXHR, textStatus, errorThrown) {
       json_failure(jqXHR);
@@ -1019,10 +1020,11 @@ function updateCaseComponent(url, parameters, callback) {
   jQ.ajax({
     'url': url,
     'type': 'POST',
+    'dataType': 'json',
     'data': parameters,
     'traditional': true,
     'success': function (data, textStatus, jqXHR) {
-      callback(jqXHR);
+      callback(data);
     },
     'error': function (jqXHR, textStatus, errorThrown) {
       json_failure(jqXHR);
@@ -1035,9 +1037,10 @@ function updateCaseCategory(url, parameters, callback) {
   jQ.ajax({
     'url': url,
     'type': 'POST',
+    'dataType': 'json',
     'data': parameters,
     'success': function (data, textStatus, jqXHR) {
-      callback(jqXHR);
+      callback(data);
     },
     'error': function (jqXHR, textStatus, errorThrown) {
       json_failure(jqXHR);
@@ -1045,7 +1048,7 @@ function updateCaseCategory(url, parameters, callback) {
   });
 }
 
-function constructCaseAutomatedForm(container, callback, options) {
+function constructCaseAutomatedForm(container, options, callback) {
   jQ(container).html(getAjaxLoading());
   jQ(container).show();
   let d = jQ('<div>', { 'class': 'automated_form' })[0];
@@ -1053,38 +1056,37 @@ function constructCaseAutomatedForm(container, callback, options) {
   getForm(d, 'testcases.CaseAutomatedForm', {}, function (jqXHR) {
     let returntext = jqXHR.responseText;
 
-    let form_observe = function(e) {
-      e.stopPropagation();
-      e.preventDefault();
-
-      if (!jQ(this).find('input[type="checkbox"]:checked').length) {
-        window.alert('Nothing selected');
-        return false;
-      }
-
-      let params = serializeFormData({
-        form: this,
-        zoneContainer: options.zoneContainer,
-        casesSelection: options.casesSelection
-      });
-      /*
-       * Have to add this. The form generated before does not contain a
-       * default value `change'. In fact, the field a onust contain the
-       * only value `change', here.
-       */
-      params = params.replace(/a=\w*/, 'a=change');
-      jQ.ajax({
-        'url': Nitrate.http.URLConf.reverse({ name: 'cases_automated' }),
-        'type': 'POST',
-        'data': params,
-        'success': function (data, textStatus, jqXHR) {
-          callback(jqXHR);
-        }
-      });
-    };
-
     jQ(container).html(
-      constructForm(returntext, '/cases/automated/', form_observe)
+      constructForm(returntext, '/cases/automated/', function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+
+        if (!jQ(this).find('input[type="checkbox"]:checked').length) {
+          window.alert('Nothing selected');
+          return false;
+        }
+
+        let params = serializeFormData({
+          form: this,
+          zoneContainer: options.zoneContainer,
+          casesSelection: options.casesSelection
+        });
+        /*
+         * Have to add this. The form generated before does not contain a
+         * default value `change'. In fact, the field a onust contain the
+         * only value `change', here.
+         */
+        params = params.replace(/a=\w*/, 'a=change');
+        jQ.ajax({
+          'url': Nitrate.http.URLConf.reverse({ name: 'cases_automated' }),
+          'type': 'POST',
+          'dataType': 'json',
+          'data': params,
+          'success': function (data, textStatus, jqXHR) {
+            callback(data);
+          }
+        });
+      })
     );
   });
 }

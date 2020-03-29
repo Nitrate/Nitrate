@@ -278,26 +278,22 @@ Nitrate.TestRuns.Details.on_load = function() {
     var case_id = c.find('input[name="case"]')[0].value;
     var case_run_id = c.find('input[name="case_run"]')[0].value;
     var case_text_version = c.find('input[name="case_text_version"]')[0].value;
-    var callback = function(t) {
-      // Observe the update case run stauts/comment form
-      c_container.parent().find('.update_form')
-        .unbind('submit').bind('submit', updateCaseRunStatus);
 
-      // Observe the delete comment form
-      var refresh_case = function(t) {
-        constructCaseRunZone(c_container[0], c[0], case_id);
-      };
+    let callback = function(t) {
+      // Observe the update case run status/comment form
+      c_container.parent().find('.update_form').unbind('submit').bind('submit', updateCaseRunStatus);
 
-      var rc_callback = function(e) {
+      c_container.parent().find('.form_comment').unbind('submit').bind('submit', function (e) {
         e.stopPropagation();
         e.preventDefault();
         if (!window.confirm(default_messages.confirm.remove_comment)) {
           return false;
         }
-        removeComment(this, refresh_case);
-      };
-      c_container.parent().find('.form_comment')
-        .unbind('submit').bind('submit', rc_callback);
+        removeComment(this, function (responseData) {
+          constructCaseRunZone(c_container[0], c[0], case_id);
+        });
+      });
+
       c_container.find('.js-status-button').bind('click', function() {
         this.form.value.value = jQ(this).data('formvalue');
       });
@@ -591,84 +587,96 @@ Nitrate.TestRuns.AssignCase.on_load = function() {
   });
 };
 
+/**
+ * A callback called after a comment is added to a case run or a case run status is updated with a
+ * short comment.
+ * @callback
+ */
+function updateCaseRunDetailAfterCommentIsAdded(caseRunRow, expandedCaseRunDetailRow, caseRunStatusId) {
+  // Update the contents
+  if (caseRunStatusId !== '') {
+    // Update the case run status icon
+    let crs = Nitrate.TestRuns.CaseRunStatus;
+    caseRunRow.find('.icon_status').each(function(index) {
+      for (let i in crs) {
+        if (typeof crs[i] === 'string' && jQ(this).is('.btn_' + crs[i])) {
+          jQ(this).removeClass('btn_' + crs[i]);
+        }
+      }
+      jQ(this).addClass('btn_' + Nitrate.TestRuns.CaseRunStatus[parseInt(caseRunStatusId) - 1]);
+    });
+
+    // Update related people
+    caseRunRow.find('.link_tested_by').each(function(i) {
+      this.href = 'mailto:' + Nitrate.User.email;
+      jQ(this).html(Nitrate.User.username);
+    });
+  }
+
+  // Mark the case run to mine
+  if (!caseRunRow.is('.mine')) {
+    caseRunRow.addClass('mine');
+  }
+
+  // Blind down next case
+  let expandableElem = caseRunRow.find('.expandable')[0];
+  fireEvent(expandableElem, 'click');
+  if (jQ('#id_check_box_auto_blinddown').attr('checked') && caseRunStatusId !== '') {
+    let next_title = expandedCaseRunDetailRow.next();
+    if (!next_title.length) {
+      return false;
+    }
+    if (next_title.next().is(':hidden')) {
+      fireEvent(next_title.find('.expandable')[0], 'click');
+    }
+  } else {
+    fireEvent(expandableElem, 'click');
+  }
+}
+
+/**
+ * A function registered to the form submit event, from where to add comment to or change status for a case run.
+ * @callback
+ * @param e
+ */
 function updateCaseRunStatus(e) {
   e.stopPropagation();
   e.preventDefault();
-  var container = jQ(this).parents().eq(3);
-  var parent = container.parent();
-  var title = parent.prev();
-  var link = title.find('.expandable')[0];
-  var parameters = Nitrate.Utils.formSerialize(this);
-  var ctype = parameters.content_type;
-  var object_pk = parameters.object_pk;
-  var field = parameters.field;
-  var value = parameters.value;
-  var vtype = 'int';
 
-  // Callback when
-  var callback = function(t) {
-    // Update the contents
-    if (parameters.value !== '') {
-      // Update the case run status icon
-      var crs = Nitrate.TestRuns.CaseRunStatus;
-      title.find('.icon_status').each(function(index) {
-        for (let i in crs) {
-          if (typeof crs[i] === 'string' && jQ(this).is('.btn_' + crs[i])) {
-            jQ(this).removeClass('btn_' + crs[i]);
-          }
-        }
-        jQ(this).addClass('btn_' + Nitrate.TestRuns.CaseRunStatus[value - 1]);
-      });
+  let caseRunDetailCell = jQ(this).parents().eq(3);
+  let expandedCaseRunDetailRow = caseRunDetailCell.parent();
+  let caseRunRow = expandedCaseRunDetailRow.prev();
 
-      // Update related people
-      var usr = Nitrate.User;
-      title.find('.link_tested_by').each(function(i) {
-        this.href = 'mailto:' + usr.email;
-        jQ(this).html(usr.username);
-      });
-    }
-
-    // Mark the case run to mine
-    if (!title.is('.mine')) {
-      title.addClass('mine');
-    }
-
-    // Blind down next case
-    fireEvent(link, 'click');
-    if (jQ('#id_check_box_auto_blinddown').attr('checked') && parameters.value !== '') {
-      var next_title = parent.next();
-      if (!next_title.length) {
-        return false;
-      }
-      if (next_title.next().is(':hidden')) {
-        fireEvent(next_title.find('.expandable')[0], 'click');
-      }
-    } else {
-      fireEvent(link, 'click');
-    }
-  };
+  let formData = Nitrate.Utils.formSerialize(this);
+  let caseRunStatusId = formData.value;
 
   // Add comment
-  if (parameters.comment !== '') {
+  if (formData.comment !== '') {
     // Reset the content to loading
     let ajax_loading = getAjaxLoading();
-    ajax_loading.id = 'id_loading_' + parameters.case_id;
-    container.html(ajax_loading);
-    var c = jQ('<div>');
-    if (parameters.value !== '') {
-      submitComment(c[0], parameters);
+    ajax_loading.id = 'id_loading_' + formData.case_id;
+    caseRunDetailCell.html(ajax_loading);
+    if (caseRunStatusId !== '') {
+      submitComment(jQ('<div>')[0], formData);
     } else {
-      submitComment(c[0], parameters, callback);
+      submitComment(jQ('<div>')[0], formData, function () {
+        updateCaseRunDetailAfterCommentIsAdded(caseRunRow, expandedCaseRunDetailRow, caseRunStatusId);
+      });
     }
   }
 
   // Update the object when changing the status
-  if (parameters.value !== '') {
+  if (caseRunStatusId !== '') {
     // Reset the content to loading
     let ajax_loading = getAjaxLoading();
-    ajax_loading.id = 'id_loading_' + parameters.case_id;
-    container.html(ajax_loading);
-    updateRunStatus(ctype, object_pk, field, value, vtype, callback);
+    ajax_loading.id = 'id_loading_' + formData.case_id;
+    caseRunDetailCell.html(ajax_loading);
+
+    updateRunStatus(
+      formData.content_type, formData.object_pk, formData.field, caseRunStatusId, 'int',
+      function (responseData) {
+        updateCaseRunDetailAfterCommentIsAdded(caseRunRow, expandedCaseRunDetailRow, caseRunStatusId);
+      });
   }
 }
 
@@ -694,24 +702,13 @@ function changeCaseRunOrder(run_id, case_run_id, sort_key) {
     return false;
   }
 
-  // Succeed callback
-  var s_callback = function(t) {
-    var returnobj = jQ.parseJSON(t.responseText);
-
-    if (returnobj.response === 'ok') {
+  updateObject('testruns.testcaserun', case_run_id, 'sortkey', nsk, 'int', function (responseData) {
+    if (responseData.response === 'ok') {
       window.location.reload();
     } else {
-      window.alert(returnobj.response);
+      window.alert(responseData.response);
     }
-  };
-
-  var ctype = 'testruns.testcaserun';
-  var object_pk = case_run_id;
-  var field = 'sortkey';
-  var value = nsk;
-  var vtype = 'int';
-
-  updateObject(ctype, object_pk, field, value, vtype, s_callback);
+  });
 }
 
 function taggleSortCaseRun(event) {
@@ -813,9 +810,9 @@ function editValue(form, hidebox, selectid, submitid) {
   jQ.ajax({
     'url': '/management/getinfo/',
     'type': 'GET',
+    'dataType': 'json',
     'data': {'info_type': 'env_values', 'env_property_id': env_property_id},
     'success': function(data, textStatus, jqXHR) {
-      let returnobj = jQ.parseJSON(jqXHR.responseText);
       let current_value = jQ("input[type=hidden][name=current_run_env]:eq(0)", form);
       let excludeValues = [];
       jQ("input[type=hidden][name=current_run_env]").each(function(index, element) {
@@ -826,7 +823,7 @@ function editValue(form, hidebox, selectid, submitid) {
       });
 
       let values = [];
-      jQ.each(returnobj, function(index, value) {
+      jQ.each(data, function(index, value) {
         if (jQ.inArray(value.pk, excludeValues) < 0) {
           values.push([value.pk, value.fields.value]);
         }
@@ -860,6 +857,7 @@ function submitValue(run_id, value, hidebox, select_field, submitid) {
   jQ.ajax({
     'url': '/runs/env_value/',
     'type': 'GET',
+    'dataType': 'json',
     'data': {
       'a': 'change',
       'old_env_value_id': old_value,
@@ -867,14 +865,13 @@ function submitValue(run_id, value, hidebox, select_field, submitid) {
       'run_id': run_id
     },
     'success': function(data, textStatus, jqXHR) {
-      let returnobj = jQ.parseJSON(jqXHR.responseText);
-      if (parseInt(returnobj.rc) === 0) {
+      if (data.rc === 0) {
         jQ('#' + hidebox).html(new_value).show();
         jQ(select_field).hide();
         jQ('#' + submitid).hide();
         jQ(select_field).prev().prev().val(select_field.value);
       } else {
-        window.alert(returnobj.response);
+        window.alert(data.response);
       }
     },
     'error': function(jqXHR, textStatus, errorThrown) {
@@ -895,6 +892,7 @@ function removeProperty(run_id, element) {
   jQ.ajax({
     'url': '/runs/env_value/',
     'type': 'GET',
+    'dataType': 'json',
     'data': {
       'a': 'remove',
       'info_type': 'env_values',
@@ -902,11 +900,10 @@ function removeProperty(run_id, element) {
       'run_id': run_id
     },
     'success': function(data, textStatus, jqXHR) {
-      let returnobj = jQ.parseJSON(jqXHR.responseText);
-      if (parseInt(returnobj.rc) === 0) {
+      if (data.rc === 0) {
         emptySelf.remove();
       } else {
-        window.alert(returnobj.response);
+        window.alert(data.response);
       }
     },
     'error': function(jqXHR, textStatus, errorThrown) {
@@ -927,10 +924,10 @@ function addProperty(run_id,env_group_id) {
   jQ.ajax({
     'url': '/management/getinfo/',
     'type': 'GET',
+    'dataType': 'json',
     'data': {'info_type': 'env_properties', 'env_group_id': env_group_id},
     'success': function (data, textStatus, jqXHR) {
-      let returnobj = jQ.parseJSON(jqXHR.responseText);
-      let values = returnobj.map(function(o) {
+      let values = data.map(function(o) {
         return [o.pk, o.fields.name];
       });
 
@@ -954,10 +951,10 @@ function change_value(env_property_id, selectid) {
   jQ.ajax({
     'url': '/management/getinfo/',
     'type': 'GET',
+    'dataType': 'json',
     'data': {'info_type': 'env_values', 'env_property_id': env_property_id},
     'success': function (data, textStatus, jqXHR) {
-      let returnobj = jQ.parseJSON(jqXHR.responseText);
-      let values = returnobj.map(function(o) {
+      let values = data.map(function(o) {
         return [o.pk, o.fields.value];
       });
 
@@ -1292,7 +1289,16 @@ jQ(document).ready(function(){
     if (!window.confirm(default_messages.confirm.change_case_status)) {
       return false;
     }
-    updateObject('testruns.testcaserun', object_pks, 'case_run_status', option, 'int', reloadWindow);
+    updateObject(
+      'testruns.testcaserun', object_pks, 'case_run_status', option, 'int',
+      function (responseData) {
+        if (responseData.rc !== 0) {
+          window.alert(responseData.response);
+          return false;
+        }
+        window.location.reload();
+      }
+    );
   });
 });
 

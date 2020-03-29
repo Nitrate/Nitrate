@@ -28,9 +28,9 @@ Nitrate.Utils.convert = function(argument, data) {
   }
 };
 
-/*
+/**
  * Collect form data from input elements.
- * @param {HTMLForm} f - A HTML form from where to collect data.
+ * @param {HTMLFormElement} f - A HTML form from where to collect data.
  */
 Nitrate.Utils.formSerialize = function(f) {
   let params = {};
@@ -59,39 +59,14 @@ jQ(window).bind('load', function(e) {
     jQ('#id_bookmark_iform').bind('submit', function(e) {
       e.stopPropagation();
       e.preventDefault();
-      var url = this.action;
-      var dialog = showDialog();
-      var parameters = Nitrate.Utils.formSerialize(this);
+      let url = this.action;
+      let dialog = showDialog();
+      let parameters = Nitrate.Utils.formSerialize(this);
       parameters.url = window.location.href;
 
       if (!parameters.name) {
         parameters.name = document.title;
       }
-
-      var complete = function(t) {
-        var c = function(t) {
-          var returnobj = jQ.parseJSON(t.responseText);
-
-          if (returnobj.rc !== 0) {
-            window.alert(returnobj.response);
-            return returnobj;
-          }
-
-          clearDialog();
-          window.alert(default_messages.alert.bookmark_added);
-          return returnobj;
-        };
-
-        var form_observe = function(e) {
-          e.stopPropagation();
-          e.preventDefault();
-
-          addBookmark(this.action, this.method, Nitrate.Utils.formSerialize(this), c);
-        };
-
-        var form = constructForm(t.responseText, url, form_observe);
-        jQ(dialog).html(form);
-      };
 
       jQ.ajax({
         'url': url,
@@ -104,7 +79,21 @@ jQ(window).bind('load', function(e) {
           html_failure();
         },
         'complete': function(jqXHR, textStatus) {
-          complete(jqXHR);
+          jQ(dialog).html(constructForm(jqXHR.responseText, url, function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            addBookmark(this.action, this.method, Nitrate.Utils.formSerialize(this), function (responseData) {
+              if (responseData.rc !== 0) {
+                window.alert(responseData.response);
+                return responseData;
+              }
+
+              clearDialog();
+              window.alert(default_messages.alert.bookmark_added);
+              return responseData;
+            });
+          }));
         }
       });
     });
@@ -232,13 +221,11 @@ function html_failure() {
   return false;
 }
 
-function json_success_refresh_page(t) {
-  let returnobj = jQ.parseJSON(t.responseText);
-
-  if (parseInt(returnobj.rc) === 0) {
+function json_success_refresh_page(responseData) {
+  if (responseData.rc === 0) {
     window.location.reload();
   } else {
-    window.alert(returnobj.response);
+    window.alert(responseData.response);
     return false;
   }
 }
@@ -249,9 +236,10 @@ function addBookmark(url, method, parameters, callback) {
   jQ.ajax({
     'url': url,
     'type': method,
+    'dataType': 'json',
     'data': parameters,
     'success': function (data, textStatus, jqXHR) {
-      callback(jqXHR);
+      callback(data);
     },
     'error': function (jqXHR, textStatus, errorThrown) {
       json_failure(jqXHR);
@@ -420,13 +408,12 @@ function getBuildsByProductId(allow_blank, product_field, build_field) {
   jQ.ajax({
     'url': Nitrate.http.URLConf.reverse({ name: 'get_product_info' }),
     'type': 'GET',
+    'dataType': 'json',
     'data': {'info_type': 'builds', 'product_id': product_id, 'is_active': is_active},
     'success': function (data, textStatus, jqXHR) {
-      let returnobj = jQ.parseJSON(jqXHR.responseText);
-
       set_up_choices(
         build_field,
-        returnobj.map(function(o) { return [o.pk, o.fields.name]; }),
+        data.map(function(o) { return [o.pk, o.fields.name]; }),
         allow_blank
       );
 
@@ -521,13 +508,12 @@ function getVersionsByProductId(allow_blank, product_field, version_field) {
   jQ.ajax({
     'url': Nitrate.http.URLConf.reverse({ name: 'get_product_info' }),
     'type': 'GET',
+    'dataType': 'json',
     'data': {'info_type': 'versions', 'product_id': product_id},
     'success': function (data, textStatus, jqXHR) {
       set_up_choices(
         version_field,
-        jQ.parseJSON(jqXHR.responseText).map(function(o) {
-          return [o.pk, o.fields.value];
-        }),
+        data.map(function(o) { return [o.pk, o.fields.value]; }),
         allow_blank
       );
     },
@@ -572,12 +558,11 @@ function getComponentsByProductId(allow_blank, product_field, component_field, c
     'url': Nitrate.http.URLConf.reverse({ name: 'get_product_info' }),
     'type': 'GET',
     'data': parameters,
+    'dataType': 'json',
     'success': function (data, textStatus, jqXHR) {
       set_up_choices(
         component_field,
-        jQ.parseJSON(jqXHR.responseText).map(function(o) {
-          return [o.pk, o.fields.name];
-        }),
+        data.map(function(o) { return [o.pk, o.fields.name]; }),
         allow_blank
       );
 
@@ -621,13 +606,12 @@ function getCategoriesByProductId(allow_blank, product_field, category_field) {
   jQ.ajax({
     'url': Nitrate.http.URLConf.reverse({ name: 'get_product_info' }),
     'type': 'GET',
+    'dataType': 'json',
     'data': {'info_type': 'categories', 'product_id': product_field.selectedOptions[0].value},
     'success': function (data, textStatus, jqXHR) {
       set_up_choices(
         category_field,
-        jQ.parseJSON(jqXHR.responseText).map(function(o) {
-          return [o.pk, o.fields.name];
-        }),
+        data.map(function(o) { return [o.pk, o.fields.name]; }),
         allow_blank
       );
     },
@@ -865,17 +849,16 @@ function batchProcessTag(parameters, callback, format) {
     'url': '/management/tags/',
     'type': 'GET',
     'data': parameters,
+    'dataType': 'json',
     'traditional': true,
     'success': function (data, textStatus, jqXHR) {
       if (!format) {
-        let returnobj = jQ.parseJSON(jqXHR.responseText);
-
-        if (returnobj.response === 'ok') {
+        if (data.response === 'ok') {
           if (callback) {
             callback.call();
           }
         } else {
-          window.alert(returnobj.response);
+          window.alert(data.response);
           return false;
         }
       } else {
@@ -892,10 +875,11 @@ function removeComment(form, callback) {
   jQ.ajax({
     'url': form.action,
     'type': form.method,
+    'dataType': 'json',
     'data': parameters,
     'success': function (data, textStatus, jqXHR) {
       updateCommentsCount(parameters.object_pk, false);
-      callback(jqXHR);
+      callback(data);
     },
     'error': function (jqXHR, textStatus, errorThrown) {
       json_failure(jqXHR);
@@ -910,15 +894,14 @@ function submitComment(container, parameters, callback) {
   jQ.ajax({
     'url': '/comments/post/',
     'type': 'POST',
+    'dataType': 'json',
     'data': parameters,
     'success': function (data, textStatus, jqXHR) {
       jQ(container).html(data);
     },
     'complete': function () {
-      updateCommentsCount(parameters.case_id, true);
-      if (callback) {
-        callback();
-      }
+      updateCommentsCount(parameters.object_pk, true);
+      callback();
     }
   });
 }
@@ -940,6 +923,15 @@ function updateCommentsCount(caseId, increase) {
   }
 }
 
+/**
+ * Preview Plan
+ * @param parameters
+ * @param action
+ * @callback callback - a function with only one event argument will be bound to a HTMLFormElement submit event.
+ * @param notice
+ * @param s
+ * @param c
+ */
 function previewPlan(parameters, action, callback, notice, s, c) {
   let dialog = getDialog();
 
@@ -976,10 +968,11 @@ function getInfo(parameters, callback, container, allow_blank, format) {
   jQ.ajax({
     'url': Nitrate.http.URLConf.reverse({ name: 'get_product_info' }),
     'type': 'GET',
+    'dataType': 'json',
     'data': parameters,
     'success': function (data, textStatus, jqXHR) {
       if (callback) {
-        callback(jqXHR, allow_blank, container);
+        callback(data, allow_blank, container);
       }
     },
     'error': function (jqXHR, textStatus, errorThrown) {
@@ -1012,6 +1005,17 @@ function getForm(container, app_form, parameters, callback, format) {
   });
 }
 
+/**
+ * Update run status.
+ * @param content_type
+ * @param object_pk
+ * @param field
+ * @param value
+ * @param value_type
+ * @param {function} callback - a function will be called when AJAX request succeeds. This function
+ *                              accepts only one argument of the parsed JSON data returned from
+ *                              server side.
+ */
 function updateRunStatus(content_type, object_pk, field, value, value_type, callback) {
   if (!value_type) {
     value_type = 'str';
@@ -1023,6 +1027,7 @@ function updateRunStatus(content_type, object_pk, field, value, value_type, call
   jQ.ajax({
     'url': '/ajax/update/case-run-status',
     'type': 'POST',
+    'dataType': 'json',
     'data': {
       'content_type': content_type,
       'object_pk': object_pk,
@@ -1031,7 +1036,7 @@ function updateRunStatus(content_type, object_pk, field, value, value_type, call
       'value_type': value_type
     },
     'success': function (data, textStatus, jqXHR) {
-      callback();
+      callback(data);
     },
     'error': function (jqXHR, textStatus, errorThrown) {
       json_failure(jqXHR);
@@ -1039,6 +1044,17 @@ function updateRunStatus(content_type, object_pk, field, value, value_type, call
   });
 }
 
+/**
+ * Update one object property at a time.
+ * @param content_type
+ * @param object_pk
+ * @param field
+ * @param value
+ * @param value_type
+ * @param {function} callback - a function will be called when AJAX request succeeds. This function
+ *                              should accept only one argument, that is the parsed JSON data
+ *                              returned from server side.
+ */
 function updateObject(content_type, object_pk, field, value, value_type, callback) {
   if (!value_type) {
     value_type = 'str';
@@ -1051,6 +1067,7 @@ function updateObject(content_type, object_pk, field, value, value_type, callbac
   jQ.ajax({
     'url': '/ajax/update/',
     'type': 'POST',
+    'dataType': 'json',
     'data': {
       'content_type': content_type,
       'object_pk': object_pk,
@@ -1059,21 +1076,12 @@ function updateObject(content_type, object_pk, field, value, value_type, callbac
       'value_type': value_type
     },
     'success': function (data, textStatus, jqXHR) {
-      callback(jqXHR);
+      callback(data);
     },
     'error': function (jqXHR, textStatus, errorThrown) {
       json_failure(jqXHR);
     }
   });
-}
-
-function reloadWindow(jqXHR) {
-  let returnobj = jQ.parseJSON(jqXHR.responseText);
-  if (returnobj.rc !== 0) {
-    window.alert(returnobj.response);
-    return false;
-  }
-  window.location.reload();
 }
 
 /**
@@ -1082,24 +1090,24 @@ function reloadWindow(jqXHR) {
  * @param {string} content_type - use for updateObject method
  * @param object_pks - Int/Array - use for updateObject method
  * @param {string} field - use for updateObject method
- * @param {function} callback - use for updateObject method
+ * @callback callback - use for updateObject method
  */
-function getInfoAndUpdateObject(parameters, content_type, object_pks, field, callback) {
-  getInfo(parameters, function (jqXHR) {
-    let returnobj = jQ.parseJSON(jqXHR.responseText);
-
+function getInfoAndUpdateObject(parameters, content_type, object_pks, field) {
+  getInfo(parameters, function (responseData) {
     // FIXME: Display multiple items and let user to select one
-    if (returnobj.length === 0) {
+    if (responseData.length === 0) {
       window.alert('Nothing found in database');
       return false;
     }
 
-    if (returnobj.length > 1) {
+    if (responseData.length > 1) {
       window.alert('Multiple instances reached, please define the condition more clear.');
       return false;
     }
 
-    updateObject(content_type, object_pks, field, returnobj[0].pk, 'str', callback || reloadWindow);
+    updateObject(content_type, object_pks, field, responseData[0].pk, 'str', function (responseData) {
+      window.location.reload();
+    });
   });
 }
 
@@ -1143,6 +1151,16 @@ function bindSelectAllCheckbox(element, form, name) {
   });
 }
 
+/**
+ * Construct an HTML form element.
+ * @param content
+ * @param action
+ * @param {function} form_observe - an optional function bound to the generated form's submit event.
+ * @param info
+ * @param s
+ * @param c
+ * @returns the form element.
+ */
 function constructForm(content, action, form_observe, info, s, c) {
   let f = jQ('<form>', {'action': action});
   let i = jQ('<div>', {'class': 'alert'});

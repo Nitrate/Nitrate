@@ -25,22 +25,23 @@ Nitrate.TestPlans.TreeView = {
   'tree_elements': jQ('<div>')[0],
   'default_container': 'id_tree_container',
   'default_parameters': { t: 'ajax' }, // FIXME: Doesn't make effect here.
-  'filter': function(parameters, callback) {
-    var url = Nitrate.http.URLConf.reverse({ name: 'plans' });
 
+  'filter': function(parameters, callback) {
     jQ.ajax({
       'type': 'GET',
-      'url': url,
+      'url': Nitrate.http.URLConf.reverse({name: 'plans'}),
+      'dataType': 'json',
       'data': parameters,
       'async': false,
       'success': function (data, textStatus, jqXHR) {
-        callback(jqXHR);
+        callback(data);
       },
       'error': function (jqXHR, textStatus, errorThrown) {
         json_failure(jqXHR);
       }
     });
   },
+
   'init': function(plan_id) {
     this.pk = plan_id;
 
@@ -49,13 +50,11 @@ Nitrate.TestPlans.TreeView = {
 
     // Get the current plan
     var p1 = {pk: plan_id, t: 'ajax'};
-    var c1 = function(t) {
-      var returnobj = jQ.parseJSON(t.responseText);
-      if (returnobj.length) {
-        c_plan = returnobj[0];
+    this.filter(p1, function (responseData) {
+      if (responseData.length) {
+        c_plan = responseData[0];
       }
-    };
-    this.filter(p1, c1);
+    });
     if (!c_plan) {
       window.alert('Plan ' + plan_id + ' can not found in database');
       return false;
@@ -64,27 +63,24 @@ Nitrate.TestPlans.TreeView = {
     // Get the parent plan
     if (c_plan.parent_id) {
       var p2 = { pk: c_plan.parent_id, t: 'ajax'};
-      var c2 = function(t) {
-        p_plan = jQ.parseJSON(t.responseText)[0];
-      };
-      this.filter(p2, c2);
+      this.filter(p2, function (responseData) {
+        p_plan = responseData[0];
+      });
     }
 
     // Get the brother plans
     if (c_plan.parent_id) {
       var p3 = { parent__pk: c_plan.parent_id, t: 'ajax'};
-      var c3 = function(t) {
-        b_plans = jQ.parseJSON(t.responseText);
-      };
-      this.filter(p3, c3);
+      this.filter(p3, function (responseData) {
+        b_plans = responseData;
+      });
     }
 
     // Get the child plans
     var p4 = { 'parent__pk': c_plan.pk, 't': 'ajax'};
-    var c4 = function(t) {
-      ch_plans = jQ.parseJSON(t.responseText);
-    };
-    this.filter(p4, c4);
+    this.filter(p4, function (responseData) {
+      ch_plans = responseData;
+    });
 
     // Combine all of plans
     // Presume the plan have parent and brother at first
@@ -111,23 +107,19 @@ Nitrate.TestPlans.TreeView = {
   },
   'up': function(e) {
     var tree = Nitrate.TestPlans.TreeView;
-    var parent_obj, brother_obj;
+    var parent_obj = null, brother_obj = null;
 
     var parent_param = { pk: tree.data[0].parent_id, t: 'ajax' };
 
-    var parent_callback = function(t) {
-      var returnobj = jQ.parseJSON(t.responseText);
-      parent_obj = {0: returnobj[0], length: 1};
-    };
-    tree.filter(parent_param, parent_callback);
+    tree.filter(parent_param, function (responseData) {
+      parent_obj = {0: responseData[0], length: 1};
+    });
 
     var brother_param = { parent__pk: tree.data[0].parent_id, t: 'ajax' };
 
-    var brother_callback = function(t){
-      brother_obj = jQ.parseJSON(t.responseText);
-    };
-
-    tree.filter(brother_param, brother_callback);
+    tree.filter(brother_param, function (responseData) {
+      brother_obj = responseData;
+    });
 
     if (parent_obj && brother_obj.length) {
       parent_obj[0].children = brother_obj;
@@ -164,15 +156,11 @@ Nitrate.TestPlans.TreeView = {
 
           case 'collapse_icon':
             if (typeof obj.children !== 'object' || obj.children === []) {
-              var cbGetChildPlans = function(t) {
-                var returnobj = jQ.parseJSON(t.responseText);
-                returnobj = Nitrate.Utils.convert('obj_to_list', returnobj);
-                tree.insert(obj, returnobj);
-                var ul = tree.render(returnobj);
-                li_container.append(ul);
-              };
-              var p = { parent__pk: e_pk, t: 'ajax' };
-              tree.filter(p, cbGetChildPlans);
+              tree.filter({parent__pk: e_pk, t: 'ajax'}, function (responseData) {
+                let data = Nitrate.Utils.convert('obj_to_list', responseData);
+                tree.insert(obj, data);
+                li_container.append(tree.render(data));
+              });
             }
 
             li_container.find('ul').eq(0).show();
@@ -376,27 +364,27 @@ Nitrate.TestPlans.TreeView = {
       return;
     }
 
-    var parameters = { pk__in: cleanedChildPlanIds.join(',') };
-
-    var callback = function(e) {
+    // FIXME: this first argument is not being used.
+    constructPlanParentPreviewDialog(childPlanIds, {pk__in: cleanedChildPlanIds.join(',')}, function (e) {
       e.stopPropagation();
       e.preventDefault();
-      var cbUpdateTreeView = function(t) {
-        clearDialog();
-        var planDetails = Nitrate.TestPlans.Details;
-        var container = planDetails.getTabContentContainer({
-          containerId: planDetails.tabContentContainerIds.treeview
-        });
-        planDetails.loadPlansTreeView(plan_id);
-        self.toggleRemoveChildPlanButton();
-      };
 
-      updateObject('testplans.testplan', Nitrate.Utils.formSerialize(this).plan_id,
-                   'parent', plan_id, 'int', cbUpdateTreeView);
-    };
-
-    // FIXME: this first argument is not being used.
-    constructPlanParentPreviewDialog(childPlanIds, parameters, callback);
+      updateObject(
+        'testplans.testplan',
+        Nitrate.Utils.formSerialize(this).plan_id,
+        'parent',
+        plan_id,
+        'int',
+        function (responseData) {
+          clearDialog();
+          // let container = planDetails.getTabContentContainer({
+          //   containerId: planDetails.tabContentContainerIds.treeview
+          // });
+          Nitrate.TestPlans.Details.loadPlansTreeView(plan_id);
+          self.toggleRemoveChildPlanButton();
+        }
+      );
+    });
   },
   'removeChildPlan': function(container, plan_id) {
     var self = this;
@@ -421,30 +409,29 @@ Nitrate.TestPlans.TreeView = {
         return false;
       }
     }
-    var parameters = {pk__in: p};
 
-    var callback = function(e) {
+    constructPlanParentPreviewDialog(p, {pk__in: p}, function (e) {
       e.stopPropagation();
       e.preventDefault();
-      var tree = Nitrate.TestPlans.TreeView;
-      var cbUpdateTreeView = function(t) {
-        clearDialog();
-        var planDetails = Nitrate.TestPlans.Details;
-        var container = planDetails.getTabContentContainer({
-          containerId: planDetails.tabContentContainerIds.treeview
-        });
-        planDetails.loadPlansTreeView(plan_id);
-        self.toggleRemoveChildPlanButton();
-      };
 
-      updateObject('testplans.testplan', Nitrate.Utils.formSerialize(this).plan_id,
-                   'parent', 0, 'None', cbUpdateTreeView);
-    };
-
-    constructPlanParentPreviewDialog(p, parameters, callback);
+      updateObject(
+        'testplans.testplan',
+        Nitrate.Utils.formSerialize(this).plan_id,
+        'parent',
+        0,
+        'None',
+        function (responseData) {
+          clearDialog();
+          // var container = planDetails.getTabContentContainer({
+          //   containerId: planDetails.tabContentContainerIds.treeview
+          // });
+          Nitrate.TestPlans.Details.loadPlansTreeView(plan_id);
+          self.toggleRemoveChildPlanButton();
+        }
+      );
+    });
   },
   'changeParentPlan': function(container, plan_id) {
-    var tree = Nitrate.TestPlans.TreeView;
     var p = prompt('Enter new parent plan ID');
     if (!p) {
       return false;
@@ -459,38 +446,36 @@ Nitrate.TestPlans.TreeView = {
         return false;
       }
 
-    var parameters = {plan_id: p};
-    var callback = function(e) {
+    constructPlanParentPreviewDialog(p, {plan_id: p}, function (e) {
       e.stopPropagation();
       e.preventDefault();
-      var tree = Nitrate.TestPlans.TreeView;
-      var cbAfterUpdatingPlan = function(t) {
-        var plan;
-        var param = { plan_id: p, t: 'ajax' };
-        var c = function(t) {
-          plan = Nitrate.Utils.convert('obj_to_list', jQ.parseJSON(t.responseText));
 
-          if (tree.data[0].pk === plan_id) {
-            plan[0].children = jQ.extend({}, tree.data);
-            tree.data = plan;
-            tree.render_page();
-          } else {
-            plan[0].children = jQ.extend({}, tree.data[0].children);
-            tree.data = plan;
-            tree.render_page();
-          }
+      updateObject(
+        'testplans.testplan',
+        plan_id,
+        'parent',
+        Nitrate.Utils.formSerialize(this).plan_id,
+        'int',
+        function (responseData) {
+          let tree = Nitrate.TestPlans.TreeView;
+          tree.filter({plan_id: p, t: 'ajax'}, function (responseData) {
+            let plan = Nitrate.Utils.convert('obj_to_list', responseData);
 
-          clearDialog();
-        };
+            if (tree.data[0].pk === plan_id) {
+              plan[0].children = jQ.extend({}, tree.data);
+              tree.data = plan;
+              tree.render_page();
+            } else {
+              plan[0].children = jQ.extend({}, tree.data[0].children);
+              tree.data = plan;
+              tree.render_page();
+            }
 
-        tree.filter(param, c);
-      };
-
-      updateObject('testplans.testplan', plan_id, 'parent',
-        Nitrate.Utils.formSerialize(this).plan_id, 'int', cbAfterUpdatingPlan);
-    };
-
-    constructPlanParentPreviewDialog(p, parameters, callback);
+            clearDialog();
+          });
+        }
+      );
+    });
   }
 };
 
@@ -915,13 +900,17 @@ Nitrate.TestPlans.Details = {
     // Initial the enable/disble btns
     if (jQ('#btn_disable').length) {
       jQ('#btn_disable').bind('click', function(e){
-        updateObject('testplans.testplan', plan_id, 'is_active', 'False', 'bool', reloadWindow);
+        updateObject('testplans.testplan', plan_id, 'is_active', 'False', 'bool', function (responseData) {
+          window.location.reload();
+        });
       });
     }
 
     if (jQ('#btn_enable').length) {
       jQ('#btn_enable').bind('click', function(e) {
-        updateObject('testplans.testplan', plan_id, 'is_active', 'True', 'bool', reloadWindow);
+        updateObject('testplans.testplan', plan_id, 'is_active', 'True', 'bool', function (responseData) {
+          window.location.reload();
+        });
       });
     }
   },
@@ -1184,41 +1173,35 @@ function showShortSummary() {
  * Rewrite function unlinkCasePlan to avoid conflict. Remove it when confirm it's not used any more.
  */
 function unlinkCasesFromPlan(container, form, table) {
-  var selection = serializeCaseFromInputList2(table);
+  if (! confirm("Are you sure you want to delete test case(s) from this test plan?")) {
+    return false;
+  }
+
+  let selection = serializeCaseFromInputList2(table);
   if (selection.empty()) {
     window.alert('At least one case is required to delete.');
     return false;
   }
 
-  var parameters = serialzeCaseForm(form, table, true);
+  let parameters = serialzeCaseForm(form, table, true);
   if (selection.selectAll) {
     parameters.selectAll = selection.selectAll;
   }
   parameters.case = selection.selectedCasesIds;
 
-  var c = confirm("Are you sure you want to delete test case(s) from this test plan?");
-  if (!c) {
-    return false;
-  }
-
-  var success = function(t) {
-    let returnobj = jQ.parseJSON(t.responseText);
-    if (parseInt(returnobj.rc) === 0) {
-      parameters.a = 'initial';
-      constructPlanDetailsCasesZone(container, parameters.from_plan, parameters);
-      return true;
-    }
-    window.alert(returnobj.response);
-  };
-
-  var url = 'delete-cases/';
   jQ.ajax({
-    'url': url,
+    'url': 'delete-cases/',
     'type': 'POST',
+    'dataType': 'json',
     'data': parameters,
     'traditional': true,
     'success': function (data, textStatus, jqXHR) {
-      success(jqXHR);
+      if (data.rc === 0) {
+        parameters.a = 'initial';
+        constructPlanDetailsCasesZone(container, parameters.from_plan, parameters);
+        return true;
+      }
+      window.alert(data.response);
     },
     'error': function (jqXHR, textStatus, errorThrown) {
       json_failure(jqXHR);
@@ -1297,12 +1280,9 @@ function bindEventsOnLoadedCases(options) {
 
     // Observe the change sortkey
     jQ(container).parent().find('.case_sortkey.js-just-loaded').bind('click', function(e) {
-      var c = jQ(this).next(); // Container
-      var params = { 'testcaseplan': c.html(), 'sortkey': jQ(this).html() };
-      var callback = function(t) {
-       constructPlanDetailsCasesZone(cases_container, plan_id, parameters);
-      };
-      changeCaseOrder(params, callback);
+      changeCaseOrder({'testcaseplan': jQ(this).next().html(), 'sortkey': jQ(this).html()}, function (responseData) {
+        constructPlanDetailsCasesZone(cases_container, plan_id, parameters);
+      });
     });
 
     jQ(container).parent().find('.change_status_selector.js-just-loaded').bind('change', function(e) {
@@ -1314,11 +1294,11 @@ function bindEventsOnLoadedCases(options) {
 
     // Display/Hide the case content
     jQ(container).parent().find('.expandable.js-just-loaded').bind('click', function(e) {
-      var btn = this;
-      var title = jQ(this).parent()[0]; // Container
-      var content = jQ(this).parent().next()[0]; // Content Containers
-      var case_id = title.id;
-      var template_type = jQ(form).parent().find('input[name="template_type"]')[0].value;
+      let btn = this;
+      let title = jQ(this).parent()[0]; // Container
+      let content = jQ(this).parent().next()[0]; // Content Containers
+      let case_id = title.id;
+      let template_type = jQ(form).parent().find('input[name="template_type"]')[0].value;
 
       if (template_type === 'case') {
         toggleTestCasePane({ 'case_id': case_id, 'casePaneContainer': jQ(content) });
@@ -1327,52 +1307,47 @@ function bindEventsOnLoadedCases(options) {
       }
 
       // Review case content call back;
-      var review_case_content_callback = function(e) {
-        var comment_container_t = jQ('<div>')[0];
+      let review_case_content_callback = function(e) {
+        let comment_container_t = jQ('<div>')[0];
+
         // Change status/comment callback
-        var cc_callback = function(e) {
+        jQ(content).parent().find('.update_form').unbind('submit').bind('submit', function (e) {
           e.stopPropagation();
           e.preventDefault();
-          var params = Nitrate.Utils.formSerialize(this);
-          var refresh_case = function(t) {
-            var td = jQ('<td>', {colspan: 12});
-            var id = 'id_loading_' + params.object_pk;
-            td.append(getAjaxLoading(id));
+
+          let params = Nitrate.Utils.formSerialize(this);
+          submitComment(comment_container_t, params, function () {
+            let td = jQ('<td>', {colspan: 12});
+            td.append(getAjaxLoading('id_loading_' + params.object_pk));
             jQ(content).html(td);
             fireEvent(btn, 'click');
             fireEvent(btn, 'click');
-          };
-          submitComment(comment_container_t, params, refresh_case);
-        };
-        jQ(content).parent().find('.update_form').unbind('submit');
-        jQ(content).parent().find('.update_form').bind('submit', cc_callback);
+          });
+        });
 
         // Observe the delete comment form
-        var rc_callback = function(e) {
+        jQ(content).parent().find('.form_comment').unbind('submit').bind('submit', function (e) {
           e.stopPropagation();
           e.preventDefault();
+
           if (!window.confirm(default_messages.confirm.remove_comment)) {
             return false;
           }
-          var params = Nitrate.Utils.formSerialize(this);
-          var refresh_case = function(t) {
-            var returnobj = jQ.parseJSON(t.responseText);
-            if (returnobj.rc !== 0) {
-              window.alert(returnobj.response);
+          // Every comment form has a hidden input with name object_pk to associate with the case.
+          let caseId = Nitrate.Utils.formSerialize(this).object_pk;
+          removeComment(this, function (responseData) {
+            if (responseData.rc !== 0) {
+              window.alert(responseData.response);
               return false;
             }
 
-            var td = jQ('<td>', {colspan: 12});
-            var id = 'id_loading_' + params.object_pk;
-            td.append(getAjaxLoading(id));
+            let td = jQ('<td>', {colspan: 12});
+            td.append(getAjaxLoading('id_loading_' + caseId));
             jQ(content).html(td);
             fireEvent(btn, 'click');
             fireEvent(btn, 'click');
-          };
-          removeComment(this, refresh_case);
-        };
-        jQ(content).parent().find('.form_comment').unbind('submit');
-        jQ(content).parent().find('.form_comment').bind('submit', rc_callback);
+          });
+        });
       };
 
       let case_content_callback = null;
@@ -1469,64 +1444,54 @@ function serializeFormData(options) {
  * Event handler invoked when TestCases' Status is changed.
  */
 function onTestCaseStatusChange(options) {
-  var form = options.form;
-  var table = options.table;
-  var container = options.container;
-  var plan_id = options.planId;
+  let container = options.container;
 
   return function(e) {
-    var selection = serializeCaseFromInputList2(table);
+    let selection = serializeCaseFromInputList2(options.table);
     if (selection.empty()) {
       window.alert(default_messages.alert.no_case_selected);
       return false;
     }
-    var status_pk = this.value;
+    let status_pk = this.value;
     if (!status_pk) {
       return false;
     }
-    var c = window.confirm(default_messages.confirm.change_case_status);
-    if (!c) {
+    if (! window.confirm(default_messages.confirm.change_case_status)) {
       return false;
     }
 
-    var postdata = serializeFormData({
-      'form': form,
+    let postdata = serializeFormData({
+      'form': options.form,
       'zoneContainer': container,
       'casesSelection': selection,
       'hashable': true
     });
     postdata.a = 'update';
 
-    var update_status_data = {
-      'from_plan': postdata.from_plan,
-      'case': postdata.case,
-      'target_field': 'case_status',
-      'new_value': status_pk
-    };
-
-    var afterStatusChangedCallback = function(response) {
-      var returnobj = jQ.parseJSON(response.responseText);
-
-      if (parseInt(returnobj.rc) === 0) {
-        constructPlanDetailsCasesZone(container, plan_id, postdata);
-        jQ('#run_case_count').text(returnobj.run_case_count);
-        jQ('#case_count').text(returnobj.case_count);
-        jQ('#review_case_count').text(returnobj.review_case_count);
-
-        Nitrate.TestPlans.Details.reopenTabHelper(jQ(container));
-      } else {
-        window.alert(returnobj.response);
-        return false;
-      }
-    };
-
     jQ.ajax({
       'type': 'POST',
       'url': '/ajax/update/case-status/',
-      'data': update_status_data,
+      'dataType': 'json',
+      'data': {
+        'from_plan': postdata.from_plan,
+        'case': postdata.case,
+        'target_field': 'case_status',
+        'new_value': status_pk
+      },
       'traditional': true,
       'success': function (data, textStatus, jqXHR) {
-        afterStatusChangedCallback(jqXHR);
+        if (data.rc === 0) {
+          constructPlanDetailsCasesZone(container, options.planId, postdata);
+
+          jQ('#run_case_count').text(data.run_case_count);
+          jQ('#case_count').text(data.case_count);
+          jQ('#review_case_count').text(data.review_case_count);
+
+          Nitrate.TestPlans.Details.reopenTabHelper(jQ(container));
+        } else {
+          window.alert(data.response);
+          return false;
+        }
       },
       'error': function (jqXHR, textStatus, errorThrown) {
         json_failure(jqXHR);
@@ -1540,13 +1505,10 @@ function onTestCaseStatusChange(options) {
  * Event handler invoked when TestCases' Priority is changed.
  */
 function onTestCasePriorityChange(options) {
-  var form = options.form;
-  var table = options.table;
-  var container = options.container;
-  var plan_id = options.planId;
+  let container = options.container;
 
   return function(e) {
-    var selection = serializeCaseFromInputList2(table);
+    let selection = serializeCaseFromInputList2(options.table);
     if (selection.empty()) {
       window.alert(default_messages.alert.no_case_selected);
       return false;
@@ -1555,42 +1517,35 @@ function onTestCasePriorityChange(options) {
     if (!this.value) {
       return false;
     }
-    var c = window.confirm(default_messages.confirm.change_case_priority);
-    if (!c) {
+    if (! window.confirm(default_messages.confirm.change_case_priority)) {
       return false;
     }
 
-    var postdata = serializeFormData({
-      'form': form,
+    let postdata = serializeFormData({
+      'form': options.form,
       'zoneContainer': container,
       'casesSelection': selection,
       'hashable': true
     });
     postdata.a = 'update';
 
-    var update_priority_data = {
-      'from_plan': postdata.from_plan,
-      'case': postdata.case,
-      'target_field': 'priority',
-      'new_value': this.value
-    };
-
-    var afterPriorityChangedCallback = function(response) {
-      var returnobj = jQ.parseJSON(response.responseText);
-      if (returnobj.rc !== 0) {
-        window.alert(returnobj.response);
-        return false;
-      }
-      constructPlanDetailsCasesZone(container, plan_id, postdata);
-    };
-
     jQ.ajax({
       'type': 'POST',
       'url': '/ajax/update/cases-priority/',
-      'data': update_priority_data,
+      'dataType': 'json',
+      'data': {
+        'from_plan': postdata.from_plan,
+        'case': postdata.case,
+        'target_field': 'priority',
+        'new_value': this.value
+      },
       'traditional': true,
       'success': function (data, textStatus, jqXHR) {
-        afterPriorityChangedCallback(jqXHR);
+        if (data.rc !== 0) {
+          window.alert(data.response);
+          return false;
+        }
+        constructPlanDetailsCasesZone(container, options.planId, postdata);
       },
       'error': function (jqXHR, textStatus, errorThrown) {
         json_failure(jqXHR);
@@ -1604,40 +1559,35 @@ function onTestCasePriorityChange(options) {
  * Event handler invoked when TestCases' Automated is changed.
  */
 function onTestCaseAutomatedClick(options) {
-  var form = options.form;
-  var table = options.table;
-  var plan_id = options.planId;
-  var container = options.container;
+  let container = options.container;
 
   return function(e) {
-    var selection = serializeCaseFromInputList2(table);
+    let selection = serializeCaseFromInputList2(options.table);
     if (selection.empty()) {
       window.alert(default_messages.alert.no_case_selected);
       return false;
     }
 
-    var dialogContainer = getDialog();
-    var afterAutomatedChangedCallback = function(response) {
-      var returnobj = jQ.parseJSON(response.responseText);
-      if (returnobj.rc !== 0) {
-        window.alert(returnobj.response);
-        return false;
-      }
+    let dialogContainer = getDialog();
 
-      var params = serialzeCaseForm(form, table, true, true);
-      /*
-       * FIXME: this is confuse. There is no need to assign this
-       *        value explicitly when update component and category.
-       */
-      params.a = 'search';
-      params.case = selection.selectedCasesIds;
-      constructPlanDetailsCasesZone(container, plan_id, params);
-      clearDialog(dialogContainer);
-    };
+    constructCaseAutomatedForm(
+      dialogContainer,
+      {'zoneContainer': container, 'casesSelection': selection},
+      function (responseData) {
+        if (responseData.rc !== 0) {
+          window.alert(responseData.response);
+          return false;
+        }
 
-    constructCaseAutomatedForm(dialogContainer, afterAutomatedChangedCallback, {
-        'zoneContainer': container,
-        'casesSelection': selection
+        let params = serialzeCaseForm(options.form, options.table, true, true);
+        /*
+         * FIXME: this is confuse. There is no need to assign this
+         *        value explicitly when update component and category.
+         */
+        params.a = 'search';
+        params.case = selection.selectedCasesIds;
+        constructPlanDetailsCasesZone(container, options.planId, params);
+        clearDialog(dialogContainer);
       });
   };
 }
@@ -1762,10 +1712,9 @@ function onTestCaseTagDeleteClick(options) {
           'zoneContainer': options.container,
           'casesSelection': selection
         }),
-        function (jqXHR) {
-          let returnobj = jQ.parseJSON(jqXHR.responseText);
-          if (returnobj.rc !== 0) {
-            window.alert(returnobj.response);
+        function (responseData) {
+          if (responseData.rc !== 0) {
+            window.alert(responseData.response);
             return false;
           }
           // TODO: test whether params is enough instead of referencing parameters.
@@ -1798,10 +1747,9 @@ function onTestCaseSortNumberClick(options) {
 
     changeCaseOrder2(
       postdata,
-      function (jqXHR) {
-        let returnobj = jQ.parseJSON(jqXHR.responseText);
-        if (returnobj.rc !== 0) {
-          window.alert(returnobj.response);
+      function (responseData) {
+        if (responseData.rc !== 0) {
+          window.alert(responseData.response);
           return false;
         }
         postdata.case = selection.selectedCasesIds;
@@ -1855,10 +1803,9 @@ function onTestCaseCategoryClick(options) {
         return false;
       }
 
-      updateCaseCategory(Nitrate.http.URLConf.reverse({name: 'cases_category'}), params, function (jqXHR) {
-        let returnobj = jQ.parseJSON(jqXHR.responseText);
-        if (returnobj.rc !== 0) {
-          window.alert(returnobj.response);
+      updateCaseCategory(Nitrate.http.URLConf.reverse({name: 'cases_category'}), params, function (responseData) {
+        if (responseData.rc !== 0) {
+          window.alert(responseData.response);
           return false;
         }
         // TODO: whether can use params rather than parameters.
@@ -1897,6 +1844,7 @@ function onTestCaseDefaultTesterClick(options) {
     jQ.ajax({
       'type': 'POST',
       'url': '/ajax/update/cases-default-tester/',
+      'dataType': 'json',
       'data': {
         'from_plan': params.from_plan,
         'case': params.case,
@@ -1905,9 +1853,8 @@ function onTestCaseDefaultTesterClick(options) {
       },
       'traditional': true,
       'success': function (data, textStatus, jqXHR) {
-        let returnobj = jQ.parseJSON(jqXHR.responseText);
-        if (returnobj.rc !== 0) {
-          window.alert(returnobj.response);
+        if (data.rc !== 0) {
+          window.alert(data.response);
           return false;
         }
         constructPlanDetailsCasesZone(options.container, options.planId, params);
@@ -1959,10 +1906,9 @@ function onTestCaseComponentClick(options) {
           'zoneContainer': container,
           'casesSelection': selection
         }),
-        function (jqXHR) {
-          let returnobj = jQ.parseJSON(jqXHR.responseText);
-          if (returnobj.rc !== 0) {
-            window.alert(returnobj.response);
+        function (responseData) {
+          if (responseData.rc !== 0) {
+            window.alert(responseData.response);
             return false;
           }
           parameters['case'] = selection.selectedCasesIds;
@@ -2004,6 +1950,7 @@ function onTestCaseReviewerClick(options) {
     jQ.ajax({
       'type': 'POST',
       'url': '/ajax/update/cases-reviewer/',
+      'dataType': 'json',
       'data': {
         'from_plan': postdata.plan,
         'case': postdata.case,
@@ -2012,9 +1959,8 @@ function onTestCaseReviewerClick(options) {
       },
       'traditional': true,
       'success': function (data, textStatus, jqXHR) {
-        let returnobj = jQ.parseJSON(jqXHR.responseText);
-        if (returnobj.rc !== 0) {
-          window.alert(returnobj.response);
+        if (data.rc !== 0) {
+          window.alert(data.response);
           return false;
         }
         constructPlanDetailsCasesZone(options.container, options.planId, parameters);
@@ -2103,10 +2049,9 @@ function constructPlanDetailsCasesZoneCallback(options) {
       let element = jQ(form).parent().find('.btn_sort')[0];
       jQ(element).bind('click', function(e) {
         let params = serialzeCaseForm(form, table);
-        resortCasesDragAndDrop(container, this, form, table, params, function (jqXHR) {
-          let returnobj = jQ.parseJSON(jqXHR.responseText);
-          if (returnobj.rc !== 0) {
-            window.alert(returnobj.response);
+        resortCasesDragAndDrop(container, this, form, table, params, function (responseData) {
+          if (responseData.rc !== 0) {
+            window.alert(responseData.response);
           }
           params.a = 'initial';
           constructPlanDetailsCasesZone(container, plan_id, params);
@@ -2479,7 +2424,7 @@ function constructPlanParentPreviewDialog(plan_id, parameters, callback) {
 
 function resortCasesDragAndDrop(container, button, form, table, parameters, callback) {
   if (button.innerHTML !== 'Done Sorting') {
-    // Remove the elements affact the page
+    // Remove the elements affect the page
     jQ(form).parent().find('.blind_all_link').remove(); // Remove blind all link
     jQ(form).parent().find('.case_content').remove();
     jQ(form).parent().find('.blind_icon').remove();
@@ -2504,15 +2449,14 @@ function resortCasesDragAndDrop(container, button, form, table, parameters, call
       this.disabled = false;
     });
 
-    var url = 'reorder-cases/';
-
     jQ.ajax({
-      'url': url,
+      'url': 'reorder-cases/',
       'type': 'POST',
+      'dataType': 'json',
       'data': parameters,
       'traditional': true,
       'success': function (data, textStatus, jqXHR) {
-        callback(jqXHR);
+        callback(data);
       },
       'error': function (jqXHR, textStatus, errorThrown) {
         json_failure(jqXHR);
@@ -2530,27 +2474,24 @@ function FocusTabOnPlanPage(element) {
 }
 
 function expandCurrentPlan(element) {
-  var tree = Nitrate.TestPlans.TreeView;
-  if (jQ(element).find('.collapse_icon').length) {
-    var e_container = jQ(element).find('.collapse_icon');
-    var li_container = e_container.parent().parent();
-    var e_pk = e_container.next('a').html();
-    var expand_icon_url = '/static/images/t2.gif';
-    var obj = tree.traverse(tree.data, e_pk);
-    if (typeof obj.children !== 'object' || obj.children === []) {
-      var c = function(t) {
-        var returnobj = jQ.parseJSON(t.responseText);
-        returnobj = Nitrate.Utils.convert('obj_to_list', returnobj);
-        tree.insert(obj, returnobj);
-        var ul = tree.render(returnobj);
-        li_container.append(ul);
-      };
+  let tree = Nitrate.TestPlans.TreeView;
 
-      var p = { 'parent__pk': e_pk, 't': 'ajax' };
-      tree.filter(p, c);
+  if (jQ(element).find('.collapse_icon').length) {
+    let e_container = jQ(element).find('.collapse_icon');
+    let li_container = e_container.parent().parent();
+    let e_pk = e_container.next('a').html();
+    let obj = tree.traverse(tree.data, e_pk);
+
+    if (typeof obj.children !== 'object' || obj.children === []) {
+      tree.filter({'parent__pk': e_pk, 't': 'ajax'}, function (responseData) {
+        let objs = Nitrate.Utils.convert('obj_to_list', responseData);
+        tree.insert(obj, objs);
+        li_container.append(tree.render(objs));
+      });
     }
+
     li_container.find('ul').first().show();
-    e_container.attr('src', expand_icon_url)
+    e_container.attr('src', '/static/images/t2.gif')
       .removeClass('collapse_icon').addClass('expand_icon');
   }
 }

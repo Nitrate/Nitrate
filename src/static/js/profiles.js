@@ -33,30 +33,24 @@ Nitrate.Profiles.Bookmarks.on_load = function() {
       window.alert('No bookmark selected.');
       return false;
     }
-    removeBookmark(this.action, this.method, parameters, function (jqXHR) {
-      let returnobj = jQ.parseJSON(jqXHR.responseText);
 
-      if (returnobj.rc !== 0) {
-        window.alert(returnobj.response);
-        return returnobj;
+    jQ.ajax({
+      'url': this.action,
+      'type': this.method,
+      'data': parameters,
+      'dataType': 'json',
+      'traditional': true,
+      'success': function (data, textStatus, jqXHR) {
+        if (data.rc !== 0) {
+          window.alert(data.response);
+          return data;
+        }
+        // using location.reload will cause firefox(tested) remember the checking status
+        window.location = window.location;
+      },
+      'error': function (jqXHR, textStatus, errorThrown) {
+        json_failure(jqXHR);
       }
-      // using location.reload will cause firefox(tested) remember the checking status
-      window.location = window.location;
     });
   });
 };
-
-function removeBookmark(url, method, parameters, callback) {
-  jQ.ajax({
-    'url': url,
-    'type': method,
-    'data': parameters,
-    'traditional': true,
-    'success': function (data, textStatus, jqXHR) {
-      callback(jqXHR);
-    },
-    'error': function (jqXHR, textStatus, errorThrown) {
-      json_failure(jqXHR);
-    }
-  });
-}
