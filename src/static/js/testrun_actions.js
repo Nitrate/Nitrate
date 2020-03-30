@@ -273,11 +273,9 @@ Nitrate.TestRuns.Details.on_load = function() {
 
   // Observe the case run toggle and the comment form
   jQ('.expandable').bind('click', function (e) {
-    var c = jQ(this).parent(); // Case run row
-    var c_container = c.next(); // Next row to show case run details
-    var case_id = c.find('input[name="case"]')[0].value;
-    var case_run_id = c.find('input[name="case_run"]')[0].value;
-    var case_text_version = c.find('input[name="case_text_version"]')[0].value;
+    let c = jQ(this).parent(); // Case run row
+    let c_container = c.next(); // Next row to show case run details
+    let case_id = c.find('input[name="case"]')[0].value;
 
     let callback = function(t) {
       // Observe the update case run status/comment form
@@ -304,23 +302,19 @@ Nitrate.TestRuns.Details.on_load = function() {
         toggleDiv(this, jQ(this).data('param'));
       });
       c_container.find('.js-add-caserun-issue').bind('click', function() {
-        var addIssueInfo = jQ(this).data('params');
-        var caseRunReloadInfo = {
+        addIssueDialog.open(jQ(this).data('params'), {
           caseRunRow: c[0],
           caseRunDetailRow: c_container[0]
-        };
-        addIssueDialog.open(addIssueInfo, caseRunReloadInfo);
+        });
       });
       c_container.find('.js-remove-caserun-issue').bind('click', function(){
-        var removeIssueInfo = jQ(this).data('params');
-        var reloadInfo = {
+        removeIssueFromCaseRuns(jQ(this).data('params'), {
           caseRunRow: c[0],
           caseRunDetailRow: c_container[0]
-        };
-        removeIssueFromCaseRuns(removeIssueInfo, reloadInfo);
+        });
       });
       c_container.find('.js-add-testlog').bind('click', function(){
-        var params = jQ(this).data('params');
+        let params = jQ(this).data('params');
         addLinkToCaseRun(this, params[0], params[1]);
       });
       c_container.find('.js-remove-testlog').bind('click', function(){
@@ -328,11 +322,14 @@ Nitrate.TestRuns.Details.on_load = function() {
       });
     };
 
+    let caseRunId = c.find('input[name="case_run"]')[0].value;
+    let caseTextVersion = c.find('input[name="case_text_version"]')[0].value;
+
     toggleTestCaseRunPane({
       'callback': callback,
       'caseId': case_id,
-      'caserunId': case_run_id,
-      'caseTextVersion': case_text_version,
+      'caserunId': caseRunId,
+      'caseTextVersion': caseTextVersion,
       'caserunRowContainer': c,
       'expandPaneContainer': c_container
     });
@@ -443,14 +440,14 @@ Nitrate.TestRuns.Details.on_load = function() {
     addProperty(params[0], params[1]);
   });
   jQ('.js-edit-property').bind('click', function() {
-    var params = jQ(this).data('params');
+    let params = jQ(this).data('params');
     editValue(jQ(this).parents('form.js-run-env')[0], params[0], params[1], params[2]);
   });
   jQ('.js-remove-property').bind('click', function() {
     removeProperty(jQ(this).data('param'), this);
   });
   jQ('.js-env-submit').bind('click', function() {
-    var params = jQ(this).data('params');
+    let params = jQ(this).data('params');
     submitValue(params[0],params[1],params[2], jQ(this).prev()[0], params[3]);
   });
   jQ('.js-caserun-total').bind('click', function() {
@@ -460,7 +457,7 @@ Nitrate.TestRuns.Details.on_load = function() {
     showCaseRunsWithSelectedStatus(jQ('#id_filter')[0], jQ(this).data('param'));
   });
   jQ('.js-change-order').bind('click', function() {
-    var params = jQ(this).data('params');
+    let params = jQ(this).data('params');
     changeCaseRunOrder(params[0], params[1], params[2]);
   });
 };

@@ -65,16 +65,14 @@ Nitrate.TestCases.AdvanceList.on_load = function() {
     }
   });
 
-  var toggle_case = function(e) {
+  jQ('.expandable').bind('click', function (e) {
     var c = jQ(this).parent()[0]; // Container
     var c_container = jQ(c).next()[0]; // Content Containers
     var case_id = jQ(c).find('input[name="case"]')[0].value;
 
     toggleTestCasePane({ case_id: case_id, casePaneContainer: jQ(c_container) });
     toggleExpandArrow({ caseRowContainer: jQ(c), expandPaneContainer: jQ(c_container) });
-  };
-
-  jQ('.expandable').bind('click', toggle_case);
+  });
 
   jQ("#testcases_table tbody tr input[type=checkbox][name=case]").live('click', function() {
     if (jQ('input[type=checkbox][name=case]:checked').length) {
@@ -280,20 +278,6 @@ Nitrate.TestCases.Details.on_load = function() {
 
   bindSelectAllCheckbox(jQ('#id_checkbox_all_components')[0], jQ('#id_form_case_component')[0], 'component');
 
-  var toggle_case_run = function(e) {
-    let c = jQ(this).parent(); // Container
-    // FIXME: case_text_version is not used in the backend to show caserun
-    //        information, notes, logs, and comments.
-    // let case_text_version = c.find('input[name="case_text_version"]')[0].value;
-    // let type = 'case_case_run';
-    toggleSimpleCaseRunPane({
-      caserunRowContainer: c,
-      expandPaneContainer: c.next(),
-      caseId: c.find('input[name="case"]')[0].value,
-      caserunId: c.find('input[name="case_run"]')[0].value
-    });
-  };
-
   jQ('.plan_expandable').bind('click', function (e) {
     let c = jQ(this).parent();
     toggleCaseRunsByPlan(
@@ -305,7 +289,17 @@ Nitrate.TestCases.Details.on_load = function() {
         'case_run_plan_id': c[0].id
       },
       function (e) {
-        jQ('#table_case_runs_by_plan .expandable').bind('click', toggle_case_run);
+        jQ('#table_case_runs_by_plan .expandable').bind('click', function (e) {
+          let c = jQ(this).parent(); // Container
+          // FIXME: case_text_version is not used in the backend to show caserun
+          //        information, notes, logs, and comments.
+          toggleSimpleCaseRunPane({
+            caserunRowContainer: c,
+            expandPaneContainer: c.next(),
+            caseId: c.find('input[name="case"]')[0].value,
+            caserunId: c.find('input[name="case_run"]')[0].value
+          });
+        });
       });
   });
 

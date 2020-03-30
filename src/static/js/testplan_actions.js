@@ -49,8 +49,7 @@ Nitrate.TestPlans.TreeView = {
     var c_plan, p_plan, b_plans, ch_plans, tc_plan;
 
     // Get the current plan
-    var p1 = {pk: plan_id, t: 'ajax'};
-    this.filter(p1, function (responseData) {
+    this.filter({pk: plan_id, t: 'ajax'}, function (responseData) {
       if (responseData.length) {
         c_plan = responseData[0];
       }
@@ -62,23 +61,20 @@ Nitrate.TestPlans.TreeView = {
 
     // Get the parent plan
     if (c_plan.parent_id) {
-      var p2 = { pk: c_plan.parent_id, t: 'ajax'};
-      this.filter(p2, function (responseData) {
+      this.filter({pk: c_plan.parent_id, t: 'ajax'}, function (responseData) {
         p_plan = responseData[0];
       });
     }
 
     // Get the brother plans
     if (c_plan.parent_id) {
-      var p3 = { parent__pk: c_plan.parent_id, t: 'ajax'};
-      this.filter(p3, function (responseData) {
+      this.filter({parent__pk: c_plan.parent_id, t: 'ajax'}, function (responseData) {
         b_plans = responseData;
       });
     }
 
     // Get the child plans
-    var p4 = { 'parent__pk': c_plan.pk, 't': 'ajax'};
-    this.filter(p4, function (responseData) {
+    this.filter({'parent__pk': c_plan.pk, 't': 'ajax'}, function (responseData) {
       ch_plans = responseData;
     });
 
@@ -109,15 +105,11 @@ Nitrate.TestPlans.TreeView = {
     var tree = Nitrate.TestPlans.TreeView;
     var parent_obj = null, brother_obj = null;
 
-    var parent_param = { pk: tree.data[0].parent_id, t: 'ajax' };
-
-    tree.filter(parent_param, function (responseData) {
+    tree.filter({pk: tree.data[0].parent_id, t: 'ajax'}, function (responseData) {
       parent_obj = {0: responseData[0], length: 1};
     });
 
-    var brother_param = { parent__pk: tree.data[0].parent_id, t: 'ajax' };
-
-    tree.filter(brother_param, function (responseData) {
+    tree.filter({parent__pk: tree.data[0].parent_id, t: 'ajax'}, function (responseData) {
       brother_obj = responseData;
     });
 
@@ -283,7 +275,7 @@ Nitrate.TestPlans.TreeView = {
     return ul[0];
   },
   'render_page': function(container) {
-    var _container = container || this.default_container;
+    let _container = container || this.default_container;
     jQ('#' + _container).html(getAjaxLoading());
     jQ('#' + _container).html(this.render());
   },
@@ -432,30 +424,27 @@ Nitrate.TestPlans.TreeView = {
     });
   },
   'changeParentPlan': function(container, plan_id) {
-    var p = prompt('Enter new parent plan ID');
+    let p = prompt('Enter new parent plan ID');
     if (!p) {
       return false;
     }
-    var planId = window.parseInt(p);
-      if (isNaN(planId)) {
-        window.alert('Plan Id should be a numeric. ' + p + ' is invalid.');
-        return false;
-      }
-      if (planId === plan_id) {
-        window.alert('Parent plan should not be the current plan itself.');
-        return false;
-      }
+    let planId = window.parseInt(p);
+    if (isNaN(planId)) {
+      window.alert('Plan Id should be a numeric. ' + p + ' is invalid.');
+      return false;
+    }
+    if (planId === plan_id) {
+      window.alert('Parent plan should not be the current plan itself.');
+      return false;
+    }
 
     constructPlanParentPreviewDialog(p, {plan_id: p}, function (e) {
       e.stopPropagation();
       e.preventDefault();
 
+      let planId = Nitrate.Utils.formSerialize(this).plan_id;
       updateObject(
-        'testplans.testplan',
-        plan_id,
-        'parent',
-        Nitrate.Utils.formSerialize(this).plan_id,
-        'int',
+        'testplans.testplan', plan_id, 'parent', planId, 'int',
         function (responseData) {
           let tree = Nitrate.TestPlans.TreeView;
           tree.filter({plan_id: p, t: 'ajax'}, function (responseData) {
@@ -684,9 +673,8 @@ Nitrate.TestPlans.Details = {
     'tag': 'tag'
   },
   'getTabContentContainer': function(options) {
-    var containerId = options.containerId;
-    var constants = Nitrate.TestPlans.Details.tabContentContainerIds;
-    var id = constants[containerId];
+    let constants = Nitrate.TestPlans.Details.tabContentContainerIds;
+    let id = constants[options.containerId];
     if (id === undefined) {
       return undefined;
     } else {
@@ -743,15 +731,21 @@ Nitrate.TestPlans.Details = {
   },
   // Loading newly created cases with proposal status to show table of these kind of cases.
   'loadConfirmedCases': function(plan_id) {
-    var params = { 'a': 'initial', 'template_type': 'case', 'from_plan': plan_id };
-    var container = Nitrate.TestPlans.CasesContainer.ConfirmedCases;
-    Nitrate.TestPlans.Details.loadCases(container, plan_id, params);
+    let container = Nitrate.TestPlans.CasesContainer.ConfirmedCases;
+    Nitrate.TestPlans.Details.loadCases(container, plan_id, {
+      'a': 'initial',
+      'template_type': 'case',
+      'from_plan': plan_id
+    });
   },
   // Loading reviewing cases to show table of these kind of cases.
   'loadReviewingCases': function(plan_id) {
-    var params = { 'a': 'initial', 'template_type': 'review_case', 'from_plan': plan_id };
-    var container = Nitrate.TestPlans.CasesContainer.ReviewingCases;
-    Nitrate.TestPlans.Details.loadCases(container, plan_id, params);
+    let container = Nitrate.TestPlans.CasesContainer.ReviewingCases;
+    Nitrate.TestPlans.Details.loadCases(container, plan_id, {
+      'a': 'initial',
+      'template_type': 'review_case',
+      'from_plan': plan_id
+    });
   },
   'bindEventsOnLoadedCases': function(container) {
     var elem;
@@ -771,7 +765,7 @@ Nitrate.TestPlans.Details = {
    * - container: a jQuery object. Representing current Cases or Revieiwng Cases tab.
    */
   'noMoreToLoad': function(container) {
-    var countInfo = Nitrate.TestPlans.Details.getLoadedCasesCountInfo(container);
+    let countInfo = Nitrate.TestPlans.Details.getLoadedCasesCountInfo(container);
     return countInfo.remaining === 0;
   },
   /*
@@ -827,7 +821,7 @@ Nitrate.TestPlans.Details = {
     jQ('#' + container).find('.ajax_loading').show();
 
     jQ.post('/cases/load-more/', post_data, function(data) {
-      var has_more = jQ(data)[0].hasAttribute('id');
+      let has_more = jQ(data)[0].hasAttribute('id');
       if (has_more) {
         jQ('#' + container).find('.ajax_loading').hide();
 
@@ -853,12 +847,12 @@ Nitrate.TestPlans.Details = {
   },
   // Load more cases with previous criterias.
   'onLoadMoreCasesClick': function(e) {
-    var container = Nitrate.TestPlans.CasesContainer.ConfirmedCases;
+    let container = Nitrate.TestPlans.CasesContainer.ConfirmedCases;
     Nitrate.TestPlans.Details.loadMoreCasesClicHandler(e, container);
   },
   // Load more reviewing cases with previous criterias.
   'onLoadMoreReviewcasesClick': function(e) {
-    var container = Nitrate.TestPlans.CasesContainer.ReviewingCases;
+    let container = Nitrate.TestPlans.CasesContainer.ReviewingCases;
     Nitrate.TestPlans.Details.loadMoreCasesClicHandler(e, container);
   },
   'observeLoadMore': function(container) {
@@ -873,7 +867,7 @@ Nitrate.TestPlans.Details = {
     }
   },
   'observeEvents': function(plan_id) {
-    var NTPD = Nitrate.TestPlans.Details;
+    let NTPD = Nitrate.TestPlans.Details;
 
     jQ('#tab_testcases').bind('click', function(e) {
       if (!NTPD.testcasesTabOpened) {
@@ -890,8 +884,7 @@ Nitrate.TestPlans.Details = {
     });
 
     jQ('#tab_reviewcases').bind('click', function(e) {
-      var opened  = Nitrate.TestPlans.Details.reviewingCasesTabOpened;
-      if (!opened) {
+      if (!Nitrate.TestPlans.Details.reviewingCasesTabOpened) {
         Nitrate.TestPlans.Details.loadReviewingCases(plan_id);
         Nitrate.TestPlans.Details.reviewingCasesTabOpened = true;
       }
@@ -947,8 +940,8 @@ Nitrate.TestPlans.Details = {
    * - container: a jQuery object. Representing current Cases or Reviewing Cases tab.
    */
   'refreshCasesSelectionCheck': function(container) {
-    var casesMostCloseContainer = container.find('.js-cases-list');
-    var notSelectAll = casesMostCloseContainer.find('input[name="case"]:not(:checked)').length > 0;
+    let casesMostCloseContainer = container.find('.js-cases-list');
+    let notSelectAll = casesMostCloseContainer.find('input[name="case"]:not(:checked)').length > 0;
     casesMostCloseContainer.find('input[value="all"]')[0].checked = !notSelectAll;
 
     Nitrate.TestPlans.Details.toggleSelectAllInput(container);
@@ -961,14 +954,18 @@ Nitrate.TestPlans.Details = {
    *              Id is used to select the reopen operations.
    */
   'reopenTabHelper': function(container) {
-    var switchMap = {
-      'testcases': function() { Nitrate.TestPlans.Details.reopenReviewingCasesTabThen(); },
-      'reviewcases': function() { Nitrate.TestPlans.Details.reopenCasesTabThen(); }
+    let switchMap = {
+      'testcases': function() {
+        Nitrate.TestPlans.Details.reopenReviewingCasesTabThen();
+      },
+      'reviewcases': function() {
+        Nitrate.TestPlans.Details.reopenCasesTabThen();
+      }
     };
     switchMap[container.attr('id')]();
   },
   'on_load': function() {
-    var plan_id = Nitrate.TestPlans.Instance.pk;
+    let plan_id = Nitrate.TestPlans.Instance.pk;
 
     // Initial the contents
     constructTagZone(jQ('#tag')[0], { plan: plan_id });
@@ -1003,7 +1000,7 @@ Nitrate.TestPlans.Details = {
       window.location.href = jQ(this).data('param');
     });
     jQ('#btn_clone, #btn_export, #btn_print').bind('click', function() {
-      var params = jQ(this).data('params');
+      let params = jQ(this).data('params');
       window.location.href = params[0] + '?plan=' + params[1];
     });
     jQ('#id_import_case_zone').find('.js-close-zone').bind('click', function() {
@@ -1011,14 +1008,16 @@ Nitrate.TestPlans.Details = {
       jQ('#import-error').empty();
     });
     jQ('.js-del-attach').bind('click', function() {
-      var params = jQ(this).data('params');
+      let params = jQ(this).data('params');
       deleConfirm(params[0], 'from_plan', params[1]);
     });
     jQ('#js-update-components').live('click', function() {
       constructPlanComponentModificationDialog();
     });
-    var treeview = jQ('#treeview')[0];
-    var planPK = parseInt(jQ('#id_tree_container').data('param'));
+
+    let treeview = jQ('#treeview')[0];
+    let planPK = parseInt(jQ('#id_tree_container').data('param'));
+
     jQ('#js-change-parent-node').bind('click', function() {
       Nitrate.TestPlans.TreeView.changeParentPlan(treeview, planPK);
     });
@@ -1127,8 +1126,8 @@ Nitrate.TestPlans.Clone.on_load = function() {
 Nitrate.TestPlans.Attachment.on_load = function() {
   jQ(document).ready(function() {
     jQ("#upload_file").change(function () {
-      var iSize = jQ("#upload_file")[0].files[0].size;
-      var limit = parseInt(jQ('#upload_file').attr('limit'));
+      let iSize = jQ("#upload_file")[0].files[0].size;
+      let limit = parseInt(jQ('#upload_file').attr('limit'));
 
       if (iSize > limit) {
         window.alert("Your attachment's size is beyond limit, please limit your attachments to under 5 megabytes (MB).");
@@ -1140,7 +1139,7 @@ Nitrate.TestPlans.Attachment.on_load = function() {
     });
 
     jQ('.js-del-attach').bind('click', function() {
-      var params = jQ(this).data('params');
+      let params = jQ(this).data('params');
       deleConfirm(params[0], params[1], params[2]);
     });
 
@@ -1210,18 +1209,17 @@ function unlinkCasesFromPlan(container, form, table) {
 }
 
 function toggleTestCasePane(options, callback) {
-  var case_id = options.case_id;
-  var casePaneContainer = options.casePaneContainer;
+  let casePaneContainer = options.casePaneContainer;
 
   // If any of these is invalid, just keep quiet and don't display anything.
-  if (case_id === undefined || casePaneContainer === undefined) {
+  if (options.case_id === undefined || casePaneContainer === undefined) {
     return;
   }
 
   casePaneContainer.toggle();
 
   if (casePaneContainer.find('.ajax_loading').length) {
-    jQ.get('/case/' + case_id + '/readonly-pane/', function(data) {
+    jQ.get('/case/' + options.case_id + '/readonly-pane/', function(data) {
       casePaneContainer.html(data);
       if (callback) {
         callback();
@@ -1233,23 +1231,21 @@ function toggleTestCasePane(options, callback) {
 
 // TODO: merge this function with above
 function toggleTestCaseReviewPane(options) {
-  var case_id = options.case_id;
-  var casePaneContainer = options.casePaneContainer;
-  var callback = options.callback;
+  let casePaneContainer = options.casePaneContainer;
 
   // If any of these is invalid, just keep quiet and don't display anything.
-  if (case_id === undefined || casePaneContainer === undefined) {
+  if (options.case_id === undefined || casePaneContainer === undefined) {
     return;
   }
 
   casePaneContainer.toggle();
 
   if (casePaneContainer.find('.ajax_loading').length) {
-    jQ.get('/case/' + case_id + '/review-pane/', function(data) {
+    jQ.get('/case/' + options.case_id + '/review-pane/', function(data) {
       casePaneContainer.html(data);
 
-      if (typeof callback === 'function') {
-        callback();
+      if (typeof options.callback === 'function') {
+        options.callback();
       }
     }, 'html');
   }
@@ -1382,16 +1378,15 @@ function bindEventsOnLoadedCases(options) {
  * Used in function `constructPlanDetailsCasesZone'.
  */
 function serializeFormData(options) {
-  var form = options.form;
   var container = options.zoneContainer;
   var selection = options.casesSelection;
   var hashable = options.hashable || false;
 
-  var formdata;
+  let formdata;
   if (hashable) {
-    formdata = Nitrate.Utils.formSerialize(form);
+    formdata = Nitrate.Utils.formSerialize(options.form);
   } else {
-    formdata = jQ(form).serialize();
+    formdata = jQ(options.form).serialize();
   }
 
   // some dirty data remains in the previous criteria, remove them.
@@ -1596,15 +1591,12 @@ function onTestCaseAutomatedClick(options) {
  * To change selected cases' tag.
  */
 function onTestCaseTagFormSubmitClick(options) {
-  var form = options.form;
-  var table = options.table;
-  var container = options.container;
-  var plan_id = options.planId;
+  let container = options.container;
 
   return function(response) {
-    var dialog = getDialog();
+    let dialog = getDialog();
 
-    var returnobj = jQ.parseJSON(response.responseText);
+    let returnobj = jQ.parseJSON(response.responseText);
     if (returnobj.rc && parseInt(returnobj.rc) === 1) {
       window.alert(returnobj.response);
       clearDialog(dialog);
@@ -1612,17 +1604,16 @@ function onTestCaseTagFormSubmitClick(options) {
     }
 
     clearDialog(dialog);
-    var template = Handlebars.compile(jQ('#batch_tag_summary_template').html());
-    var context = {'tags': returnobj};
-    jQ(dialog).html(template(context))
+    let template = Handlebars.compile(jQ('#batch_tag_summary_template').html());
+    jQ(dialog).html(template({'tags': returnobj}))
       .find('.js-close-button').bind('click', function() {
         jQ(dialog).hide();
       })
       .end().show();
 
-    var params = serialzeCaseForm(form, table);
+    let params = serialzeCaseForm(options.form, options.table);
     params.a = 'initial';
-    constructPlanDetailsCasesZone(container, plan_id, params);
+    constructPlanDetailsCasesZone(container, options.planId, params);
   };
 }
 
@@ -2631,23 +2622,18 @@ Nitrate.TestPlans.Runs = {
  *        better.
  */
 function requestOperationUponFilteredCases(options) {
-  var requestMethod = options.requestMethod || 'get';
-  var url = options.url;
-  var form = options.form;
-  var casesContainer = options.table;
-
-  var selection = serializeCaseFromInputList2(casesContainer);
+  let selection = serializeCaseFromInputList2(options.table);
   if (selection.empty()) {
     window.alert('At least one case is required by a run.');
     return false;
   }
   // Exclude selected cases, that will be added from the selection.
-  var params = serializeCaseForm2(form, casesContainer, true, true);
+  let params = serializeCaseForm2(options.form, options.table, true, true);
   if (selection.selectAll) {
     params.selectAll = selection.selectAll;
   }
   params.case = selection.selectedCasesIds;
-  postToURL(url, params, requestMethod);
+  postToURL(options.url, params, options.requestMethod || 'GET');
 }
 
 /*
