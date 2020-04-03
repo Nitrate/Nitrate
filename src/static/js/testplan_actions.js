@@ -1182,7 +1182,7 @@ function unlinkCasesFromPlan(container, form, table) {
     return false;
   }
 
-  let parameters = serialzeCaseForm(form, table, true);
+  let parameters = serializeCaseForm(form, table, true);
   if (selection.selectAll) {
     parameters.selectAll = selection.selectAll;
   }
@@ -1574,7 +1574,7 @@ function onTestCaseAutomatedClick(options) {
           return false;
         }
 
-        let params = serialzeCaseForm(options.form, options.table, true, true);
+        let params = serializeCaseForm(options.form, options.table, true, true);
         /*
          * FIXME: this is confuse. There is no need to assign this
          *        value explicitly when update component and category.
@@ -1611,7 +1611,7 @@ function onTestCaseTagFormSubmitClick(options) {
       })
       .end().show();
 
-    let params = serialzeCaseForm(options.form, options.table);
+    let params = serializeCaseForm(options.form, options.table);
     params.a = 'initial';
     constructPlanDetailsCasesZone(container, options.planId, params);
   };
@@ -2039,7 +2039,7 @@ function constructPlanDetailsCasesZoneCallback(options) {
     if (jQ(form).parent().find('.btn_sort').length) {
       let element = jQ(form).parent().find('.btn_sort')[0];
       jQ(element).bind('click', function(e) {
-        let params = serialzeCaseForm(form, table);
+        let params = serializeCaseForm(form, table);
         resortCasesDragAndDrop(container, this, form, table, params, function (responseData) {
           if (responseData.rc !== 0) {
             window.alert(responseData.response);

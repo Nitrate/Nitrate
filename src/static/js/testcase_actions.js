@@ -1139,7 +1139,7 @@ function serializeCaseFromInputList(table) {
  *   cases' IDs, due to all filtered cases in the response should be selected
  *   by default. Default to true if not passed.
  */
-function serialzeCaseForm(form, table, serialized, exclude_cases) {
+function serializeCaseForm(form, table, serialized, exclude_cases) {
   // FIXME: change the way to set argument default value
   if (typeof serialized !== 'boolean') {
     serialized = true;
@@ -1161,7 +1161,7 @@ function serialzeCaseForm(form, table, serialized, exclude_cases) {
 }
 
 /**
- * New implementation of serialzeCaseForm to allow to choose whether the
+ * New implementation of serializeCaseForm to allow to choose whether the
  * TestCases' Ids are necessary to be serialized.
  *
  * Be default if no value is passed to exclude_cases, not exclude them.

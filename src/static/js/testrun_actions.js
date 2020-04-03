@@ -1106,21 +1106,6 @@ function serializeCaseRunFromInputList(table, name) {
   return returnobj_list;
 }
 
-function serialzeCaseForm(form, table, serialized) {
-  if (typeof serialized !== 'boolean') {
-    serialized = true;
-  }
-  let data;
-  if (serialized) {
-    data = Nitrate.Utils.formSerialize(form);
-  } else {
-    data = jQ(form).serialize();
-  }
-
-  data.case_run = serializeCaseFromInputList(table);
-  return data;
-}
-
 function sortCaseRun(form, order) {
   if (form.order_by.value === order) {
     form.order_by.value = '-' + order;
