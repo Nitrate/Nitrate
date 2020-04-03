@@ -837,13 +837,6 @@ function addBatchTag(parameters, callback, format) {
   batchProcessTag(parameters, callback, format);
 }
 
-function removeBatchTag(parameters, callback, format) {
-  parameters.a = 'remove';
-  parameters.t = 'json';
-  parameters.f = format;
-  batchProcessTag(parameters, callback, format);
-}
-
 function batchProcessTag(parameters, callback, format) {
   jQ.ajax({
     'url': '/management/tags/',
