@@ -993,7 +993,7 @@ Nitrate.TestPlans.Details = {
     Nitrate.Utils.enableShiftSelectOnCheckbox('case_selector');
     Nitrate.Utils.enableShiftSelectOnCheckbox('run_selector');
 
-    Nitrate.TestPlans.Runs.initializaRunTab();
+    Nitrate.TestPlans.Runs.initializeRunTab();
     Nitrate.TestPlans.Runs.bind();
 
     jQ('#btn_edit').bind('click', function() {
@@ -2496,7 +2496,7 @@ Nitrate.TestPlans.Runs = {
     var that = this;
     jQ('#show_more_runs').live('click', that.showMore);
     jQ('#reload_runs').live('click', that.reload);
-    jQ('#tab_testruns').live('click', that.initializaRunTab);
+    jQ('#tab_testruns').live('click', that.initializeRunTab);
     jQ('.run_selector').live('change', that.reactsToRunSelection);
     jQ('#id_check_all_runs').live('change', that.reactsToAllRunSelectorChange);
   },
@@ -2512,7 +2512,7 @@ Nitrate.TestPlans.Runs = {
     }
     tbody.append(html);
   },
-  'initializaRunTab': function () {
+  'initializeRunTab': function () {
     /*
      * Load the first page of the runs when:
      * 1. Current active tab is #testrun;
