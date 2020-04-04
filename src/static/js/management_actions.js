@@ -18,21 +18,21 @@ Nitrate.Management.Environment.Edit.on_load = function() {
     });
   });
 
-  jQ('#js-back-button').bind('click', function() {
+  jQ('#js-back-button').on('click', function() {
     window.location = '/environment/groups';
   });
 };
 
 Nitrate.Management.Environment.on_load = function() {
-  jQ('a.loglink').bind('click', function(e) {
+  jQ('a.loglink').on('click', function(e) {
     jQ(this).parents('.js-env-group').next().toggle();
   });
 
-  jQ('.js-add-env-group').bind('click', function() {
+  jQ('.js-add-env-group').on('click', function() {
     addEnvGroup();
   });
 
-  jQ('.js-del-env-group').bind('click', function() {
+  jQ('.js-del-env-group').on('click', function() {
     var params = jQ(this).parents('.js-env-group').data('params');
     deleteEnvGroup(params[0], params[1]);
   });
@@ -40,19 +40,19 @@ Nitrate.Management.Environment.on_load = function() {
 };
 
 Nitrate.Management.Environment.Property.on_load = function() {
-  jQ('#js-add-prop').bind('click', function() {
+  jQ('#js-add-prop').on('click', function() {
     addEnvProperty();
   });
-  jQ('#js-disable-prop').bind('click', function() {
+  jQ('#js-disable-prop').on('click', function() {
     disableEnvProperty();
   });
-  jQ('#js-enable-prop').bind('click', function() {
+  jQ('#js-enable-prop').on('click', function() {
     enableEnvProperty();
   });
-  jQ('.js-prop-name').bind('click', function() {
+  jQ('.js-prop-name').on('click', function() {
     selectEnvProperty(jQ(this).parents('.js-one-prop').data('param'));
   });
-  jQ('.js-edit-prop').bind('click', function() {
+  jQ('.js-edit-prop').on('click', function() {
     editEnvProperty(jQ(this).parents('.js-one-prop').data('param'));
   });
 };
@@ -133,10 +133,10 @@ function addEnvProperty() {
         let template = Handlebars.compile(jQ('#properties_container_template').html());
         let context = {'id': data.id, 'name': data.name};
         jQ('#id_properties_container').append(template(context))
-          .find('.js-prop-name').bind('click', function() {
+          .find('.js-prop-name').on('click', function() {
           selectEnvProperty(jQ(this).parent().data('param'));
         })
-          .end().find('.js-rename-prop').bind('click', function() {
+          .end().find('.js-rename-prop').on('click', function() {
           editEnvProperty(jQ(this).parent().data('param'));
         });
 
@@ -288,16 +288,16 @@ function disableEnvPropertyValue(property_id) {
 
 function bindPropertyValueActions() {
   let propId = jQ('.js-prop-value-action').data('param');
-  jQ('#js-add-prop-value').bind('click', function() {
+  jQ('#js-add-prop-value').on('click', function() {
     addEnvPropertyValue(propId);
   });
-  jQ('#js-disable-prop-value').bind('click', function() {
+  jQ('#js-disable-prop-value').on('click', function() {
     disableEnvPropertyValue(propId);
   });
-  jQ('#js-enable-prop-value').bind('click', function() {
+  jQ('#js-enable-prop-value').on('click', function() {
     enableEnvPropertyValue(propId);
   });
-  jQ('.js-edit-prop-value').bind('click', function() {
+  jQ('.js-edit-prop-value').on('click', function() {
     editEnvPropertyValue(propId, jQ(this).data('param'));
   });
 }

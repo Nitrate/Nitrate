@@ -45,7 +45,7 @@ Nitrate.Report.CustomSearch.on_load = function() {
     });
   }
 
-  jQ('.build_link').bind('click', function(e) {
+  jQ('.build_link').on('click', function(e) {
     e.stopPropagation();
     e.preventDefault();
     let params = Nitrate.Utils.formSerialize(jQ('#id_form_search')[0]);

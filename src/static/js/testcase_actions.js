@@ -35,7 +35,7 @@ Nitrate.TestCases.AdvanceList.on_load = function() {
   bind_component_selector_to_product(true, true, jQ('#id_product')[0], jQ('#id_component')[0]);
 
   if (jQ('#id_checkbox_all_case').length) {
-    jQ('#id_checkbox_all_case').bind('click', function(e) {
+    jQ('#id_checkbox_all_case').on('click', function(e) {
       clickedSelectAll(this, jQ(this).closest('form')[0], 'case');
       if (this.checked) {
         jQ('#case_advance_printable').attr('disabled', false);
@@ -45,7 +45,7 @@ Nitrate.TestCases.AdvanceList.on_load = function() {
     });
   }
 
-  jQ('#id_blind_all_link').bind('click', function(e) {
+  jQ('#id_blind_all_link').on('click', function(e) {
     if (!jQ('div[id^="id_loading_"]').length) {
       jQ(this).removeClass('locked');
     }
@@ -65,7 +65,7 @@ Nitrate.TestCases.AdvanceList.on_load = function() {
     }
   });
 
-  jQ('.expandable').bind('click', function (e) {
+  jQ('.expandable').on('click', function (e) {
     var c = jQ(this).parent()[0]; // Container
     var c_container = jQ(c).next()[0]; // Content Containers
     var case_id = jQ(c).find('input[name="case"]')[0].value;
@@ -74,7 +74,7 @@ Nitrate.TestCases.AdvanceList.on_load = function() {
     toggleExpandArrow({ caseRowContainer: jQ(c), expandPaneContainer: jQ(c_container) });
   });
 
-  jQ("#testcases_table tbody tr input[type=checkbox][name=case]").live('click', function() {
+  jQ("#testcases_table tbody tr input[type=checkbox][name=case]").on('click', function() {
     if (jQ('input[type=checkbox][name=case]:checked').length) {
       jQ("#case_advance_printable").attr('disabled', false);
     } else {
@@ -87,10 +87,10 @@ Nitrate.TestCases.AdvanceList.on_load = function() {
   }
 
   var listParams = Nitrate.TestCases.List.Param;
-  jQ('#case_advance_printable').bind('click', function() {
+  jQ('#case_advance_printable').on('click', function() {
     postToURL(listParams.case_printable, Nitrate.Utils.formSerialize(this.form));
   });
-  jQ('#export_selected_cases').bind('click', function() {
+  jQ('#export_selected_cases').on('click', function() {
     postToURL(listParams.case_export, Nitrate.Utils.formSerialize(this.form));
   });
 };
@@ -99,7 +99,7 @@ Nitrate.TestCases.List.on_load = function() {
   bind_category_selector_to_product(true, true, jQ('#id_product')[0], jQ('#id_category')[0]);
   bind_component_selector_to_product(true, true, jQ('#id_product')[0], jQ('#id_component')[0]);
   if (jQ('#id_checkbox_all_case')[0]) {
-    jQ('#id_checkbox_all_case').bind('click', function(e) {
+    jQ('#id_checkbox_all_case').on('click', function(e) {
       clickedSelectAll(this, jQ(this).closest('table')[0], 'case');
       if (this.checked) {
         jQ('#case_list_printable').attr('disabled', false);
@@ -109,7 +109,7 @@ Nitrate.TestCases.List.on_load = function() {
     });
   }
 
-  jQ('#id_blind_all_link').live('click', function(e) {
+  jQ('#id_blind_all_link').on('click', function(e) {
     if (!jQ('div[id^="id_loading_"]').length) {
       jQ(this).removeClass('locked');
     }
@@ -156,7 +156,7 @@ Nitrate.TestCases.List.on_load = function() {
       {"sClass": "expandable"}
     ]
   });
-  jQ("#testcases_table tbody tr td.expandable").live("click", function() {
+  jQ("#testcases_table tbody tr td.expandable").on("click", function() {
     var tr = jQ(this).parent();
     var caseRowContainer = tr;
     var case_id = caseRowContainer.find('input[name="case"]').attr('value');
@@ -170,7 +170,7 @@ Nitrate.TestCases.List.on_load = function() {
     toggleExpandArrow({ caseRowContainer: tr, expandPaneContainer: tr.next() });
   });
 
-  jQ("#testcases_table tbody tr input[type=checkbox][name=case]").live("click", function() {
+  jQ("#testcases_table tbody tr input[type=checkbox][name=case]").on("click", function() {
     if (jQ("input[type=checkbox][name=case]:checked").length) {
       jQ("#case_list_printable").attr('disabled', false);
     } else {
@@ -179,10 +179,10 @@ Nitrate.TestCases.List.on_load = function() {
   });
 
   var listParams = Nitrate.TestCases.List.Param;
-  jQ('#case_list_printable').bind('click', function() {
+  jQ('#case_list_printable').on('click', function() {
     postToURL(listParams.case_printable, Nitrate.Utils.formSerialize(this.form));
   });
-  jQ('#export_selected_cases').bind('click', function() {
+  jQ('#export_selected_cases').on('click', function() {
     postToURL(listParams.case_export, Nitrate.Utils.formSerialize(this.form));
   });
 };
@@ -191,7 +191,7 @@ Nitrate.TestCases.Details.on_load = function() {
   let case_id = Nitrate.TestCases.Instance.pk;
   constructTagZone(jQ('#tag')[0], { 'case': case_id });
   constructPlanCaseZone(jQ('#plan')[0], case_id);
-  jQ('li.tab a').bind('click', function(i) {
+  jQ('li.tab a').on('click', function(i) {
     jQ('div.tab_list').hide();
     jQ('li.tab').removeClass('tab_focus');
     jQ(this).parent().addClass('tab_focus');
@@ -202,7 +202,7 @@ Nitrate.TestCases.Details.on_load = function() {
     fireEvent(jQ('a[href=\"' + window.location.hash + '\"]')[0], 'click');
   }
 
-  jQ('#id_add_component').bind('click', function(e) {
+  jQ('#id_add_component').on('click', function(e) {
     if (this.diabled) {
       return false;
     }
@@ -243,7 +243,7 @@ Nitrate.TestCases.Details.on_load = function() {
     );
   });
 
-  jQ('#id_remove_component').bind('click', function() {
+  jQ('#id_remove_component').on('click', function() {
     if (! window.confirm(default_messages.confirm.remove_case_component)) {
       return false;
     }
@@ -262,7 +262,7 @@ Nitrate.TestCases.Details.on_load = function() {
       json_success_refresh_page);
   });
 
-  jQ('.link_remove_component').bind('click', function(e) {
+  jQ('.link_remove_component').on('click', function(e) {
     if (! window.confirm(default_messages.confirm.remove_case_component)) {
       return false;
     }
@@ -278,7 +278,7 @@ Nitrate.TestCases.Details.on_load = function() {
 
   bindSelectAllCheckbox(jQ('#id_checkbox_all_components')[0], jQ('#id_form_case_component')[0], 'component');
 
-  jQ('.plan_expandable').bind('click', function (e) {
+  jQ('.plan_expandable').on('click', function (e) {
     let c = jQ(this).parent();
     toggleCaseRunsByPlan(
       {
@@ -289,7 +289,7 @@ Nitrate.TestCases.Details.on_load = function() {
         'case_run_plan_id': c[0].id
       },
       function (e) {
-        jQ('#table_case_runs_by_plan .expandable').bind('click', function (e) {
+        jQ('#table_case_runs_by_plan .expandable').on('click', function (e) {
           let c = jQ(this).parent(); // Container
           // FIXME: case_text_version is not used in the backend to show caserun
           //        information, notes, logs, and comments.
@@ -321,25 +321,25 @@ Nitrate.TestCases.Details.on_load = function() {
     ]
   });
 
-  jQ('#btn_edit,#btn_clone').bind('click', function() {
+  jQ('#btn_edit,#btn_clone').on('click', function() {
     window.location.href = jQ(this).data('link');
   });
 
-  jQ('.js-del-button').bind('click', function(event) {
+  jQ('.js-del-button').on('click', function(event) {
     let params = jQ(event.target).data('params');
     deleConfirm(params.attachmentId, params.source, params.sourceId);
   });
 
-  jQ('.js-remove-issue').bind('click', function(event) {
+  jQ('.js-remove-issue').on('click', function(event) {
     let params = jQ(event.target).data('params');
     removeCaseIssue(params.issueKey, params.caseId, params.caseRunId);
   });
 
-  jQ('.js-add-issue').bind('click', function(event) {
+  jQ('.js-add-issue').on('click', function(event) {
     addCaseIssue(jQ('#id_case_issue_form')[0]);
   });
 
-  jQ('#issue_key').bind('keydown', function(event) {
+  jQ('#issue_key').on('keydown', function(event) {
     addCaseIssueViaEnterKey(jQ('#id_case_issue_form')[0], event);
   });
 };
@@ -390,11 +390,11 @@ Nitrate.TestCases.Create.on_load = function() {
 
   resize_tinymce_editors();
 
-  jQ('.js-case-cancel').bind('click', function() {
+  jQ('.js-case-cancel').on('click', function() {
     window.history.go(-1);
   });
   if (jQ('.js-plan-cancel').length) {
-    jQ('.js-plan-cancel').bind('click', function() {
+    jQ('.js-plan-cancel').on('click', function() {
       window.location.href = jQ(this).data('param');
     });
   }
@@ -404,7 +404,7 @@ Nitrate.TestCases.Edit.on_load = function() {
   bind_category_selector_to_product(false, false, jQ('#id_product')[0], jQ('#id_category')[0]);
   resize_tinymce_editors();
 
-  jQ('.js-back-button').bind('click', function() {
+  jQ('.js-back-button').on('click', function() {
     window.history.go(-1);
   });
 };
@@ -412,7 +412,7 @@ Nitrate.TestCases.Edit.on_load = function() {
 Nitrate.TestCases.Clone.on_load = function() {
   bind_version_selector_to_product(true);
 
-  jQ('#id_form_search_plan').bind('submit', function(e) {
+  jQ('#id_form_search_plan').on('submit', function(e) {
     e.stopPropagation();
     e.preventDefault();
 
@@ -429,7 +429,7 @@ Nitrate.TestCases.Clone.on_load = function() {
     });
   });
 
-  jQ('#id_use_filterplan').bind('click', function(e) {
+  jQ('#id_use_filterplan').on('click', function(e) {
     jQ('#id_form_search_plan :input').attr('disabled', false);
     jQ('#id_plan_id').val('');
     jQ('#id_plan_id').attr('name', '');
@@ -437,7 +437,7 @@ Nitrate.TestCases.Clone.on_load = function() {
   });
 
   if (jQ('#id_use_sameplan').length) {
-    jQ('#id_use_sameplan').bind('click', function(e) {
+    jQ('#id_use_sameplan').on('click', function(e) {
       jQ('#id_form_search_plan :input').attr('disabled', true);
       jQ('#id_plan_id').val(jQ('#value_plan_id').val());
       jQ('#id_plan_id').attr('name', 'plan');
@@ -446,7 +446,7 @@ Nitrate.TestCases.Clone.on_load = function() {
     });
   }
 
-  jQ('.js-cancel-button').bind('click', function() {
+  jQ('.js-cancel-button').on('click', function() {
     window.history.go('-1');
   });
 
@@ -750,10 +750,10 @@ function addCaseIssue(form) {
         return;
       }
 
-      jQ('.js-add-issue').bind('click', function(event) {
+      jQ('.js-add-issue').on('click', function(event) {
         addCaseIssue(jQ('#id_case_issue_form')[0]);
       });
-      jQ('.js-remove-issue').bind('click', function(event) {
+      jQ('.js-remove-issue').on('click', function(event) {
         let params = jQ(event.target).data('params');
         removeCaseIssue(params.issueKey, params.caseId, params.caseRunId);
       });
@@ -791,11 +791,11 @@ function removeCaseIssue(issue_key, case_id, case_run_id) {
         return;
       }
 
-      jQ('.js-remove-issue').bind('click', function(event) {
+      jQ('.js-remove-issue').on('click', function(event) {
         let params = jQ(event.target).data('params');
         removeCaseIssue(params.issueKey, params.caseId, params.caseRunId);
       });
-      jQ('.js-add-issue').bind('click', function(event) {
+      jQ('.js-add-issue').on('click', function(event) {
         addCaseIssue(jQ('#id_case_issue_form')[0]);
       });
 
@@ -817,7 +817,7 @@ function constructPlanCaseZone(container, case_id, parameters) {
       jQ(container).html(data);
     },
     'complete': function (jqXHR, textStatus, errorThrown) {
-      jQ('#id_plan_form').bind('submit', function(e) {
+      jQ('#id_plan_form').on('submit', function(e) {
         e.stopPropagation();
         e.preventDefault();
 
@@ -865,7 +865,7 @@ function constructPlanCaseZone(container, case_id, parameters) {
         });
       }
 
-      jQ('.js-remove-plan').bind('click', function() {
+      jQ('.js-remove-plan').on('click', function() {
         let params = jQ(this).data('params');
         removePlanFromCase(jQ('#testplans_table_wrapper')[0], params[0], params[1]);
       });
@@ -905,7 +905,7 @@ function renderTagForm(container, parameters, form_observe) {
       let c = jQ('<label>');
       c.append(h);
       c.append(a);
-      a.bind('click', function(e) { h.val('remove'); });
+      a.on('click', function(e) { h.val('remove'); });
       jQ(container).html(constructForm(
         d.html(),
         Nitrate.http.URLConf.reverse({name: 'cases_tag'}),
@@ -977,7 +977,7 @@ function renderCategoryForm(container, parameters, form_observe) {
       let c = jQ('<label>');
       c.append(h);
       c.append(a);
-      a.bind('click', function(e) { h.val('update'); });
+      a.on('click', function(e) { h.val('update'); });
       jQ(container).html(
         constructForm(
           d.html(),

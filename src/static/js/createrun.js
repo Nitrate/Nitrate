@@ -33,7 +33,7 @@ Nitrate.CreateRunPage = {
 
 
     // Once the user manually touches the summary field, stop auto-filling it:
-    jQ('#id_summary').bind('change', function() {
+    jQ('#id_summary').on('change', function() {
       Nitrate.CreateRunPage.has_user_edited_name = true;
     });
 

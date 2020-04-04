@@ -11,7 +11,7 @@ var nil;
     Set up a function callback for after the page has loaded
  */
 Nitrate.Utils.after_page_load = function(callback) {
-  jQ(window).bind('load', callback);
+  jQ(window).on('load', callback);
 };
 
 Nitrate.Utils.enableShiftSelectOnCheckbox = function (className) {
@@ -47,7 +47,7 @@ Nitrate.Utils.formSerialize = function(f) {
   return params;
 };
 
-jQ(window).bind('load', function(e) {
+jQ(window).on('load', function(e) {
   // Initial the drop menu
   jQ('.nav_li').hover(
     function() { jQ(this).children(':eq(1)').show(); },
@@ -56,7 +56,7 @@ jQ(window).bind('load', function(e) {
 
   // Observe the bookmark form
   if (jQ('#id_bookmark_iform').length) {
-    jQ('#id_bookmark_iform').bind('submit', function(e) {
+    jQ('#id_bookmark_iform').on('submit', function(e) {
       e.stopPropagation();
       e.preventDefault();
       let url = this.action;
@@ -639,7 +639,7 @@ function bind_build_selector_to_product(allow_blank, product_field, build_field)
   product_field = checkProductField(product_field);
 
   if (product_field) {
-    jQ(product_field).bind('change', function() {
+    jQ(product_field).on('change', function() {
       getBuildsByProductId(allow_blank, product_field, build_field);
     });
 
@@ -648,7 +648,7 @@ function bind_build_selector_to_product(allow_blank, product_field, build_field)
 }
 
 function bind_env_selector_to_product(allow_blank) {
-  jQ('#id_product_id').bind('change', function() { getEnvsByProductId(allow_blank); });
+  jQ('#id_product_id').on('change', function() { getEnvsByProductId(allow_blank); });
   getEnvsByProductId(allow_blank);
 }
 
@@ -656,7 +656,7 @@ function bind_version_selector_to_product(allow_blank, load, product_field, vers
   product_field = checkProductField(product_field);
 
   if (product_field) {
-    jQ(product_field).bind('change', function() {
+    jQ(product_field).on('change', function() {
       getVersionsByProductId(allow_blank, product_field, version_field);
     });
     if (load) {
@@ -669,7 +669,7 @@ function bind_category_selector_to_product(allow_blank, load, product_field, cat
   product_field = checkProductField(product_field);
 
   if (product_field) {
-    jQ(product_field).bind('change', function() {
+    jQ(product_field).on('change', function() {
       getCategoriesByProductId(allow_blank, product_field, category_field);
     });
     if (load) {
@@ -682,7 +682,7 @@ function bind_component_selector_to_product(allow_blank, load, product_field, co
   product_field = checkProductField(product_field);
 
   if (product_field) {
-    jQ(product_field).bind('change', function() {
+    jQ(product_field).on('change', function() {
       getComponentsByProductId(allow_blank, product_field, component_field);
     });
 
@@ -777,7 +777,7 @@ function constructTagZone(container, parameters) {
         'appendTo': '#id_tags_autocomplete'
       });
 
-      jQ('#id_tag_form').bind('submit', function(e) {
+      jQ('#id_tag_form').on('submit', function(e) {
         e.stopPropagation();
         e.preventDefault();
 
@@ -1129,7 +1129,7 @@ function clickedSelectAll(checkbox, form, name) {
 }
 
 function bindSelectAllCheckbox(element, form, name) {
-  jQ(element).bind('click', function(e) {
+  jQ(element).on('click', function(e) {
     clickedSelectAll(this, form, name);
   });
 }
@@ -1157,13 +1157,13 @@ function constructForm(content, action, form_observe, info, s, c) {
 
   if (!c) {
     c = jQ('<input>', {'type': 'button', 'value': 'Cancel'});
-    c.bind('click', function(e) {
+    c.on('click', function(e) {
       clearDialog();
     });
   }
 
   if (form_observe) {
-    f.bind('submit', form_observe);
+    f.on('submit', form_observe);
   }
 
   f.html(content);

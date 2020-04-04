@@ -15,12 +15,12 @@ Nitrate.Profiles.Bookmarks.on_load = function() {
   }
 
   if (jQ('#id_check_all_bookmark').length) {
-    jQ('#id_check_all_bookmark').bind('click', function(e) {
+    jQ('#id_check_all_bookmark').on('click', function(e) {
       clickedSelectAll(this, jQ('#id_table_bookmark')[0], 'pk');
     });
   }
 
-  jQ('#id_form_bookmark').bind('submit', function(e) {
+  jQ('#id_form_bookmark').on('submit', function(e) {
     e.stopPropagation();
     e.preventDefault();
 

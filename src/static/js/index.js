@@ -1,4 +1,4 @@
-jQ(window).bind('load', function() {
+jQ(window).on('load', function() {
   if (!checkCookie()) {
     jQ('#login_info').html("<font color=\"red\">Browser cookie support maybe disabled, please enable it for login.</font>");
     jQ('#login_info').parent().show();
@@ -6,7 +6,7 @@ jQ(window).bind('load', function() {
   }
 
   if (jQ('#id_username').length) {
-    jQ('#id_password').bind('keydown', keydownPassword);
+    jQ('#id_password').on('keydown', keydownPassword);
   }
 });
 
