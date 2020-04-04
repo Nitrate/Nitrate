@@ -894,7 +894,7 @@ function submitComment(container, parameters, callback) {
     },
     'complete': function () {
       updateCommentsCount(parameters.object_pk, true);
-      callback();
+      if (callback) callback();
     }
   });
 }
