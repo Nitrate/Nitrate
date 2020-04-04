@@ -390,7 +390,7 @@ Nitrate.TestRuns.Details.on_load = function() {
     window.location.href = params[0] + '?from_plan=' + params[1];
   });
   jQ('#btn_clone').on('click', function() {
-    postToURL(jQ(this).data('param'), serializeCaseRunFromInputList('id_table_cases','case_run'));
+    postToURL(jQ(this).data('param'), getSelectedCaseRunIDs());
   });
   jQ('#btn_delete').on('click', function() {
     window.location.href = jQ(this).data('param');
@@ -418,7 +418,7 @@ Nitrate.TestRuns.Details.on_load = function() {
     delCaseRun(jQ(this).data('param'));
   });
   jQ('.js-update-case').on('click', function() {
-    postToURL(jQ(this).data('param'), serializeCaseRunFromInputList('id_table_cases', 'case_run'));
+    postToURL(jQ(this).data('param'), getSelectedCaseRunIDs());
   });
   jQ('.js-change-assignee').on('click', function() {
     changeCaseRunAssignee();
@@ -738,7 +738,7 @@ function taggleSortCaseRun(event) {
     jQ('#id_sort').html('Done Sorting');
   } else {
     jQ('#id_table_cases input[type=checkbox]').attr({ 'checked': true, 'disabled': false });
-    postToURL('ordercaserun/', serializeCaseRunFromInputList('id_table_cases', 'case_run'));
+    postToURL('ordercaserun/', getSelectedCaseRunIDs());
   }
 }
 
@@ -789,8 +789,8 @@ function removeIssueFromCaseRuns(removeIssueInfo, reloadInfo) {
 
 
 function delCaseRun(run_id) {
-  var caseruns = serializeCaseRunFromInputList('id_table_cases', 'case_run');
-  var numCaseRuns = caseruns.case_run.length;
+  let caseruns = getSelectedCaseRunIDs();
+  let numCaseRuns = caseruns.case_run.length;
   if (window.confirm('You are about to delete ' + numCaseRuns + ' case run(s). Are you sure?')) {
     postToURL('removecaserun/', caseruns);
   }
@@ -1065,7 +1065,7 @@ function removeRunCC(run_id, user, container) {
 }
 
 function changeCaseRunAssignee() {
-  let selectedCaseRunIDs = serializeCaseRunFromInputList(jQ('#id_table_cases')[0]);
+  let selectedCaseRunIDs = getSelectedCaseRunIDs().case_run;
   if (!selectedCaseRunIDs.length) {
     window.alert(default_messages.alert.no_case_selected);
     return false;
@@ -1078,34 +1078,21 @@ function changeCaseRunAssignee() {
 
   getInfoAndUpdateObject(
     {'info_type': 'users', 'username': emailOrUsername},
-    'testruns.testcaserun',
-    serializeCaseRunFromInputList(jQ('#id_table_cases')[0]),
-    'assignee'
+    'testruns.testcaserun', selectedCaseRunIDs, 'assignee'
   );
 }
 
-function serializeCaseRunFromInputList(table, name) {
-  let elements;
-  if (typeof table === 'string') {
-    elements = jQ('#' + table).parent().find('input[name="case_run"]:checked');
-  } else {
-    elements = jQ(table).parent().find('input[name="case_run"]:checked');
+/**
+ * Retrieve and return selected case run IDs from the container table whose id is id_table_cases.
+ * @returns {{case_run: *}}
+ */
+function getSelectedCaseRunIDs() {
+  return {
+    case_run:
+      jQ('#id_table_cases input[name="case_run"]:checked')
+        .map(function () {return this.value;})
+        .get()
   }
-
-  let returnobj_list = [];
-  elements.each(function(i) {
-    if (typeof this.value === 'string') {
-      returnobj_list.push(this.value);
-    }
-  });
-
-  if (name) {
-    let r = {};
-    r[name] = returnobj_list;
-    return r;
-  }
-
-  return returnobj_list;
 }
 
 function sortCaseRun(form, order) {
@@ -1158,8 +1145,9 @@ function insertCasesIntoTestRun() {
  * Click event handler for A .js-add-issues
  */
 function addIssueToBatchCaseRunsHandler() {
-  var caseRunIds = serializeCaseRunFromInputList(jQ('#id_table_cases')[0]);
-  caseRunIds = caseRunIds.map(function(s) { return parseInt(s); });
+  let caseRunIds =
+    getSelectedCaseRunIDs()
+      .case_run.map(function (item) {return parseInt(item);});
   if (caseRunIds.length === 0) {
     window.alert(default_messages.alert.no_case_selected);
   } else {
@@ -1176,8 +1164,9 @@ function addIssueToBatchCaseRunsHandler() {
  * Click event handler for A .js-remove-issues
  */
 function removeIssueFromBatchCaseRunsHandler() {
-  let caseRunIds = serializeCaseRunFromInputList(jQ('#id_table_cases')[0]);
-  caseRunIds = caseRunIds.map(function(s) { return parseInt(s); });
+  let caseRunIds =
+    getSelectedCaseRunIDs()
+      .case_run.map(function (item) {return parseInt(item);});
 
   if (caseRunIds.length === 0) {
     window.alert(default_messages.alert.no_case_selected);
@@ -1213,7 +1202,7 @@ function removeIssueFromBatchCaseRunsHandler() {
 
 function showCommentForm() {
   var dialog = getDialog();
-  var runs = serializeCaseRunFromInputList(jQ('#id_table_cases')[0]);
+  let runs = getSelectedCaseRunIDs().case_run;
   if (!runs.length) {
     return window.alert(default_messages.alert.no_case_selected);
   }
@@ -1265,7 +1254,7 @@ jQ(document).ready(function(){
     if (option === '') {
       return false;
     }
-    let object_pks = serializeCaseRunFromInputList(jQ('#id_table_cases')[0]);
+    let object_pks = getSelectedCaseRunIDs().case_run;
     if (!object_pks.length) {
       window.alert(default_messages.alert.no_case_selected);
       return false;
