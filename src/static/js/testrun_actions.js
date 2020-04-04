@@ -1100,7 +1100,9 @@ function serializeCaseRunFromInputList(table, name) {
   });
 
   if (name) {
-    return {name: returnobj_list}
+    let r = {};
+    r[name] = returnobj_list;
+    return r;
   }
 
   return returnobj_list;
