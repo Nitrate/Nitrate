@@ -26,17 +26,24 @@ Nitrate.TestPlans.TreeView = {
   'default_container': 'id_tree_container',
   'default_parameters': { t: 'ajax' }, // FIXME: Doesn't make effect here.
 
-  'filter': function(parameters, callback) {
+  /**
+   * A wrapper of jQ.ajax to filter specific plans.
+   * @param {object} data - data to send to server side.
+   * @param {function} callback - a function called when AJAX request succeeds and the parsed
+   *                              response data will be passed in.
+   */
+  'filter': function(data, callback) {
+    let requestData = Object.assign({}, data, {t: 'ajax'})
     jQ.ajax({
-      'type': 'GET',
-      'url': Nitrate.http.URLConf.reverse({name: 'plans'}),
-      'dataType': 'json',
-      'data': parameters,
-      'async': false,
-      'success': function (data, textStatus, jqXHR) {
+      type: 'GET',
+      url: Nitrate.http.URLConf.reverse({name: 'plans'}),
+      dataType: 'json',
+      data: requestData,
+      async: false,
+      success: function (data, textStatus, jqXHR) {
         callback(data);
       },
-      'error': function (jqXHR, textStatus, errorThrown) {
+      error: function (jqXHR, textStatus, errorThrown) {
         json_failure(jqXHR);
       }
     });
@@ -46,70 +53,75 @@ Nitrate.TestPlans.TreeView = {
     this.pk = plan_id;
 
     // Current, Parent, Brothers, Children, Temporary current
-    var c_plan, p_plan, b_plans, ch_plans, tc_plan;
+    let curPlan, parentPlan, brotherPlans, childPlans, tempCurPlan;
 
     // Get the current plan
-    this.filter({pk: plan_id, t: 'ajax'}, function (responseData) {
+    this.filter({pk: plan_id}, function (responseData) {
       if (responseData.length) {
-        c_plan = responseData[0];
+        curPlan = responseData[0];
       }
     });
-    if (!c_plan) {
+    if (!curPlan) {
       window.alert('Plan ' + plan_id + ' can not found in database');
       return false;
     }
 
     // Get the parent plan
-    if (c_plan.parent_id) {
-      this.filter({pk: c_plan.parent_id, t: 'ajax'}, function (responseData) {
-        p_plan = responseData[0];
+    if (curPlan.parent_id) {
+      this.filter({pk: curPlan.parent_id}, function (responseData) {
+        parentPlan = responseData[0];
       });
     }
 
     // Get the brother plans
-    if (c_plan.parent_id) {
-      this.filter({parent__pk: c_plan.parent_id, t: 'ajax'}, function (responseData) {
-        b_plans = responseData;
+    if (curPlan.parent_id) {
+      this.filter({parent__pk: curPlan.parent_id}, function (responseData) {
+        brotherPlans = responseData;
       });
     }
 
     // Get the child plans
-    this.filter({'parent__pk': c_plan.pk, 't': 'ajax'}, function (responseData) {
-      ch_plans = responseData;
+    this.filter({parent__pk: curPlan.pk}, function (responseData) {
+      childPlans = responseData;
     });
 
     // Combine all of plans
     // Presume the plan have parent and brother at first
-    if (p_plan && b_plans) {
-      p_plan.children = b_plans;
-      tc_plan = this.traverse(p_plan.children, c_plan.pk);
-      tc_plan.is_current = true;
-      if (ch_plans) {
-        tc_plan.children = ch_plans;
+    if (parentPlan && brotherPlans) {
+      parentPlan.children = brotherPlans;
+      tempCurPlan= this.traverse(parentPlan.children, curPlan.pk);
+      tempCurPlan.is_current = true;
+      if (childPlans) {
+        tempCurPlan.children = childPlans;
       }
 
-      if (p_plan.pk) {
-        p_plan = Nitrate.Utils.convert('obj_to_list', p_plan);
+      if (parentPlan.pk) {
+        parentPlan = Nitrate.Utils.convert('obj_to_list', parentPlan);
       }
 
-      this.data = p_plan;
+      this.data = parentPlan;
     } else {
-      c_plan.is_current = true;
-      if (ch_plans) {
-        c_plan.children = ch_plans;
+      curPlan.is_current = true;
+      if (childPlans) {
+        curPlan.children = childPlans;
       }
-      this.data = Nitrate.Utils.convert('obj_to_list', c_plan);
+      this.data = Nitrate.Utils.convert('obj_to_list', curPlan);
     }
   },
-  'up': function(e) {
-    var tree = Nitrate.TestPlans.TreeView;
-    var parent_obj = null, brother_obj = null;
 
-    tree.filter({pk: tree.data[0].parent_id, t: 'ajax'}, function (responseData) {
+  /**
+   * An event handler will be hooked to "Up" button when render the tree.
+   * @param {Event} e - HTML DOM event.
+   */
+  'up': function(e) {
+    let tree = Nitrate.TestPlans.TreeView;
+    let parent_obj = null, brother_obj = null;
+
+    tree.filter({pk: tree.data[0].parent_id}, function (responseData) {
       parent_obj = {0: responseData[0], length: 1};
     });
 
-    tree.filter({parent__pk: tree.data[0].parent_id, t: 'ajax'}, function (responseData) {
+    tree.filter({parent__pk: tree.data[0].parent_id}, function (responseData) {
       brother_obj = responseData;
     });
 
@@ -126,15 +138,20 @@ Nitrate.TestPlans.TreeView = {
       tree.render_page();
     }
   },
+
+  /**
+   * Event handler hooked into the toggle icon click event.
+   * @param {Event} e - the DOM event object.
+   */
   'blind': function(e) {
-    var tree = Nitrate.TestPlans.TreeView;
-    var e_container = this;
-    var li_container = jQ(e_container).parent().parent();
-    var e_pk = jQ(e_container).next('a').eq(0).html();
-    var container_clns = jQ(e_container).attr('class').split(/\s+/);
-    var expand_icon_url = '/static/images/t2.gif';
-    var collapse_icon_url = '/static/images/t1.gif';
-    var obj = tree.traverse(tree.data, e_pk);
+    let tree = Nitrate.TestPlans.TreeView;
+    let e_container = this;
+    let li_container = jQ(e_container).parent().parent();
+    let e_pk = jQ(e_container).next('a').eq(0).html();
+    let container_clns = jQ(e_container).attr('class').split(/\s+/);
+    let expand_icon_url = '/static/images/t2.gif';
+    let collapse_icon_url = '/static/images/t1.gif';
+    let obj = tree.traverse(tree.data, e_pk);
 
     container_clns.forEach(function(className, index) {
       if (typeof className === 'string') {
@@ -142,13 +159,12 @@ Nitrate.TestPlans.TreeView = {
           case 'expand_icon':
             li_container.find('ul').eq(0).hide();
             e_container.src = collapse_icon_url;
-            jQ(e_container).removeClass('expand_icon');
-            jQ(e_container).addClass('collapse_icon');
+            jQ(e_container).removeClass('expand_icon').addClass('collapse_icon');
             break;
 
           case 'collapse_icon':
             if (typeof obj.children !== 'object' || obj.children === []) {
-              tree.filter({parent__pk: e_pk, t: 'ajax'}, function (responseData) {
+              tree.filter({parent__pk: e_pk}, function (responseData) {
                 let data = Nitrate.Utils.convert('obj_to_list', responseData);
                 tree.insert(obj, data);
                 li_container.append(tree.render(data));
@@ -157,147 +173,115 @@ Nitrate.TestPlans.TreeView = {
 
             li_container.find('ul').eq(0).show();
             e_container.src = expand_icon_url;
-            jQ(e_container).removeClass('collapse_icon');
-            jQ(e_container).addClass('expand_icon');
+            jQ(e_container).removeClass('collapse_icon').addClass('expand_icon');
             break;
         }
       }
     });
   },
-  'render': function(data) {
-    var ul = jQ('<ul>');
-    var icon_expand = '<img src="/static/images/t2.gif" class="expand_icon js-toggle-icon">';
-    var icon_collapse = '<img src="/static/images/t1.gif" class="collapse_icon js-toggle-icon">';
 
-    var li = null;
+  'render': function(data) {
+    let ul = jQ('<ul>');
+    let icon_expand = '<img alt="expand" src="/static/images/t2.gif" class="expand_icon js-toggle-icon">';
+    let icon_collapse = '<img alt="collapse" src="/static/images/t1.gif" class="collapse_icon js-toggle-icon">';
 
     // Add the 'Up' button
     if (!data && this.data) {
       data = this.data;
       if (data && data[0].parent_id) {
-        li = jQ('<li>');
-        var btn = jQ('<input>', {'type': 'button', 'value': 'Up'});
-        li.html(btn);
+        let btn = jQ('<input>', {'type': 'button', 'value': 'Up'});
         btn.bind('click', this.up);
-        li.addClass('no-list-style');
-        ul.append(li);
+        ul.append(jQ('<li>').html(btn).addClass('no-list-style'));
       }
     }
 
     // Add the child plans to parent
-    for (var i in data) {
-      if (!data[i].pk) {
-        continue;
-      }
+    for (let i in data) {
+      let obj = data[i];
+      if (!obj.pk) continue;
 
-      li = jQ('<li>');
-      var title = '[<a href="' + data[i].get_url_path + '">' + data[i].pk + '</a>] ';
+      let li = jQ('<li>');
+      let title = ['[<a href="' + obj.get_url_path + '">' + obj.pk + '</a>] '];
 
-      if (data[i].num_children && data[i].children) {
-        title = icon_expand + title;
+      if (obj.num_children) {
         li.addClass('no-list-style');
+        title.unshift(obj.children ? icon_expand : icon_collapse);
       }
 
-      if (data[i].num_children && !data[i].children) {
-        title = icon_collapse + title;
-        li.addClass('no-list-style');
+      title.unshift(obj.is_active ? '<div>' : '<div class="line-through">');
+      // Construct the items
+      title.push('<a class="plan_name" href="' + obj.get_url_path + '">' + obj.name + '</a>');
+      title.push(' (');
+
+      let s = null;
+
+      if (obj.num_cases) {
+        s = obj.is_current ?
+            '<a href="#testcases" onclick="FocusTabOnPlanPage(this)">' + obj.num_cases + ' cases</a>, ' :
+            '<a href="' + obj.get_url_path + '#testcases">' + obj.num_cases + ' cases</a>, ';
+      } else {
+        s= '0 case, ';
+      }
+      title.push(s);
+
+      if (obj.num_runs) {
+        s = obj.is_current ?
+            '<a href="#testruns" onclick="FocusTabOnPlanPage(this)">' + obj.num_runs + ' runs</a>, ' :
+            '<a href="' + obj.get_url_path + '#testruns">' + obj.num_runs + ' runs</a>, ';
+      } else {
+        s = '0 runs, ';
+      }
+      title.push(s);
+
+      if (obj.num_children === 0) {
+        s = '0 child';
+      } else if (obj.num_children === 1) {
+        s = obj.is_current ?
+            '<a href="#treeview" onclick="expandCurrentPlan(jQ(this).parent()[0])">' + '1 child</a>' :
+            '<a href="' + obj.get_url_path + '#treeview">' + '1 child</a>';
+      } else {
+        s = obj.is_current ?
+            '<a href="#treeview" onclick="expandCurrentPlan(jQ(this).parent()[0])">' + obj.num_children + ' children</a>' :
+            '<a href="' + obj.get_url_path + '#treeview">' + obj.num_children + ' children</a>';
       }
 
-      if (data[i].is_current) {
+      title.push(s);
+      title.push(')</div>');
+
+      ul.append(li.html(title.join('')));
+
+      if (obj.is_current) {
         li.addClass('current');
       }
-
-      if (data[i].is_active) {
-        title = '<div>' + title;
-      } else {
-        title = '<div class="line-through">' + title;
+      if (obj.children) {
+        li.append(this.render(obj.children));
       }
-
-      // Construct the items
-      title += '<a class="plan_name" href="' + data[i].get_url_path + '">' + data[i].name + '</a>';
-      title += ' (';
-      if (data[i].num_cases && data[i].is_current) {
-        title += '<a href="#testcases" onclick="FocusTabOnPlanPage(this)">' + data[i].num_cases + ' cases</a>, ';
-      } else if (data[i].num_cases && !(data[i].is_current)) {
-        title += '<a href="' + data[i].get_url_path + '#testcases">' + data[i].num_cases + ' cases</a>, ';
-      } else {
-        title += '0 case, ';
-      }
-
-      if (data[i].num_runs && data[i].is_current) {
-        title += '<a href="#testruns" onclick="FocusTabOnPlanPage(this)">' + data[i].num_runs + ' runs</a>, ';
-      } else if (data[i].num_runs && !data[i].is_current) {
-        title += '<a href="' + data[i].get_url_path + '#testruns">' + data[i].num_runs + ' runs</a>, ';
-      } else {
-        title += '0 runs, ';
-      }
-
-      if (data[i].is_current) {
-        switch (data[i].num_children) {
-          case 0:
-            title += '0 child';
-            break;
-          case 1:
-            title += '<a href="#treeview" onclick="expandCurrentPlan(jQ(this).parent()[0])">' + '1 child</a>';
-            break;
-          default:
-            title += '<a href="#treeview" onclick="expandCurrentPlan(jQ(this).parent()[0])">' + data[i].num_children + ' children</a>';
-            break;
-        }
-      } else {
-        switch (data[i].num_children) {
-          case 0:
-            title += '0 child';
-            break;
-          case 1:
-            title += '<a href="' + data[i].get_url_path + '#treeview">' + '1 child</a>';
-            break;
-          default:
-            title += '<a href="' + data[i].get_url_path + '#treeview">' + data[i].num_children + ' children</a>';
-            break;
-        }
-
-      }
-
-      title += ')</div>';
-
-      li.html(title);
-      ul.append(li);
-
-      // Observe the blind link click event
-      // li[0].adjacent('img').invoke('observe', 'click', this.blind);
       li.find('.js-toggle-icon').bind('click', this.blind);
-      if (data[i].children) {
-        li.append(this.render(data[i].children));
-      }
     }
 
     return ul[0];
   },
+
   'render_page': function(container) {
     let _container = container || this.default_container;
     jQ('#' + _container).html(getAjaxLoading());
     jQ('#' + _container).html(this.render());
   },
+
   'traverse': function(data, pk) {
     // http://stackoverflow.com/questions/3645678/javascript-get-a-reference-from-json-object-with-traverse
     for (let i in data) {
-      if (data[i] === [] || typeof data[i] !== 'object') {
-        continue;
-      }
+      let obj = data[i];
+      if (obj === [] || typeof obj !== 'object') continue;
+      if (typeof obj.pk === 'number' && parseInt(obj.pk) === parseInt(pk)) return obj;
 
-      if (typeof data[i].pk === 'number' && parseInt(data[i].pk) === parseInt(pk)) {
-        return data[i];
-      }
-
-      if (typeof data[i].children === 'object') {
-        var retVal = this.traverse(data[i].children, pk);
-        if (typeof retVal !== 'undefined') {
-          return retVal;
-        }
+      if (typeof obj.children === 'object') {
+        let retVal = this.traverse(obj.children, pk);
+        if (retVal !== undefined) return retVal;
       }
     }
   },
+
   'insert': function(node, data) {
     if (node.children) {
       return node;
@@ -306,54 +290,41 @@ Nitrate.TestPlans.TreeView = {
     node.children = data;
     return node;
   },
+
   'toggleRemoveChildPlanButton': function() {
-    var treeContainer = jQ('#' + Nitrate.TestPlans.TreeView.default_container);
-    var tvTabContainer = Nitrate.TestPlans.Details.getTabContentContainer({
+    let treeContainer = jQ('#' + Nitrate.TestPlans.TreeView.default_container);
+    let tvTabContainer = Nitrate.TestPlans.Details.getTabContentContainer({
       containerId: Nitrate.TestPlans.Details.tabContentContainerIds.treeview
     });
-    var toEnableRemoveButton = treeContainer.find('.current').find('ul li').length > 0;
-    if (toEnableRemoveButton) {
-      tvTabContainer.find('.remove_node')[0].disabled = false;
-    } else {
-      tvTabContainer.find('.remove_node')[0].disabled = true;
-    }
+    let toEnableRemoveButton = treeContainer.find('.current').find('ul li').length > 0;
+    tvTabContainer.find('.remove_node')[0].disabled = ! toEnableRemoveButton;
   },
+
   'addChildPlan': function(container, plan_id) {
-    var self = this;
-    var tree = Nitrate.TestPlans.TreeView;
-    var childPlanIds = window.prompt('Enter a comma separated list of plan IDs');
+    let self = this;
+    let tree = Nitrate.TestPlans.TreeView;
+    let childPlanIds = window.prompt('Enter a comma separated list of plan IDs').trim();
     if (!childPlanIds) {
       return false;
     }
 
-    var planIdRegex = /^\d+$/;
-    var cleanedChildPlanIds = [];
-    var cleaned = true;
-    childPlanIds.split(',').forEach(function(element, index) {
-      var s = element.trim();
-      if (s === '') {
-        return true;
-      }
+    let cleanedChildPlanIds = [];
+    let inputChildPlanIds = childPlanIds.split(',');
 
-      if (!planIdRegex.test(s)) {
+    for (let i = 0; i < inputChildPlanIds.length; i++) {
+      let s = inputChildPlanIds[i].trim();
+      if (s === '') continue;
+      if (!/^\d+$/.test(s)) {
         window.alert('Plan Id should be a numeric. ' + s + ' is not valid.');
-        cleaned = false;
-        return cleaned;
+        return;
       }
-
-      var childPlanId = window.parseInt(s);
-      var isParentOrThisPlan = childPlanId === parseInt(tree.data[0].pk) || childPlanId === plan_id;
+      let childPlanId = parseInt(s);
+      let isParentOrThisPlan = childPlanId === parseInt(tree.data[0].pk) || childPlanId === plan_id;
       if (isParentOrThisPlan) {
         window.alert('Cannot add parent or self.');
-        cleaned = false;
-        return cleaned;
+        return;
       }
-
       cleanedChildPlanIds.push(childPlanId);
-    });
-
-    if (!cleaned) {
-      return;
     }
 
     // FIXME: this first argument is not being used.
@@ -362,11 +333,7 @@ Nitrate.TestPlans.TreeView = {
       e.preventDefault();
 
       updateObject(
-        'testplans.testplan',
-        Nitrate.Utils.formSerialize(this).plan_id,
-        'parent',
-        plan_id,
-        'int',
+        'testplans.testplan', Nitrate.Utils.formSerialize(this).plan_id, 'parent', plan_id, 'int',
         function (responseData) {
           clearDialog();
           // let container = planDetails.getTabContentContainer({
@@ -378,51 +345,54 @@ Nitrate.TestPlans.TreeView = {
       );
     });
   },
-  'removeChildPlan': function(container, plan_id) {
-    var self = this;
-    var tree = Nitrate.TestPlans.TreeView;
-    var plan_obj = tree.traverse(tree.data, plan_id);
-    var children_pks = [];
-    for (var i = 0; i < plan_obj.children.length; i++) {
-      children_pks.push(plan_obj.children[i].pk);
-    }
 
-    var p = prompt('Enter a comma separated list of plan IDs to be removed');
-    if (!p) {
+  'removeChildPlan': function(container, plan_id) {
+    let self = this;
+    let tree = Nitrate.TestPlans.TreeView;
+    let children_pks = tree.traverse(tree.data, plan_id).children.map(function (child) {
+      return child.pk;
+    });
+    children_pks.sort();
+
+    let inputChildPlanIds = window.prompt('Enter a comma separated list of plan IDs to be removed');
+    if (!inputChildPlanIds) {
       return false;
     }
-    var prompt_pks = p.split(',');
-    for (var j = 0 ; j < prompt_pks.length; j++) {
-      if (prompt_pks[j].indexOf(plan_id.toString()) > -1) {
-        window.alert('can not remove current plan');
-        return false;
-      } else if (jQ.inArray(window.parseInt(prompt_pks[j]), children_pks) === -1) {
-        window.alert('plan ' + prompt_pks[j] + ' is not the child node of current plan');
-        return false;
+    let cleanedChildPlanIds = [];
+    inputChildPlanIds = inputChildPlanIds.split(',');
+    for (let j = 0; j < inputChildPlanIds.length; j++) {
+      let s = inputChildPlanIds[j].trim();
+      if (s === '') continue;
+      if (!/^\d+$/.test(s)) {
+        alert('Plan ID must be a number. ' + inputChildPlanIds[j] + ' is not valid.')
+        return;
       }
+      if (s === plan_id.toString()) {
+        alert('Cannot remove current plan.');
+        return;
+      }
+      if (children_pks.indexOf(parseInt(s)) === -1) {
+        alert('Plan ' + s + ' is not the child node of current plan');
+        return;
+      }
+      cleanedChildPlanIds.push(s);
     }
 
-    constructPlanParentPreviewDialog(p, {pk__in: p}, function (e) {
+    constructPlanParentPreviewDialog(null, {pk__in: cleanedChildPlanIds.join(',')}, function (e) {
       e.stopPropagation();
       e.preventDefault();
 
       updateObject(
-        'testplans.testplan',
-        Nitrate.Utils.formSerialize(this).plan_id,
-        'parent',
-        0,
-        'None',
+        'testplans.testplan', Nitrate.Utils.formSerialize(this).plan_id, 'parent', 0, 'None',
         function (responseData) {
           clearDialog();
-          // var container = planDetails.getTabContentContainer({
-          //   containerId: planDetails.tabContentContainerIds.treeview
-          // });
           Nitrate.TestPlans.Details.loadPlansTreeView(plan_id);
           self.toggleRemoveChildPlanButton();
         }
       );
     });
   },
+
   'changeParentPlan': function(container, plan_id) {
     let p = prompt('Enter new parent plan ID');
     if (!p) {
@@ -447,7 +417,7 @@ Nitrate.TestPlans.TreeView = {
         'testplans.testplan', plan_id, 'parent', planId, 'int',
         function (responseData) {
           let tree = Nitrate.TestPlans.TreeView;
-          tree.filter({plan_id: p, t: 'ajax'}, function (responseData) {
+          tree.filter({plan_id: p}, function (responseData) {
             let plan = Nitrate.Utils.convert('obj_to_list', responseData);
 
             if (tree.data[0].pk === plan_id) {
@@ -2474,7 +2444,7 @@ function expandCurrentPlan(element) {
     let obj = tree.traverse(tree.data, e_pk);
 
     if (typeof obj.children !== 'object' || obj.children === []) {
-      tree.filter({'parent__pk': e_pk, 't': 'ajax'}, function (responseData) {
+      tree.filter({parent__pk: e_pk}, function (responseData) {
         let objs = Nitrate.Utils.convert('obj_to_list', responseData);
         tree.insert(obj, objs);
         li_container.append(tree.render(objs));
