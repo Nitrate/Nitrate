@@ -327,8 +327,7 @@ Nitrate.TestPlans.TreeView = {
       cleanedChildPlanIds.push(childPlanId);
     }
 
-    // FIXME: this first argument is not being used.
-    constructPlanParentPreviewDialog(childPlanIds, {pk__in: cleanedChildPlanIds.join(',')}, function (e) {
+    previewPlan({pk__in: cleanedChildPlanIds.join(',')}, '', function (e) {
       e.stopPropagation();
       e.preventDefault();
 
@@ -336,14 +335,12 @@ Nitrate.TestPlans.TreeView = {
         'testplans.testplan', Nitrate.Utils.formSerialize(this).plan_id, 'parent', plan_id, 'int',
         function (responseData) {
           clearDialog();
-          // let container = planDetails.getTabContentContainer({
-          //   containerId: planDetails.tabContentContainerIds.treeview
-          // });
           Nitrate.TestPlans.Details.loadPlansTreeView(plan_id);
           self.toggleRemoveChildPlanButton();
         }
       );
-    });
+    },
+    'This operation will overwrite existing data');
   },
 
   'removeChildPlan': function(container, plan_id) {
@@ -378,7 +375,7 @@ Nitrate.TestPlans.TreeView = {
       cleanedChildPlanIds.push(s);
     }
 
-    constructPlanParentPreviewDialog(null, {pk__in: cleanedChildPlanIds.join(',')}, function (e) {
+    previewPlan({pk__in: cleanedChildPlanIds.join(',')}, '', function (e) {
       e.stopPropagation();
       e.preventDefault();
 
@@ -390,7 +387,8 @@ Nitrate.TestPlans.TreeView = {
           self.toggleRemoveChildPlanButton();
         }
       );
-    });
+    },
+    'This operation will overwrite existing data');
   },
 
   'changeParentPlan': function(container, plan_id) {
@@ -408,7 +406,7 @@ Nitrate.TestPlans.TreeView = {
       return false;
     }
 
-    constructPlanParentPreviewDialog(p, {plan_id: p}, function (e) {
+    previewPlan({plan_id: p}, '', function (e) {
       e.stopPropagation();
       e.preventDefault();
 
@@ -434,7 +432,8 @@ Nitrate.TestPlans.TreeView = {
           });
         }
       );
-    });
+    },
+    'This operation will overwrite existing data');
   }
 };
 
@@ -2364,23 +2363,6 @@ function sortCase(container, plan_id, order) {
 }
 
 function changeCaseMember(parameters, callback) {
-}
-
-function constructPlanParentPreviewDialog(plan_id, parameters, callback) {
-  var action = '';
-  var notice = 'This operation will overwrite existing data';
-    /*
-    //FIXME: Overwrite is not availabel for updateObject function yet.
-    var s = new Element('span');
-    var s1 = new Element('input', {type: 'checkbox', name: 'overwrite'});
-    var s2 = new Element('label');
-    s2.update('Overwrite exist parent.');
-    var s3 = new Element('input', {type: 'submit'});
-    s.appendChild(s1);
-    s.appendChild(s2);
-    s.appendChild(s3);
-    */
-  previewPlan(parameters, action, callback, notice);
 }
 
 function resortCasesDragAndDrop(container, button, form, table, parameters, callback) {

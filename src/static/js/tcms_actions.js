@@ -920,32 +920,22 @@ function updateCommentsCount(caseId, increase) {
  * Preview Plan
  * @param parameters
  * @param action
- * @callback callback - a function with only one event argument will be bound to a HTMLFormElement submit event.
+ * @param {function} callback - a function with only one event argument will be bound to a HTMLFormElement submit event.
  * @param notice
  * @param s
  * @param c
  */
 function previewPlan(parameters, action, callback, notice, s, c) {
   let dialog = getDialog();
-
   clearDialog();
   jQ(dialog).show();
-
-  parameters.t = 'html';
-  parameters.f = 'preview';
 
   jQ.ajax({
     'url': '/plans/',
     'type': 'GET',
-    'data': parameters,
+    'data': Object.assign({}, parameters, {t: 'html', f: 'preview'}),
     'success': function (data, textStatus, jqXHR) {
-      try {
-        notice = "";
-      } catch (e) {
-        // do nothing
-      }
-      let form = constructForm(jqXHR.responseText, action, callback, notice, s, c);
-      jQ(dialog).html(form);
+      jQ(dialog).html(constructForm(jqXHR.responseText, action, callback, notice, s, c));
     },
     'error': function (jqXHR, textStatus, errorThrown) {
       html_failure();
@@ -1120,7 +1110,7 @@ function clearDialog(element) {
 
   jQ(dialog).html(getAjaxLoading());
   return jQ(dialog).hide()[0];
-};
+}
 
 function getAjaxLoading(id) {
   let e = jQ('<div>', {'class': 'ajax_loading'})[0];
