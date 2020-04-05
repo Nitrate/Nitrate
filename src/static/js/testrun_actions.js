@@ -827,7 +827,7 @@ function editValue(form, hidebox, selectid, submitid) {
         return true;
       });
 
-      set_up_choices(jQ('#' + selectid)[0], values, 0);
+      setUpChoices(jQ('#' + selectid)[0], values, 0);
     },
     'error': function(jqXHR, textStatus, errorThrown) {
       window.alert("Update values failed");
@@ -924,11 +924,10 @@ function addProperty(run_id,env_group_id) {
     'dataType': 'json',
     'data': {'info_type': 'env_properties', 'env_group_id': env_group_id},
     'success': function (data, textStatus, jqXHR) {
-      let values = data.map(function(o) {
-        return [o.pk, o.fields.name];
-      });
-
-      set_up_choices(jQ('#id_add_env_property')[0], values, 0);
+      setUpChoices(
+        jQ('#id_add_env_property')[0],
+        data.map(function(o) {return [o.pk, o.fields.name];}),
+        0);
     },
     'error': function (jqXHR, textStatus, errorThrown) {
       window.alert("Update properties failed");
@@ -951,11 +950,10 @@ function change_value(env_property_id, selectid) {
     'dataType': 'json',
     'data': {'info_type': 'env_values', 'env_property_id': env_property_id},
     'success': function (data, textStatus, jqXHR) {
-      let values = data.map(function(o) {
-        return [o.pk, o.fields.value];
-      });
-
-      set_up_choices(jQ('#' + selectid)[0], values, 0);
+      setUpChoices(
+        jQ('#' + selectid)[0],
+        data.map(function(o) {return [o.pk, o.fields.value];}),
+        0);
     },
     'error': function (jqXHR, textStatus, errorThrown) {
       window.alert("Update values failed");

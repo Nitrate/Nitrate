@@ -307,69 +307,48 @@ function splitString(str, num) {
   return str;
 }
 
-/*
-    Set up the <option> children of the given <select> element.
-    Preserving the existing selection (if any).
-
-    @elemSelect: an HTMLSelectElement.
-    @values: a list of (id, name) pairs.
-    @addBlankOption: boolean. If true, prepend a "blank" option.
-*/
-function set_up_choices(elemSelect, values, addBlankOption) {
-  // Convert HTMLOptionsCollection to Array in order to handle it conveniently later.
-  var elemOptions = [];
-  for (var i=0; i < elemSelect.options.length; i++) {
-    elemOptions.push(elemSelect.options.item(i));
+/**
+ * Setup option of a given select element in place. The original selection is preserved.
+ * @param {HTMLSelectElement} elemSelect - the select element to update the options.
+ * @param {Array} values - A list of 2-tuple of options, the first is value and the other is the text.
+ * @param {boolean} addBlankOption - whether to add a blank option optionally.
+ */
+function setUpChoices(elemSelect, values, addBlankOption) {
+  let originalSelectedIds = [];
+  let selectedOptions = elemSelect.selectedOptions;
+  for (let i = 0; i < selectedOptions.length; i++) {
+    let option = selectedOptions[i];
+    if (option.selected) originalSelectedIds.push(option.value);
   }
 
-  elemOptions.forEach(function (item) {
-    item.remove();
-  });
+  // Remove all options
+  for (let i = elemSelect.options.length - 1; i >= 0; i--)
+    elemSelect.options[i].remove();
 
-  var selectedIds = null;
-
-  if (!elemSelect.multiple) {
-    // Process the single select box
-    selectedIds = [parseInt(elemSelect.value)];
-  } else {
-    // Process the select box with multiple attribute
-    selectedIds = elemOptions.filter(function (item) {
-      if (item.selected) {
-        return parseInt(item.value);
-      }
-    });
-  }
-
-  var newElemOption = null;
+  let newOption = null;
 
   if (addBlankOption) {
-    newElemOption = document.createElement('option');
-    newElemOption.value = '';
-    newElemOption.text = '---------';
-    elemSelect.add(newElemOption);
+    newOption = document.createElement('option');
+    newOption.value = '';
+    newOption.text = '---------';
+    elemSelect.add(newOption);
   }
 
   values.forEach(function (item) {
-    var optionValue = item[0];
-    var optionText = item[1];
+    let optionValue = item[0], optionText = item[1];
 
-    newElemOption = document.createElement('option');
-    newElemOption.value = optionValue;
+    newOption = document.createElement('option');
+    newOption.value = optionValue;
 
     if (optionText.length > SHORT_STRING_LENGTH) {
-      newElemOption.title = optionText;
-      newElemOption.text = splitString(optionText, SHORT_STRING_LENGTH);
+      newOption.title = optionText;
+      newOption.text = splitString(optionText, SHORT_STRING_LENGTH);
     } else {
-      newElemOption.text = optionText;
+      newOption.text = optionText;
     }
 
-    selectedIds.forEach(function (id) {
-      if (id === parseInt(optionValue)) {
-        newElemOption.selected = true;
-      }
-    });
-
-    elemSelect.add(newElemOption);
+    newOption.selected = originalSelectedIds.indexOf(optionValue) > -1;
+    elemSelect.add(newOption);
   });
 }
 
@@ -411,11 +390,7 @@ function getBuildsByProductId(allow_blank, product_field, build_field) {
     'dataType': 'json',
     'data': {'info_type': 'builds', 'product_id': product_id, 'is_active': is_active},
     'success': function (data, textStatus, jqXHR) {
-      set_up_choices(
-        build_field,
-        data.map(function(o) { return [o.pk, o.fields.name]; }),
-        allow_blank
-      );
+      setUpChoices(build_field, data.map(function(o) { return [o.pk, o.fields.name]; }), allow_blank);
 
       if (jQ('#value_sub_module').length && jQ('#value_sub_module').val() === 'new_run') {
         if(jQ(build_field).html() === '') {
@@ -463,11 +438,9 @@ function getEnvsByProductId(allow_blank, product_field) {
     onSuccess: function(t) {
       let returnobj = jQ.parseJSON(t.responseText);
 
-      set_up_choices(
+      setUpChoices(
         jQ('#id_env_id')[0],
-        returnobj.map(function(o) {
-          return [o.pk, o.fields.name];
-        }),
+        returnobj.map(function(o) {return [o.pk, o.fields.name];}),
         allow_blank
       );
 
@@ -511,7 +484,7 @@ function getVersionsByProductId(allow_blank, product_field, version_field) {
     'dataType': 'json',
     'data': {'info_type': 'versions', 'product_id': product_id},
     'success': function (data, textStatus, jqXHR) {
-      set_up_choices(
+      setUpChoices(
         version_field,
         data.map(function(o) { return [o.pk, o.fields.value]; }),
         allow_blank
@@ -560,7 +533,7 @@ function getComponentsByProductId(allow_blank, product_field, component_field, c
     'data': parameters,
     'dataType': 'json',
     'success': function (data, textStatus, jqXHR) {
-      set_up_choices(
+      setUpChoices(
         component_field,
         data.map(function(o) { return [o.pk, o.fields.name]; }),
         allow_blank
@@ -609,7 +582,7 @@ function getCategoriesByProductId(allow_blank, product_field, category_field) {
     'dataType': 'json',
     'data': {'info_type': 'categories', 'product_id': product_field.selectedOptions[0].value},
     'success': function (data, textStatus, jqXHR) {
-      set_up_choices(
+      setUpChoices(
         category_field,
         data.map(function(o) { return [o.pk, o.fields.name]; }),
         allow_blank
