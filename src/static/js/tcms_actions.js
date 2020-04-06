@@ -1180,7 +1180,7 @@ function exportCase(url, form, table) {
     return false;
   }
 
-  var params = serializeCaseForm(form, table, true);
+  let params = Nitrate.Utils.formSerialize(form);
   if (selection.selectAll) {
     params.selectAll = selection.selectAll;
   }

@@ -1135,7 +1135,7 @@ function showShortSummary() {
   window.scrollTo(0, 0);
 }
 
-/*
+/**
  * Unlink selected cases from current TestPlan.
  *
  * Rewrite function unlinkCasePlan to avoid conflict. Remove it when confirm it's not used any more.
@@ -1151,7 +1151,7 @@ function unlinkCasesFromPlan(container, form, table) {
     return false;
   }
 
-  let parameters = serializeCaseForm(form, table, true);
+  let parameters = Nitrate.Utils.formSerialize(form);
   if (selection.selectAll) {
     parameters.selectAll = selection.selectAll;
   }
@@ -1543,7 +1543,7 @@ function onTestCaseAutomatedClick(options) {
           return false;
         }
 
-        let params = serializeCaseForm(options.form, options.table, true, true);
+        let params = Nitrate.Utils.formSerialize(options.form);
         /*
          * FIXME: this is confuse. There is no need to assign this
          *        value explicitly when update component and category.
@@ -1580,7 +1580,8 @@ function onTestCaseTagFormSubmitClick(options) {
       })
       .end().show();
 
-    let params = serializeCaseForm(options.form, options.table);
+    let params = Nitrate.Utils.formSerialize(options.form);
+    params.case = getSelectedCaseIDs(options.table);
     params.a = 'initial';
     constructPlanDetailsCasesZone(container, options.planId, params);
   };
@@ -1956,8 +1957,7 @@ function constructPlanDetailsCasesZoneCallback(options) {
     jQ(form).on('submit', function(e) {
       e.stopPropagation();
       e.preventDefault();
-      constructPlanDetailsCasesZone(
-        container, plan_id, serializeCaseForm2(form, table, true, true));
+      constructPlanDetailsCasesZone(container, plan_id, Nitrate.Utils.formSerialize(form));
     });
 
     // Change the case backgroud after selected
@@ -2008,7 +2008,8 @@ function constructPlanDetailsCasesZoneCallback(options) {
     if (jQ(form).parent().find('.btn_sort').length) {
       let element = jQ(form).parent().find('.btn_sort')[0];
       jQ(element).on('click', function(e) {
-        let params = serializeCaseForm(form, table);
+        let params = Nitrate.Utils.formSerialize(form);
+        params.case = getSelectedCaseIDs(table);
         resortCasesDragAndDrop(container, this, form, table, params, function (responseData) {
           if (responseData.rc !== 0) {
             window.alert(responseData.response);
@@ -2580,7 +2581,7 @@ function requestOperationUponFilteredCases(options) {
     return false;
   }
   // Exclude selected cases, that will be added from the selection.
-  let params = serializeCaseForm2(options.form, options.table, true, true);
+  let params = Nitrate.Utils.formSerialize(options.form);
   if (selection.selectAll) {
     params.selectAll = selection.selectAll;
   }

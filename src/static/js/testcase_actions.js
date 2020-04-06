@@ -1128,63 +1128,6 @@ function getSelectedCaseIDs(container) {
   }).get();
 }
 
-/**
- * Serialize criteria for searching cases.
- *
- * Arguments:
- * - form: the form from which criteria are searched
- * - table: the table containing all loaded cases
- * - serialized: whether to serialize the form data. true is default, if not
- *   passed.
- * - exclude_cases: whether to exclude all cases while serializing. For
- *   instance, when filter cases, it's unnecessary to collect all selected
- *   cases' IDs, due to all filtered cases in the response should be selected
- *   by default. Default to true if not passed.
- */
-function serializeCaseForm(form, table, serialized, exclude_cases) {
-  // FIXME: change the way to set argument default value
-  if (typeof serialized !== 'boolean') {
-    serialized = true;
-  }
-  if (exclude_cases === undefined) {
-    exclude_cases = false;
-  }
-  let data;
-  if (serialized) {
-    data = Nitrate.Utils.formSerialize(form);
-  } else {
-    data = jQ(form).serialize();
-  }
-
-  if (!exclude_cases) {
-    data['case'] = getSelectedCaseIDs(table);
-  }
-  return data;
-}
-
-/**
- * New implementation of serializeCaseForm to allow to choose whether the
- * TestCases' Ids are necessary to be serialized.
- *
- * Be default if no value is passed to exclude_cases, not exclude them.
- */
-function serializeCaseForm2(form, table, serialized, exclude_cases) {
-  if (typeof serialized !== 'boolean') {
-    serialized = true;
-  }
-  let data;
-  if (serialized) {
-    data = Nitrate.Utils.formSerialize(form);
-  } else {
-    data = jQ(form).serialize();
-  }
-  let _exclude = exclude_cases === undefined ? false : exclude_cases;
-  if (!_exclude) {
-    data['case'] = getSelectedCaseIDs(table);
-  }
-  return data;
-}
-
 function toggleDiv(link, divId) {
   link = jQ(link);
   let div = jQ('#' + divId);
