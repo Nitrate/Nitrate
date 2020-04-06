@@ -1735,7 +1735,7 @@ function onTestCaseCategoryClick(options) {
        * FIXME: the first time execute this code, it's unnecessary
        *        to pass selected cases' ids to the server.
        */
-      'case': serializeCaseFromInputList(options.table),
+      'case': getSelectedCaseIDs(options.table),
       'product': Nitrate.TestPlans.Instance.fields.product_id
     };
     if (params['case'] && params['case'].length === 0) {
@@ -1841,7 +1841,7 @@ function onTestCaseComponentClick(options) {
     let c = getDialog();
     let params = {
       // FIXME: remove this line. It's unnecessary any more.
-      'case': serializeCaseFromInputList(options.table),
+      'case': getSelectedCaseIDs(options.table),
       'product': Nitrate.TestPlans.Instance.fields.product_id
     };
     if (params['case'] && params['case'].length === 0) {

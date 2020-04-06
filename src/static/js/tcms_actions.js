@@ -31,20 +31,23 @@ Nitrate.Utils.convert = function(argument, data) {
 /**
  * Collect form data from input elements.
  * @param {HTMLFormElement} f - A HTML form from where to collect data.
+ * @returns {Object} a mapping containing form data.
  */
 Nitrate.Utils.formSerialize = function(f) {
-  let params = {};
-  jQ(f).serializeArray().forEach(function(param) {
-    if (params[param.name]) {
-      if (!jQ.isArray(params[param.name])) {
-        params[param.name] = [params[param.name]];
-      }
-      params[param.name].push(param.value);
+  let data = {};
+  jQ(f).serializeArray().forEach(function (field) {
+    let name = field.name;
+    let existingValue = data[field.name];
+    if (existingValue === undefined) {
+      data[name] = field.value;
     } else {
-      params[param.name] = param.value;
+      if (!jQ.isArray(existingValue)) {
+        data[name] = [existingValue];
+      }
+      data[name].push(field.value);
     }
   });
-  return params;
+  return data;
 };
 
 jQ(window).on('load', function(e) {

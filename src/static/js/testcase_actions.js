@@ -1116,14 +1116,16 @@ function serializeCaseFromInputList2(table) {
   });
 }
 
-function serializeCaseFromInputList(table) {
-  let case_ids = [];
-  jQ(table).parent().find('input[name="case"]:checked').each(function(i) {
-    if (typeof this.value === 'string') {
-      case_ids.push(this.value);
-    }
-  });
-  return case_ids;
+/**
+ * Collect selected case IDs from a given container HTML element.
+ * @param {HTMLElement} container - could be any container like HTML element from where to find out
+ *                                  checked inputs with type checkbox and name case.
+ * @returns {string[]} a list of selected case IDs without parsing to integer value.
+ */
+function getSelectedCaseIDs(container) {
+  return jQ(container).find('input[name="case"]:checked').map(function () {
+    return jQ(this).val();
+  }).get();
 }
 
 /**
@@ -1155,7 +1157,7 @@ function serializeCaseForm(form, table, serialized, exclude_cases) {
   }
 
   if (!exclude_cases) {
-    data['case'] = serializeCaseFromInputList(table);
+    data['case'] = getSelectedCaseIDs(table);
   }
   return data;
 }
@@ -1178,7 +1180,7 @@ function serializeCaseForm2(form, table, serialized, exclude_cases) {
   }
   let _exclude = exclude_cases === undefined ? false : exclude_cases;
   if (!_exclude) {
-    data['case'] = serializeCaseFromInputList(table);
+    data['case'] = getSelectedCaseIDs(table);
   }
   return data;
 }
