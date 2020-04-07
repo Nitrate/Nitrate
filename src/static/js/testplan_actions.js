@@ -752,89 +752,6 @@ Nitrate.TestPlans.Details = {
     var remainingCount = parseInt(totalCasesCount) - parseInt(loadedCasesCount);
     return { 'loaded': loadedCasesCount, 'remaining': remainingCount };
   },
-  /*
-   * Show the remaining number of TestCases to be loaded.
-   *
-   * A side-effect is that when there is no more TestCases to be loaded,
-   * disable Show More hyperlink and display descriptive text to tell user
-   * what is happening.
-   */
-  showRemainingCasesCount: function(container) {
-    var contentContainer = jQ('#' + container);
-    var countInfo = Nitrate.TestPlans.Details.getLoadedCasesCountInfo(contentContainer);
-    var noMoreToLoad = Nitrate.TestPlans.Details.noMoreToLoad(contentContainer);
-    contentContainer.find('.js-number-of-loaded-cases').text(countInfo.loaded);
-    if (noMoreToLoad) {
-      contentContainer.find('a.js-load-more').die('click').toggle();
-      contentContainer.find('span.js-loading-progress').toggle();
-      contentContainer.find('span.js-nomore-msg').toggle();
-      setTimeout(function() {
-        contentContainer.find('span.js-nomore-msg').toggle('slow');
-      }, 2000);
-    } else {
-      contentContainer.find('.js-remaining-cases-count').text(countInfo.remaining);
-    }
-  },
-  // The real function to load more cases and show them in specific container.
-  'loadMoreCasesClicHandler': function(e, container) {
-    var elemLoadMore = jQ('#' + container).find('.js-load-more');
-    var post_data = elemLoadMore.attr('data-criterias');
-    var page_index = elemLoadMore.attr('data-page-index');
-    var page_index_re = /page_index=\d+/;
-    if (post_data.match(page_index_re)) {
-      post_data = post_data.replace(page_index_re, 'page_index=' + page_index);
-    } else {
-      post_data = post_data + '&page_index=' + page_index;
-    }
-
-    jQ('#' + container).find('.ajax_loading').show();
-
-    jQ.post('/cases/load-more/', post_data, function(data) {
-      let has_more = jQ(data)[0].hasAttribute('id');
-      if (has_more) {
-        jQ('#' + container).find('.ajax_loading').hide();
-
-        var casesListContainer = jQ('#' + container).find('.js-cases-list');
-        casesListContainer.find('tbody:first').append(data);
-
-        // Increase page index for next batch cases to load
-        var page_index = elemLoadMore.attr('data-page-index');
-        elemLoadMore.attr('data-page-index', parseInt(page_index) + 1);
-
-        Nitrate.TestPlans.Details.bindEventsOnLoadedCases(container);
-
-        // Calculate the remaining number of cases
-        Nitrate.TestPlans.Details.showRemainingCasesCount(container);
-        Nitrate.TestPlans.Details.toggleSelectAllInput(jQ('#' + container));
-      } else {
-        elemLoadMore.unbind('click').remove();
-      }
-    }).fail(function() {
-      jQ('#' + container).find('.ajax_loading').hide();
-      window.alert('Cannot load subsequent cases.');
-    });
-  },
-  // Load more cases with previous criterias.
-  'onLoadMoreCasesClick': function(e) {
-    let container = Nitrate.TestPlans.CasesContainer.ConfirmedCases;
-    Nitrate.TestPlans.Details.loadMoreCasesClicHandler(e, container);
-  },
-  // Load more reviewing cases with previous criterias.
-  'onLoadMoreReviewcasesClick': function(e) {
-    let container = Nitrate.TestPlans.CasesContainer.ReviewingCases;
-    Nitrate.TestPlans.Details.loadMoreCasesClicHandler(e, container);
-  },
-  'observeLoadMore': function(container) {
-    var NTC = Nitrate.TestPlans.CasesContainer;
-    var NTD = Nitrate.TestPlans.Details;
-    var loadMoreEventHandlers = {};
-    loadMoreEventHandlers[NTC.ConfirmedCases] = NTD.onLoadMoreCasesClick;
-    loadMoreEventHandlers[NTC.ReviewingCases] = NTD.onLoadMoreReviewcasesClick;
-    var eventHandler = loadMoreEventHandlers[container];
-    if (eventHandler) {
-      jQ('#' + container).find('.js-load-more').off('click').on('click', eventHandler);
-    }
-  },
   'observeEvents': function(plan_id) {
     let NTPD = Nitrate.TestPlans.Details;
 
@@ -881,39 +798,6 @@ Nitrate.TestPlans.Details = {
   },
   'reopenReviewingCasesTabThen': function() {
     Nitrate.TestPlans.Details.reviewingCasesTabOpened = false;
-  },
-  /*
-   * Show or hide the input control for Select All.
-   *
-   * Arguments:
-   * - container: a jQuery object. Representing current Cases or Revieiwng Cases tab.
-   */
-  'toggleSelectAllInput': function(container) {
-    var uncheckedCaseIdExists = container.find('.js-cases-list')
-      .find('input[name="case"]:not(:checked)').length > 0;
-    var noMoreCasesToLoad = Nitrate.TestPlans.Details.noMoreToLoad(container);
-
-    var selectAllDiv = container.find('.js-cases-select-all');
-    if (uncheckedCaseIdExists || noMoreCasesToLoad) {
-      selectAllDiv.hide();
-      selectAllDiv.find('input[type="checkbox"]')[0].checked = false;
-    } else {
-      selectAllDiv.show();
-      selectAllDiv.find('input[type="checkbox"]')[0].checked = true;
-    }
-  },
-  /*
-   * Uncheck select all loaded cases if any case is unchecked, or check it otherwise.
-   *
-   * Argument:
-   * - container: a jQuery object. Representing current Cases or Reviewing Cases tab.
-   */
-  'refreshCasesSelectionCheck': function(container) {
-    let casesMostCloseContainer = container.find('.js-cases-list');
-    let notSelectAll = casesMostCloseContainer.find('input[name="case"]:not(:checked)').length > 0;
-    casesMostCloseContainer.find('input[value="all"]')[0].checked = !notSelectAll;
-
-    Nitrate.TestPlans.Details.toggleSelectAllInput(container);
   },
   /*
    * Helper function to reopen other tabs.
@@ -1141,32 +1025,26 @@ function showShortSummary() {
  * Rewrite function unlinkCasePlan to avoid conflict. Remove it when confirm it's not used any more.
  */
 function unlinkCasesFromPlan(container, form, table) {
-  if (! confirm("Are you sure you want to delete test case(s) from this test plan?")) {
+  let selectedCaseIDs = getSelectedCaseIDs(table);
+  if (selectedCaseIDs.length === 0)
+    return;
+  if (! confirm("Are you sure you want to remove test case(s) from this test plan?")) {
     return false;
   }
-
-  let selection = serializeCaseFromInputList2(table);
-  if (selection.empty()) {
-    window.alert('At least one case is required to delete.');
-    return false;
-  }
-
-  let parameters = Nitrate.Utils.formSerialize(form);
-  if (selection.selectAll) {
-    parameters.selectAll = selection.selectAll;
-  }
-  parameters.case = selection.selectedCasesIds;
 
   jQ.ajax({
     'url': 'delete-cases/',
     'type': 'POST',
     'dataType': 'json',
-    'data': parameters,
+    'data': {case: selectedCaseIDs},
     'traditional': true,
     'success': function (data, textStatus, jqXHR) {
       if (data.rc === 0) {
-        parameters.a = 'initial';
-        constructPlanDetailsCasesZone(container, parameters.from_plan, parameters);
+        // Form data contains cases filter criteria set previously.
+        // Those criteria will be used to reload cases.
+        let formData = Nitrate.Utils.formSerialize(form);
+        formData.a = 'initial';
+        constructPlanDetailsCasesZone(container, formData.from_plan, formData);
         return true;
       }
       window.alert(data.response);
@@ -1237,11 +1115,11 @@ function bindEventsOnLoadedCases(options) {
   var cases_container = options.cases_container;
 
   return function(container, form) {
-    jQ(cases_container)
-      .find('.js-cases-list').find('input[name="case"]')
-      .on('click', function(e) {
-        Nitrate.TestPlans.Details.refreshCasesSelectionCheck(jQ(cases_container));
-      });
+    //jQ(cases_container)
+      //.find('.js-cases-list').find('input[name="case"]')
+      //.on('click', function(e) {
+        //Nitrate.TestPlans.Details.refreshCasesSelectionCheck(jQ(cases_container));
+      //});
 
     // Observe the change sortkey
     jQ(container).parent().find('.case_sortkey.js-just-loaded').on('click', function(e) {
@@ -1341,66 +1219,51 @@ function bindEventsOnLoadedCases(options) {
 }
 
 
-/*
+/**
  * Serialize form data including the selected cases for AJAX requst.
- *
- * Used in function `constructPlanDetailsCasesZone'.
+ * Used in function constructPlanDetailsCasesZone.
+ * @param {Object} options
+ * @property {HTMLElement} options.zoneContainer
+ * @property {string[]} options.selectedCaseIDs
+ * @property {boolean} options.hashable
  */
 function serializeFormData(options) {
-  var container = options.zoneContainer;
-  var selection = options.casesSelection;
-  var hashable = options.hashable || false;
+  let hashable = options.hashable || false;
 
-  let formdata;
-  if (hashable) {
-    formdata = Nitrate.Utils.formSerialize(options.form);
-  } else {
-    formdata = jQ(options.form).serialize();
-  }
+  let unhashableData = options.selectedCaseIDs.map(function (caseID) {
+    return 'case=' + caseID;
+  }).join('&');
 
-  // some dirty data remains in the previous criteria, remove them.
-  // FIXME: however, this is not a good way. CONSIDER to reuse filter form.
-  let unhashableData = jQ(container).find('.js-load-more')
-    .attr('data-criterias')
-    .replace(/a=\w+/, '')
-    .replace(/&?selectAll=1/, '')
-    .replace(/&?case=\d+/g, '');
-  if (selection.selectAll) {
-    unhashableData += '&selectAll=1';
-  }
-  var casepks = [''];
-  var loopCount = selection.selectedCasesIds.length;
-  var selectedCasesIds = selection.selectedCasesIds;
-  for (let i = 0; i < loopCount; i++) {
-    casepks.push('case=' + selectedCasesIds[i]);
-  }
-  unhashableData += casepks.join('&');
+  let formData =
+    hashable ?
+      Nitrate.Utils.formSerialize(options.form) :
+      jQ(options.form).serialize();
 
   if (hashable) {
-    var arr = unhashableData.split('&');
+    let arr = unhashableData.split('&');
     for (let i = 0; i < arr.length; i++) {
-      var parts = arr[i].split('=');
-      var key = parts[0], value = parts[1];
+      let parts = arr[i].split('=');
+      let key = parts[0], value = parts[1];
       // FIXME: not sure how key can be an empty string
       if (!key.length) {
         continue;
       }
-      if (key in formdata) {
+      if (key in formData) {
         // Before setting value, the original value must be converted to an array object.
-        if (formdata[key].push === undefined) {
-          formdata[key] = [formdata[key], value];
+        if (formData[key].push === undefined) {
+          formData[key] = [formData[key], value];
         } else {
-          formdata[key].push(value);
+          formData[key].push(value);
         }
       } else {
-        formdata[key] = value;
+        formData[key] = value;
       }
     }
   } else {
-    formdata += '&' + unhashableData;
+    formData += '&' + unhashableData;
   }
 
-  return formdata;
+  return formData;
 }
 
 
@@ -1411,8 +1274,8 @@ function onTestCaseStatusChange(options) {
   let container = options.container;
 
   return function(e) {
-    let selection = serializeCaseFromInputList2(options.table);
-    if (selection.empty()) {
+    let selectedCaseIDs = getSelectedCaseIDs(options.table);
+    if (selectedCaseIDs.length === 0) {
       window.alert(default_messages.alert.no_case_selected);
       return false;
     }
@@ -1427,7 +1290,7 @@ function onTestCaseStatusChange(options) {
     let postdata = serializeFormData({
       'form': options.form,
       'zoneContainer': container,
-      'casesSelection': selection,
+      'selectedCaseIDs': selectedCaseIDs,
       'hashable': true
     });
     postdata.a = 'update';
@@ -1472,8 +1335,8 @@ function onTestCasePriorityChange(options) {
   let container = options.container;
 
   return function(e) {
-    let selection = serializeCaseFromInputList2(options.table);
-    if (selection.empty()) {
+    let selectedCaseIDs = getSelectedCaseIDs(options.table);
+    if (selectedCaseIDs.length === 0) {
       window.alert(default_messages.alert.no_case_selected);
       return false;
     }
@@ -1488,7 +1351,7 @@ function onTestCasePriorityChange(options) {
     let postdata = serializeFormData({
       'form': options.form,
       'zoneContainer': container,
-      'casesSelection': selection,
+      'selectedCaseIDs': selectedCaseIDs,
       'hashable': true
     });
     postdata.a = 'update';
@@ -1526,8 +1389,8 @@ function onTestCaseAutomatedClick(options) {
   let container = options.container;
 
   return function(e) {
-    let selection = serializeCaseFromInputList2(options.table);
-    if (selection.empty()) {
+    let selectedCaseIDs = getSelectedCaseIDs(options.table);
+    if (selectedCaseIDs.length === 0) {
       window.alert(default_messages.alert.no_case_selected);
       return false;
     }
@@ -1536,7 +1399,7 @@ function onTestCaseAutomatedClick(options) {
 
     constructCaseAutomatedForm(
       dialogContainer,
-      {'zoneContainer': container, 'casesSelection': selection},
+      {'zoneContainer': container, 'selectedCaseIDs': selectedCaseIDs},
       function (responseData) {
         if (responseData.rc !== 0) {
           window.alert(responseData.response);
@@ -1549,7 +1412,7 @@ function onTestCaseAutomatedClick(options) {
          *        value explicitly when update component and category.
          */
         params.a = 'search';
-        params.case = selection.selectedCasesIds;
+        params.case = selectedCaseIDs;
         constructPlanDetailsCasesZone(container, options.planId, params);
         clearDialog(dialogContainer);
       });
@@ -1588,33 +1451,28 @@ function onTestCaseTagFormSubmitClick(options) {
 }
 
 function onTestCaseTagAddClick(options) {
-  var form = options.form;
-  var table = options.table;
-  var plan_id = options.planId;
-  var container = options.container;
-
   return function(e) {
-    var selection = serializeCaseFromInputList2(table);
-    if (selection.empty()) {
+    let selectedCaseIDs = getSelectedCaseIDs(options.table);
+    if (selectedCaseIDs.length === 0) {
       window.alert(default_messages.alert.no_case_selected);
       return false;
     }
 
-    constructBatchTagProcessDialog(plan_id);
+    constructBatchTagProcessDialog(options.planId);
 
     // Observe the batch tag form submit
     jQ('#id_batch_tag_form').on('submit', function(e) {
       e.stopPropagation();
       e.preventDefault();
 
-      var tagData = Nitrate.Utils.formSerialize(this);
+      let tagData = Nitrate.Utils.formSerialize(this);
       if (!tagData.tags) {
         return false;
       }
-      var params = serializeFormData({
-        'form': form,
-        'zoneContainer': container,
-        'casesSelection': selection,
+      let params = serializeFormData({
+        'form': options.form,
+        'zoneContainer': options.container,
+        'selectedCaseIDs': selectedCaseIDs,
         'hashable': true
       });
       params.tags = tagData.tags;
@@ -1639,14 +1497,13 @@ function onTestCaseTagAddClick(options) {
        */
       delete params.plan;
 
-      var format = 'serialized';
-      var callback = onTestCaseTagFormSubmitClick({
-        'container': container,
-        'form': form,
-        'planId': plan_id,
-        'table': table
+      let callback = onTestCaseTagFormSubmitClick({
+        'container': options.container,
+        'form': options.form,
+        'planId': options.planId,
+        'table': options.table
       });
-      addBatchTag(params, callback, format);
+      addBatchTag(params, callback, 'serialized');
     });
   };
 }
@@ -1656,13 +1513,13 @@ function onTestCaseTagDeleteClick(options) {
 
   return function(e) {
     let c = getDialog();
-    let selection = serializeCaseFromInputList2(options.table);
-    if (selection.empty()) {
+    let selectedCaseIDs = getSelectedCaseIDs(options.table);
+    if (selectedCaseIDs.length === 0) {
       window.alert(default_messages.alert.no_case_selected);
       return false;
     }
 
-    renderTagForm(c, {case: selection.selectedCasesIds}, function (e) {
+    renderTagForm(c, {case: selectedCaseIDs}, function (e) {
       e.stopPropagation();
       e.preventDefault();
 
@@ -1671,7 +1528,7 @@ function onTestCaseTagDeleteClick(options) {
         serializeFormData({
           'form': this,
           'zoneContainer': options.container,
-          'casesSelection': selection
+          'selectedCaseIDs': selectedCaseIDs,
         }),
         function (responseData) {
           if (responseData.rc !== 0) {
@@ -1679,7 +1536,7 @@ function onTestCaseTagDeleteClick(options) {
             return false;
           }
           // TODO: test whether params is enough instead of referencing parameters.
-          parameters['case'] = selection.selectedCasesIds;
+          parameters['case'] = selectedCaseIDs;
           constructPlanDetailsCasesZone(options.container, options.planId, parameters);
           clearDialog(c);
         });
@@ -1693,8 +1550,8 @@ function onTestCaseTagDeleteClick(options) {
 function onTestCaseSortNumberClick(options) {
   return function(e) {
     // NOTE: new implementation does not use testcaseplan.pk
-    let selection = serializeCaseFromInputList2(options.table);
-    if (selection.empty()) {
+    let selectedCaseIDs = getSelectedCaseIDs(options.table);
+    if (selectedCaseIDs.length === 0) {
       window.alert(default_messages.alert.no_case_selected);
       return false;
     }
@@ -1702,20 +1559,18 @@ function onTestCaseSortNumberClick(options) {
     let postdata = serializeFormData({
       'form': options.form,
       'zoneContainer': options.container,
-      'casesSelection': selection,
+      'selectedCaseIDs': selectedCaseIDs,
       'hashable': true
     });
 
-    changeCaseOrder2(
-      postdata,
-      function (responseData) {
-        if (responseData.rc !== 0) {
-          window.alert(responseData.response);
-          return false;
-        }
-        postdata.case = selection.selectedCasesIds;
-        constructPlanDetailsCasesZone(options.container, options.planId, postdata);
-      });
+    changeCaseOrder2(postdata, function (responseData) {
+      if (responseData.rc !== 0) {
+        window.alert(responseData.response);
+        return false;
+      }
+      postdata.case = selectedCaseIDs;
+      constructPlanDetailsCasesZone(options.container, options.planId, postdata);
+    });
   };
 }
 
@@ -1748,8 +1603,8 @@ function onTestCaseCategoryClick(options) {
       e.stopPropagation();
       e.preventDefault();
 
-      let selection = serializeCaseFromInputList2(options.table);
-      if (selection.empty()) {
+      let selectedCaseIDs = getSelectedCaseIDs(options.table);
+      if (selectedCaseIDs.length === 0) {
         window.alert(default_messages.alert.no_case_selected);
         return false;
       }
@@ -1757,7 +1612,7 @@ function onTestCaseCategoryClick(options) {
       let params = serializeFormData({
         'form': this,
         'zoneContainer': container,
-        'casesSelection': selection
+        'selectedCaseIDs': selectedCaseIDs
       });
       if (params.indexOf('o_category') < 0) {
         window.alert(default_messages.alert.no_category_selected);
@@ -1770,7 +1625,7 @@ function onTestCaseCategoryClick(options) {
           return false;
         }
         // TODO: whether can use params rather than parameters.
-        parameters['case'] = selection.selectedCasesIds;
+        parameters.case = selectedCaseIDs;
         constructPlanDetailsCasesZone(container, options.planId, parameters);
         clearDialog(c);
       });
@@ -1783,8 +1638,8 @@ function onTestCaseCategoryClick(options) {
  */
 function onTestCaseDefaultTesterClick(options) {
   return function(e) {
-    let selection = serializeCaseFromInputList2(options.table);
-    if (selection.empty()) {
+    let selectedCaseIDs = getSelectedCaseIDs(options.table);
+    if (selectedCaseIDs.length === 0) {
       window.alert(default_messages.alert.no_case_selected);
       return false;
     }
@@ -1797,7 +1652,7 @@ function onTestCaseDefaultTesterClick(options) {
     let params = serializeFormData({
       'form': options.form,
       'zoneContainer': options.container,
-      'casesSelection': selection,
+      'selectedCaseIDs': selectedCaseIDs,
       'hashable': true
     });
     params.a = 'update';
@@ -1854,8 +1709,8 @@ function onTestCaseComponentClick(options) {
       e.stopPropagation();
       e.preventDefault();
 
-      let selection = serializeCaseFromInputList2(options.table);
-      if (selection.empty()) {
+      let selectedCaseIDs = getSelectedCaseIDs(options.table);
+      if (selectedCaseIDs.length === 0) {
         window.alert(default_messages.alert.no_case_selected);
         return false;
       }
@@ -1865,14 +1720,14 @@ function onTestCaseComponentClick(options) {
         serializeFormData({
           'form': this,
           'zoneContainer': container,
-          'casesSelection': selection
+          'selectedCaseIDs': selectedCaseIDs
         }),
         function (responseData) {
           if (responseData.rc !== 0) {
             window.alert(responseData.response);
             return false;
           }
-          parameters['case'] = selection.selectedCasesIds;
+          parameters.case = selectedCaseIDs;
           constructPlanDetailsCasesZone(container, options.planId, parameters);
           clearDialog(c);
         });
@@ -1889,8 +1744,8 @@ function onTestCaseReviewerClick(options) {
   let parameters = options.parameters;
 
   return function(e) {
-    let selection = serializeCaseFromInputList2(options.table);
-    if (selection.empty()) {
+    let selectedCaseIDs = getSelectedCaseIDs(options.table);
+    if (selectedCaseIDs.length === 0) {
       window.alert(default_messages.alert.no_case_selected);
       return false;
     }
@@ -1903,7 +1758,7 @@ function onTestCaseReviewerClick(options) {
     let postdata = serializeFormData({
       'form': form,
       'zoneContainer': options.container,
-      'casesSelection': selection,
+      'selectedCaseIDs': selectedCaseIDs,
       'hashable': true
     });
     postdata.a = 'update';
@@ -1943,7 +1798,7 @@ function constructPlanDetailsCasesZoneCallback(options) {
 
   return function(response) {
     var form = jQ(container).children()[0];
-    var table = jQ(container).children()[2];
+    var table = jQ(container).children()[1];
 
     // Presume the first form element is the form
     if (form.tagName !== 'FORM') {
@@ -2094,18 +1949,9 @@ function constructPlanDetailsCasesZoneCallback(options) {
       }));
     }
 
-    jQ(container).find('input[value="all"]').on('click', function(e) {
-        Nitrate.TestPlans.Details.toggleSelectAllInput(jQ(container));
-    });
-
     bindEventsOnLoadedCases(
       {'cases_container': container, 'plan_id': plan_id, 'parameters': parameters}
     )(table, form);
-
-    // Register event handler for loading more cases.
-    Nitrate.TestPlans.Details.observeLoadMore(container.id);
-    Nitrate.TestPlans.Details.showRemainingCasesCount(container.id);
-    Nitrate.TestPlans.Details.refreshCasesSelectionCheck(jQ(container));
   };
 }
 
@@ -2160,37 +2006,29 @@ function constructPlanDetailsCasesZone(container, plan_id, parameters) {
         window.location.href = jQ(this).data('param');
       });
       jQ('#js' + type + 'export-case').on('click', function() {
-        exportCase(jQ(this).data('param'), navForm, casesTable);
+        submitSelectedCaseIDs(jQ(this).data('param'), casesTable);
       });
       jQ('#js' + type + 'print-case').on('click', function() {
-        printableCases(jQ(this).data('param'), navForm, casesTable);
+        submitSelectedCaseIDs(jQ(this).data('param'), casesTable);
       });
       jQ('#js' + type + 'clone-case').on('click', function() {
-        requestCloneFilteredCases({
-          'url': jQ(this).data('param'),
-          'form': navForm,
-          'table': casesTable,
-          'requestMethod': 'get'
-        });
+        postToURL(jQ(this).data('param'), {
+            from_plan: Nitrate.Utils.formSerialize(navForm).from_plan,
+            case: getSelectedCaseIDs(casesTable)
+          },
+          'get');
       });
       jQ('#js' + type + 'remove-case').on('click', function() {
         unlinkCasesFromPlan(casesSection, navForm, casesTable);
       });
       jQ('#js' + type + 'new-run').on('click', function() {
-        writeNewRunFromFilteredCases({
-          'url': jQ(this).data('param'),
-          'form': navForm,
-          'table': casesTable,
-          'requestMethod': 'post'
+        postToURL(jQ(this).data('param'), {
+          from_plan: Nitrate.Utils.formSerialize(navForm).from_plan,
+          case: getSelectedCaseIDs(casesTable)
         });
       });
       jQ('#js' + type + 'add-case-to-run').on('click', function() {
-        addFilteredCasesToRun({
-          'url': jQ(this).data('param'),
-          'form': navForm,
-          'table': casesTable,
-          'requestMethod': 'get'
-        });
+        postToURL(jQ(this).data('param'), {case: getSelectedCaseIDs(casesTable)}, 'get');
       });
       jQ('.js' + type + 'status-item').on('click', function() {
         this.form.new_case_status_id.value = jQ(this).data('param');
@@ -2558,54 +2396,3 @@ Nitrate.TestPlans.Runs = {
     return false;
   }
 };
-
-/*
- * Request specific operation upon filtered TestCases.
- *
- * Default HTTP method is GET.
- *
- * Options:
- * - url: the URL representing the service requesting to now.
- * - form: containing all necessary data serialized as the data included in REQUEST.
- * - casesContainer: containing all INPUT with type checkbox, each of them holds every filtered
- *                   TestCase' Id. Typcicall, it's a TABLE in the current implementation.
- *
- * FIXME: this function is similar to some other functions within tcms_actions.js, that wraps
- *        function postToURL. All these functions have almost same behavior. Abstraction can be done
- *        better.
- */
-function requestOperationUponFilteredCases(options) {
-  let selection = serializeCaseFromInputList2(options.table);
-  if (selection.empty()) {
-    window.alert('At least one case is required by a run.');
-    return false;
-  }
-  // Exclude selected cases, that will be added from the selection.
-  let params = Nitrate.Utils.formSerialize(options.form);
-  if (selection.selectAll) {
-    params.selectAll = selection.selectAll;
-  }
-  params.case = selection.selectedCasesIds;
-  postToURL(options.url, params, options.requestMethod || 'GET');
-}
-
-/*
- * Write new run from partial or all filtered cases.
- */
-function writeNewRunFromFilteredCases(options) {
-  return requestOperationUponFilteredCases(options);
-}
-
-/*
- * Add partial or all filtered cases to an existing TestRun.
- */
-function addFilteredCasesToRun(options) {
-  return requestOperationUponFilteredCases(options);
-}
-
-/*
- * Request clone current selected TestCases
- */
-function requestCloneFilteredCases(options) {
-  return requestOperationUponFilteredCases(options);
-}

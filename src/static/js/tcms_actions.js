@@ -1172,21 +1172,17 @@ function popupAddAnotherWindow(triggeringLink, parameters) {
   return false;
 }
 
-function exportCase(url, form, table) {
-  var selection = serializeCaseFromInputList2(table);
-  var emptySelection = !selection.selectAll & selection.selectedCasesIds.length === 0;
-  if (emptySelection) {
+/**
+ * Collect selected case IDs from a given container and submit them to a specific location. The
+ * container element should have children HTMLInputElement with type checkbox and name case.
+ * @param {string} url - the URL for exporting cases.
+ * @param {HTMLElement} container - a container element from where to find out selected case IDs.
+ */
+function submitSelectedCaseIDs(url, container) {
+  let selectedCaseIDs = getSelectedCaseIDs(container);
+  if (selectedCaseIDs.length === 0) {
     window.alert(default_messages.alert.no_case_selected);
-    return false;
+    return;
   }
-
-  let params = Nitrate.Utils.formSerialize(form);
-  if (selection.selectAll) {
-    params.selectAll = selection.selectAll;
-  }
-  // replace with selected cases' IDs
-  params.case = selection.selectedCasesIds;
-  postToURL(url, params);
+  postToURL(url, {case: selectedCaseIDs});
 }
-
-var printableCases = exportCase;

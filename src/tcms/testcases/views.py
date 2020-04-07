@@ -302,16 +302,10 @@ def build_cases_search_form(
     action = request_data.get('a')
     if action in TESTCASE_OPERATION_ACTIONS:
         search_form = SearchForm(request_data)
-        http_session['items_per_page'] = request_data.get(
-            'items_per_page', settings.DEFAULT_PAGE_SIZE)
     else:
         d_status = get_case_status(request_data.get('template_type'))
         d_status_ids = d_status.values_list('pk', flat=True)
-        search_form = SearchForm(initial={
-            'case_status': d_status_ids,
-            'items_per_page': http_session.get(
-                'items_per_page', settings.DEFAULT_PAGE_SIZE)
-        })
+        search_form = SearchForm(initial={'case_status': d_status_ids})
 
     if populate:
         if request_data.get('product'):
@@ -322,26 +316,6 @@ def build_cases_search_form(
             search_form.populate()
 
     return search_form
-
-
-def paginate_testcases(request, testcases):
-    """Paginate queried TestCases
-
-    Arguments:
-    - request: django's HttpRequest from which to get pagination data
-    - testcases: an object queryset representing already queried TestCases
-
-    Return value: return the queryset for chain call
-    """
-    DEFAULT_PAGE_INDEX = 1
-
-    POST = request.POST
-    page_index = int(POST.get('page_index', DEFAULT_PAGE_INDEX))
-    page_size = int(POST.get('items_per_page',
-                             request.session.get('items_per_page',
-                                                 settings.DEFAULT_PAGE_SIZE)))
-    offset = (page_index - 1) * page_size
-    return testcases[offset:offset + page_size]
 
 
 def query_testcases(request_data, plan, search_form):
@@ -404,47 +378,12 @@ def query_testcases_from_request(request_data, http_session, plan=None):
 def get_selected_testcases(request):
     """Get selected TestCases from client side
 
-    TestCases are selected in two cases. One is user selects part of displayed
-    TestCases, where there should be at least one variable named case, whose
-    value is the TestCase Id. Another one is user selects all TestCases based
-    on previous filter criterias even through there are non-displayed ones. In
-    this case, another variable selectAll appears in the REQUEST. Whatever its
-    value is.
-
-    If neither variables mentioned exists, empty query result is returned.
-
     Arguments:
     - request: REQUEST object.
     """
     request_data = request.POST or request.GET
-    if request_data.get('selectAll', None):
-        plan = plan_from_request_or_none(request)
-        return query_testcases_from_request(
-            request_data, request.session, plan)
-    else:
-        pks = [int(pk) for pk in request_data.getlist('case')]
-        return TestCase.objects.filter(pk__in=pks)
-
-
-def load_more_cases(request, template_name='plan/cases_rows.html'):
-    """Loading more TestCases"""
-    plan = plan_from_request_or_none(request)
-    cases = []
-    selected_case_ids = []
-    if plan is not None:
-        cases = query_testcases_from_request(
-            request.POST, request.session, plan)
-        cases = sort_queried_testcases(request, cases)
-        cases = paginate_testcases(request, cases)
-        cases = calculate_for_testcases(plan, cases)
-        selected_case_ids = [tc.pk for tc in cases]
-    context_data = {
-        'test_plan': plan,
-        'test_cases': cases,
-        'selected_case_ids': selected_case_ids,
-        'case_status': TestCaseStatus.objects.all(),
-    }
-    return render(request, template_name, context=context_data)
+    pks = [int(pk) for pk in request_data.getlist('case')]
+    return TestCase.objects.filter(pk__in=pks)
 
 
 def get_selected_cases_ids(request):
@@ -523,7 +462,6 @@ def all(request, template_name="case/all.html"):
     tcs = tcs.prefetch_related(
         'author', 'default_tester', 'case_status', 'category', 'priority'
     )
-    tcs = paginate_testcases(request, tcs)
 
     # There are several extra information related to each TestCase to be shown
     # also. This step must be the very final one, because the calculation of
@@ -1321,7 +1259,7 @@ def clone(request, template_name='case/clone.html'):
 
     request_data = getattr(request, request.method)
 
-    if 'selectAll' not in request_data and 'case' not in request_data:
+    if 'case' not in request_data:
         return Prompt.render(
             request=request,
             info_type=Prompt.Info,

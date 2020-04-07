@@ -275,9 +275,6 @@ class BaseCaseSearchForm(forms.Form):
     is_automated_proposed = forms.BooleanField(
         label='Autoproposed', required=False
     )
-    items_per_page = forms.ChoiceField(label='Items per page',
-                                       required=False,
-                                       choices=ITEMS_PER_PAGE_CHOICES)
 
     def clean_tag__name__in(self):
         return TestTag.string_to_list(self.cleaned_data['tag__name__in'])

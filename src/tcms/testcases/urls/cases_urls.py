@@ -7,7 +7,6 @@ urlpatterns = [
     path('new/', views.new, name='cases-new'),
     path('', views.all, name='cases-all'),
     path('search/', views.search, name='cases-search'),
-    path('load-more/', views.load_more_cases, name='cases-load-more'),
     path('ajax/', views.ajax_search, name='cases-ajax-search'),
 
     path('automated/', views.ChangeCaseAutomatedPropertyView.as_view(),

@@ -6,30 +6,6 @@ Nitrate.TestCases.Create = {};
 Nitrate.TestCases.Edit = {};
 Nitrate.TestCases.Clone = {};
 
-(function() {
-  'use restrict';
-
-  var TestCases = window.Nitrate.TestCases || {};
-
-  TestCases.CasesSelection = function(options) {
-    this.selectedCasesIds = options.selectedCasesIds || [];
-    this.selectAll = options.selectAll;
-
-    if (Object.prototype.toString.call(this.selectedCasesIds) !== '[object Array]') {
-      throw new TypeError('selectedCasesIds must an object of Array.');
-    }
-    if (typeof this.selectAll !== 'boolean') {
-      throw new TypeError('selectAll must be a boolean value.');
-    }
-  };
-
-  TestCases.CasesSelection.prototype.empty = function() {
-    return this.selectedCasesIds.length === 0 && !this.selectAll;
-  };
-
-  window.Nitrate.TestCases = TestCases;
-}());
-
 Nitrate.TestCases.AdvanceList.on_load = function() {
   bind_category_selector_to_product(true, true, jQ('#id_product')[0], jQ('#id_category')[0]);
   bind_component_selector_to_product(true, true, jQ('#id_product')[0], jQ('#id_component')[0]);
@@ -1063,7 +1039,7 @@ function constructCaseAutomatedForm(container, options, callback) {
         let params = serializeFormData({
           form: this,
           zoneContainer: options.zoneContainer,
-          casesSelection: options.casesSelection
+          selectedCaseIDs: options.selectedCaseIDs,
         });
         /*
          * Have to add this. The form generated before does not contain a
@@ -1082,37 +1058,6 @@ function constructCaseAutomatedForm(container, options, callback) {
         });
       })
     );
-  });
-}
-
-/**
- * Serialize selected cases' Ids.
- *
- * This function inherits the ability from original definition named
- * serializeCaseFromInputList, except that it also collects whether all cases
- * are also selected even through not all of cases are displayed.
- *
- * Return value is an object of dictionary holding two properties. `selectAll'
- * is a boolean value indicating whether user select all cases.
- * `selectedCasesIds' is an array containing all selected cases' Ids the
- * current loaded set of cases.
- *
- * Whatever user selects all cases, above two properties appears always with
- * proper value.
- */
-function serializeCaseFromInputList2(table) {
-  let selectAll = jQ(table).parent().find('.js-cases-select-all input[type="checkbox"]')[0].checked;
-  let case_ids = [];
-  let checkedCases = jQ(table).find('input[name="case"]:checked');
-  checkedCases.each(function(i, checkedCase) {
-    if (typeof checkedCase.value === 'string') {
-      case_ids.push(checkedCase.value);
-    }
-  });
-
-  return new Nitrate.TestCases.CasesSelection({
-    selectedCasesIds: case_ids,
-    selectAll: selectAll
   });
 }
 

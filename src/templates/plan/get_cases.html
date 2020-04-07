@@ -134,10 +134,10 @@
 		</div>
 	</div>
 </form>
-<div class="js-cases-select-all" display="display:none">
-	<input type="checkbox" id="cases-select-all" name="cases-select-all" checked />
-	<label for="cases-select-all">Also select all cases that are not yet shown below.</label>
-</div>
+{#<div class="js-cases-select-all" display="display:none">#}
+{#	<input type="checkbox" id="cases-select-all" name="cases-select-all" checked />#}
+{#	<label for="cases-select-all">Also select all cases that are not yet shown below.</label>#}
+{#</div>#}
 <table class="list js-cases-list" cellpadding="1" cellspacing="0" border="0">
 	<thead data-param="{{ test_plan.plan_id }}">
 		<tr>
@@ -203,20 +203,20 @@
 	</tbody>
 </table>
 <div id="img_loading_testcases" class="ajax_loading" style="display:none"></div>
-<div class="cases-pagination show-more-cases">
-	{% comment %}
-	There is a fixed size of page, 20 cases per page by default. After cases is
-	loaded for the first time, Load More will load cases from the second page,
-	and then the page index will be change to next page.
-
-	data-page-index records the next page index to load.
-	{% endcomment %}
-	<a href="javascript:void(0)" class="load-more js-load-more" data-page-index="2" data-criterias="{{ search_criterias }}">Show more</a>
-	<span class="js-loading-progress">
-		(<span class="js-remaining-cases-count" data-cases-count="{{ total_cases_count|default:"0" }}">0</span> cases left)
-	</span>
-	<span class="js-nomore-msg" style="display:none">All cases have been loaded.</span>
-</div>
+{#<div class="cases-pagination show-more-cases">#}
+{#	{% comment %}#}
+{#	There is a fixed size of page, 20 cases per page by default. After cases is#}
+{#	loaded for the first time, Load More will load cases from the second page,#}
+{#	and then the page index will be change to next page.#}
+{##}
+{#	data-page-index records the next page index to load.#}
+{#	{% endcomment %}#}
+{#	<a href="javascript:void(0)" class="load-more js-load-more" data-page-index="2" data-criterias="{{ search_criterias }}">Show more</a>#}
+{#	<span class="js-loading-progress">#}
+{#		(<span class="js-remaining-cases-count" data-cases-count="{{ total_cases_count|default:"0" }}">0</span> cases left)#}
+{#	</span>#}
+{#	<span class="js-nomore-msg" style="display:none">All cases have been loaded.</span>#}
+{#</div>#}
 {% verbatim %}
 	<script id="batch_tag_form_template" type="text/x-handlebars-template">
 		<form id="id_batch_tag_form">
