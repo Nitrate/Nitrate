@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import json
 import os
 import shutil
 import tempfile
 
 from datetime import datetime
+from http import HTTPStatus
 
 from django.db.models import Max
 from django.test import RequestFactory
@@ -160,42 +160,44 @@ class TestAbleToDeleteFile(BasePlanCase):
         self.request = RequestFactory()
 
     def test_superuser_can(self):
-        request = self.request.get(
-            reverse('delete-file', args=[self.attachment.pk]))
+        request = self.request.post(reverse('delete-file'))
         request.user = self.superuser
         self.assertTrue(able_to_delete_attachment(request, self.attachment.pk))
 
     def test_attachment_submitter_can(self):
-        request = self.request.get(
-            reverse('delete-file', args=[self.attachment.pk]))
+        request = self.request.post(reverse('delete-file'))
         request.user = self.attachment.submitter
         self.assertTrue(able_to_delete_attachment(request, self.attachment.pk))
 
     def test_plan_author_can(self):
-        request = self.request.get(
-            reverse('delete-file', args=[self.attachment.pk]),
-            data={'from_plan': self.plan.pk})
+        request = self.request.post(reverse('delete-file'), {
+            'file_id': self.attachment.pk,
+            'from_plan': self.plan.pk
+        })
         request.user = self.plan.author
         self.assertTrue(able_to_delete_attachment(request, self.attachment.pk))
 
     def test_plan_owner_can(self):
-        request = self.request.get(
-            reverse('delete-file', args=[self.attachment.pk]),
-            data={'from_plan': self.plan.pk})
+        request = self.request.post(reverse('delete-file'), {
+            'file_id': self.attachment.pk,
+            'from_plan': self.plan.pk
+        })
         request.user = self.plan.owner
         self.assertTrue(able_to_delete_attachment(request, self.attachment.pk))
 
     def test_case_owner_can(self):
-        request = self.request.get(
-            reverse('delete-file', args=[self.attachment.pk]),
-            data={'from_case': self.case_1.pk})
+        request = self.request.post(reverse('delete-file'), {
+            'file_id': self.attachment.pk,
+            'from_case': self.case_1.pk
+        })
         request.user = self.case_1.author
         self.assertTrue(able_to_delete_attachment(request, self.attachment.pk))
 
     def test_cannot_delete_by_others(self):
-        request = self.request.get(
-            reverse('delete-file', args=[self.attachment.pk]),
-            data={'from_case': self.case_1.pk})
+        request = self.request.post(reverse('delete-file'), {
+            'file_id': self.attachment.pk,
+            'from_case': self.case_1.pk
+        })
         request.user = self.anyone_else
         self.assertFalse(able_to_delete_attachment(request, self.attachment.pk))
 
@@ -234,19 +236,23 @@ class TestDeleteFileAuthorization(BasePlanCase):
         self.client.login(username=self.anyone_else.username,
                           password=self.anyone_else_pwd)
 
-        url = reverse('delete-file', args=[self.plan_attachment.pk])
-        response = self.client.get(url, {'from_plan': self.plan.pk})
+        response = self.client.post(reverse('delete-file'), {
+            'file_id': self.plan_attachment.pk,
+            'from_plan': self.plan.pk
+        })
 
-        self.assertEqual({'rc': 2, 'response': 'auth_failure'}, json.loads(response.content))
+        self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
     def test_delete_attachment_from_plan(self):
         self.client.login(username=self.plan_attachment.submitter.username,
                           password=self.submitter_pwd)
 
-        url = reverse('delete-file', args=[self.plan_attachment.pk])
-        response = self.client.get(url, {'from_plan': self.plan.pk})
+        response = self.client.post(reverse('delete-file'), {
+            'file_id': self.plan_attachment.pk,
+            'from_plan': self.plan.pk
+        })
 
-        self.assertEqual({'rc': 0, 'response': 'ok'}, json.loads(response.content))
+        self.assertEqual(HTTPStatus.OK, response.status_code)
         still_has = self.plan.attachment.filter(pk=self.plan_attachment.pk).exists()
         self.assertFalse(still_has)
         # TODO: skip because delete_file does not delete a TestAttachment object from database
@@ -256,10 +262,12 @@ class TestDeleteFileAuthorization(BasePlanCase):
         self.client.login(username=self.case_attachment.submitter.username,
                           password=self.submitter_pwd)
 
-        url = reverse('delete-file', args=[self.case_attachment.pk])
-        response = self.client.get(url, {'from_case': self.case_1.pk})
+        response = self.client.post(reverse('delete-file'), {
+            'file_id': self.case_attachment.pk,
+            'from_case': self.case_1.pk
+        })
 
-        self.assertEqual({'rc': 0, 'response': 'ok'}, json.loads(response.content))
+        self.assertEqual(HTTPStatus.OK, response.status_code)
         still_has = self.case_1.attachment.filter(pk=self.case_attachment.pk).exists()
         self.assertFalse(still_has)
         # TODO: skip because delete_file does not delete a TestAttachment object from database

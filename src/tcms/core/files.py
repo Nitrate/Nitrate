@@ -4,6 +4,7 @@ import os
 import logging
 
 from datetime import datetime
+from http import HTTPStatus
 
 from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
@@ -13,7 +14,7 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils.encoding import smart_str
 from django.views import generic
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET, require_POST
 from six.moves.urllib_parse import unquote
 
 from tcms.core.views import Prompt
@@ -186,13 +187,13 @@ def able_to_delete_attachment(request, file_id):
     if user.pk == attach.submitter_id:
         return True
 
-    if 'from_plan' in request.GET:
-        plan_id = int(request.GET['from_plan'])
+    if 'from_plan' in request.POST:
+        plan_id = int(request.POST['from_plan'])
         plan = TestPlan.objects.get(plan_id=plan_id)
         return user.pk == plan.owner_id or user.pk == plan.author_id
 
-    if 'from_case' in request.GET:
-        case_id = int(request.GET['from_case'])
+    if 'from_case' in request.POST:
+        case_id = int(request.POST['from_case'])
         case = TestCase.objects.get(case_id=case_id)
         return user.pk == case.author_id
 
@@ -200,38 +201,58 @@ def able_to_delete_attachment(request, file_id):
 
 
 # Delete Attachment
-def delete_file(request, file_id):
-    ajax_response = {'rc': 0, 'response': 'ok'}
-    DELEFAILURE = 1
-    AUTHUNSUCCESS = 2
-
+@require_POST
+def delete_file(request):
+    file_id = int(request.POST['file_id'])
     state = able_to_delete_attachment(request, file_id)
     if not state:
-        ajax_response['rc'] = AUTHUNSUCCESS
-        ajax_response['response'] = 'auth_failure'
-        return JsonResponse(ajax_response)
+        return JsonResponse(
+            {
+                'message': f'User {request.user.username} is not allowed to '
+                           f'delete the attachment.'
+            },
+            status=HTTPStatus.UNAUTHORIZED
+        )
 
     # Delete plan's attachment
-    if 'from_plan' in request.GET:
+    if 'from_plan' in request.POST:
+        plan_id = int(request.POST['from_plan'])
         try:
-            plan_id = int(request.GET['from_plan'])
-            attachment = TestPlanAttachment.objects.filter(attachment=file_id,
-                                                           plan_id=plan_id)
-            attachment.delete()
+            rel = TestPlanAttachment.objects.get(
+                attachment=file_id, plan_id=plan_id)
         except TestPlanAttachment.DoesNotExist:
-            ajax_response['rc'] = DELEFAILURE
-            ajax_response['response'] = 'failure'
-        return JsonResponse(ajax_response)
+            return JsonResponse(
+                {'message': f'Attachment {file_id} does not belong to plan {plan_id}.'},
+                status=HTTPStatus.BAD_REQUEST
+            )
+        else:
+            rel.delete()
+
+        return JsonResponse({
+            'message': f'Attachment {rel.attachment.file_name} is removed from plan'
+                       f' {plan_id} successfully.'
+        })
 
     # Delete cases' attachment
-    elif 'from_case' in request.GET:
+    elif 'from_case' in request.POST:
+        case_id = int(request.POST['from_case'])
         try:
-            case_id = int(request.GET['from_case'])
-            attachment = TestCaseAttachment.objects.filter(attachment=file_id,
-                                                           case_id=case_id)
-            attachment.delete()
+            rel = TestCaseAttachment.objects.get(
+                attachment=file_id, case_id=case_id)
         except TestCaseAttachment.DoesNotExist:
-            ajax_response['rc'] = DELEFAILURE
-            ajax_response['response'] = 'failure'
+            return JsonResponse(
+                {'message': f'Attachment {file_id} does not belong to case {case_id}.'},
+                status=HTTPStatus.BAD_REQUEST
+            )
+        else:
+            rel.delete()
 
-        return JsonResponse(ajax_response)
+        return JsonResponse({
+            'message': f'Attachment {rel.attachment.file_name} is removed from case'
+                       f' {case_id} successfully.'
+        })
+
+    else:
+        return JsonResponse(
+            {'message': 'Unknown from where to remove the attachment.'},
+            status=HTTPStatus.BAD_REQUEST)

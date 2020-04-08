@@ -28,5 +28,5 @@ urlpatterns = [
     # Attached file zone
     path('management/uploadfile/', files.UploadFileView.as_view(), name='upload-file'),
     path('management/checkfile/<int:file_id>/', files.check_file, name='check-file'),
-    path('management/deletefile/<int:file_id>/', files.delete_file, name='delete-file'),
+    path('management/deletefile/', files.delete_file, name='delete-file'),
 ]

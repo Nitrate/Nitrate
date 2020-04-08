@@ -1,23 +1,19 @@
 function deleConfirm(attachment_id, home, plan_id) {
-  let answer = window.confirm("Arey you sure to delete the attachment?");
-  if (!answer) {
+  if (!window.confirm("Are you sure to delete the attachment?")) {
     return false;
   }
 
   jQ.ajax({
-    'url': "/management/deletefile/" + attachment_id + "?" + home + "=" + plan_id,
-    'type': 'GET',
-    'dataType': 'json',
-    'success': function(data, textStatus, jqXHR) {
-      if (data.rc === 0) {
-        jQ('#' + attachment_id).remove();
-        jQ('#attachment_count').text(parseInt(jQ('#attachment_count').text()) - 1);
-      } else if (data.response === 'auth_failure') {
-        window.alert('Permission denied!');
-      } else {
-        window.alert('Server Exception');
-      }
+    url: '/management/deletefile/',
+    type: 'POST',
+    dataType: 'json',
+    data: {file_id: attachment_id, from_plan: plan_id},
+    success: function(data, textStatus, jqXHR) {
+      jQ('#' + attachment_id).remove();
+      jQ('#attachment_count').text(parseInt(jQ('#attachment_count').text()) - 1);
+    },
+    error: function (jqXHR, textStatus, errorThrown) {
+      window.alert(jqXHR.responseJSON.message);
     }
   });
 }
-
