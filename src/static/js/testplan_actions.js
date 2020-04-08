@@ -727,31 +727,6 @@ Nitrate.TestPlans.Details = {
     var table = elem.children()[1];
     Nitrate.TestPlans.Details._bindEventsOnLoadedCases(table, form);
   },
-  /*
-   * No more cases to load.
-   *
-   * Arguments:
-   * - container: a jQuery object. Representing current Cases or Revieiwng Cases tab.
-   */
-  'noMoreToLoad': function(container) {
-    let countInfo = Nitrate.TestPlans.Details.getLoadedCasesCountInfo(container);
-    return countInfo.remaining === 0;
-  },
-  /*
-   * Get cases count information.
-   *
-   * Getting all these information relies on the HTML element within page. No
-   * any interaction with backend.
-   */
-  'getLoadedCasesCountInfo': function(container) {
-    var contentContainer = container;
-    var casesListContainer = contentContainer.find('.js-cases-list');
-    var totalCasesCount = contentContainer
-      .find('.js-remaining-cases-count').attr('data-cases-count');
-    var loadedCasesCount = casesListContainer.find('tr[id]').length;
-    var remainingCount = parseInt(totalCasesCount) - parseInt(loadedCasesCount);
-    return { 'loaded': loadedCasesCount, 'remaining': remainingCount };
-  },
   'observeEvents': function(plan_id) {
     let NTPD = Nitrate.TestPlans.Details;
 
