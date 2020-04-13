@@ -83,12 +83,8 @@ class TestAddLinkReference(HelperAssertions, AuthMixin, test.TestCase):
         })
 
         self.assertJsonResponse(resp, {
-            'rc': 0,
-            'response': 'ok',
-            'data': {
-                'name': 'A cool site',
-                'url': 'https://coolsite.com/'
-            },
+            'name': 'A cool site',
+            'url': 'https://coolsite.com/'
         })
 
         self.assertTrue(
@@ -165,7 +161,7 @@ class TestRemoveLinkReference(HelperAssertions, AuthMixin, test.TestCase):
     def test_remove(self):
         self.login_tester()
         url = reverse('remove-link-reference', args=[self.link2.pk])
-        self.client.get(url)
+        self.client.post(url)
         self.assertFalse(
             LinkReference.objects.filter(pk=self.link2.pk).exists())
 
@@ -174,5 +170,5 @@ class TestRemoveLinkReference(HelperAssertions, AuthMixin, test.TestCase):
         unlink.side_effect = Exception
         self.login_tester()
         url = reverse('remove-link-reference', args=[self.link2.pk])
-        resp = self.client.get(url)
+        resp = self.client.post(url)
         self.assert400(resp)

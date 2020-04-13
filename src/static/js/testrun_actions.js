@@ -1284,20 +1284,15 @@ function get_addlink_dialog() {
  * @param {number} link_id - the ID of an arbitrary link.
  */
 function removeLink(sender, link_id) {
-  jQ.ajax({
-    url: '/linkref/remove/' + link_id + '/',
-    type: 'GET',
+  jQ.ajax('/linkref/remove/' + link_id + '/', {
+    type: 'POST',
     dataType: 'json',
     success: function(data, textStatus, jqXHR) {
-      if (data.rc !== 0) {
-        window.alert(data.response);
-        return false;
-      }
       let li_node = sender.parentNode;
       li_node.parentNode.removeChild(li_node);
     },
-    error: function(jqXHR, textStatus, errorThrown) {
-      window.alert(JSON.parse(jqXHR.responseText).message);
+    error: function(xhr, textStatus, errorThrown) {
+      window.alert(JSON.parse(xhr.responseText).message);
     }
   });
 }
@@ -1347,8 +1342,7 @@ function initialize_addlink_dialog(link_target) {
     buttons: {
       "OK": function() {
         // TODO: validate name and url
-        jQ.ajax({
-          url: '/linkref/add/',
+        jQ.ajax('/linkref/add/', {
           type: 'POST',
           data: {
             name: jQ('#testlog_name').attr('value'),
@@ -1357,11 +1351,7 @@ function initialize_addlink_dialog(link_target) {
             target_id: jQ(this).dialog('option', 'target_id')
           },
           dataType: 'json',
-          success: function(data, textStatus, jqXHR) {
-            if (data.rc !== 0) {
-              window.alert(data.response);
-              return false;
-            }
+          success: function(data, textStatus, xhr) {
             dialog_p.dialog('close');
 
             // Begin to construct case run area
@@ -1370,8 +1360,8 @@ function initialize_addlink_dialog(link_target) {
               dialog_p.dialog('option', 'title_container'),
               dialog_p.dialog('option', 'case_id'));
           },
-          error: function (jqXHR, textStatus, errorThrown) {
-            window.alert(JSON.parse(jqXHR.responseText).response);
+          error: function (xhr, textStatus, errorThrown) {
+            window.alert(JSON.parse(xhr.responseText).message);
           }
         });
       },

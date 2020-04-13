@@ -49,16 +49,10 @@ class AddLinkToTargetView(PermissionRequiredMixin, generic.View):
             model_instance = model_class.objects.get(pk=target_id)
             create_link(name=name, url=url, link_to=model_instance)
 
-            return JsonResponse({
-                'rc': 0,
-                'response': 'ok',
-                'data': {'name': name, 'url': url}
-            })
-
+            return JsonResponse({'name': name, 'url': url})
         else:
             return JsonResponseBadRequest({
-                'rc': 1,
-                'response': form.errors.as_text()
+                'message': form.errors.as_text()
             })
 
 
@@ -101,13 +95,12 @@ class RemoveLinkReferenceView(PermissionRequiredMixin, generic.View):
 
     permission_required = 'testruns.change_testcaserun'
 
-    def get(self, request, link_id):
+    def post(self, request, link_id):
         try:
             LinkReference.unlink(link_id)
         except Exception as err:
-            return JsonResponseBadRequest({'rc': 1, 'response': str(err)})
+            return JsonResponseBadRequest({'message': str(err)})
 
         return JsonResponse({
-            'rc': 0,
-            'response': 'Link has been removed successfully.'
+            'message': 'Link has been removed successfully.'
         })
