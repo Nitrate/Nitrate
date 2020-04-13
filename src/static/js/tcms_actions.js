@@ -206,16 +206,15 @@ var default_messages = {
 
 
 // Exceptions for Ajax
-function json_failure(jqXHR) {
-  let responseJSON = jQ.parseJSON(jqXHR.responseText);
+function json_failure(xhr) {
+  let responseJSON = jQ.parseJSON(xhr.responseText);
   // response property will be deprecated from server response.
-  if (responseJSON.response) {
-    window.alert(responseJSON.response);
-  } else if (responseJSON.messages) {
-    window.alert(responseJSON.messages);
-  } else {
-    window.alert(responseJSON);
-  }
+  // TODO: after the AJAX response is unified, just use the responseJSON.message.
+  let msg = responseJSON.message ||
+            responseJSON.response ||
+            responseJSON.messages ||
+            responseJSON;
+  window.alert(msg);
   return false;
 }
 

@@ -24,6 +24,7 @@ from django.template.loader import get_template
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_http_methods
 from django.views.generic import View
+from tcms.core.responses import JsonResponseBadRequest
 from uuslug import slugify
 
 from tcms.core.db import SQLExecution
@@ -820,9 +821,8 @@ class ReorderCasesView(View):
         # Most of them are None.
 
         if 'case' not in request.POST:
-            return JsonResponse({
-                'rc': 1,
-                'response': 'At least one case is required to re-order.'
+            return JsonResponseBadRequest({
+                'message': 'At least one case is required to re-order.'
             })
 
         plan = get_object_or_404(TestPlan, pk=int(plan_id))
@@ -835,7 +835,7 @@ class ReorderCasesView(View):
             TestCasePlan.objects.filter(
                 plan=plan, case=case).update(sortkey=new_sort_key)
 
-        return JsonResponse({'rc': 0, 'response': 'ok'})
+        return JsonResponse({})
 
 
 class LinkCasesView(View):
@@ -938,9 +938,8 @@ class DeleteCasesView(View):
         plan = get_object_or_404(TestPlan.objects.only('pk'), pk=int(plan_id))
 
         if 'case' not in request.POST:
-            return JsonResponse({
-                'rc': 1,
-                'response': 'At least one case is required to delete.'
+            return JsonResponseBadRequest({
+                'message': 'At least one case is required to delete.'
             })
 
         cases = get_selected_testcases(request).only('pk')
@@ -956,7 +955,7 @@ class DeleteCasesView(View):
                 new_value=f'Remove from plan {plan.pk}')
             plan.delete_case(case=case)
 
-        return JsonResponse({'rc': 0, 'response': 'ok'})
+        return JsonResponse({})
 
 
 class PlanComponentsActionView(View):

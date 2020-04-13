@@ -199,10 +199,11 @@ class TestDeleteCasesFromPlan(BasePlanCase):
                           password='password')
 
         response = self.client.post(self.cases_url, {})
-        data = json.loads(response.content)
-        self.assertEqual(1, data['rc'])
-        self.assertEqual('At least one case is required to delete.',
-                         data['response'])
+        self.assertJsonResponse(
+            response,
+            {'message': 'At least one case is required to delete.'},
+            status_code=HTTPStatus.BAD_REQUEST
+        )
 
     def test_delete_cases(self):
         self.client.login(username=self.plan_tester.username,
@@ -212,8 +213,7 @@ class TestDeleteCasesFromPlan(BasePlanCase):
         response = self.client.post(self.cases_url, post_data)
         data = json.loads(response.content)
 
-        self.assertEqual(0, data['rc'])
-        self.assertEqual('ok', data['response'])
+        self.assertDictEqual({}, data)
         self.assertFalse(self.plan.case.filter(
             pk__in=[self.case_1.pk, self.case_3.pk]).exists())
 
@@ -248,9 +248,11 @@ class TestSortCases(BasePlanCase):
         self.client.login(username=self.plan_tester.username, password='password')
 
         response = self.client.post(self.cases_url, {})
-        data = json.loads(response.content)
-        self.assertEqual(1, data['rc'])
-        self.assertEqual('At least one case is required to re-order.', data['response'])
+        self.assertJsonResponse(
+            response,
+            {'message': 'At least one case is required to re-order.'},
+            status_code=HTTPStatus.BAD_REQUEST
+        )
 
     def test_order_cases(self):
         self.client.login(username=self.plan_tester.username, password='password')
@@ -259,7 +261,7 @@ class TestSortCases(BasePlanCase):
         response = self.client.post(self.cases_url, post_data)
         data = json.loads(response.content)
 
-        self.assertEqual({'rc': 0, 'response': 'ok'}, data)
+        self.assertEqual({}, data)
 
         case_plan_rel = TestCasePlan.objects.get(plan=self.plan, case=self.case_3)
         self.assertEqual(10, case_plan_rel.sortkey)

@@ -1007,25 +1007,21 @@ function unlinkCasesFromPlan(container, form, table) {
     return false;
   }
 
-  jQ.ajax({
-    'url': 'delete-cases/',
-    'type': 'POST',
-    'dataType': 'json',
-    'data': {case: selectedCaseIDs},
-    'traditional': true,
-    'success': function (data, textStatus, jqXHR) {
-      if (data.rc === 0) {
-        // Form data contains cases filter criteria set previously.
-        // Those criteria will be used to reload cases.
-        let formData = Nitrate.Utils.formSerialize(form);
-        formData.a = 'initial';
-        constructPlanDetailsCasesZone(container, formData.from_plan, formData);
-        return true;
-      }
-      window.alert(data.response);
+  jQ.ajax('delete-cases/', {
+    type: 'POST',
+    dataType: 'json',
+    data: {case: selectedCaseIDs},
+    traditional: true,
+    success: function (data, textStatus, xhr) {
+      // Form data contains cases filter criteria set previously.
+      // Those criteria will be used to reload cases.
+      let formData = Nitrate.Utils.formSerialize(form);
+      formData.a = 'initial';
+      constructPlanDetailsCasesZone(container, formData.from_plan, formData);
+      return true;
     },
-    'error': function (jqXHR, textStatus, errorThrown) {
-      json_failure(jqXHR);
+    error: function (xhr, textStatus, errorThrown) {
+      json_failure(xhr);
     }
   });
 }
@@ -1841,9 +1837,6 @@ function constructPlanDetailsCasesZoneCallback(options) {
         let params = Nitrate.Utils.formSerialize(form);
         params.case = getSelectedCaseIDs(table);
         resortCasesDragAndDrop(container, this, form, table, params, function (responseData) {
-          if (responseData.rc !== 0) {
-            window.alert(responseData.response);
-          }
           params.a = 'initial';
           constructPlanDetailsCasesZone(container, plan_id, params);
         });
@@ -2212,11 +2205,11 @@ function resortCasesDragAndDrop(container, button, form, table, parameters, call
       'dataType': 'json',
       'data': parameters,
       'traditional': true,
-      'success': function (data, textStatus, jqXHR) {
-        callback(data);
+      'success': function (data, textStatus, xhr) {
+        callback();
       },
-      'error': function (jqXHR, textStatus, errorThrown) {
-        json_failure(jqXHR);
+      'error': function (xhr, textStatus, errorThrown) {
+        json_failure(xhr);
       }
     });
   }
