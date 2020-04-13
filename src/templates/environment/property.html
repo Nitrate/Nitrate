@@ -10,13 +10,15 @@
 {% block custom_javascript %}
 <script type="text/javascript" src="{% static "js/management_actions.js" %}"></script>
 <script type="text/javascript">
-	Nitrate.Management.Environment.Property.Param = {
-		'add_property': '{% url "management-env-properties" %}',
-		'edit_property': '{% url "management-env-properties" %}',
-		'del_property': '{% url "management-env-properties" %}',
-		'modify_property': '{% url "management-env-properties" %}',
-		'list_property_values': '{% url "management-env-properties-values" %}',
-		'add_property_value': '{% url "management-env-properties-values" %}'
+	Nitrate.Management.Environment.Property.URLs = {
+      add_property: '{% url "management-add-env-property" %}',
+      edit_property: '/environment/properties/$id/edit/',
+      del_property: '{% url "management-env-properties" %}',
+	  set_property_status: '{% url "management-set-env-property-status" %}',
+      set_property_values_status: '{% url "management-set-env-property-values-status" %}',
+      list_property_values: '/environment/properties/$id/values/',
+      add_property_value: '/environment/properties/$id/values/add/',
+	  edit_property_value: '/environment/properties/values/$id/edit/',
 	};
 	Nitrate.Utils.after_page_load(Nitrate.Management.Environment.Property.on_load);
 </script>
@@ -39,20 +41,20 @@
 				<span class="tit">Properties</span>
 				<span class="right-action">
 					{% if perms.management.add_tcmsenvproperty %}
-					<a id="js-add-prop" class="addlink" href="#">Add</a>
+					<a id="js-add-prop" class="addlink" href="javascript:void(0)">Add</a>
 					{% endif %}
 					{% if perms.management.change_tcmsenvproperty %}
-					<a id="js-disable-prop" class="disablelink" href="#">Disable</a>
-					<a id="js-enable-prop" class="enablelink" href="#">Enable</a>
+					<a id="js-disable-prop" class="disablelink" href="javascript:void(0)">Disable</a>
+					<a id="js-enable-prop" class="enablelink" href="javascript:void(0)">Enable</a>
 					{% endif %}
 				</span>
 				</div>
 				<ul class="groupul" id="id_properties_container">
 					{% for property in properties %}
-					<li id="id_property_{{ property.id }}" data-param="{{ property.id }}"  class="{% cycle 'even' 'odd'} js-one-prop">
+					<li id="id_property_{{ property.pk }}" data-param="{{ property.pk }}"  class="{% cycle 'even' 'odd' %} js-one-prop">
 						<span class="lab" style="float:left; width:50%;">
-							<input type="checkbox" name="id" value="{{ property.id }}">
-							<a id="id_property_name_{{ property.id }}" class="{% if property.is_active %}{% else %}line-through{% endif %} js-prop-name" >{{ property.name }}</a>
+							<input type="checkbox" name="id" value="{{ property.pk }}">
+							<a id="id_property_name_{{ property.pk }}" class="{% if property.is_active %}{% else %}line-through{% endif %} js-prop-name" >{{ property.name }}</a>
 						</span>
 						{% if perms.management.change_tcmsenvproperty %}
 						<div class="right-action" >
@@ -71,14 +73,27 @@
 	</fielset>
 	</div>
 </div>
-</div>
 {% verbatim %}
 	<script id="properties_container_template" type="text/x-handlebars-template">
 		<li id="id_property_{{ id }}" data-param="{{ id }}">
-			<input type="checkbox">
+			<input type="checkbox" name="id" value="{{ id }}">
 			<a id="id_property_name_{{ id }}" class="js-prop-name" >{{ name }}</a>
 			<span class="right-action">
-			<a class="editlink js-rename-prop">Rename</a>
+				<a class="editlink js-rename-prop">Rename</a>
+			</span>
+		</li>
+	</script>
+{% endverbatim %}
+{% verbatim %}
+	<script id="property_value_row_template" type="text/x-handlebars-template">
+		<li>
+			<input type="checkbox" name="id" value="{{ id }}">
+			<span style="width:50%;" id="id_value_{{ id }}">{{ value }}</span>
+			{% if perms.management.change_tcmsenvvalue %}
+				<span class="right-action">
+					<a href="javascript:void(0)" data-param="{{ id }}" class="editlink js-edit-prop-value">Rename</a>
+				</span>
+			{% endif %}
 		</li>
 	</script>
 {% endverbatim %}

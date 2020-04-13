@@ -9,13 +9,14 @@
 {% block custom_javascript %}
 <script type="text/javascript" src="{% static "js/management_actions.js" %}"></script>
 <script type="text/javascript">
-	Nitrate.Management.Environment.Param = {
-		'add_group': '{% url "management-env-groups" %}',
-		'edit_group': '{% url "management-env-group-edit" %}',
-		'delete_group': '{% url "management-env-groups" %}'
+	Nitrate.Management.Environment.Groups.URLs = {
+      add_group: '{% url "management-add-env-group" %}',
+      set_group_status: '/environment/groups/$id/set-status/',
+	  edit_group: '/environment/groups/$id/edit/',
+	  delete_group: '/environment/groups/$id/delete/'
 	};
 
-	Nitrate.Utils.after_page_load(Nitrate.Management.Environment.on_load);
+	Nitrate.Utils.after_page_load(Nitrate.Management.Environment.Groups.on_load);
 </script>
 
 {% endblock %}
@@ -28,7 +29,6 @@
 	</div>
 	<div class="mixbar">
 		<form method="get" action="{% url "management-env-groups" %}" id="changelist-search">
-			<input type="hidden" name="action" value="search">
 			<label for="searchbar"><img alt="Search" height="20px" src="{% static "images/search.png" %}"/></label>
 			<input type="text" id="searchbar" value="{{ REQUEST_CONTENTS.name }}" name="name" size="40"/>
 			<input type="submit" value="Search environment group"/>
@@ -56,7 +56,7 @@
 				<th align="center" height="26px">
 					<label class=" {% if env.is_active %}{% else %}disable line-through{% endif %}">
 						{% if perms.management.change_tcmsenvgroup %}
-						<a href="{% url "management-env-group-edit" %}?id={{ env.id }}" >
+						<a href="{% url "management-env-group-edit" env.id %}" >
 							{{ env.name }}
 						</a>
 						{% else %}
@@ -79,9 +79,9 @@
 				</td>
 				<td align="center">
 					{% if perms.management.change_tcmsenvgroup %}
-					<a href="{% url "management-env-group-edit" %}?id={{ env.id }}" class="editlink">Edit</a>
-					<a href="?id={{ env.id }}&action=modify&status=0" class="disablelink {% if env.is_active %}{% else %}hidden{% endif %}">Disable</a>
-					<a href="?id={{ env.id }}&action=modify&status=1" class="enablelink {% if env.is_active %}hidden{% endif %} ">Enable</a>
+					<a href="{% url "management-env-group-edit" env.id %}" class="editlink">Edit</a>
+					<a href="javascript:void(0)" class="disablelink js-disable-env-group {% if env.is_active %}{% else %}hidden{% endif %}">Disable</a>
+					<a href="javascript:void(0)" class="enablelink js-enable-env-group {% if env.is_active %}hidden{% endif %} ">Enable</a>
 					<a href="#" class="editlink js-del-env-group">Delete</a>
 					<a href="#viewhistroy{{ env.id }}" class="loglink" name="viewhistroy{{ env.id }}">View edit history</a>
 					{% else %}

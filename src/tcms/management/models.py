@@ -484,7 +484,7 @@ class TCMSEnvProperty(TCMSActionModel):
 
     @classmethod
     def get_active(cls):
-        return cls.objects.filter(is_active=True)
+        return cls.objects.filter(is_active=True).order_by('name')
 
 
 class TCMSEnvGroupPropertyMap(models.Model):
@@ -499,6 +499,7 @@ class TCMSEnvValue(TCMSActionModel):
     value = models.CharField(max_length=255)
     is_active = models.BooleanField(default=True)
 
+    # TODO: rename value to values
     property = models.ForeignKey(TCMSEnvProperty,
                                  related_name='value',
                                  on_delete=models.CASCADE)

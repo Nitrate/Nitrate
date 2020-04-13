@@ -1,419 +1,463 @@
 # -*- coding: utf-8 -*-
 
-from json import dumps as json_dumps
 from itertools import groupby
 from operator import itemgetter
 
-from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.contenttypes.models import ContentType
-from django.db import IntegrityError
-from django.http import Http404
-from django.http import HttpResponse
-from django.http import JsonResponse
-from django.shortcuts import render
-from django.views.decorators.http import require_GET
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound
+from django.shortcuts import render, get_object_or_404
+from django.views.generic import View, TemplateView
 
+from tcms.core.responses import JsonResponseBadRequest, JsonResponseNotFound, \
+    JsonResponseForbidden
 from tcms.logs.models import TCMSLogModel
 from tcms.core.utils import QuerySetIterationProxy
 from tcms.management.models import TCMSEnvGroup
 from tcms.management.models import TCMSEnvGroupPropertyMap
 from tcms.management.models import TCMSEnvProperty
 from tcms.management.models import TCMSEnvValue
-
 MODULE_NAME = "management"
 
 
-@require_GET
-def environment_groups(request, template_name='environment/groups.html'):
-    """
-    Environements list
-    """
+class EnvironmentGroupAddView(PermissionRequiredMixin, View):
+    """Add new environment group"""
 
-    env_groups = TCMSEnvGroup.objects
+    permission_required = 'management.add_tcmsenvgroup'
 
-    has_perm = request.user.has_perm
-    user_action = request.GET.get('action')
+    def post(self, request):
+        group_name = request.POST.get('name')
 
-    # Add action
-    if user_action == 'add':
-        if not has_perm('management.add_tcmsenvgroup'):
-            return JsonResponse({'rc': 1, 'response': 'Permission denied.'})
-
-        group_name = request.GET.get('name')
-
-        # Get the group name of envrionment from javascript
+        # Get the group name of environment from javascript
         if not group_name:
-            return JsonResponse(
-                {'rc': 1, 'response': 'Environment group name is required.'})
+            return JsonResponseBadRequest({
+                'message': 'Environment group name is required.'
+            })
 
-        if env_groups.filter(name=group_name).exists():
-            response_msg = (
-                f"Environment group name '{group_name}' already exists, "
-                f"please select another name."
-            )
-            return JsonResponse({'rc': 1, 'response': response_msg})
-        else:
-            env = env_groups.create(name=group_name,
-                                    manager_id=request.user.id,
-                                    modified_by_id=None)
-            env.log_action(who=request.user,
-                           new_value='Initial env group %s' % env.name)
-            return JsonResponse({'rc': 0, 'response': 'ok', 'id': env.id})
+        if TCMSEnvGroup.objects.filter(name=group_name).exists():
+            return JsonResponseBadRequest({
+                'message': f'Environment group name "{group_name}" already'
+                           f' exists, please choose another name.'
+            })
 
-    # Del action
-    if user_action == 'del':
-        if not request.GET.get('id'):
-            raise Http404
+        env = TCMSEnvGroup.objects.create(
+            name=group_name,
+            manager_id=request.user.id,
+            modified_by_id=None)
+        env.log_action(who=request.user,
+                       new_value=f'Initial env group {env.name}')
+        return JsonResponse({'env_group_id': env.id})
 
+
+class EnvironmentGroupDeleteView(View):
+    """Delete environment group"""
+
+    def post(self, request, env_group_id):
         try:
-            group_pk = int(request.GET['id'])
-        except ValueError:
-            return JsonResponse({'rc': 1, 'response': 'id must be an integer.'})
-
-        groups = list(env_groups.filter(pk=group_pk))
-        if len(groups) == 0:
-            raise Http404
-
-        if request.user.pk != groups[0].manager_id:
-            if not has_perm('management.delete_tcmsenvgroup'):
-                return JsonResponse({'rc': 1, 'response': 'Permission denied.'})
-
-        groups[0].delete()
-
-        return JsonResponse({'rc': 0, 'response': 'ok'})
-
-    # Modify actions
-    if user_action == 'modify':
-        if not has_perm('management.change_tcmsenvgroup'):
-            return JsonResponse({'rc': 1, 'response': 'Permission denied.'})
-
-        try:
-            env = env_groups.get(id=request.GET['id'])
-            if request.GET.get('status') in ['0', '1']:
-                returned_status = bool(int(request.GET['status']))
-                if env.is_active != returned_status:
-                    env.is_active = returned_status
-                    env.save(update_fields=['is_active'])
-
-                    env.log_action(
-                        who=request.user,
-                        field='is_active',
-                        original_value=env.is_active,
-                        new_value=returned_status)
-            else:
-                return JsonResponse({'rc': 1, 'response': 'Argument illegel.'})
-        except TCMSEnvGroup.DoesNotExist as error:
-            raise Http404(error)
-
-    # Search actions
-    if user_action == 'search':
-        if request.GET.get('name'):
-            env_groups = env_groups.filter(
-                name__icontains=request.GET['name']
-            )
+            group = TCMSEnvGroup.objects.get(pk=int(env_group_id))
+        except TCMSEnvGroup.DoesNotExist:
+            return JsonResponseNotFound({
+                'message': f'Environment group with id {env_group_id} does not exist.'
+            })
         else:
-            env_groups = env_groups.all()
-    else:
-        env_groups = env_groups.all().order_by('is_active')
+            if (request.user.pk != group.manager_id and
+                    not request.user.has_perm('management.delete_tcmsenvgroup')):
+                return JsonResponseForbidden({
+                    'message': f'You are not allowed to delete environment '
+                               f'group {group.name}.'
+                })
 
-    # Get properties for each group
-    qs = TCMSEnvGroupPropertyMap.objects.filter(group__in=env_groups)
-    qs = qs.values('group__pk', 'property__name')
-    qs = qs.order_by('group__pk', 'property__name').iterator()
-    properties = {
-        key: list(value) for key, value in groupby(qs, itemgetter('group__pk'))
-    }
+            group.delete()
 
-    # Get logs for each group
-    env_group_ct = ContentType.objects.get_for_model(TCMSEnvGroup)
-    qs = TCMSLogModel.objects.filter(content_type=env_group_ct,
-                                     object_pk__in=env_groups)
-    qs = qs.values('object_pk', 'who__username', 'date', 'field',
-                   'original_value', 'new_value')
-    qs = qs.order_by('object_pk').iterator()
-    # we have to convert object_pk to an integer due to it's a string stored in
-    # database.
-    logs = {
-        int(key): list(value) for key, value in
-        groupby(qs, itemgetter('object_pk'))
-    }
-
-    env_groups = env_groups.select_related('modified_by', 'manager').iterator()
-
-    env_groups = QuerySetIterationProxy(env_groups,
-                                        properties=properties,
-                                        another_logs=logs)
-    context_data = {
-        'environments': env_groups,
-        'module': 'env',
-    }
-    return render(request, template_name, context=context_data)
+        return JsonResponse({'env_group_id': int(env_group_id)})
 
 
-@require_GET
-@permission_required('management.change_tcmsenvgroup')
-def environment_group_edit(request, template_name='environment/group_edit.html'):
-    """
-    Assign properties to environment group
-    """
+class EnvironmentGroupSetStatusView(PermissionRequiredMixin, View):
+    """Modify an environment group"""
 
-    # Initial the response
-    response = ''
-    environment_id = request.GET.get('id', None)
+    permission_required = 'management.change_tcmsenvgroup'
 
-    if environment_id is None:
-        raise Http404
+    def post(self, request, env_group_id):
+        status = request.POST.get('status')
+        if status is None:
+            return JsonResponseBadRequest({
+                'message': 'Environment group status is missing.'
+            })
+        if status not in ['0', '1']:
+            return JsonResponseBadRequest({
+                'message': f'Environment group status "{status}" is invalid.'
+            })
+        try:
+            env = TCMSEnvGroup.objects.get(pk=int(env_group_id))
+        except TCMSEnvGroup.DoesNotExist:
+            return JsonResponseNotFound({
+                'message': f'Environment group with id {env_group_id} does not exist.'
+            })
+        else:
+            new_status = bool(int(status))
+            if env.is_active != new_status:
+                env.is_active = new_status
+                env.save(update_fields=['is_active'])
 
-    try:
-        environment = TCMSEnvGroup.objects.get(pk=environment_id)
-    except TCMSEnvGroup.DoesNotExist:
-        raise Http404
+                env.log_action(
+                    who=request.user,
+                    field='is_active',
+                    original_value=env.is_active,
+                    new_value=new_status)
 
-    try:
-        de = TCMSEnvGroup.objects.get(name=request.GET.get('name'))
-        if environment != de:
+            return JsonResponse({'env_group_id': env_group_id})
+
+
+class EnvironmentGroupsListView(TemplateView):
+    """The environment groups index page"""
+
+    template_name = 'environment/groups.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        if 'name' in self.request.GET:
+            env_groups = TCMSEnvGroup.objects.filter(
+                name__icontains=self.request.GET['name'])
+        else:
+            env_groups = TCMSEnvGroup.objects.all()
+
+        # Get properties for each group
+        qs = (
+            TCMSEnvGroupPropertyMap.objects
+            .filter(group__in=env_groups)
+            .values('group__pk', 'property__name')
+            .order_by('group__pk', 'property__name')
+            .iterator()
+        )
+        properties = {
+            key: list(value) for key, value in groupby(qs, itemgetter('group__pk'))
+        }
+
+        # Get logs for each group
+        env_group_ct = ContentType.objects.get_for_model(TCMSEnvGroup)
+        qs = (
+            TCMSLogModel.objects.filter(content_type=env_group_ct,
+                                        object_pk__in=env_groups)
+            .values('object_pk', 'who__username', 'date', 'field',
+                    'original_value', 'new_value')
+            .order_by('object_pk')
+            .iterator()
+        )
+
+        # we have to convert object_pk to an integer due to it's a string stored in
+        # database.
+        logs = {
+            int(key): list(value) for key, value in
+            groupby(qs, itemgetter('object_pk'))
+        }
+
+        env_groups = (
+            env_groups
+            .select_related('modified_by', 'manager')
+            .order_by('is_active', 'name')
+            .iterator()
+        )
+
+        context.update({
+            'environments': QuerySetIterationProxy(
+                env_groups, properties=properties, another_logs=logs),
+            'module': 'env',
+        })
+        return context
+
+
+class EnvironmentGroupEditView(PermissionRequiredMixin, View):
+    """Edit environment group"""
+
+    permission_required = 'management.change_tcmsenvgroup'
+    template_name = 'environment/group_edit.html'
+
+    def get(self, request, env_group_id):
+        env_group = get_object_or_404(TCMSEnvGroup, pk=env_group_id)
+        context_data = {
+            'environment': env_group,
+            'properties': TCMSEnvProperty.get_active(),
+            'selected_properties': env_group.property.all(),
+            'message': '',
+        }
+        return render(request, self.template_name, context=context_data)
+
+    def post(self, request, env_group_id):
+        env_group = get_object_or_404(TCMSEnvGroup, pk=env_group_id)
+        de = TCMSEnvGroup.objects.filter(name=request.POST['name']).first()
+        if de and env_group != de:
             context_data = {
-                'environment': environment,
+                'environment': env_group,
                 'properties': TCMSEnvProperty.get_active(),
-                'selected_properties': environment.property.all(),
+                'selected_properties': env_group.property.all(),
                 'message': 'Duplicated name already exists, please change to '
                            'another name.',
             }
-            return render(request, template_name, context=context_data)
-    except TCMSEnvGroup.DoesNotExist:
-        pass
+            return render(request, self.template_name, context=context_data)
 
-    if request.GET.get('action') == 'modify':   # Actions of modify
-        environment_name = request.GET['name']
-        if environment.name != environment_name:
-            original_value = environment.name
-            environment.name = environment_name
-            environment.log_action(
+        new_name = request.POST['name']
+        if env_group.name != new_name:
+            original_name = env_group.name
+            env_group.name = new_name
+            env_group.log_action(
                 who=request.user,
                 field='name',
-                original_value=original_value,
-                new_value=environment_name)
+                original_value=original_name,
+                new_value=new_name)
 
-        returned_env_status = 'enabled' in request.GET
-        if environment.is_active != returned_env_status:
-            original_value = environment.is_active
-            environment.is_active = returned_env_status
-            environment.log_action(
+        enable_group = 'enabled' in request.POST
+        if env_group.is_active != enable_group:
+            original_value = env_group.is_active
+            env_group.is_active = enable_group
+            env_group.log_action(
                 who=request.user,
                 field='is_active',
                 original_value=original_value,
-                new_value=returned_env_status)
+                new_value=enable_group)
 
-        environment.modified_by_id = request.user.id
-        environment.save()
+        env_group.modified_by_id = request.user.id
+        env_group.save()
 
-        original_property_values = list(
-            environment.property.values_list('name', flat=True))
-        original_property_values.sort()
+        existing_properties = set(env_group.property.all())
+        selected_property_ids = list(
+            map(int, request.POST.getlist('selected_property_ids')))
+        selected_properties = set(
+            TCMSEnvProperty.objects.filter(pk__in=selected_property_ids))
 
-        # Remove all of properties of the group.
-        TCMSEnvGroupPropertyMap.objects.filter(group__id=environment.id).delete()
+        newly_selected_properties = selected_properties - existing_properties
 
-        # Readd the property to environemnt group and log the action
-        for property_id in request.GET.getlist('selected_property_ids'):
-            TCMSEnvGroupPropertyMap.objects.create(group_id=environment.id,
-                                                   property_id=property_id)
+        if newly_selected_properties:
+            for env_property in newly_selected_properties:
+                TCMSEnvGroupPropertyMap.objects.create(
+                    group=env_group, property=env_property)
 
-        new_property_values = list(
-            environment.property.values_list('name', flat=True))
-        new_property_values.sort()
-
-        environment.log_action(
-            who=request.user,
-            field='Property values',
-            original_value=', '.join(original_property_values),
-            new_value=', '.join(new_property_values))
+            env_group.log_action(
+                who=request.user,
+                field='Property values',
+                original_value=', '.join(
+                    sorted(item.name for item in existing_properties)),
+                new_value=', '.join(
+                    sorted(item.name for item in newly_selected_properties)),
+            )
 
         response = 'Environment group saved successfully.'
 
-    context_data = {
-        'environment': environment,
-        'properties': TCMSEnvProperty.get_active(),
-        'selected_properties': environment.property.all(),
-        'message': response,
-    }
-    return render(request, template_name, context=context_data)
+        context_data = {
+            'environment': env_group,
+            'properties': TCMSEnvProperty.get_active(),
+            'selected_properties': env_group.property.order_by('name'),
+            'message': response,
+        }
+        return render(request, self.template_name, context=context_data)
 
 
-@require_GET
-def environment_properties(request, template_name='environment/property.html'):
-    """
-    Edit environemnt properties and values belong to
-    """
+class EnvironmentPropertyAddView(PermissionRequiredMixin, View):
+    """Add an environment property"""
 
-    # Initial the ajax response
-    ajax_response = {'rc': 0, 'response': 'ok'}
-    message = ''
+    permission_required = 'management.add_tcmsenvproperty'
 
-    has_perm = request.user.has_perm
-    user_action = request.GET.get('action')
-
-    # Actions of create properties
-    if user_action == 'add':
-        if not has_perm('management.add_tcmsenvproperty'):
-            return JsonResponse({'rc': 1, 'response': 'Permission denied'})
-
-        property_name = request.GET.get('name')
+    def post(self, request):
+        property_name = request.POST.get('name')
 
         if not property_name:
-            return JsonResponse({'rc': 1, 'response': 'Property name is required'})
+            return JsonResponseBadRequest({
+                'message': 'Property name is missing.'
+            })
 
         if TCMSEnvProperty.objects.filter(name=property_name).exists():
-            resp_msg = (
-                f"Environment property named '{property_name}' already exists,"
-                f" please select another name."
-            )
-            return JsonResponse({'rc': 1, 'response': resp_msg})
+            return JsonResponseBadRequest({
+                'message': f'Environment property {property_name} '
+                           f'already exists, please choose another name.'
+            })
 
         new_property = TCMSEnvProperty.objects.create(name=property_name)
 
-        return JsonResponse({
-            'rc': 0,
-            'response': 'ok',
-            'id': new_property.pk,
-            'name': new_property.name
+        return JsonResponse({'id': new_property.pk, 'name': new_property.name})
+
+
+class EnvironmentPropertyEditView(PermissionRequiredMixin, View):
+    """Edit an environment property"""
+
+    permission_required = 'management.change_tcmsenvproperty'
+
+    def post(self, request, env_property_id):
+        env_property = TCMSEnvProperty.objects.filter(pk=env_property_id).first()
+        if env_property is None:
+            return JsonResponseBadRequest({
+                'message': f'Environment property with id {env_property_id} '
+                           f'does not exist.'
+            })
+
+        new_name = request.POST.get('name', env_property.name)
+        env_property.name = new_name
+        env_property.save(update_fields=['name'])
+
+        return JsonResponse({'id': env_property_id, 'name': new_name})
+
+
+class EnvironmentPropertySetStatusView(PermissionRequiredMixin, View):
+    """Enable or disable environment properties"""
+
+    permission_required = 'management.change_tcmsenvproperty'
+
+    def post(self, request):
+        property_ids = request.POST.getlist('id')
+
+        if not property_ids:
+            return JsonResponseBadRequest({
+                'message': 'Missing environment property ids. Nothing changed.'
+            })
+
+        invalid_ids = list(filter(lambda item: not item.isdigit(), property_ids))
+        if invalid_ids:
+            if len(invalid_ids) > 1:
+                msg = f'Environment property ids {", ".join(invalid_ids)} are not number.'
+            else:
+                msg = f'Environment property id {invalid_ids[0]} is not a number.'
+            return JsonResponseBadRequest({'message': msg})
+
+        new_status = request.POST.get('status')
+        if new_status is None:
+            return JsonResponseBadRequest({'message': 'Missing status.'})
+        if new_status not in ['0', '1']:
+            return JsonResponseBadRequest(
+                {'message': f'Invalid status {new_status}.'})
+
+        property_ids = list(map(int, property_ids))
+        env_properties = TCMSEnvProperty.objects.filter(pk__in=property_ids)
+
+        for env_property in env_properties:
+            env_property.is_active = bool(int(new_status))
+            env_property.save()
+
+        # FIXME: why delete such properties?
+        if not env_property.is_active:
+            TCMSEnvGroupPropertyMap.objects.filter(
+                property__id__in=property_ids).delete()
+
+        return JsonResponse({'property_ids': property_ids})
+
+
+class EnvironmentPropertiesView(TemplateView):
+    """Environment properties index view"""
+    template_name = 'environment/property.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'properties': TCMSEnvProperty.objects.order_by('-is_active', 'name')
+        })
+        return context
+
+
+class EnvironmentPropertyValuesAddView(PermissionRequiredMixin, View):
+    """Add environment property values"""
+
+    permission_required = 'management.add_tcmsenvvalue'
+    template_name = 'environment/ajax/property_values.html'
+
+    def post(self, request, env_property_id):
+        env_property = TCMSEnvProperty.objects.filter(pk=env_property_id).first()
+        if env_property is None:
+            return HttpResponseNotFound(
+                f'Environment property id {env_property_id} does not exist.',
+            )
+
+        new_values = set(map(lambda item: item.strip(),
+                             request.POST.getlist('value')))
+        existing_values = set(env_property.value.values_list('value', flat=True))
+        values_to_add = set(new_values) - set(existing_values)
+
+        for value in values_to_add:
+            TCMSEnvValue.objects.create(value=value, property=env_property)
+
+        return render(request, self.template_name, context={
+            'property': env_property,
+            'values': TCMSEnvValue.objects.filter(property=env_property).order_by('value'),
         })
 
-    # Actions of edit a exist properties
-    if user_action == 'edit':
-        if not has_perm('management.change_tcmsenvproperty'):
-            return JsonResponse({'rc': 1, 'response': 'Permission denied'})
 
-        if not request.GET.get('id'):
-            return JsonResponse({'rc': 1, 'response': 'ID is required'})
+class EnvironmentPropertyValuesSetStatusView(PermissionRequiredMixin, View):
+    """Disable or enable environment property values"""
 
-        try:
-            property_id = request.GET['id']
-            env_property = TCMSEnvProperty.objects.get(id=int(property_id))
-        except ValueError:
-            return JsonResponse({
-                'rc': 1,
-                'response': f'ID {property_id} is not a valid integer.'
-            })
-        except TCMSEnvProperty.DoesNotExist:
-            return JsonResponse({'rc': 1, 'response': 'ID does not exist.'})
-
-        new_name = request.GET.get('name', env_property.name)
-        env_property.name = new_name
-        try:
-            env_property.save(update_fields=['name'])
-        except Exception:
-            return JsonResponse({'rc': 1, 'response': 'Cannot save property.'})
-
-        return JsonResponse({'rc': 0, 'response': 'ok'})
-
-    # Actions of remove properties
-    if user_action == 'modify':
-        if not has_perm('management.change_tcmsenvproperty'):
-            message = 'Permission denied'
-
-        property_ids = request.GET.getlist('id')
-
-        if has_perm('management.change_tcmsenvproperty') and property_ids:
-            env_properties = TCMSEnvProperty.objects.filter(id__in=property_ids)
-
-            if request.GET.get('status') in ['0', '1']:
-                for env_property in env_properties:
-                    env_property.is_active = int(request.GET['status'])
-                    env_property.save()
-
-                property_values = "', '".join(sorted(
-                    env_properties.values_list('name', flat=True)))
-                message = "Modify test properties status '%s' successfully." % property_values
-
-                if not env_property.is_active:
-                    TCMSEnvGroupPropertyMap.objects.filter(
-                        property__id__in=property_ids).delete()
-            else:
-                message = 'Argument illegal'
-
-    if request.is_ajax():
-        ajax_response['rc'] = 1
-        ajax_response['response'] = 'Unknown action'
-        return HttpResponse(json_dumps(ajax_response))
-
-    context_data = {
-        'message': message,
-        'properties': TCMSEnvProperty.objects.all().order_by('-is_active')
-    }
-    return render(request, template_name, context=context_data)
-
-
-@require_GET
-def environment_property_values(request):
-    """
-    List values of property
-    """
+    permission_required = 'management.change_tcmsenvvalue'
     template_name = 'environment/ajax/property_values.html'
-    message = ''
-    duplicated_property_value = []
 
-    if not request.GET.get('property_id'):
-        return HttpResponse('Property ID should specify')
+    def post(self, request):
+        value_ids = request.POST.getlist('id')
+        if not value_ids:
+            return HttpResponseBadRequest('Property value id is missing.')
 
-    try:
-        property = TCMSEnvProperty.objects.get(id=request.GET['property_id'])
-    except TCMSEnvProperty.DoesNotExist as error:
-        return HttpResponse(error)
+        cleaned_value_ids = []
+        for item in value_ids:
+            cleaned_item = item.strip()
+            if not cleaned_item:
+                continue
+            if not cleaned_item.isdigit():
+                return HttpResponseBadRequest(
+                    f'Value id {cleaned_item} is not an integer.')
+            cleaned_value_ids.append(int(cleaned_item))
 
-    user_action = request.GET.get('action')
+        status = request.POST.get('status')
+        if status is None:
+            return HttpResponseBadRequest('Status is missing')
+        if status not in ['0', '1']:
+            return HttpResponseBadRequest(f'Status {status} is invalid.')
 
-    if user_action == 'add' and request.GET.get('value'):
-        if not request.user.has_perm('management.add_tcmsenvvalue'):
-            return HttpResponse('Permission denied')
+        new_status = bool(int(status))
+        values = TCMSEnvValue.objects.filter(pk__in=cleaned_value_ids)
+        for value in values:
+            value.is_active = new_status
+            value.save()
 
-        for value in request.GET['value'].split(','):
-            try:
-                property.value.create(value=value)
-            except IntegrityError as error:
-                if error[1].startswith('Duplicate'):
-                    duplicated_property_value.append(value)
+        env_property = values[0].property
+        return render(request, self.template_name, context={
+            'property': env_property,
+            'values': TCMSEnvValue.objects.filter(property=env_property).order_by('value'),
+        })
 
-    if user_action == 'edit' and request.GET.get('id'):
-        if not request.user.has_perm('management.change_tcmsenvvalue'):
-            return HttpResponse('Permission denied')
 
-        try:
-            property_value = property.value.get(id=request.GET['id'])
-            property_value.value = request.GET.get('value', property_value.value)
-            try:
-                property_value.save()
-            except IntegrityError as error:
-                if error[1].startswith('Duplicate'):
-                    duplicated_property_value.append(property_value.value)
+class EnvironmentPropertyValueEditView(PermissionRequiredMixin, View):
+    """Edit an environment property value"""
 
-        except TCMSEnvValue.DoesNotExist as error:
-            return HttpResponse(error[1])
+    permission_required = 'management.change_tcmsenvvalue'
+    template_name = 'environment/ajax/property_values.html'
 
-    if user_action == 'modify' and request.GET.get('id'):
-        if not request.user.has_perm('management.change_tcmsenvvalue'):
-            return HttpResponse('Permission denied')
+    def post(self, request, property_value_id):
+        new_value = request.POST.get('value')
+        if new_value is None:
+            return HttpResponseBadRequest('Missing new value to update.')
+        if not new_value:
+            return HttpResponseBadRequest('The value is empty.')
 
-        values = property.value.filter(id__in=request.GET.getlist('id'))
-        status = request.GET.get('status')
-        if status in ['0', '1']:
-            for value in values:
-                value.is_active = int(status)
-                value.save()
-        else:
-            return HttpResponse('Argument illegel')
+        property_value = TCMSEnvValue.objects.filter(pk=property_value_id).first()
+        if property_value is None:
+            return HttpResponseNotFound(
+                f'Property value id {property_value_id} does not exist.')
 
-    if duplicated_property_value:
-        s = "', '".join(duplicated_property_value)
-        message = (
-            f"Value(s) named '{s}' already exists in this property, "
-            f"please select another name."
-        )
+        property_value.value = new_value
+        property_value.save(update_fields=['value'])
 
-    values = property.value.all()
-    context_data = {
-        'property': property,
-        'values': values,
-        'message': message,
-    }
-    return render(request, template_name, context=context_data)
+        return render(request, self.template_name, context={
+            'property': property_value.property,
+            'values': TCMSEnvValue.objects.filter(
+                property=property_value.property).order_by('value'),
+        })
+
+
+class EnvironmentPropertyValuesListView(TemplateView):
+    """List of environment property values"""
+
+    template_name = 'environment/ajax/property_values.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        env_property = get_object_or_404(TCMSEnvProperty, pk=self.kwargs['property_id'])
+        context.update({
+            'property': env_property,
+            'values': env_property.value.order_by('value'),
+        })
+
+        return context
