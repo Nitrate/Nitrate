@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from mock import patch
+from unittest.mock import patch
 from http import HTTPStatus
 
 from django import test
