@@ -85,21 +85,25 @@ def process_case(case):
         raise ValueError('Missing required categoryname')
 
     # Check or create the tag
-    element = 'tag'
-    if case.get(element, {}):
+    def get_tag_or_create(name: str) -> TestTag:
+        new_tag, _ = TestTag.objects.get_or_create(name=name)
+        return new_tag
+
+    tag_names = case.get('tag') or case.get('tags')
+    if tag_names:
         tags = []
-        if isinstance(case[element], dict):
-            tag, create = TestTag.objects.get_or_create(name=case[element]['value'])
-            tags.append(tag)
+        if isinstance(tag_names, dict):
+            # When tag elements are structured into a parent element <tags>,
+            # xmltodict parses the value into an OrderedDict object including a
+            # key named ``tag``.
+            tag_names = tag_names['tag']
 
-        if isinstance(case[element], str):
-            tag, create = TestTag.objects.get_or_create(name=case[element])
-            tags.append(tag)
-
-        if isinstance(case[element], list):
-            for tag_name in case[element]:
-                tag, create = TestTag.objects.get_or_create(name=tag_name)
-                tags.append(tag)
+        if isinstance(tag_names, str):
+            tags.append(get_tag_or_create(name=tag_names))
+        else:
+            # Otherwise, xmltodict parses the multiple tags into a list
+            for tag_name in tag_names:
+                tags.append(get_tag_or_create(name=tag_name))
     else:
         tags = None
 

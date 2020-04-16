@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import smtplib
 import sys
 import unittest
 from unittest.mock import patch, Mock
@@ -7,10 +7,12 @@ from unittest.mock import patch, Mock
 from django import test
 from django.conf import settings
 from django.contrib.sites.models import Site
+from django.core import mail
 
 from tcms.core import responses
 from tcms.core.db import GroupByResult
 from tcms.core.utils import string_to_list
+from tcms.core.mailto import mailto
 from tcms.core.task import AsyncTask
 from tcms.core.task import Task
 from tests import HelperAssertions
@@ -339,3 +341,39 @@ class TestAsyncTask(unittest.TestCase):
             shared_task.assert_called_once_with(func)
             self.assertEqual(shared_task.return_value, task.target)
             shared_task.return_value.delay.assert_called_once_with(1, a=2)
+
+
+class TestMailTo(test.SimpleTestCase):
+    """Test mailto"""
+
+    def setUp(self) -> None:
+        self.get_template_p = patch('tcms.core.mailto.loader.get_template')
+        self.mock_get_template = self.get_template_p.start()
+        self.mock_get_template.return_value.render.return_value = 'Good news.'
+
+    def tearDown(self) -> None:
+        self.get_template_p.stop()
+
+    def test_send_mail(self):
+        mailto('mail_template', 'Start Test', ['tester@localhost'])
+        self.assertEqual('Start Test', mail.outbox[0].subject)
+
+    def test_also_send_mail_to_addresses_for_debug(self):
+        with patch.object(settings, 'DEBUG', new=True):
+            with patch.object(settings, 'EMAILS_FOR_DEBUG', new=['cotester@localhost']):
+                mailto('mail_template', 'Start Test', ['tester@localhost'])
+
+        self.assertListEqual(
+            ['cotester@localhost', 'tester@localhost'],
+            sorted(mail.outbox[0].recipients()))
+
+    def test_recipients_accept_non_sequence_value(self):
+        mailto('mail_template', 'Start Test', 'tester@localhost')
+        self.assertEqual('tester@localhost', mail.outbox[0].recipients()[0])
+
+    @patch('tcms.core.mailto.EmailMessage')
+    @patch('tcms.core.mailto.logger')
+    def test_log_traceback_when_error_is_raised_from_send(self, logger, EmailMessage):
+        EmailMessage.return_value.send.side_effect = smtplib.SMTPException
+        mailto('mail_template', 'Start Test', ['tester@localhost'])
+        logger.exception.assert_called_once()

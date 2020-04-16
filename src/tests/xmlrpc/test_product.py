@@ -614,16 +614,16 @@ class TestGetComponents(XmlrpcAPIBaseTest):
 
 
 class TestGetEnvironments(XmlrpcAPIBaseTest):
+    """Test product.get_environments"""
 
-    @unittest.skip('No implemented yet.')
     def test_get_environments(self):
         self.assertXmlrpcFaultNotImplemented(
             product.get_environments, None, None)
 
 
 class TestGetMilestones(XmlrpcAPIBaseTest):
+    """Test product.get_milestones"""
 
-    @unittest.skip('No implemented yet.')
     def test_get_milestones(self):
         self.assertXmlrpcFaultNotImplemented(
             product.get_milestones, None, None)

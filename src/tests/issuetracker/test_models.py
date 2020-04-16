@@ -4,8 +4,10 @@ import io
 import os
 import re
 import tempfile
+from unittest.mock import patch, MagicMock
 
 from django import test
+
 from tcms.issuetracker.models import CredentialTypes
 from tests import HelperAssertions
 import tests.factories as f
@@ -17,7 +19,7 @@ class TestIssueTrackerValidation(HelperAssertions, test.TestCase):
     def setUpTestData(cls):
         cls.tracker_product = f.IssueTrackerProductFactory(name='CoolIssueTracker')
 
-    def test_validate_issue_report_params(self):
+    def test_invalid_issue_report_params(self):
         st = f.IssueTrackerFactory(tracker_product=self.tracker_product)
         st.issue_report_params = 'product=name'
         self.assertValidationError(
@@ -28,6 +30,36 @@ class TestIssueTrackerValidation(HelperAssertions, test.TestCase):
         st.issue_report_params = 'product: name\ncustom_field: a:b:c'
         self.assertValidationError(
             'issue_report_params', r"Line .+ contains multiple ':'", st.full_clean)
+
+    def test_invalid_class_path(self):
+        tracker = f.IssueTrackerFactory(
+            tracker_product=self.tracker_product,
+            class_path='a.b.c',
+            issues_display_url_fmt='http://localhost/{issue_keys}')
+        self.assertValidationError(
+            'class_path', r"Cannot import a\.b", tracker.full_clean)
+
+    def test_member_name_does_not_exist_in_imported_module(self):
+        tracker = f.IssueTrackerFactory(
+            tracker_product=self.tracker_product,
+            class_path='tracker.klass',
+            issues_display_url_fmt='http://localhost/{issue_keys}')
+
+        with patch('importlib.import_module') as import_module:
+            # A magic mock to fail function hasattr to find out attribute name klass
+            import_module.return_value = MagicMock(spec=object())
+            self.assertValidationError(
+                'class_path', 'Module tracker does not have class klass',
+                tracker.full_clean)
+
+    def test_invalid_regex_for_validating_issue_id(self):
+        tracker = f.IssueTrackerFactory(
+            tracker_product=self.tracker_product,
+            issues_display_url_fmt='http://localhost/{issue_keys}',
+            validate_regex='[0-9}+')
+
+        self.assertValidationError(
+            'validate_regex', 'cannot be compiled', tracker.full_clean)
 
 
 class TestGetIssueTrackerCredential(test.TestCase):

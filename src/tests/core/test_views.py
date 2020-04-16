@@ -94,6 +94,14 @@ class TestQuickSearch(BaseCaseRun):
             {'search_type': 'unknown type', 'search_content': self.plan.pk})
         self.assert404(response)
 
+    def test_404_when_missing_search_content(self):
+        response = self.client.get(self.search_url, {'search_type': 'plan'})
+        self.assert404(response)
+
+    def test_404_when_missing_search_type(self):
+        response = self.client.get(self.search_url, {'search_content': 'python'})
+        self.assert404(response)
+
 
 class TestCommentCaseRuns(BaseCaseRun):
     """Test case for ajax.comment_case_runs"""

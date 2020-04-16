@@ -19,14 +19,16 @@ def mailto(template_name, subject, recipients=None,
     t = loader.get_template(template_name)
     body = t.render(context=context, request=request)
 
+    _recipients = []
     if settings.DEBUG and settings.EMAILS_FOR_DEBUG:
-        recipients = settings.EMAILS_FOR_DEBUG
-
-    if not isinstance(recipients, (list, tuple)):
-        recipients = [recipients]
+        _recipients.extend(settings.EMAILS_FOR_DEBUG)
+    if isinstance(recipients, (list, tuple)):
+        _recipients.extend(recipients)
+    else:
+        _recipients.append(recipients)
 
     email_msg = EmailMessage(subject=subject, body=body,
-                             from_email=sender, to=recipients, bcc=cc)
+                             from_email=sender, to=_recipients, bcc=cc)
     try:
         email_msg.send()
     except smtplib.SMTPException as e:

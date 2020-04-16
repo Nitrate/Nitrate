@@ -41,7 +41,9 @@ sample_case_data = {
     'setup': '',
     'effect': '',
     'breakdown': '',
-    'tag': ['tag 1'],
+    # This is a placeholder for providing test data for tags. It will be
+    # replaced with tags eventually.
+    'tag': ['tag1', 'tag2'],
 }
 
 
@@ -173,22 +175,46 @@ class TestProcessCase(test.TestCase):
         cls.status_confirmed, created = TestCaseStatus.objects.get_or_create(name='CONFIRMED')
         cls.status_proposed, created = TestCaseStatus.objects.get_or_create(name='PROPOSED')
 
-    def _format_xml_case_string(self, case_data):
-        """Helper method to format case XML conveniently"""
+    def _format_xml_case_string(self, case_data, tags_format: str) -> str:
+        """Helper method to format case XML conveniently
+
+        :param str tags_format: a format to construct tags in final XML. Valid
+            formats: ``list`` for construct a sequence of ``<tag>`` elements,
+            ``single`` for just putting only one ``<tag>`` element in the final
+            XML, ``struct`` for wrapping ``<tag>`` elements inside a parent
+            element ``<tags>``, and ``single-in-struct`` for including only one
+            ``<tag>`` element inside parent element ``<tags>``. This
+            complication is caused by the underlying used library xmltodict,
+            especially for the different types.
+        :return: the formatted XML.
+        :rtype: str
+        """
         data = case_data.copy()
-        data['tags'] = ''.join(
-            f'<tag>{tag}</tag>' for tag in data['tag'])
-        data.pop('tag')
+        test_data = data.pop('tag')
+
+        if tags_format == 'single':
+            data['tags'] = f'<tag>{test_data[0]}</tag>'
+        elif tags_format == 'list':
+            data['tags'] = ''.join(f'<tag>{item}</tag>' for item in test_data)
+        elif tags_format == 'struct':
+            s = ''.join(f'<tag>{item}</tag>' for item in test_data)
+            data['tags'] = f'<tags>{s}</tags>'
+        elif tags_format == 'single-in-struct':
+            data['tags'] = f'<tags><tag>{test_data[0]}</tag></tags>'
+
         return xml_single_case % data
 
-    def _create_xml_dict(self, case_data):
-        xml_case = self._format_xml_case_string(case_data)
+    def _create_xml_dict(self, case_data, tags_format: str):
+        xml_case = self._format_xml_case_string(case_data, tags_format)
         return xmltodict.parse(xml_case)
 
     def test_process_case(self):
-        xmldict = self._create_xml_dict(sample_case_data)
+        xmldict = self._create_xml_dict(sample_case_data, 'list')
 
         cleaned_case = process_case(xmldict['testcase'])
+
+        # Do not test tags in this test. It will be tested in other dedicated
+        # tests.
 
         self.assertEqual(self.user.id, cleaned_case['author_id'])
         self.assertEqual(self.user, cleaned_case['author'])
@@ -199,10 +225,6 @@ class TestProcessCase(test.TestCase):
         self.assertEqual(False, cleaned_case['is_automated'])
         self.assertEqual(sample_case_data['categoryname'],
                          cleaned_case['category_name'])
-        self.assertIsInstance(cleaned_case['tags'], list)
-        for tag in sample_case_data['tag']:
-            expected_tag = TestTag.objects.get(name=tag)
-            self.assertEqual(expected_tag, cleaned_case['tags'][0])
         self.assertEqual(sample_case_data['action'], cleaned_case['action'])
         self.assertEqual(sample_case_data['effect'], cleaned_case['effect'])
         self.assertEqual(sample_case_data['setup'], cleaned_case['setup'])
@@ -213,77 +235,98 @@ class TestProcessCase(test.TestCase):
     def test_nonexistent_object(self):
         case_data = sample_case_data.copy()
         case_data['author'] = 'another_user@example.com'
-        xmldict = self._create_xml_dict(case_data)
+        xmldict = self._create_xml_dict(case_data, 'list')
         self.assertRaisesRegex(ValueError,
                                'Author email {} does not exist'.format(case_data['author']),
                                process_case, xmldict['testcase'])
 
         case_data = sample_case_data.copy()
         case_data['defaulttester'] = 'another_user@example.com'
-        xmldict = self._create_xml_dict(case_data)
+        xmldict = self._create_xml_dict(case_data, 'list')
         self.assertRaisesRegex(ValueError,
                                'Default tester\'s email another_user@example.com does not exist',
                                process_case, xmldict['testcase'])
 
         case_data = sample_case_data.copy()
         case_data['priority'] = 'PP'
-        xmldict = self._create_xml_dict(case_data)
+        xmldict = self._create_xml_dict(case_data, 'list')
         self.assertRaisesRegex(ValueError, 'Priority PP does not exist',
                                process_case, xmldict['testcase'])
 
         case_data = sample_case_data.copy()
         case_data['priority'] = ''
-        xmldict = self._create_xml_dict(case_data)
+        xmldict = self._create_xml_dict(case_data, 'list')
         self.assertRaises(ValueError, process_case, xmldict['testcase'])
 
         case_data = sample_case_data.copy()
         case_data['status'] = 'UNKNOWN_STATUS'
-        xmldict = self._create_xml_dict(case_data)
+        xmldict = self._create_xml_dict(case_data, 'list')
         self.assertRaisesRegex(ValueError, 'Test case status UNKNOWN_STATUS does not exist',
                                process_case, xmldict['testcase'])
 
         case_data = sample_case_data.copy()
         case_data['status'] = ''
-        xmldict = self._create_xml_dict(case_data)
+        xmldict = self._create_xml_dict(case_data, 'list')
         self.assertRaises(ValueError, process_case, xmldict['testcase'])
 
         case_data = sample_case_data.copy()
         case_data['automated'] = ''
-        xmldict = self._create_xml_dict(case_data)
+        xmldict = self._create_xml_dict(case_data, 'list')
         cleaned_case = process_case(xmldict['testcase'])
         self.assertEqual(False, cleaned_case['is_automated'])
 
         case_data = sample_case_data.copy()
         case_data['tag'] = ''
-        xmldict = self._create_xml_dict(case_data)
+        xmldict = self._create_xml_dict(case_data, 'list')
         cleaned_case = process_case(xmldict['testcase'])
         self.assertEqual(None, cleaned_case['tags'])
 
         case_data = sample_case_data.copy()
         case_data['categoryname'] = ''
-        xmldict = self._create_xml_dict(case_data)
+        xmldict = self._create_xml_dict(case_data, 'list')
         self.assertRaises(ValueError, process_case, xmldict['testcase'])
 
     def test_case_has_default_tester(self):
         case_data = sample_case_data.copy()
         case_data['defaulttester'] = self.user.email
-        case_dict = self._create_xml_dict(case_data)
+        case_dict = self._create_xml_dict(case_data, 'list')
         cleaned_case = process_case(case_dict['testcase'])
         self.assertEqual(self.user.pk, cleaned_case['default_tester_id'])
 
     def test_invalid_author(self):
         case_data = sample_case_data.copy()
         case_data['author'] = ''
-        case_dict = self._create_xml_dict(case_data)
+        case_dict = self._create_xml_dict(case_data, 'list')
         self.assertRaisesRegex(ValueError, 'Missing required author',
                                process_case, case_dict['testcase'])
 
     def test_invalid_priority(self):
         case_data = sample_case_data.copy()
         case_data['priority'] = ''
-        case_dict = self._create_xml_dict(case_data)
+        case_dict = self._create_xml_dict(case_data, 'list')
         self.assertRaisesRegex(ValueError, 'Missing required priority',
                                process_case, case_dict['testcase'])
+
+    def test_process_single_tag(self):
+        for format_ in ['single', 'single-in-struct']:
+            parsed_case = self._create_xml_dict(sample_case_data, format_)
+            cleaned_case = process_case(parsed_case['testcase'])
+
+            tags = cleaned_case['tags']
+            self.assertEqual(1, len(tags))
+            tag = TestTag.objects.filter(name=tags[0].name).first()
+            self.assertIsNotNone(tag)
+
+    def test_process_list_of_tags(self):
+        for format_ in ['list', 'struct']:
+            parsed_case = self._create_xml_dict(sample_case_data, format_)
+            cleaned_case = process_case(parsed_case['testcase'])
+
+            tags = cleaned_case['tags']
+            self.assertEqual(2, len(tags))
+            for tag_name in ['tag1', 'tag2']:
+                tag = TestTag.objects.filter(name=tag_name).first()
+                self.assertIsNotNone(tag)
 
 
 class TestCleanXMLFile(test.TestCase):

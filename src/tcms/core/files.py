@@ -39,7 +39,7 @@ class UploadFileView(PermissionRequiredMixin, generic.View):
                 request=request,
                 info_type=Prompt.Alert,
                 info='Uploading file works with plan or case. Nitrate cannot '
-                     'proceed with no plan or case ID.',
+                     'proceed without plan or case ID.',
                 next='javascript:window.history.go(-1);',
             )
 
@@ -170,7 +170,7 @@ def check_file(request, file_id):
     return response
 
 
-def able_to_delete_attachment(request, file_id):
+def able_to_delete_attachment(request, file_id: int) -> bool:
     """
     These are allowed to delete attachment -
         1. super user

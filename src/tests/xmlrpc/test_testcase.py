@@ -1957,3 +1957,19 @@ class TestDeprecatedAPIs(XmlrpcAPIBaseTest):
             XmlrpcTestCase.lookup_category_id_by_name(
                 self.request, 'functional', self.category.product.pk)
         )
+
+
+class TestGetCaseRunHistory(XmlrpcAPIBaseTest):
+    """Test testcase.get_case_run_history"""
+
+    def test_get_case_run_history(self):
+        self.assertXmlrpcFaultNotImplemented(
+            XmlrpcTestCase.get_case_run_history, None, None)
+
+
+class TestChangeHistory(XmlrpcAPIBaseTest):
+    """Test testcase.get_case_run_history"""
+
+    def test_get_case_run_history(self):
+        self.assertXmlrpcFaultNotImplemented(
+            XmlrpcTestCase.get_change_history, None, None)

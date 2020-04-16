@@ -6,9 +6,9 @@ from django import test
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django_comments.models import Comment
+
 from tcms.comments import get_form
 from tcms.comments.models import add_comment
-
 from tests import factories as f, user_should_have_perm
 
 
@@ -64,6 +64,15 @@ class TestPostComment(test.TestCase):
         self.assertEqual(self.tester, comment.user)
         self.assertEqual(self.tester.username, comment.name)
         self.assertEqual(self.tester.email, comment.email)
+
+    def test_still_response_comments_even_if_fail_to_add_one(self):
+        self.client.login(username=self.tester.username, password='password')
+        response = self._post_comment('comment' * 2000)
+        self.assertContains(
+            response,
+            '<ul class="ul-no-format comment"></ul>',
+            html=True
+        )
 
 
 class TestDeleteComment(test.TestCase):
@@ -154,3 +163,56 @@ class TestDeleteComment(test.TestCase):
             Comment.objects.get(
                 comment='4th comment', object_pk=self.case_1.pk
             ).is_removed)
+
+
+class TestAddComment(test.TestCase):
+    """Test models.add_comment"""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.tester = User.objects.create(
+            username='tester', email='tester@localhost')
+        cls.case_1 = f.TestCaseFactory(summary='case 1')
+        cls.case_2 = f.TestCaseFactory(summary='case 2')
+        cls.case_3 = f.TestCaseFactory(summary='case 3')
+
+    def test_add_a_comment(self):
+        comments = add_comment(
+            self.tester, 'testcases.testcase', [self.case_1.pk], 'comment 1')
+
+        self.assertEqual('comment 1', comments[0].comment)
+
+        self.assertTrue(
+            Comment.objects.filter(
+                object_pk=self.case_1.pk, comment='comment 1').exists()
+        )
+
+    def test_add_a_comment_to_multiple_objects(self):
+        object_pks = [self.case_2.pk, self.case_3.pk]
+
+        comments = add_comment(
+            self.tester, 'testcases.testcase', object_pks, 'comment abc')
+
+        self.assertEqual('comment abc', comments[0].comment)
+        self.assertEqual('comment abc', comments[1].comment)
+
+        for pk in object_pks:
+            self.assertTrue(Comment.objects.filter(
+                object_pk=pk, comment='comment abc').exists())
+
+    def test_ignore_nonexisting_object_pk(self):
+        object_pks = [self.case_2.pk, 99999999]
+
+        comments = add_comment(
+            self.tester, 'testcases.testcase', object_pks, 'comment abc')
+
+        self.assertEqual(1, len(comments))
+        self.assertEqual('comment abc', comments[0].comment)
+
+    def test_fail_to_post_a_comment(self):
+        # The long content will fail the process.
+        comments = add_comment(
+            self.tester, 'testcases.testcase',
+            [self.case_1.pk], 'comment' * 2000)
+
+        self.assertListEqual([], comments)

@@ -658,6 +658,7 @@ class IssueTrackerFactory(DjangoModelFactory):
     issue_report_endpoint = '/enter.cgi'
     # product = factory.SubFactory(f.ProductFactory)
     tracker_product = factory.SubFactory(IssueTrackerProductFactory)
+    issue_report_params = 'product:\ncomponent:'
 
     class Meta:
         model = 'issuetracker.IssueTracker'

@@ -8,6 +8,7 @@ from datetime import datetime
 from http import HTTPStatus
 
 from django.db.models import Max
+from django.http import HttpResponse
 from django.test import RequestFactory
 from django.urls import reverse
 from django.conf import settings
@@ -138,6 +139,17 @@ class TestUploadFile(BasePlanCase):
             case=self.case_1, attachment=attachment).exists()
         self.assertTrue(case_attachment_rel_exists)
 
+    def test_missing_both_plan_id_and_case_id(self):
+        self.client.login(username=self.user.username, password=self.password)
+
+        with open(self.upload_filename, 'r') as upload_file:
+            response = self.client.post(self.upload_file_url, {
+                'upload_file': upload_file
+            })
+
+        self.assertContains(
+            response, 'Nitrate cannot proceed without plan or case ID')
+
 
 class TestAbleToDeleteFile(BasePlanCase):
 
@@ -199,6 +211,13 @@ class TestAbleToDeleteFile(BasePlanCase):
             'from_case': self.case_1.pk
         })
         request.user = self.anyone_else
+        self.assertFalse(able_to_delete_attachment(request, self.attachment.pk))
+
+    def test_missing_both_plan_and_case_id(self):
+        request = self.request.post(reverse('delete-file'), {
+            'file_id': self.attachment.pk,
+        })
+        request.user = self.case_1.author
         self.assertFalse(able_to_delete_attachment(request, self.attachment.pk))
 
 
@@ -272,6 +291,20 @@ class TestDeleteFileAuthorization(BasePlanCase):
         self.assertFalse(still_has)
         # TODO: skip because delete_file does not delete a TestAttachment object from database
         # self.assertFalse(TestAttachment.objects.filter(pk=self.case_attachment.pk).exists())
+
+    def test_missing_both_plan_and_case_id(self):
+        self.client.login(username=self.plan_attachment.submitter.username,
+                          password=self.submitter_pwd)
+
+        response = self.client.post(reverse('delete-file'), {
+            'file_id': self.plan_attachment.pk,
+        })
+
+        self.assertJsonResponse(
+            response,
+            {'message': 'Unknown from where to remove the attachment.'},
+            status_code=HTTPStatus.BAD_REQUEST
+        )
 
 
 class TestCheckFile(BasePlanCase):
@@ -361,3 +394,26 @@ class TestCheckFile(BasePlanCase):
         with patch.object(settings, 'FILE_UPLOAD_DIR', self.upload_dir):
             resp = self.client.get(reverse('check-file', args=[self.file_deleted.pk]))
         self.assert404(resp)
+
+    @patch('tcms.core.views.Prompt.render')
+    def test_fail_to_read_file_content(self, render):
+        # Following mock on the builtin open function will affect all calls to
+        # it, so this test has to patch Prompt.render to return a response
+        # manually.
+        render.return_value = HttpResponse('Cannot read file')
+
+        url = reverse('check-file', args=[self.binary_file.pk])
+
+        # Error when opening file
+        with patch.object(settings, 'FILE_UPLOAD_DIR', self.upload_dir):
+            with patch('builtins.open') as mock_open:
+                mock_open.side_effect = IOError('io error')
+                resp = self.client.get(url)
+            self.assertContains(resp, 'Cannot read file')
+
+        # Error when read file content
+        with patch.object(settings, 'FILE_UPLOAD_DIR', self.upload_dir):
+            with patch('builtins.open') as mock_open:
+                fh = mock_open.return_value.__enter__.return_value
+                fh.read.side_effect = IOError('io error')
+                resp = self.client.get(url)
