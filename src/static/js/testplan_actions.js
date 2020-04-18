@@ -1372,11 +1372,6 @@ function onTestCaseAutomatedClick(options) {
       dialogContainer,
       {'zoneContainer': container, 'selectedCaseIDs': selectedCaseIDs},
       function (responseData) {
-        if (responseData.rc !== 0) {
-          window.alert(responseData.response);
-          return false;
-        }
-
         let params = Nitrate.Utils.formSerialize(options.form);
         /*
          * FIXME: this is confuse. There is no need to assign this
@@ -1686,22 +1681,29 @@ function onTestCaseComponentClick(options) {
         return false;
       }
 
-      updateCaseComponent(
-        '/cases/add-component/',
-        serializeFormData({
+      jQ.ajax('/cases/add-component/', {
+        type: 'POST',
+        dataType: 'json',
+        data: serializeFormData({
           'form': this,
           'zoneContainer': container,
           'selectedCaseIDs': selectedCaseIDs
         }),
-        function (responseData) {
-          if (responseData.rc !== 0) {
-            window.alert(responseData.response);
-            return false;
-          }
+        traditional: true,
+        success: function () {
           parameters.case = selectedCaseIDs;
           constructPlanDetailsCasesZone(container, options.planId, parameters);
           clearDialog(c);
-        });
+        },
+        statusCode: {
+          400: function (xhr) {
+            json_failure(xhr);
+          },
+          403: function () {
+            window.alert('You are not allowed to add component to case.');
+          }
+        }
+      });
     });
   };
 }

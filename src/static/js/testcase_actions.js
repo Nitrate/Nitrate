@@ -197,22 +197,16 @@ Nitrate.TestCases.Details.on_load = function() {
         let params = Nitrate.Utils.formSerialize(this);
         params['case'] = Nitrate.TestCases.Instance.pk;
 
-        jQ.ajax({
-          'url': '/cases/add-component/',
-          'type': 'POST',
-          'dataType': 'json',
-          'data': params,
-          'traditional': true,
-          'success': function (data, textStatus, jqXHR) {
-            if (data.rc === 0) {
-              window.location.reload();
-            } else {
-              window.alert(data.response);
-              return false;
-            }
+        jQ.ajax('/cases/add-component/', {
+          type: 'POST',
+          dataType: 'json',
+          data: params,
+          traditional: true,
+          success: function (data, textStatus, xhr) {
+            window.location.reload();
           },
-          'error': function (jqXHR, textStatus, errorThrown) {
-            json_failure(jqXHR);
+          error: function (xhr, textStatus, errorThrown) {
+            json_failure(xhr);
           }
         });
       }
@@ -229,13 +223,26 @@ Nitrate.TestCases.Details.on_load = function() {
       return false;
     }
 
-    updateCaseComponent(
-      '/cases/remove-component/',
-      {
+    jQ.ajax('/cases/remove-component/', {
+      type: 'POST',
+      dataType: 'json',
+      data: {
         'case': Nitrate.TestCases.Instance.pk,
         'o_component': params.component
       },
-      json_success_refresh_page);
+      traditional: true,
+      success: function () {
+        window.location.reload();
+      },
+      statusCode: {
+        400: function (xhr) {
+          json_failure(xhr);
+        },
+        403: function () {
+          window.alert('You are not allowed to remove component from case.');
+        }
+      }
+    });
   });
 
   jQ('.link_remove_component').on('click', function(e) {
@@ -708,8 +715,7 @@ function addCaseIssue(form) {
     return false;
   }
 
-  jQ.ajax({
-    url: form.action,
+  jQ.ajax(form.action, {
     // URL has the case ID, hence no need to pass case ID again through request
     // data.
     data: {
@@ -740,8 +746,13 @@ function addCaseIssue(form) {
 
       jQ('#case_issues_count').text(jQ('table#issues').attr('count'));
     },
-    error: function(jqXHR, textStatus, errorThrown) {
-      json_failure(jqXHR);
+    statusCode: {
+      400: function (xhr) {
+        json_failure(xhr);
+      },
+      403: function () {
+        window.alert('You are not allowed to add issue to case.');
+      }
     }
   });
 }
@@ -759,7 +770,7 @@ function removeCaseIssue(issue_key, case_id, case_run_id) {
       'issue_key': issue_key,
       'case_run': case_run_id
     },
-    'success': function (data, textStatus, jqXHR) {
+    'success': function (data) {
       jQ('#issues').html(data.html);
     },
     'complete': function (jqXHR, textStatus) {
@@ -777,8 +788,13 @@ function removeCaseIssue(issue_key, case_id, case_run_id) {
 
       jQ('#case_issues_count').text(jQ('table#issues').attr('count'));
     },
-    'error': function(jqXHR, textStatus, errorThrown) {
-      json_failure(jqXHR);
+    statusCode: {
+      400: function (xhr) {
+        json_failure(xhr);
+      },
+      403: function () {
+        window.alert('You are not allowed to add issue to case.');
+      }
     }
   });
 }
@@ -1047,13 +1063,20 @@ function constructCaseAutomatedForm(container, options, callback) {
          * only value `change', here.
          */
         params = params.replace(/a=\w*/, 'a=change');
-        jQ.ajax({
-          'url': Nitrate.http.URLConf.reverse({ name: 'cases_automated' }),
-          'type': 'POST',
-          'dataType': 'json',
-          'data': params,
-          'success': function (data, textStatus, jqXHR) {
+        jQ.ajax(Nitrate.http.URLConf.reverse({ name: 'cases_automated' }), {
+          type: 'POST',
+          dataType: 'json',
+          data: params,
+          success: function (data, textStatus, jqXHR) {
             callback(data);
+          },
+          statusCode: {
+            400: function () {
+              window.alert('You are not allowed to change test case automation attribute.');
+            },
+            403: function (xhr) {
+              window.alert(JSON.parse(xhr.responseText).message);
+            }
           }
         });
       })

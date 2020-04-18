@@ -3,11 +3,12 @@
 import json
 import unittest
 import xml.etree.ElementTree
-
-from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
+from http import HTTPStatus
 from operator import attrgetter, itemgetter
 from unittest.mock import patch
+
+from bs4 import BeautifulSoup
 
 from django import test
 from django.contrib.auth.models import User
@@ -297,13 +298,10 @@ class TestOperateComponentView(BasePlanCase):
         }
         response = self.client.post(reverse('cases-add-component'), post_data)
 
-        data = json.loads(response.content)
-        self.assertEqual(
-            {
-                'rc': 0,
-                'response': 'Succeed to add component(s) Application, Database.',
-            },
-            data)
+        self.assertJsonResponse(
+            response, {
+                'message': 'Succeed to add component(s) Application, Database.',
+            })
 
         for comp in (self.comp_application, self.comp_database):
             case_components = TestCaseComponent.objects.filter(
@@ -324,13 +322,10 @@ class TestOperateComponentView(BasePlanCase):
         response = self.client.post(reverse('cases-remove-component'),
                                     post_data)
 
-        data = json.loads(response.content)
-        self.assertEqual(
-            {
-                'rc': 0,
-                'response': 'Succeed to remove component(s) CLI, API.'
-            },
-            data)
+        self.assertJsonResponse(
+            response, {
+                'message': 'Succeed to remove component(s) CLI, API.'
+            })
 
         for comp in (self.comp_cli, self.comp_api):
             case_components = TestCaseComponent.objects.filter(
@@ -342,14 +337,16 @@ class TestOperateComponentView(BasePlanCase):
         self.login_tester()
 
         result = Component.objects.aggregate(max_pk=Max('pk'))
+        nonexistent_id = result['max_pk'] + 1
         resp = self.client.post(reverse('cases-remove-component'), {
-            'o_component': [result['max_pk'] + 1],
+            'o_component': [nonexistent_id],
             'case': [self.case_1.pk],
             'a': 'remove',
         })
 
         data = json.loads(resp.content)
-        self.assertIn('Cannot remove component', data['response'])
+        self.assertIn(f'Nonexistent component id(s) {nonexistent_id}',
+                      data['message'][0])
 
     @patch('tcms.testcases.models.TestCase.remove_component')
     def test_case_remove_component_fails(self, remove_component):
@@ -365,8 +362,12 @@ class TestOperateComponentView(BasePlanCase):
         })
 
         data = json.loads(resp.content)
-        self.assertIn('Error while removing component from case.',
-                      data['response'])
+        case_id = self.case_1.pk
+        msgs = sorted(data['message'])
+        self.assertIn(f'Failed to remove component {self.comp_api.name} from case {case_id}',
+                      msgs[0])
+        self.assertIn(f'Failed to remove component {self.comp_cli.name} from case {case_id}',
+                      msgs[1])
 
 
 class TestOperateCategoryView(BasePlanCase):
@@ -666,7 +667,7 @@ class TestOperateCaseTag(BasePlanCase):
             {'a': 'remove', 'o_tag': tags_to_remove, 'case': remove_from_cases})
 
         data = json.loads(response.content)
-        self.assertEqual({'rc': 0, 'response': 'ok', 'errors_list': []}, data)
+        self.assertEqual({}, data)
 
         self.assertFalse(
             TestCaseTag.objects.filter(
@@ -691,14 +692,16 @@ class TestOperateCaseTag(BasePlanCase):
 
         remove_tag.assert_called_once()
 
-        data = json.loads(response.content)
-        self.assertEqual(
+        self.assertJsonResponse(
+            response,
             {
-                'rc': 1,
-                'response': 'value error',
-                'errors_list': [{'case': self.case_1.pk, 'tag': self.tag_fedora.pk}],
+                'message': f'Failed to remove tag {self.tag_fedora.name} '
+                           f'from case {self.case_1.pk}',
+                'case': self.case_1.pk,
+                'tag': self.tag_fedora.pk,
             },
-            data)
+            status_code=HTTPStatus.BAD_REQUEST
+        )
 
 
 class TestEditCase(BasePlanCase):
@@ -907,7 +910,7 @@ class TestChangeCasesAutomated(BasePlanCase):
 
         response = self.client.post(self.change_url, change_data)
 
-        self.assertJsonResponse(response, {'rc': 0, 'response': 'ok'})
+        self.assertJsonResponse(response, {})
 
         for case in TestCase.objects.filter(pk__in=self.change_data['case']):
             self.assertEqual(1, case.is_automated)
@@ -920,7 +923,7 @@ class TestChangeCasesAutomated(BasePlanCase):
 
         response = self.client.post(self.change_url, change_data)
 
-        self.assertJsonResponse(response, {'rc': 0, 'response': 'ok'})
+        self.assertJsonResponse(response, {})
 
         for pk in self.change_data['case']:
             case = TestCase.objects.get(pk=pk)
@@ -934,7 +937,7 @@ class TestChangeCasesAutomated(BasePlanCase):
 
         response = self.client.post(self.change_url, change_data)
 
-        self.assertJsonResponse(response, {'rc': 0, 'response': 'ok'})
+        self.assertJsonResponse(response, {})
 
         for case in TestCase.objects.filter(pk__in=self.change_data['case']):
             self.assertTrue(case.is_automated_proposed)
@@ -947,6 +950,8 @@ class TestChangeCasesAutomated(BasePlanCase):
         change_data['case'] = [result['max_pk'] + 1]
 
         resp = self.client.post(self.change_url, change_data)
+
+        self.assert400(resp)
 
         data = json.loads(resp.content)
         self.assertIn(f'{change_data["case"][0]} do not exist',
@@ -1708,6 +1713,7 @@ class TestAddComponent(BasePlanCase):
         cls.component_db = f.ComponentFactory(name='db', product=cls.product)
         cls.component_doc = f.ComponentFactory(name='doc', product=cls.product)
         cls.component_cli = f.ComponentFactory(name='cli', product=cls.product)
+        cls.component_web = f.ComponentFactory(name='web', product=cls.product)
 
         cls.case_2.add_component(cls.component_db)
         cls.case_2.add_component(cls.component_cli)
@@ -1777,10 +1783,13 @@ class TestAddComponent(BasePlanCase):
             'o_component': [nonexisting_component_id],
         })
 
-        self.assert200(resp)
+        self.assert400(resp)
 
         data = json.loads(resp.content)
-        self.assertIn('Cannot add component', data['response'])
+        msgs = sorted(data['message'])
+        self.assertIn(
+            f'Nonexistent component id(s) {nonexisting_component_id}', msgs[0])
+        self.assertIn(f'Nonexistent product id', msgs[1])
 
     @patch('tcms.testcases.models.TestCase.add_component')
     def test_failed_to_add_component(self, add_component):
@@ -1790,16 +1799,22 @@ class TestAddComponent(BasePlanCase):
             'product': self.product.pk,
             'case': self.case_2.pk,
             'o_component': [
-                self.component_db.pk,
                 self.component_doc.pk,
-                self.component_cli.pk
+                self.component_web.pk,
             ],
         })
 
-        self.assert200(resp)
+        self.assert400(resp)
 
         data = json.loads(resp.content)
-        self.assertIn('Error while adding component to case', data['response'])
+        msgs = sorted(data['message'])
+        case_id = self.case_2.pk
+        self.assertIn(
+            f'Failed to add component {self.component_doc.name} to case {case_id}',
+            msgs[0])
+        self.assertIn(
+            f'Failed to add component {self.component_web.name} to case {case_id}',
+            msgs[1])
 
 
 class TestIssueManagement(BaseCaseRun):
@@ -1947,7 +1962,7 @@ class TestIssueManagement(BaseCaseRun):
         self.assert400(resp)
 
         data = json.loads(resp.content)
-        self.assertIn('Something wrong', data['messages'][0])
+        self.assertIn('Something wrong', data['messages'])
 
     def test_fail_if_validation_error_occurs_while_adding_the_issue(self):
         user_should_have_perm(self.tester, 'issuetracker.add_issue')
@@ -1963,7 +1978,7 @@ class TestIssueManagement(BaseCaseRun):
 
         data = json.loads(resp.content)
         self.assertIn(
-            'Issue key abcdef1234 is in wrong format for issue tracker',
+            f'Issue key abcdef1234 is in wrong format for issue tracker "{self.issue_tracker.name}"',
             data['messages'][0])
 
     def test_remove_an_issue(self):
@@ -2015,7 +2030,7 @@ class TestIssueManagement(BaseCaseRun):
         self.assert404(resp)
 
         data = json.loads(resp.content)
-        self.assertIn(f'Case {case_id} does not exist.', data['messages'][0])
+        self.assertIn(f'Case {case_id} does not exist.', data['messages'])
 
 
 class TestNewCase(BasePlanCase):

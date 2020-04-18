@@ -496,15 +496,24 @@ class CaseRunIssueForm(BaseAddIssueForm):
 
 
 class CaseComponentForm(forms.Form):
+    """Form used to validate product and associated components"""
+
     product = forms.ModelChoiceField(
         queryset=Product.objects.all(),
         empty_label=None,
         required=False,
+        error_messages={
+            'invalid_choice': 'Nonexistent product id.'
+        }
     )
     o_component = forms.ModelMultipleChoiceField(
         label="Components",
-        queryset=Component.objects.none(),
+        queryset=Component.objects.all(),
         required=False,
+        error_messages={
+            'invalid_choice': 'Nonexistent component id(s) %(value)s.',
+            'invalid_pk_value': 'Invalid component id(s) %(pk)s.',
+        }
     )
 
     def populate(self, product_id=None):

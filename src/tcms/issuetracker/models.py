@@ -589,7 +589,7 @@ class Issue(TCMSActionModel):
         if not issue_key_re.match(self.issue_key):
             raise ValidationError({
                 'issue_key':
-                    'Issue key {} is in wrong format for issue tracker {}.'
+                    'Issue key {} is in wrong format for issue tracker "{}".'
                     .format(self.issue_key, self.tracker)
             })
 

@@ -31,6 +31,7 @@ from django.views.generic.edit import FormView
 
 from tcms.core.db import SQLExecution
 from tcms.core.raw_sql import RawSQL
+from tcms.core.responses import JsonResponseBadRequest, JsonResponseForbidden
 from tcms.core.utils import DataTableResult
 from tcms.core.utils import form_error_messags_to_list
 from tcms.core.views import Prompt
@@ -151,13 +152,12 @@ class ChangeCaseAutomatedPropertyView(PermissionRequiredMixin, FormView):
             if is_automated_proposed is not None:
                 kwargs['is_automated_proposed'] = is_automated_proposed
             cases.update(**kwargs)
-        return JsonResponse({'rc': 0, 'response': 'ok'})
+        return JsonResponse({})
 
     def form_invalid(self, form):
-        return JsonResponse({
-            'rc': 1,
+        return JsonResponseBadRequest({
             'messages': form_error_messags_to_list(form)
-        })
+        }, safe=True)
 
 
 @permission_required('testcases.add_testcase')
@@ -1375,7 +1375,6 @@ def tag(request):
     if not tcs:
         raise Http404
 
-    # a == action
     if request.POST.get('a') == 'remove':
         tag_ids = request.POST.getlist('o_tag')
         tags = TestTag.objects.filter(pk__in=tag_ids)
@@ -1383,13 +1382,15 @@ def tag(request):
             for tag in tags:
                 try:
                     tc.remove_tag(tag=tag)
-                except Exception as e:
-                    return JsonResponse({
-                        'rc': 1,
-                        'response': str(e),
-                        'errors_list': [{'case': tc.pk, 'tag': tag.pk}],
+                except Exception:
+                    msg = f'Failed to remove tag {tag.name} from case {tc.pk}'
+                    logger.error(msg)
+                    return JsonResponseBadRequest({
+                        'message': msg,
+                        'case': tc.pk,
+                        'tag': tag.pk
                     })
-        return JsonResponse({'rc': 0, 'response': 'ok', 'errors_list': []})
+        return JsonResponse({})
 
     form = CaseTagForm(initial={'tag': request.POST.get('o_tag')})
     form.populate(case_ids=tcs)
@@ -1405,11 +1406,9 @@ class AddComponentView(PermissionRequiredMixin, View):
         form = CaseComponentForm(request.POST)
         form.populate(product_id=request.POST['product'])
         if not form.is_valid():
-            return JsonResponse({
-                'rc': 1,
-                'response': 'Cannot add component. Some data is incorrect.',
-                'error_list': form.errors,
-            })
+            return JsonResponseBadRequest({
+                'message': form_error_messags_to_list(form),
+            }, safe=True)
 
         case_ids = [int(case_id) for case_id in request.POST.getlist('case')]
 
@@ -1427,23 +1426,17 @@ class AddComponentView(PermissionRequiredMixin, View):
         for case, component in components_to_add:
             try:
                 case.add_component(component=component)
-            except Exception as e:
-                logger.exception('Failed to add component %r to case %r',
-                                 component, case)
-                errors.append(str(e))
+            except Exception:
+                msg = f'Failed to add component {component} to case {case.pk}'
+                logger.exception(msg)
+                errors.append(msg)
 
         if errors:
-            return JsonResponse({
-                'rc': 1,
-                'response': 'Error while adding component to case.',
-                'errors_list': errors,
-            })
+            return JsonResponseBadRequest({'message': errors})
         else:
-            components = [c.name for c in form.cleaned_data['o_component']]
+            components = ', '.join(c.name for c in form.cleaned_data['o_component'])
             return JsonResponse({
-                'rc': 0,
-                'response': 'Succeed to add component(s) {}.'.format(
-                    ', '.join(components))
+                'message': f'Succeed to add component(s) {components}.'
             })
 
 
@@ -1457,10 +1450,8 @@ class RemoveComponentView(PermissionRequiredMixin, View):
         form.populate()
 
         if not form.is_valid():
-            return JsonResponse({
-                'rc': 1,
-                'response': 'Cannot remove component. Some data is incorrect.',
-                'error_list': form.errors,
+            return JsonResponseBadRequest({
+                'message': form_error_messags_to_list(form),
             })
 
         errors = []
@@ -1470,23 +1461,17 @@ class RemoveComponentView(PermissionRequiredMixin, View):
             for c in form.cleaned_data['o_component']:
                 try:
                     case.remove_component(component=c)
-                except Exception as e:
-                    logger.exception(
-                        'Failed to remove component %r from case %r', c, case)
-                    errors.append(str(e))
+                except Exception:
+                    msg = f'Failed to remove component {c} from case {case.pk}.'
+                    logger.exception(msg)
+                    errors.append(msg)
 
         if errors:
-            return JsonResponse({
-                'rc': 1,
-                'response': 'Error while removing component from case.',
-                'errors_list': errors,
-            })
+            return JsonResponseBadRequest({'message': errors}, safe=True)
         else:
-            components = [c.name for c in form.cleaned_data['o_component']]
+            components = ', '.join(c.name for c in form.cleaned_data['o_component'])
             return JsonResponse({
-                'rc': 0,
-                'response': 'Succeed to remove component(s) {}.'.format(
-                    ', '.join(components))
+                'message': f'Succeed to remove component(s) {components}.'
             })
 
 
@@ -1583,15 +1568,16 @@ def manage_case_issues(request, case_id, template_name='case/get_issues.html'):
             # FIXME: It's may use ModelForm.save() method here.
             #        Maybe in future.
             if not self.request.user.has_perm('issuetracker.add_issue'):
-                return JsonResponse({'messages': ['Permission denied.']},
+                return JsonResponse({'messages': 'Permission denied.'},
                                     status=HTTPStatus.FORBIDDEN)
 
             request_data = request.GET.copy()
             request_data.update({'case': self.case.pk})
             form = CaseIssueForm(request_data)
             if not form.is_valid():
-                return JsonResponse({'messages': form_error_messags_to_list(form)},
-                                    status=HTTPStatus.BAD_REQUEST)
+                return JsonResponseBadRequest({
+                    'messages': form_error_messags_to_list(form)
+                })
 
             try:
                 self.case.add_issue(
@@ -1601,19 +1587,18 @@ def manage_case_issues(request, case_id, template_name='case/get_issues.html'):
                     description=form.cleaned_data['description'],
                 )
             except ValidationError as e:
-                return JsonResponse({'messages': e.messages}, status=HTTPStatus.BAD_REQUEST)
+                return JsonResponseBadRequest({'messages': e.messages})
             except Exception as e:
                 msg = 'Failed to add issue {} to case {}. Error reported: {}'.format(
                     form.cleaned_data['issue_key'], self.case.pk, str(e))
                 logger.exception(msg)
-                return JsonResponse({'messages': [msg]}, status=HTTPStatus.BAD_REQUEST)
+                return JsonResponseBadRequest({'messages': msg})
 
             return JsonResponse({'html': self.render()})
 
         def remove(self):
             if not self.request.user.has_perm('issuetracker.delete_issue'):
-                return JsonResponse(
-                    {'messages': ['Permission denied.']}, status=HTTPStatus.FORBIDDEN)
+                return JsonResponseForbidden({'messages': 'Permission denied.'})
 
             class CaseRemoveIssueForm(djforms.Form):
                 handle = djforms.RegexField(r'^remove$')
@@ -1637,12 +1622,13 @@ def manage_case_issues(request, case_id, template_name='case/get_issues.html'):
                     self.case.remove_issue(form.cleaned_data['issue_key'],
                                            form.cleaned_data['case_run'])
                 except (TypeError, ValueError) as e:
-                    return JsonResponse({'messages': [str(e)]}, status=HTTPStatus.BAD_REQUEST)
+                    return JsonResponseBadRequest({'messages': str(e)})
                 else:
                     return JsonResponse({'html': self.render()})
             else:
-                return JsonResponse({'messages': form_error_messags_to_list(form)},
-                                    status=HTTPStatus.BAD_REQUEST)
+                return JsonResponseBadRequest({
+                    'messages': form_error_messags_to_list(form)
+                })
 
     # FIXME: Rewrite these codes for Ajax.Request
     try:
@@ -1657,7 +1643,7 @@ def manage_case_issues(request, case_id, template_name='case/get_issues.html'):
                                template_name=template_name)
 
     if not request.GET.get('handle') in actions.__all__:
-        return JsonResponse({'messages': ['Unrecognizable actions']},
+        return JsonResponse({'messages': 'Unrecognizable actions'},
                             status=HTTPStatus.BAD_REQUEST)
 
     func = getattr(actions, request.GET['handle'])

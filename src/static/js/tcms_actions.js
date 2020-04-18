@@ -214,7 +214,11 @@ function json_failure(xhr) {
             responseJSON.response ||
             responseJSON.messages ||
             responseJSON;
-  window.alert(msg);
+  if (Array.isArray(msg)) {
+    window.alert(msg.join('\n'));
+  } else {
+    window.alert(msg);
+  }
   return false;
 }
 
