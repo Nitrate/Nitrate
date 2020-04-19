@@ -671,7 +671,7 @@ function updateCaseRunStatus(e) {
 
     updateRunStatus(
       formData.content_type, formData.object_pk, formData.field, caseRunStatusId, 'int',
-      function (responseData) {
+      function () {
         updateCaseRunDetailAfterCommentIsAdded(caseRunRow, expandedCaseRunDetailRow, caseRunStatusId);
       });
   }
@@ -699,12 +699,8 @@ function changeCaseRunOrder(run_id, case_run_id, sort_key) {
     return false;
   }
 
-  updateObject('testruns.testcaserun', case_run_id, 'sortkey', nsk, 'int', function (responseData) {
-    if (responseData.response === 'ok') {
-      window.location.reload();
-    } else {
-      window.alert(responseData.response);
-    }
+  updateObject('testruns.testcaserun', case_run_id, 'sortkey', nsk, 'int', function () {
+    window.location.reload();
   });
 }
 
@@ -1074,10 +1070,34 @@ function changeCaseRunAssignee() {
     return false;
   }
 
-  getInfoAndUpdateObject(
-    {'info_type': 'users', 'username': emailOrUsername},
-    'testruns.testcaserun', selectedCaseRunIDs, 'assignee'
-  );
+  // First to get the user with input, if there is, then update selected case
+  // runs' assignee to that user.
+  jQ.ajax('/management/getinfo/', {
+    type: 'GET',
+    dataType: 'json',
+    data: {'info_type': 'users', 'username': emailOrUsername},
+    success: function (data) {
+      // FIXME: Display multiple items and let user to select one
+      if (data.length === 0) {
+        window.alert('Nothing found in database');
+        return false;
+      }
+
+      if (data.length > 1) {
+        window.alert('Multiple instances reached, please define the condition more clear.');
+        return false;
+      }
+
+      updateObject(
+        'testruns.testcaserun', selectedCaseRunIDs, 'assignee', data[0].pk, 'str', function () {
+          window.location.reload();
+        });
+    },
+    error: function (jqXHR, textStatus, errorThrown) {
+      window.alert('Fail to get user ' + emailOrUsername);
+      return false;
+    }
+  });
 }
 
 /**
@@ -1219,18 +1239,16 @@ function showCommentForm() {
       commentsErr.html(error);
       return false;
     }
-    jQ.ajax({
-      url: '/caserun/comment-many/',
-      data: {'comment': comments, 'run': runs.join()},
+    jQ.ajax('/caserun/comment-many/', {
+      type: 'POST',
+      data: {'comment': comments, 'run': runs},
       dataType: 'json',
-      type: 'post',
+      traditional: true,
       success: function(res) {
-        if (parseInt(res.rc) === 0) {
-          window.location.reload();
-        } else {
-          commentsErr.html(res.response);
-          return false;
-        }
+        window.location.reload();
+      },
+      error: function (xhr) {
+        commentsErr.html(xhr.responseText);
       }
     });
   });
@@ -1261,12 +1279,7 @@ jQ(document).ready(function(){
       return false;
     }
     updateObject(
-      'testruns.testcaserun', object_pks, 'case_run_status', option, 'int',
-      function (responseData) {
-        if (responseData.rc !== 0) {
-          window.alert(responseData.response);
-          return false;
-        }
+      'testruns.testcaserun', object_pks, 'case_run_status', option, 'int', function () {
         window.location.reload();
       }
     );

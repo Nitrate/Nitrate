@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
+from http import HTTPStatus
 
 from django import test
 from django.urls import reverse
@@ -65,7 +66,7 @@ class TestUpdateCasesDefaultTester(AuthMixin, HelperAssertions, test.TestCase):
             'new_value': self.user_1.username,
         })
 
-        self.assertJsonResponse(resp, {'rc': 0, 'response': 'ok'})
+        self.assertJsonResponse(resp, {})
 
         for case in [self.case_1, self.case_2]:
             case.refresh_from_db()
@@ -79,10 +80,14 @@ class TestUpdateCasesDefaultTester(AuthMixin, HelperAssertions, test.TestCase):
             'new_value': 'unknown',
         })
 
-        self.assertJsonResponse(resp, {
-            'rc': 1,
-            'response': 'unknown cannot be set as a default tester, '
-                        'since this user does not exist.'})
+        self.assertJsonResponse(
+            resp,
+            {
+                'message': 'unknown cannot be set as a default tester, '
+                           'since this user does not exist.'
+            },
+            status_code=HTTPStatus.NOT_FOUND
+        )
 
         for case in [self.case_1, self.case_2]:
             case.refresh_from_db()

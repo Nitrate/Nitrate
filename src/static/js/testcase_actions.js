@@ -684,17 +684,16 @@ function changeCaseOrder2(parameters, callback) {
   parameters.target_field = 'sortkey';
   parameters.new_value = nsk;
 
-  jQ.ajax({
-    'url': '/ajax/update/cases-sortkey/',
-    'type': 'POST',
-    'dataType': 'json',
-    'data': parameters,
-    'traditional': true,
-    'success': function (data, textStatus, jqXHR) {
-      callback(data);
+  jQ.ajax('/ajax/update/cases-sortkey/', {
+    type: 'POST',
+    dataType: 'json',
+    data: parameters,
+    traditional: true,
+    success: function () {
+      callback();
     },
-    'error': function (jqXHR, textStatus, errorThrown) {
-      json_failure(jqXHR);
+    error: function (xhr) {
+      json_failure(xhr);
     }
   });
 }
@@ -1018,22 +1017,6 @@ function updateCaseComponent(url, parameters, callback) {
   });
 }
 
-// FIXME: this, and other code that calls Ajax.Request
-function updateCaseCategory(url, parameters, callback) {
-  jQ.ajax({
-    'url': url,
-    'type': 'POST',
-    'dataType': 'json',
-    'data': parameters,
-    'success': function (data, textStatus, jqXHR) {
-      callback(data);
-    },
-    'error': function (jqXHR, textStatus, errorThrown) {
-      json_failure(jqXHR);
-    }
-  });
-}
-
 function constructCaseAutomatedForm(container, options, callback) {
   jQ(container).html(getAjaxLoading());
   jQ(container).show();
@@ -1067,8 +1050,8 @@ function constructCaseAutomatedForm(container, options, callback) {
           type: 'POST',
           dataType: 'json',
           data: params,
-          success: function (data, textStatus, jqXHR) {
-            callback(data);
+          success: function () {
+            callback();
           },
           statusCode: {
             400: function () {

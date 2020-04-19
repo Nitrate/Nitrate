@@ -116,21 +116,30 @@ class TestCommentCaseRuns(BaseCaseRun):
 
         response = self.client.post(self.many_comments_url,
                                     {'run': [self.case_run_1.pk, self.case_run_2.pk]})
-        self.assertEqual({'rc': 1, 'response': 'Comments needed'},
-                         json.loads(response.content))
+        self.assertJsonResponse(
+            response,
+            {'message': 'Comments needed'},
+            status_code=HTTPStatus.BAD_REQUEST
+        )
 
     def test_refuse_if_missing_no_case_run_pk(self):
         self.client.login(username=self.tester.username, password='password')
 
         response = self.client.post(self.many_comments_url,
                                     {'comment': 'new comment', 'run': []})
-        self.assertEqual({'rc': 1, 'response': 'No runs selected.'},
-                         json.loads(response.content))
+        self.assertJsonResponse(
+            response,
+            {'message': 'No runs selected.'},
+            status_code=HTTPStatus.BAD_REQUEST
+        )
 
         response = self.client.post(self.many_comments_url,
                                     {'comment': 'new comment'})
-        self.assertEqual({'rc': 1, 'response': 'No runs selected.'},
-                         json.loads(response.content))
+        self.assertJsonResponse(
+            response,
+            {'message': 'No runs selected.'},
+            status_code=HTTPStatus.BAD_REQUEST
+        )
 
     def test_refuse_if_passed_case_run_pks_not_exist(self):
         self.client.login(username=self.tester.username, password='password')
@@ -138,20 +147,21 @@ class TestCommentCaseRuns(BaseCaseRun):
         response = self.client.post(self.many_comments_url,
                                     {'comment': 'new comment',
                                      'run': '99999998,1009900'})
-        self.assertEqual({'rc': 1, 'response': 'No caserun found.'},
-                         json.loads(response.content))
+        self.assertJsonResponse(
+            response,
+            {'message': 'No caserun found.'},
+            status_code=HTTPStatus.BAD_REQUEST
+        )
 
     def test_add_comment_to_case_runs(self):
         self.client.login(username=self.tester.username, password='password')
 
         new_comment = 'new comment'
-        response = self.client.post(
-            self.many_comments_url,
-            {'comment': new_comment,
-             'run': ','.join([str(self.case_run_1.pk),
-                              str(self.case_run_2.pk)])})
-        self.assertEqual({'rc': 0, 'response': 'ok'},
-                         json.loads(response.content))
+        response = self.client.post(self.many_comments_url, {
+            'comment': new_comment,
+            'run': f'{self.case_run_1.pk},{self.case_run_2.pk}'
+        })
+        self.assertJsonResponse(response, {})
 
         # Assert comments are added
         case_run_ct = ContentType.objects.get_for_model(TestCaseRun)
@@ -181,33 +191,32 @@ class TestUpdateObject(BasePlanCase):
 
         remove_perm_from_user(self.tester, self.permission)
 
-        post_data = {
+        response = self.client.post(self.update_url, {
             'content_type': 'testplans.testplan',
             'object_pk': self.plan.pk,
             'field': 'is_active',
             'value': 'False',
             'value_type': 'bool'
-        }
+        })
 
-        response = self.client.post(self.update_url, post_data)
-
-        self.assertEqual({'rc': 1, 'response': 'Permission Dinied.'},
-                         json.loads(response.content))
+        self.assertJsonResponse(
+            response,
+            {'message': 'Permission Denied.'},
+            status_code=HTTPStatus.FORBIDDEN
+        )
 
     def test_update_plan_is_active(self):
         self.client.login(username=self.tester.username, password='password')
 
-        post_data = {
+        response = self.client.post(self.update_url, {
             'content_type': 'testplans.testplan',
             'object_pk': self.plan.pk,
             'field': 'is_active',
             'value': 'False',
             'value_type': 'bool'
-        }
+        })
 
-        response = self.client.post(self.update_url, post_data)
-
-        self.assertEqual({'rc': 0, 'response': 'ok'}, json.loads(response.content))
+        self.assertJsonResponse(response, {})
         plan = TestPlan.objects.get(pk=self.plan.pk)
         self.assertFalse(plan.is_active)
 
@@ -281,8 +290,11 @@ class TestUpdateCaseRunStatus(BaseCaseRun):
             'value_type': 'int',
         })
 
-        self.assertEqual({'rc': 1, 'response': 'Permission Dinied.'},
-                         json.loads(response.content))
+        self.assertJsonResponse(
+            response,
+            {'message': 'Permission Denied.'},
+            status_code=HTTPStatus.FORBIDDEN
+        )
 
     def test_change_case_run_status(self):
         self.client.login(username=self.tester.username, password='password')
@@ -295,7 +307,7 @@ class TestUpdateCaseRunStatus(BaseCaseRun):
             'value_type': 'int',
         })
 
-        self.assertEqual({'rc': 0, 'response': 'ok'}, json.loads(response.content))
+        self.assertJsonResponse(response, {})
         self.assertEqual(
             'PAUSED', TestCaseRun.objects.get(pk=self.case_run_1.pk).case_run_status.name)
 
@@ -338,10 +350,11 @@ class TestUpdateCasePriority(BasePlanCase):
                 'new_value': Priority.objects.get(value='P3').pk,
             })
 
-        self.assertEqual(
-            {'rc': 1, 'response': "You don't have enough permission to "
-                                  "update TestCases."},
-            json.loads(response.content))
+        self.assertJsonResponse(
+            response,
+            {'message': "You don't have enough permission to update TestCases."},
+            status_code=HTTPStatus.FORBIDDEN
+        )
 
     def test_update_case_priority(self):
         self.client.login(username=self.tester.username, password='password')
@@ -355,8 +368,7 @@ class TestUpdateCasePriority(BasePlanCase):
                 'new_value': Priority.objects.get(value='P3').pk,
             })
 
-        self.assertEqual({'rc': 0, 'response': 'ok'},
-                         json.loads(response.content))
+        self.assertJsonResponse(response, {})
 
         for pk in (self.case_1.pk, self.case_3.pk):
             self.assertEqual('P3', TestCase.objects.get(pk=pk).priority.value)

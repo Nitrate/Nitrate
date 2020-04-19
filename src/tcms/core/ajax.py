@@ -17,8 +17,7 @@ from django.contrib.auth.models import User
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.dispatch import Signal
-from django.http import Http404
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
@@ -26,6 +25,7 @@ from django.views.decorators.http import require_POST
 import tcms.comments.models
 
 from tcms.core import utils
+from tcms.core.responses import JsonResponseForbidden, JsonResponseBadRequest, JsonResponseNotFound
 from tcms.management.models import Component, TestBuild, Version
 from tcms.management.models import Priority
 from tcms.management.models import TestTag
@@ -65,7 +65,7 @@ def strip_parameters(request_data, skip_parameters):
 
 @require_GET
 def info(request):
-    """Ajax responsor for misc information"""
+    """Return misc information"""
 
     class Objects:
         __all__ = [
@@ -165,13 +165,15 @@ def info(request):
             response_str += '</ul>'
             return HttpResponse(response_str)
 
-        return HttpResponse(serializers.serialize(
-            request.GET.get('format', 'json'),
-            obj(),
-            fields=('name', 'value')
-        ))
+        return JsonResponse(json.loads(
+            serializers.serialize(
+                request.GET.get('format', 'json'),
+                obj(),
+                fields=('name', 'value')
+            )
+        ), safe=False)
 
-    return HttpResponse('Unrecognizable infotype')
+    return JsonResponseBadRequest({'message': 'Unrecognizable infotype'})
 
 
 @require_GET
@@ -285,21 +287,24 @@ def tag(request, template_name="management/get_tag.html"):
         func = getattr(tag_actions, q_action)
         response = func()
         if not response[0]:
-            return HttpResponse(json.dumps({'response': response, 'rc': 1}))
+            return JsonResponse({})
 
     del q_tag, q_action
 
     # Response to batch operations
     if request.GET.get('t') == 'json':
         if request.GET.get('f') == 'serialized':
-            return HttpResponse(
+            return JsonResponse(
                 # FIXME: this line of code depends on the existence of `a`
                 # argument in query string. So, if a does not appear in the
                 # query string, error will happen here
-                serializers.serialize(request.GET['t'], response[1])
+                json.loads(
+                    serializers.serialize(request.GET['t'], response[1])
+                ),
+                safe=False
             )
 
-        return HttpResponse(json.dumps({'response': 'ok'}))
+        return JsonResponse({})
 
     # Response the single operation
     if len(obj) == 1:
@@ -321,7 +326,9 @@ def tag(request, template_name="management/get_tag.html"):
             'object': obj[0],
         }
         return render(request, template_name, context=context_data)
-    return HttpResponse('')
+
+    # Why return an empty response originally?
+    return JsonResponse({})
 
 
 def get_value_by_type(val, v_type):
@@ -370,15 +377,6 @@ def get_value_by_type(val, v_type):
     return value, error
 
 
-def say_no(error_msg):
-    ajax_response = {'rc': 1, 'response': error_msg}
-    return HttpResponse(json.dumps(ajax_response))
-
-
-def say_yes():
-    return HttpResponse(json.dumps({'rc': 0, 'response': 'ok'}))
-
-
 # Deprecated. Not flexible.
 @require_POST
 def update(request):
@@ -395,9 +393,10 @@ def update(request):
     object_pk = [int(a) for a in object_pk_str.split(',')]
 
     if not field or not value or not object_pk or not ctype:
-        return say_no(
-            'Following fields are required - content_type, '
-            'object_pk, field and value.')
+        return JsonResponseBadRequest({
+            'message': 'Following fields are required - '
+                       'content_type, object_pk, field and value.'
+        })
 
     # Convert the value type
     # FIXME: Django bug here: update() keywords must be strings
@@ -405,18 +404,20 @@ def update(request):
 
     value, error = get_value_by_type(value, vtype)
     if error:
-        return say_no(error)
+        return JsonResponseBadRequest({'message': error})
     has_perms = check_permission(request, ctype)
     if not has_perms:
-        return say_no('Permission Dinied.')
+        return JsonResponseForbidden({'message': 'Permission Denied.'})
 
     model = utils.get_model(ctype)
     targets = model._default_manager.filter(pk__in=object_pk)
 
     if not targets:
-        return say_no('No record found')
+        return JsonResponseBadRequest({'message': 'No record found'})
     if not hasattr(targets[0], field):
-        return say_no(f'{ctype} has no field {field}')
+        return JsonResponseBadRequest({
+            'message': f'{ctype} has no field {field}'
+        })
 
     if hasattr(targets[0], 'log_action'):
         for t in targets:
@@ -476,7 +477,7 @@ def update(request):
             except (AttributeError, User.DoesNotExist):
                 pass
         targets.update(close_date=now, tested_by=request.user)
-    return say_yes()
+    return JsonResponse({})
 
 
 @require_POST
@@ -494,9 +495,10 @@ def update_case_run_status(request):
     object_pk = [int(a) for a in object_pk_str.split(',')]
 
     if not field or not value or not object_pk or not ctype:
-        return say_no(
-            'Following fields are required - content_type, '
-            'object_pk, field and value.')
+        return JsonResponseBadRequest({
+            'message': 'Following fields are required - '
+                       'content_type, object_pk, field and value.'
+        })
 
     # Convert the value type
     # FIXME: Django bug here: update() keywords must be strings
@@ -504,18 +506,20 @@ def update_case_run_status(request):
 
     value, error = get_value_by_type(value, vtype)
     if error:
-        return say_no(error)
+        return JsonResponseBadRequest({'message': error})
     has_perms = check_permission(request, ctype)
     if not has_perms:
-        return say_no('Permission Dinied.')
+        return JsonResponseForbidden({'message': 'Permission Denied.'})
 
     model = utils.get_model(ctype)
     targets = model._default_manager.filter(pk__in=object_pk)
 
     if not targets:
-        return say_no('No record found')
+        return JsonResponseBadRequest({'message': 'No record found'})
     if not hasattr(targets[0], field):
-        return say_no(f'{ctype} has no field {field}')
+        return JsonResponseBadRequest({
+            'message': f'{ctype} has no field {field}'
+        })
 
     if hasattr(targets[0], 'log_action'):
         for t in targets:
@@ -572,7 +576,7 @@ def update_case_run_status(request):
                 pass
         targets.update(close_date=now, tested_by=request.user)
 
-    return HttpResponse(json.dumps({'rc': 0, 'response': 'ok'}))
+    return JsonResponse({})
 
 
 class ModelUpdateActions:
@@ -599,7 +603,9 @@ class TestCaseUpdateActions(ModelUpdateActions):
     def update(self):
         has_perms = check_permission(self.request, self.ctype)
         if not has_perms:
-            return say_no("You don't have enough permission to update TestCases.")
+            return JsonResponseForbidden({
+                'message': "You don't have enough permission to update TestCases."
+            })
 
         action = self.get_update_action()
         if action is not None:
@@ -607,17 +613,19 @@ class TestCaseUpdateActions(ModelUpdateActions):
                 resp = action()
                 self._sendmail()
             except ObjectDoesNotExist as err:
-                return say_no(str(err))
+                return JsonResponseNotFound({'message': str(err)})
             except Exception:
                 # TODO: besides this message to users, what happening should be
                 # recorded in the system log.
-                return say_no('Update failed. Please try again or request '
-                              'support from your organization.')
+                return JsonResponseBadRequest({
+                    'message': 'Update failed. Please try again or request '
+                               'support from your organization.'
+                })
             else:
                 if resp is None:
-                    resp = say_yes()
+                    resp = JsonResponse({})
                 return resp
-        return say_no('Not know what to update.')
+        return JsonResponseBadRequest({'message': 'Not know what to update.'})
 
     def get_update_targets(self):
         """Get selected cases to update their properties"""
@@ -672,10 +680,10 @@ class TestCaseUpdateActions(ModelUpdateActions):
         try:
             plan = plan_from_request_or_none(self.request)
         except Http404:
-            return say_no("No plan record found.")
+            return JsonResponseBadRequest({'message': 'No plan record found.'})
         else:
             if plan is None:
-                return say_no('No plan record found.')
+                return JsonResponseBadRequest({'message': 'No plan record found.'})
 
         confirm_status_name = 'CONFIRMED'
         plan.run_case = plan.case.filter(case_status__name=confirm_status_name)
@@ -687,7 +695,6 @@ class TestCaseUpdateActions(ModelUpdateActions):
         review_case_count = plan.review_case.count()
 
         return http.JsonResponse({
-            'rc': 0, 'response': 'ok',
             'run_case_count': run_case_count,
             'case_count': case_count,
             'review_case_count': review_case_count,
@@ -697,12 +704,16 @@ class TestCaseUpdateActions(ModelUpdateActions):
         try:
             sortkey = int(self.new_value)
             if sortkey < 0 or sortkey > 32300:
-                return say_no('New sortkey is out of range [0, 32300].')
+                return JsonResponseBadRequest({
+                    'message': 'New sortkey is out of range [0, 32300].'
+                })
         except ValueError:
-            return say_no('New sortkey is not an integer.')
+            return JsonResponseBadRequest({
+                'message': 'New sortkey is not an integer.'
+            })
         plan = plan_from_request_or_none(self.request, pk_enough=True)
         if plan is None:
-            return say_no('No plan record found.')
+            return JsonResponseBadRequest({'message': 'No plan record found.'})
         update_targets = self.get_update_targets()
 
         # ##
@@ -753,18 +764,18 @@ def comment_case_runs(request):
     data = request.POST.copy()
     comment = data.get('comment', None)
     if not comment:
-        return say_no('Comments needed')
+        return JsonResponseBadRequest({'message': 'Comments needed'})
     run_ids = [i for i in data.get('run', '').split(',') if i]
     if not run_ids:
-        return say_no('No runs selected.')
+        return JsonResponseBadRequest({'message': 'No runs selected.'})
     case_run_ids = TestCaseRun.objects.filter(
         pk__in=run_ids).values_list('pk', flat=True)
     if not case_run_ids:
-        return say_no('No caserun found.')
+        return JsonResponseBadRequest({'message': 'No caserun found.'})
     tcms.comments.models.add_comment(
         request.user, 'testruns.testcaserun', case_run_ids, comment,
         request.META.get('REMOTE_ADDR'))
-    return say_yes()
+    return JsonResponse({})
 
 
 def get_prod_related_objs(p_pks, target):
@@ -795,7 +806,7 @@ def get_prod_related_obj_json(request):
         res = get_prod_related_objs(p_pks, target)
     else:
         res = []
-    return HttpResponse(json.dumps(res))
+    return JsonResponse(res, safe=False)
 
 
 def objects_update(objects, **kwargs):

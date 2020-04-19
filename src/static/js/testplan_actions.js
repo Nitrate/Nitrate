@@ -333,7 +333,7 @@ Nitrate.TestPlans.TreeView = {
 
       updateObject(
         'testplans.testplan', Nitrate.Utils.formSerialize(this).plan_id, 'parent', plan_id, 'int',
-        function (responseData) {
+        function () {
           clearDialog();
           Nitrate.TestPlans.Details.loadPlansTreeView(plan_id);
           self.toggleRemoveChildPlanButton();
@@ -381,7 +381,7 @@ Nitrate.TestPlans.TreeView = {
 
       updateObject(
         'testplans.testplan', Nitrate.Utils.formSerialize(this).plan_id, 'parent', 0, 'None',
-        function (responseData) {
+        function () {
           clearDialog();
           Nitrate.TestPlans.Details.loadPlansTreeView(plan_id);
           self.toggleRemoveChildPlanButton();
@@ -413,7 +413,7 @@ Nitrate.TestPlans.TreeView = {
       let planId = Nitrate.Utils.formSerialize(this).plan_id;
       updateObject(
         'testplans.testplan', plan_id, 'parent', planId, 'int',
-        function (responseData) {
+        function () {
           let tree = Nitrate.TestPlans.TreeView;
           tree.filter({plan_id: p}, function (responseData) {
             let plan = Nitrate.Utils.convert('obj_to_list', responseData);
@@ -754,7 +754,7 @@ Nitrate.TestPlans.Details = {
     // Initial the enable/disble btns
     if (jQ('#btn_disable').length) {
       jQ('#btn_disable').on('click', function(e){
-        updateObject('testplans.testplan', plan_id, 'is_active', 'False', 'bool', function (responseData) {
+        updateObject('testplans.testplan', plan_id, 'is_active', 'False', 'bool', function () {
           window.location.reload();
         });
       });
@@ -762,7 +762,7 @@ Nitrate.TestPlans.Details = {
 
     if (jQ('#btn_enable').length) {
       jQ('#btn_enable').on('click', function(e) {
-        updateObject('testplans.testplan', plan_id, 'is_active', 'True', 'bool', function (responseData) {
+        updateObject('testplans.testplan', plan_id, 'is_active', 'True', 'bool', function () {
           window.location.reload();
         });
       });
@@ -1094,7 +1094,7 @@ function bindEventsOnLoadedCases(options) {
 
     // Observe the change sortkey
     jQ(container).parent().find('.case_sortkey.js-just-loaded').on('click', function(e) {
-      changeCaseOrder({'testcaseplan': jQ(this).next().html(), 'sortkey': jQ(this).html()}, function (responseData) {
+      changeCaseOrder({'testcaseplan': jQ(this).next().html(), 'sortkey': jQ(this).html()}, function () {
         constructPlanDetailsCasesZone(cases_container, plan_id, parameters);
       });
     });
@@ -1266,33 +1266,27 @@ function onTestCaseStatusChange(options) {
     });
     postdata.a = 'update';
 
-    jQ.ajax({
-      'type': 'POST',
-      'url': '/ajax/update/case-status/',
-      'dataType': 'json',
-      'data': {
+    jQ.ajax('/ajax/update/case-status/', {
+      type: 'POST',
+      dataType: 'json',
+      data: {
         'from_plan': postdata.from_plan,
         'case': postdata.case,
         'target_field': 'case_status',
         'new_value': status_pk
       },
-      'traditional': true,
-      'success': function (data, textStatus, jqXHR) {
-        if (data.rc === 0) {
-          constructPlanDetailsCasesZone(container, options.planId, postdata);
+      traditional: true,
+      success: function (data) {
+        constructPlanDetailsCasesZone(container, options.planId, postdata);
 
-          jQ('#run_case_count').text(data.run_case_count);
-          jQ('#case_count').text(data.case_count);
-          jQ('#review_case_count').text(data.review_case_count);
+        jQ('#run_case_count').text(data.run_case_count);
+        jQ('#case_count').text(data.case_count);
+        jQ('#review_case_count').text(data.review_case_count);
 
-          Nitrate.TestPlans.Details.reopenTabHelper(jQ(container));
-        } else {
-          window.alert(data.response);
-          return false;
-        }
+        Nitrate.TestPlans.Details.reopenTabHelper(jQ(container));
       },
-      'error': function (jqXHR, textStatus, errorThrown) {
-        json_failure(jqXHR);
+      error: function (xhr) {
+        json_failure(xhr);
       }
     });
   };
@@ -1338,15 +1332,11 @@ function onTestCasePriorityChange(options) {
         'new_value': this.value
       },
       'traditional': true,
-      'success': function (data, textStatus, jqXHR) {
-        if (data.rc !== 0) {
-          window.alert(data.response);
-          return false;
-        }
+      'success': function () {
         constructPlanDetailsCasesZone(container, options.planId, postdata);
       },
-      'error': function (jqXHR, textStatus, errorThrown) {
-        json_failure(jqXHR);
+      'error': function (xhr) {
+        json_failure(xhr);
       }
     });
   };
@@ -1371,7 +1361,7 @@ function onTestCaseAutomatedClick(options) {
     constructCaseAutomatedForm(
       dialogContainer,
       {'zoneContainer': container, 'selectedCaseIDs': selectedCaseIDs},
-      function (responseData) {
+      function () {
         let params = Nitrate.Utils.formSerialize(options.form);
         /*
          * FIXME: this is confuse. There is no need to assign this
@@ -1489,23 +1479,24 @@ function onTestCaseTagDeleteClick(options) {
       e.stopPropagation();
       e.preventDefault();
 
-      updateCaseTag(
-        Nitrate.http.URLConf.reverse({name: 'cases_tag'}),
-        serializeFormData({
+      jQ.ajax(Nitrate.http.URLConf.reverse({name: 'cases_tag'}), {
+        type: 'POST',
+        dataType: 'json',
+        data: serializeFormData({
           'form': this,
           'zoneContainer': options.container,
           'selectedCaseIDs': selectedCaseIDs,
         }),
-        function (responseData) {
-          if (responseData.rc !== 0) {
-            window.alert(responseData.response);
-            return false;
-          }
+        success: function () {
           // TODO: test whether params is enough instead of referencing parameters.
           parameters['case'] = selectedCaseIDs;
           constructPlanDetailsCasesZone(options.container, options.planId, parameters);
           clearDialog(c);
-        });
+        },
+        error: function (jqXHR) {
+          json_failure(jqXHR);
+        }
+      });
     });
   };
 }
@@ -1529,11 +1520,7 @@ function onTestCaseSortNumberClick(options) {
       'hashable': true
     });
 
-    changeCaseOrder2(postdata, function (responseData) {
-      if (responseData.rc !== 0) {
-        window.alert(responseData.response);
-        return false;
-      }
+    changeCaseOrder2(postdata, function () {
       postdata.case = selectedCaseIDs;
       constructPlanDetailsCasesZone(options.container, options.planId, postdata);
     });
@@ -1585,16 +1572,26 @@ function onTestCaseCategoryClick(options) {
         return false;
       }
 
-      updateCaseCategory(Nitrate.http.URLConf.reverse({name: 'cases_category'}), params, function (responseData) {
-        if (responseData.rc !== 0) {
-          window.alert(responseData.response);
-          return false;
+      jQ.ajax(Nitrate.http.URLConf.reverse({name: 'cases_category'}), {
+        type: 'POST',
+        dataType: 'json',
+        data: params,
+        success: function () {
+          // TODO: whether can use params rather than parameters.
+          parameters.case = selectedCaseIDs;
+          constructPlanDetailsCasesZone(container, options.planId, parameters);
+          clearDialog(c);
+        },
+        statusCode: {
+          400: function (xhr) {
+            json_failure(xhr);
+          },
+          403: function () {
+            window.alert('You are not allowed to perform this operation.');
+          }
         }
-        // TODO: whether can use params rather than parameters.
-        parameters.case = selectedCaseIDs;
-        constructPlanDetailsCasesZone(container, options.planId, parameters);
-        clearDialog(c);
       });
+
     });
   };
 }
@@ -1623,26 +1620,26 @@ function onTestCaseDefaultTesterClick(options) {
     });
     params.a = 'update';
 
-    jQ.ajax({
-      'type': 'POST',
-      'url': '/ajax/update/cases-default-tester/',
-      'dataType': 'json',
-      'data': {
+    jQ.ajax('/ajax/update/cases-default-tester/', {
+      type: 'POST',
+      dataType: 'json',
+      data: {
         'from_plan': params.from_plan,
         'case': params.case,
         'target_field': 'default_tester',
         'new_value': email_or_username
       },
-      'traditional': true,
-      'success': function (data, textStatus, jqXHR) {
-        if (data.rc !== 0) {
-          window.alert(data.response);
-          return false;
-        }
+      traditional: true,
+      success: function () {
         constructPlanDetailsCasesZone(options.container, options.planId, params);
       },
-      'error': function (jqXHR, textStatus, errorThrown) {
-        json_failure(jqXHR);
+      statusCode: {
+        400: function (xhr) {
+          json_failure(xhr);
+        },
+        403: function () {
+          window.alert('You are not allowed to perform this operation.');
+        }
       }
     });
   };
@@ -1700,7 +1697,7 @@ function onTestCaseComponentClick(options) {
             json_failure(xhr);
           },
           403: function () {
-            window.alert('You are not allowed to add component to case.');
+            window.alert('You are not allowed to perform this operation.');
           }
         }
       });
@@ -2131,20 +2128,18 @@ function constructBatchTagProcessDialog(plan_id) {
     })
     .end().show();
   // Bind the autocomplete for tags
-  var url = Nitrate.http.URLConf.reverse({ name: 'get_product_info' });
   jQ('#add_tag_plan').autocomplete({
     'source': function(request, response) {
-      jQ.ajax({
-        'url': url,
-        'data': {
+      jQ.ajax('/management/getinfo/', {
+        data: {
           'name__startswith': request.term,
           'info_type': 'tags',
           'format': 'ulli',
           'cases__plan__pk': plan_id,
           'field': 'name'
         },
-        'success': function(data) {
-          var processedData = [];
+        success: function (data) {
+          let processedData = [];
           if (data.indexOf('<li>') > -1) {
             processedData = data.slice(data.indexOf('<li>') + 4, data.lastIndexOf('</li>'))
             .split('<li>').join('').split('</li>');
