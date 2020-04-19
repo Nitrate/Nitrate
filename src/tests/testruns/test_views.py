@@ -1112,7 +1112,7 @@ class TestIssueActions(BaseCaseRun):
 
         response = self.client.get(self.run_issues_url, post_data)
         self.assertJsonResponse(
-            response, {'messages': ['Unrecognizable actions']},
+            response, {'message': 'Unrecognizable actions'},
             status_code=HTTPStatus.BAD_REQUEST)
 
     def test_remove_issue_from_case_run(self):
