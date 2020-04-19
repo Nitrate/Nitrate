@@ -34,22 +34,19 @@ Nitrate.Profiles.Bookmarks.on_load = function() {
       return false;
     }
 
-    jQ.ajax({
-      'url': this.action,
-      'type': this.method,
-      'data': parameters,
-      'dataType': 'json',
-      'traditional': true,
-      'success': function (data, textStatus, jqXHR) {
-        if (data.rc !== 0) {
-          window.alert(data.response);
-          return data;
-        }
+    jQ.ajax(this.action, {
+      type: this.method,
+      data: parameters,
+      dataType: 'json',
+      traditional: true,
+      success: function () {
         // using location.reload will cause firefox(tested) remember the checking status
         window.location = window.location;
       },
-      'error': function (jqXHR, textStatus, errorThrown) {
-        json_failure(jqXHR);
+      statusCode: {
+        400: function (xhr) {
+          json_failure(xhr);
+        }
       }
     });
   });

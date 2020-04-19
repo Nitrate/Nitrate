@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import json
 import time
+from http import HTTPStatus
 
 from django import test
 from django.contrib.auth.models import User
@@ -9,7 +9,7 @@ from django_comments.models import Comment
 
 from tcms.comments import get_form
 from tcms.comments.models import add_comment
-from tests import factories as f, user_should_have_perm
+from tests import factories as f, user_should_have_perm, HelperAssertions
 
 
 class TestPostComment(test.TestCase):
@@ -75,7 +75,7 @@ class TestPostComment(test.TestCase):
         )
 
 
-class TestDeleteComment(test.TestCase):
+class TestDeleteComment(HelperAssertions, test.TestCase):
     """Test delete a comment"""
 
     @classmethod
@@ -117,12 +117,12 @@ class TestDeleteComment(test.TestCase):
 
         resp = self.client.post(self.url, {'comment_id': comment.pk})
 
-        self.assertDictEqual(
-            {'rc': 0, 'response': 'ok'}, json.loads(resp.content))
-
-        comment = Comment.objects.get(comment='second comment',
-                                      object_pk=self.case_1.pk)
-        self.assertTrue(comment.is_removed)
+        self.assertJsonResponse(resp, {})
+        self.assertTrue(
+            Comment.objects.get(
+                comment='second comment', object_pk=self.case_1.pk
+            ).is_removed
+        )
 
     def test_delete_comments(self):
         comment_ids = [
@@ -134,8 +134,7 @@ class TestDeleteComment(test.TestCase):
 
         resp = self.client.post(self.url, {'comment_id': comment_ids})
 
-        self.assertDictEqual(
-            {'rc': 0, 'response': 'ok'}, json.loads(resp.content))
+        self.assertJsonResponse(resp, {})
 
         self.assertTrue(
             Comment.objects.get(
@@ -154,9 +153,10 @@ class TestDeleteComment(test.TestCase):
 
         resp = self.client.post(self.url, {'comment_id': comment_ids})
 
-        self.assertDictEqual(
-            {'rc': 1, 'response': 'Object does not exist.'},
-            json.loads(resp.content)
+        self.assertJsonResponse(
+            resp,
+            {'message': 'No incoming comment id exists.'},
+            status_code=HTTPStatus.BAD_REQUEST
         )
 
         self.assertFalse(

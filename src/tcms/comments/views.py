@@ -14,6 +14,7 @@ from django_comments.views.moderation import perform_delete
 
 from tcms.comments.models import post_comment
 from tcms.comments.exceptions import InvalidCommentPostRequest
+from tcms.core.responses import JsonResponseBadRequest
 
 log = logging.getLogger(__name__)
 
@@ -44,10 +45,12 @@ class DeleteCommentView(PermissionRequiredMixin, generic.View):
         )
 
         if not comments:
-            return JsonResponse({'rc': 1, 'response': 'Object does not exist.'})
+            return JsonResponseBadRequest({
+                'message': 'No incoming comment id exists.'
+            })
 
         # Flag the comment as deleted instead of actually deleting it.
         for comment in comments:
             perform_delete(request, comment)
 
-        return JsonResponse({'rc': 0, 'response': 'ok'})
+        return JsonResponse({})

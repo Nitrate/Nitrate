@@ -424,8 +424,7 @@ class TestOperateCategoryView(BasePlanCase):
         }
         response = self.client.post(self.case_category_url, post_data)
 
-        data = json.loads(response.content)
-        self.assertEqual({'rc': 0, 'response': 'ok', 'errors_list': []}, data)
+        self.assertJsonResponse(response, {})
 
         for pk in (self.case_1.pk, self.case_3.pk):
             case = TestCase.objects.get(pk=pk)

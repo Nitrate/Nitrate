@@ -287,7 +287,7 @@ Nitrate.TestRuns.Details.on_load = function() {
         if (!window.confirm(default_messages.confirm.remove_comment)) {
           return false;
         }
-        removeComment(this, function (responseData) {
+        removeComment(this, function () {
           constructCaseRunZone(c_container[0], c[0], case_id);
         });
       });
@@ -432,11 +432,11 @@ Nitrate.TestRuns.Details.on_load = function() {
     addRunCC(jQ(this).data('param'), jQ('.js-cc-ul')[0]);
   });
   jQ('.js-remove-cc').on('click', function() {
-    var params = jQ(this).data('params');
+    let params = jQ(this).data('params');
     removeRunCC(params[0], params[1], jQ('.js-cc-ul')[0]);
   });
   jQ('.js-add-property').on('click', function() {
-    var params = jQ(this).data('params');
+    let params = jQ(this).data('params');
     addProperty(params[0], params[1]);
   });
   jQ('.js-edit-property').on('click', function() {
@@ -800,14 +800,17 @@ function editValue(form, hidebox, selectid, submitid) {
   let data = Nitrate.Utils.formSerialize(form);
   let env_property_id = data.env_property_id;
 
-  jQ.ajax({
-    'url': '/management/getinfo/',
-    'type': 'GET',
-    'dataType': 'json',
-    'data': {'info_type': 'env_values', 'env_property_id': env_property_id},
-    'success': function(data, textStatus, jqXHR) {
+  jQ.ajax('/management/getinfo/', {
+    type: 'GET',
+    dataType: 'json',
+    data: {
+      'info_type': 'env_values',
+      'env_property_id': env_property_id
+    },
+    success: function(data) {
       let current_value = jQ("input[type=hidden][name=current_run_env]:eq(0)", form);
       let excludeValues = [];
+
       jQ("input[type=hidden][name=current_run_env]").each(function(index, element) {
         if (element.value !== current_value.val()) {
           excludeValues.push(window.parseInt(element.value));
@@ -823,9 +826,9 @@ function editValue(form, hidebox, selectid, submitid) {
         return true;
       });
 
-      setUpChoices(jQ('#' + selectid)[0], values, 0);
+      setUpChoices(jQ('#' + selectid)[0], values, false);
     },
-    'error': function(jqXHR, textStatus, errorThrown) {
+    error: function(jqXHR, textStatus, errorThrown) {
       window.alert("Update values failed");
     }
   });
@@ -847,28 +850,28 @@ function submitValue(run_id, value, hidebox, select_field, submitid) {
     return false;
   }
 
-  jQ.ajax({
-    'url': '/runs/env_value/',
-    'type': 'GET',
-    'dataType': 'json',
-    'data': {
+  jQ.ajax('/runs/env_value/', {
+    type: 'GET',
+    dataType: 'json',
+    data: {
       'a': 'change',
       'old_env_value_id': old_value,
       'new_env_value_id': select_field.value,
       'run_id': run_id
     },
-    'success': function(data, textStatus, jqXHR) {
-      if (data.rc === 0) {
-        jQ('#' + hidebox).html(new_value).show();
-        jQ(select_field).hide();
-        jQ('#' + submitid).hide();
-        jQ(select_field).prev().prev().val(select_field.value);
-      } else {
-        window.alert(data.response);
-      }
+    success: function(data) {
+      jQ('#' + hidebox).html(new_value).show();
+      jQ(select_field).hide();
+      jQ('#' + submitid).hide();
+      jQ(select_field).prev().prev().val(select_field.value);
     },
-    'error': function(jqXHR, textStatus, errorThrown) {
-      window.alert("Edit value failed");
+    statusCode: {
+      400: function (xhr) {
+        json_failure(xhr);
+      },
+      403: function () {
+        window.alert('You are not allowed to perform this operation.');
+      }
     }
   });
 }
@@ -882,30 +885,30 @@ function removeProperty(run_id, element) {
   let emptySelf = jQ(element).closest("li");
   let env_value_id = jQ("input[type=hidden][name=current_run_env]", parent).get(0).value;
 
-  jQ.ajax({
-    'url': '/runs/env_value/',
-    'type': 'GET',
-    'dataType': 'json',
-    'data': {
+  jQ.ajax('/runs/env_value/', {
+    type: 'GET',
+    dataType: 'json',
+    data: {
       'a': 'remove',
       'info_type': 'env_values',
       'env_value_id': env_value_id,
       'run_id': run_id
     },
-    'success': function(data, textStatus, jqXHR) {
-      if (data.rc === 0) {
-        emptySelf.remove();
-      } else {
-        window.alert(data.response);
-      }
+    success: function(data) {
+      emptySelf.remove();
     },
-    'error': function(jqXHR, textStatus, errorThrown) {
+    error: function(jqXHR, textStatus, errorThrown) {
       window.alert("Edit value failed");
     }
   });
 }
 
-function addProperty(run_id,env_group_id) {
+/**
+ * Add a property and one of its values to a test run.
+ * @param {number} run_id
+ * @param {number} env_group_id
+ */
+function addProperty(run_id, env_group_id) {
   let template = Handlebars.compile(jQ('#add_property_template').html());
   jQ('#dialog').html(template())
     .find('.js-close-button, .js-cancel-button').on('click', function() {
@@ -914,18 +917,20 @@ function addProperty(run_id,env_group_id) {
     .end().show();
 
 
-  jQ.ajax({
-    'url': '/management/getinfo/',
-    'type': 'GET',
-    'dataType': 'json',
-    'data': {'info_type': 'env_properties', 'env_group_id': env_group_id},
-    'success': function (data, textStatus, jqXHR) {
+  jQ.ajax('/management/getinfo/', {
+    type: 'GET',
+    dataType: 'json',
+    data: {
+      'info_type': 'env_properties',
+      'env_group_id': env_group_id
+    },
+    success: function (data) {
       setUpChoices(
         jQ('#id_add_env_property')[0],
         data.map(function(o) {return [o.pk, o.fields.name];}),
-        0);
+        false);
     },
-    'error': function (jqXHR, textStatus, errorThrown) {
+    error: function (jqXHR, textStatus, errorThrown) {
       window.alert("Update properties failed");
     }
   });
@@ -958,32 +963,37 @@ function change_value(env_property_id, selectid) {
 }
 
 function add_property_to_env(run_id, env_value_id) {
-  jQ.ajax({
-    'url': '/runs/env_value/',
-    'type': 'GET',
-    'data': {'a': 'add', 'info_type': 'env_values', 'env_value_id':env_value_id, 'run_id': run_id},
-    'dataType': 'json',
-    'success': function(data, textStatus, jqXHR) {
-      jQ('#dialog').hide();
-      if (parseInt(data.rc) === 0) {
-        jQ("#env_area").html(data.fragment);
-        jQ('.js-edit-property').on('click', function() {
-          var params = jQ(this).data('params');
-          editValue(jQ(this).parents('form.js-run-env')[0], params[0], params[1], params[2]);
-        });
-        jQ('.js-remove-property').on('click', function() {
-          removeProperty(jQ(this).data('param'), this);
-        });
-        jQ('.js-env-submit').on('click', function() {
-          let params = jQ(this).data('params');
-          submitValue(params[0], params[1], params[2], jQ(this).prev()[0], params[3]);
-        });
-      } else {
-        window.alert(data.response);
-      }
+  jQ.ajax('/runs/env_value/', {
+    type: 'GET',
+    dataType: 'json',
+    data: {
+      'a': 'add',
+      'info_type': 'env_values',
+      'env_value_id': env_value_id,
+      'run_id': run_id
     },
-    'error': function (jqXHR, textStatus, errorThrown) {
-      window.alert("Edit value failed");
+    success: function(data) {
+      jQ('#dialog').hide();
+      jQ("#env_area").html(data.fragment);
+      jQ('.js-edit-property').on('click', function() {
+        let params = jQ(this).data('params');
+        editValue(jQ(this).parents('form.js-run-env')[0], params[0], params[1], params[2]);
+      });
+      jQ('.js-remove-property').on('click', function() {
+        removeProperty(jQ(this).data('param'), this);
+      });
+      jQ('.js-env-submit').on('click', function() {
+        let params = jQ(this).data('params');
+        submitValue(params[0], params[1], params[2], jQ(this).prev()[0], params[3]);
+      });
+    },
+    statusCode: {
+      400: function (xhr) {
+        json_failure(xhr);
+      },
+      403: function () {
+        window.alert('You are not allowed to perform this operation.');
+      }
     }
   });
 }

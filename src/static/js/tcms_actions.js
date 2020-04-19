@@ -71,32 +71,28 @@ jQ(window).on('load', function(e) {
         parameters.name = document.title;
       }
 
-      jQ.ajax({
-        'url': url,
-        'type': this.method,
-        'data': parameters,
-        'success': function (data, textStatus, jqXHR) {
+      jQ.ajax(url, {
+        type: this.method,
+        data: parameters,
+        success: function (data) {
           jQ(dialog).html(data);
         },
-        'error': function (jqXHR, textStatus, errorThrown) {
-          html_failure();
-        },
-        'complete': function(jqXHR, textStatus) {
+        complete: function(jqXHR, textStatus) {
           jQ(dialog).html(constructForm(jqXHR.responseText, url, function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             addBookmark(this.action, this.method, Nitrate.Utils.formSerialize(this), function (responseData) {
-              if (responseData.rc !== 0) {
-                window.alert(responseData.response);
-                return responseData;
-              }
-
               clearDialog();
               window.alert(default_messages.alert.bookmark_added);
               return responseData;
             });
           }));
+        },
+        statusCode: {
+          400: function (xhr) {
+            window.alert(xhr);
+          }
         }
       });
     });
@@ -166,7 +162,6 @@ var default_messages = {
       case_details: '/case/$id/',
       case_plan: '/case/$id/plan/',
       cases_automated: '/cases/automated/',
-      cases_category: '/cases/category/',
       cases_component: '/cases/component/',
       cases_tag: '/cases/tag/',
       change_case_order: '/case/$id/changecaseorder/',
@@ -224,15 +219,6 @@ function json_failure(xhr) {
 function html_failure() {
   window.alert(default_messages.alert.ajax_failure);
   return false;
-}
-
-function json_success_refresh_page(responseData) {
-  if (responseData.rc === 0) {
-    window.location.reload();
-  } else {
-    window.alert(responseData.response);
-    return false;
-  }
 }
 
 function addBookmark(url, method, parameters, callback) {
@@ -826,36 +812,41 @@ function addBatchTag(parameters, callback, format) {
     traditional: true,
     success: function (data, textStatus, jqXHR) {
       if (!format) {
-        if (data.response === 'ok') {
-          if (callback) {
-            callback.call();
-          }
-        } else {
-          window.alert(data.response);
-          return false;
-        }
+        if (callback) {callback.call();}
       } else {
         callback(jqXHR);
       }
-    }
+    },
+    statusCode: {
+      400: function (xhr) {
+        json_failure(xhr);
+      },
+      403: function () {
+        window.alert('You are not allowed to perform this operation.')
+      }
+    },
   });
 }
 
 function removeComment(form, callback) {
   let parameters = Nitrate.Utils.formSerialize(form);
 
-  jQ.ajax({
-    'url': form.action,
-    'type': form.method,
-    'dataType': 'json',
-    'data': parameters,
-    'success': function (data, textStatus, jqXHR) {
+  jQ.ajax(form.action, {
+    type: form.method,
+    dataType: 'json',
+    data: parameters,
+    success: function (data) {
       updateCommentsCount(parameters.object_pk, false);
       callback(data);
     },
-    'error': function (jqXHR, textStatus, errorThrown) {
-      json_failure(jqXHR);
-    }
+    statusCode: {
+      400: function (xhr) {
+        json_failure(xhr);
+      },
+      403: function () {
+        window.alert('You are not allowed to perform this operation.')
+      }
+    },
   });
 }
 

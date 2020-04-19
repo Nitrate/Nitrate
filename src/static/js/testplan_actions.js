@@ -1149,12 +1149,7 @@ function bindEventsOnLoadedCases(options) {
           }
           // Every comment form has a hidden input with name object_pk to associate with the case.
           let caseId = Nitrate.Utils.formSerialize(this).object_pk;
-          removeComment(this, function (responseData) {
-            if (responseData.rc !== 0) {
-              window.alert(responseData.response);
-              return false;
-            }
-
+          removeComment(this, function () {
             let td = jQ('<td>', {colspan: 12});
             td.append(getAjaxLoading('id_loading_' + caseId));
             jQ(content).html(td);
@@ -1383,15 +1378,10 @@ function onTestCaseTagFormSubmitClick(options) {
 
   return function(response) {
     let dialog = getDialog();
+    clearDialog(dialog);
 
     let returnobj = jQ.parseJSON(response.responseText);
-    if (returnobj.rc && parseInt(returnobj.rc) === 1) {
-      window.alert(returnobj.response);
-      clearDialog(dialog);
-      return false;
-    }
 
-    clearDialog(dialog);
     let template = Handlebars.compile(jQ('#batch_tag_summary_template').html());
     jQ(dialog).html(template({'tags': returnobj}))
       .find('.js-close-button').on('click', function() {
@@ -1572,7 +1562,7 @@ function onTestCaseCategoryClick(options) {
         return false;
       }
 
-      jQ.ajax(Nitrate.http.URLConf.reverse({name: 'cases_category'}), {
+      jQ.ajax('/cases/category/', {
         type: 'POST',
         dataType: 'json',
         data: params,
@@ -1706,7 +1696,7 @@ function onTestCaseComponentClick(options) {
 }
 
 
-/*
+/**
  * To change selected cases' reviewer.
  */
 function onTestCaseReviewerClick(options) {
@@ -1733,26 +1723,26 @@ function onTestCaseReviewerClick(options) {
     });
     postdata.a = 'update';
 
-    jQ.ajax({
-      'type': 'POST',
-      'url': '/ajax/update/cases-reviewer/',
-      'dataType': 'json',
-      'data': {
+    jQ.ajax('/ajax/update/cases-reviewer/', {
+      type: 'POST',
+      dataType: 'json',
+      data: {
         'from_plan': postdata.plan,
         'case': postdata.case,
         'target_field': 'reviewer',
         'new_value': email_or_username
       },
-      'traditional': true,
-      'success': function (data, textStatus, jqXHR) {
-        if (data.rc !== 0) {
-          window.alert(data.response);
-          return false;
-        }
+      traditional: true,
+      success: function () {
         constructPlanDetailsCasesZone(options.container, options.planId, parameters);
       },
-      'error': function (jqXHR, textStatus, errorThrown) {
-        json_failure(jqXHR);
+      statusCode: {
+        400: function (xhr) {
+          json_failure(xhr);
+        },
+        403: function () {
+          window.alert('You are not allowed to perform this operation.');
+        }
       }
     });
   };

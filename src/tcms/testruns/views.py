@@ -35,6 +35,7 @@ from django.views.generic.base import TemplateView
 from django.views.generic.base import View
 
 from django_comments.models import Comment
+from tcms.core.responses import JsonResponseBadRequest, JsonResponseForbidden
 
 from tcms.issuetracker.models import Issue
 from tcms.issuetracker.models import IssueTracker
@@ -1318,13 +1319,12 @@ def env_value(request):
     class RunEnvActions:
         def __init__(self, requet, trs):
             self.__all__ = ['add', 'remove', 'change']
-            self.ajax_response = {'rc': 0, 'response': 'ok'}
             self.request = request
             self.trs = trs
 
         def has_no_perm(self, perm):
             if not self.request.user.has_perm('testruns.' + perm + '_tcmsenvrunvaluemap'):
-                return {'rc': 1, 'response': 'Permission deined - %s' % perm}
+                return {'message': 'Permission denied - %s' % perm}
 
             return False
 
@@ -1335,37 +1335,35 @@ def env_value(request):
             chk_perm = self.has_no_perm('add')
 
             if chk_perm:
-                return HttpResponse(json.dumps(chk_perm))
+                return JsonResponseForbidden(chk_perm)
 
+            env_value_id = int(request.GET.get('env_value_id'))
             try:
-                value = self.get_env_value(request.GET.get('env_value_id'))
-                for tr in self.trs:
-                    o, c = tr.add_env_value(env_value=value)
-
-                    if not c:
-                        self.ajax_response = {
-                            'rc': 1,
-                            'response': 'The value is exist for this run'
-                        }
-            except ObjectDoesNotExist as errors:
-                self.ajax_response = {'rc': 1, 'response': errors}
-
-            fragment = render(
-                request,
-                "run/get_environment.html",
-                context={"test_run": self.trs[0], "is_ajax": True})
-            if isinstance(fragment.content, bytes):
-                self.ajax_response.update({
-                    "fragment": fragment.content.decode('utf-8')
+                value = self.get_env_value(env_value_id)
+            except ObjectDoesNotExist:
+                return JsonResponseBadRequest({
+                    'message': f'Environment value id {env_value_id} does not exist.'
                 })
+
+            for tr in self.trs:
+                tr.add_env_value(env_value=value)
+
+            fragment = render(request, 'run/get_environment.html', context={
+                'test_run': self.trs[0],
+                'is_ajax': True
+            })
+
+            if isinstance(fragment.content, bytes):
+                s = fragment.content.decode('utf-8')
             else:
-                self.ajax_response.update({"fragment": fragment.content})
-            return HttpResponse(json.dumps(self.ajax_response))
+                s = fragment.content
+
+            return JsonResponse({'fragment': s})
 
         def remove(self):
             chk_perm = self.has_no_perm('delete')
             if chk_perm:
-                return HttpResponse(json.dumps(chk_perm))
+                return JsonResponseForbidden(chk_perm)
 
             try:
                 for tr in self.trs:
@@ -1375,12 +1373,12 @@ def env_value(request):
             except Exception:
                 pass
 
-            return HttpResponse(json.dumps(self.ajax_response))
+            return JsonResponse({})
 
         def change(self):
             chk_perm = self.has_no_perm('change')
             if chk_perm:
-                return HttpResponse(json.dumps(chk_perm))
+                return JsonResponseForbidden(chk_perm)
 
             for tr in self.trs:
                 tr.remove_env_value(env_value=self.get_env_value(
@@ -1391,13 +1389,12 @@ def env_value(request):
                     request.GET.get('new_env_value_id')
                 ))
 
-            return HttpResponse(json.dumps(self.ajax_response))
+            return JsonResponse({})
 
     run_env_actions = RunEnvActions(request, trs)
 
     if request.GET.get('a') not in run_env_actions.__all__:
-        ajax_response = {'rc': 1, 'response': 'Unrecognizable actions'}
-        return HttpResponse(json.dumps(ajax_response))
+        return JsonResponseBadRequest({'message': 'Unrecognizable actions'})
 
     func = getattr(run_env_actions, request.GET['a'])
     return func()

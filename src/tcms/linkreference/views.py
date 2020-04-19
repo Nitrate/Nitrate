@@ -4,11 +4,11 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.http import JsonResponse
 from django.views import generic
 from django.views.decorators.http import require_GET
+from tcms.core.utils import form_errors_to_list
 
 from .forms import AddLinkReferenceForm, BasicValidationForm
 from .models import create_link, LinkReference
 from tcms.core.responses import JsonResponseBadRequest
-from tcms.core.responses import JsonResponseServerError
 
 __all__ = (
     'AddLinkReferenceForm',
@@ -65,7 +65,6 @@ def get(request):
 
     Only accept GET request from client.
     """
-
     form = BasicValidationForm(request.GET)
 
     if form.is_valid():
@@ -76,7 +75,7 @@ def get(request):
             model_instance = model_class.objects.get(pk=target_id)
             links = LinkReference.get_from(model_instance)
         except Exception as err:
-            return JsonResponseServerError({'rc': 1, 'response': str(err)})
+            return JsonResponseBadRequest({'message': str(err)})
 
         jd = []
         for link in links:
@@ -85,8 +84,7 @@ def get(request):
 
     else:
         return JsonResponseBadRequest({
-            'rc': 1,
-            'response': form.errors.as_text()
+            'message': form_errors_to_list(form)
         })
 
 

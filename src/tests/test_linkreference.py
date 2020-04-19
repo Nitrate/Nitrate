@@ -136,7 +136,7 @@ class TestGetLinkReferencesFromSpecificTarget(HelperAssertions, test.TestCase):
             'target_id': self.case_run.pk + 1,
         })
 
-        self.assert500(resp)
+        self.assert400(resp)
 
     def test_wrong_target_type(self):
         resp = self.client.get(self.url, data={

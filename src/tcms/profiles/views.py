@@ -13,6 +13,7 @@ from django.views.decorators.http import require_GET
 from django.shortcuts import get_object_or_404
 
 from tcms.core.raw_sql import RawSQL
+from tcms.core.responses import JsonResponseBadRequest
 from tcms.testplans.models import TestPlan
 from tcms.testruns.models import TestRun
 from tcms.profiles.models import Bookmark
@@ -36,24 +37,23 @@ def bookmark(request, username, template_name='profile/bookmarks.html'):
         up = {'user': request.user}
 
     class BookmarkActions:
-        def __init__(self):
-            self.ajax_response = {'rc': 0, 'response': 'ok'}
 
         def add(self):
             form = BookmarkForm(request.GET)
             if not form.is_valid():
-                ajax_response = {'rc': 1, 'response': form.errors.as_text()}
-                return http.JsonResponse(ajax_response)
+                return JsonResponseBadRequest({
+                    'message': form.errors.as_text()
+                })
 
             form.save()
-            return http.JsonResponse(self.ajax_response)
+            return http.JsonResponse({})
 
         def remove(self):
             pks = request.POST.getlist('pk')
             bks = Bookmark.objects.filter(pk__in=pks, user=request.user)
             bks.delete()
 
-            return http.JsonResponse(self.ajax_response)
+            return http.JsonResponse({})
 
         def render(self):
             if request.GET.get('category'):

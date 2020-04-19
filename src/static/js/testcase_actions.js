@@ -250,13 +250,26 @@ Nitrate.TestCases.Details.on_load = function() {
       return false;
     }
 
-    updateCaseComponent(
-      '/cases/remove-component/',
-      {
+    jQ.ajax('/cases/remove-component/', {
+      type: 'POST',
+      dataType: 'json',
+      data: {
         'case': Nitrate.TestCases.Instance.pk,
         'o_component': jQ('input[name="component"]')[jQ('.link_remove_component').index(this)].value
       },
-      json_success_refresh_page);
+      traditional: true,
+      success: function () {
+        window.location.reload();
+      },
+      statusCode: {
+        400: function (xhr) {
+          json_failure(xhr);
+        },
+        403: function () {
+          window.alert('You are not allowed to add issue to case.');
+        }
+      }
+    });
   });
 
   bindSelectAllCheckbox(jQ('#id_checkbox_all_components')[0], jQ('#id_form_case_component')[0], 'component');
@@ -518,22 +531,17 @@ function toggleTestCaseContents(template_type, container, content_container, obj
 }
 
 function changeTestCaseStatus(plan_id, selector, case_id, be_confirmed, was_confirmed) {
-  jQ.ajax({
-    'url': '/ajax/update/case-status/',
-    'type': 'POST',
-    'dataType': 'json',
-    'data': {
+  jQ.ajax('/ajax/update/case-status/', {
+    type: 'POST',
+    dataType: 'json',
+    data: {
       'from_plan': plan_id,
       'case': case_id,
       'target_field': 'case_status',
       'new_value': selector.value,
     },
-    'success': function(data, textStatus, jqXHR) {
-      if (data.rc !== 0) {
-        window.alert(data.response);
-        return false;
-      }
-
+    success: function(data) {
+      let case_status = '';
       for (let i = 0; (node = selector.options[i]); i++) {
         if (node.selected) {
           case_status = node.innerHTML;
@@ -559,8 +567,13 @@ function changeTestCaseStatus(plan_id, selector, case_id, be_confirmed, was_conf
         Nitrate.TestPlans.Details.reopenTabHelper(curCasesContainer);
       }
     },
-    'error': function (jqXHR, textStatus, errorThrown) {
-      json_failure(jqXHR);
+    statusCode: {
+      400: function (xhr) {
+        json_failure(xhr);
+      },
+      403: function () {
+        window.alert('You are not allowed to add issue to case.');
+      }
     }
   });
 }
@@ -952,17 +965,16 @@ function renderCategoryForm(container, parameters, form_observe) {
   }
   jQ(container).show();
 
-  jQ.ajax({
-    'url': Nitrate.http.URLConf.reverse({ name: 'cases_category' }),
-    'type': 'POST',
-    'data': parameters,
-    'success': function (data, textStatus, jqXHR) {
+  jQ.ajax('/cases/category/', {
+    type: 'POST',
+    data: parameters,
+    success: function (data) {
       d.html(data);
     },
-    'error': function (jqXHR, textStatus, errorThrown) {
+    error: function () {
       html_failure();
     },
-    'complete': function() {
+    complete: function() {
       let h = jQ('<input>', {'type': 'hidden', 'name': 'a', 'value': 'add'});
       let a = jQ('<input>', {'type': 'submit', 'value': 'Select'});
       let c = jQ('<label>');
@@ -970,13 +982,7 @@ function renderCategoryForm(container, parameters, form_observe) {
       c.append(a);
       a.on('click', function(e) { h.val('update'); });
       jQ(container).html(
-        constructForm(
-          d.html(),
-          Nitrate.http.URLConf.reverse({ name: 'cases_category' }),
-          form_observe,
-          'Select Category',
-          c[0]
-        )
+        constructForm(d.html(), '/cases/category/', form_observe, 'Select Category', c[0])
       );
       bind_category_selector_to_product(
         false, false, jQ('#id_product')[0], jQ('#id_o_category')[0]);
@@ -991,23 +997,6 @@ function updateCaseTag(url, parameters, callback) {
     'type': 'POST',
     'dataType': 'json',
     'data': parameters,
-    'success': function (data, textStatus, jqXHR) {
-      callback(data);
-    },
-    'error': function (jqXHR, textStatus, errorThrown) {
-      json_failure(jqXHR);
-    }
-  });
-}
-
-// FIXME: this
-function updateCaseComponent(url, parameters, callback) {
-  jQ.ajax({
-    'url': url,
-    'type': 'POST',
-    'dataType': 'json',
-    'data': parameters,
-    'traditional': true,
     'success': function (data, textStatus, jqXHR) {
       callback(data);
     },

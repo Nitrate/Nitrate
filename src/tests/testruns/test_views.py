@@ -961,8 +961,11 @@ class TestEnvValue(BaseCaseRun):
             'run_id': self.test_run.pk
         })
 
-        self.assertEqual({'rc': 1, 'response': 'Unrecognizable actions'},
-                         json.loads(response.content))
+        self.assertJsonResponse(
+            response,
+            {'message': 'Unrecognizable actions'},
+            status_code=HTTPStatus.BAD_REQUEST
+        )
 
     def test_add_env_value(self):
         self.login_tester()

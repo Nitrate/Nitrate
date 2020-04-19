@@ -15,7 +15,6 @@ class BaseActions:
     """Base class for all Actions"""
 
     def __init__(self, request):
-        self.ajax_response = {'rc': 0, 'response': 'ok', 'errors_list': []}
         self.request = request
         self.product_id = request.POST.get('product')
 
@@ -64,7 +63,7 @@ class CategoryActions(BaseActions):
         for tc in tcs:
             tc.category = category
             tc.save()
-        return self.render_ajax(self.ajax_response)
+        return JsonResponse({})
 
     def render_form(self):
         form = CaseCategoryForm(initial={
