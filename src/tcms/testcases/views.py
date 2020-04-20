@@ -45,7 +45,7 @@ from tcms.testcases.fields import CC_LIST_DEFAULT_DELIMITER
 from tcms.testcases.forms import (
     CaseAutomatedForm, NewCaseForm, SearchCaseForm, CaseFilterForm,
     EditCaseForm, CaseNotifyForm, CloneCaseForm, CaseIssueForm, CaseTagForm,
-    CaseComponentForm
+    CaseComponentForm, CasePlansForm
 )
 from tcms.testcases import actions
 from tcms.testcases import data
@@ -1637,62 +1637,104 @@ def manage_case_issues(request, case_id, template_name='case/get_issues.html'):
     return func()
 
 
+class CasePlansOperationView(PermissionRequiredMixin, View):
+    """Base view class for operations on case and plan relationship"""
+
+    def post(self, request, case_id):
+        form = CasePlansForm({
+            'case': case_id,
+            'plan': request.POST.getlist('plan')
+        })
+
+        if not form.is_valid():
+            return JsonResponseBadRequest({
+                'message': form_error_messags_to_list(form)
+            })
+
+        self.operate(form)
+
+        case = form.cleaned_data['case']
+        return JsonResponse({
+            'html': render_to_string('case/get_plan.html', request=request, context={
+                'test_case': case,
+                'test_plans': case.plan.select_related(
+                    'author', 'type', 'product').order_by('pk'),
+            })
+        })
+
+    def operate(self, cleaned_data):
+        raise NotImplementedError()
+
+
+class AddCaseToPlansView(CasePlansOperationView):
+    """Add case to plans"""
+
+    permission_required = 'testcases.add_testcaseplan'
+
+    def operate(self, form):
+        case = form.cleaned_data['case']
+        for item in form.cleaned_data['plan']:
+            item.add_case(case)
+
+
+class RemoveCaseFromPlansView(CasePlansOperationView):
+    """Remove case from plans"""
+
+    permission_required = 'testcases.change_testcaseplan'
+
+    def operate(self, form):
+        case = form.cleaned_data['case']
+        for item in form.cleaned_data['plan']:
+            case.remove_plan(item)
+
+
 @require_GET
 def plan(request, case_id):
     """Add and remove plan in plan tab"""
     tc = get_object_or_404(TestCase, case_id=case_id)
+
     if request.GET.get('a'):
         # Search the plans from database
         if not request.GET.getlist('plan_id'):
-            context_data = {
-                'message': 'The case must specific one plan at leaset for '
-                           'some action',
-            }
-            return render(request, 'case/get_plan.html', context=context_data)
+            return render(request, 'case/get_plan.html', context={
+                'message': 'The case must specific one plan at least for some action',
+            })
 
         plan_ids = request.GET.getlist('plan_id')
         tps = TestPlan.objects.filter(pk__in=plan_ids)
 
         if not tps:
-            context_data = {
+            return render(request, 'case/get_plan.html', context={
                 'testplans': tps,
                 'message': f'None of plan IDs {", ".join(plan_ids)} exist.'
-            }
-            return render(request, 'case/get_plan.html', context=context_data)
+            })
 
         # Add case plan action
-        if request.GET['a'] == 'add':
-            if not request.user.has_perm('testcases.add_testcaseplan'):
-                context_data = {
-                    'test_case': tc,
-                    'test_plans': tps,
-                    'message': 'Permission denied',
-                }
-                return render(
-                    request, 'case/get_plan.html', context=context_data)
-
-            for tp in tps:
-                tc.add_to_plan(tp)
+        # if request.GET['a'] == 'add':
+        #     if not request.user.has_perm('testcases.add_testcaseplan'):
+        #         context_data = {
+        #             'test_case': tc,
+        #             'test_plans': tps,
+        #             'message': 'Permission denied',
+        #         }
+        #         return render(request, 'case/get_plan.html', context=context_data)
+        #
+        #     for tp in tps:
+        #         tc.add_to_plan(tp)
 
         # Remove case plan action
         if request.GET['a'] == 'remove':
             if not request.user.has_perm('testcases.change_testcaseplan'):
-                context_data = {
+                return render(request, 'case/get_plan.html', context={
                     'test_case': tc,
                     'test_plans': tps,
                     'message': 'Permission denied',
-                }
-                return render(
-                    request, 'case/get_plan.html', context=context_data)
+                })
 
             for tp in tps:
                 tc.remove_plan(tp)
 
-    tps = tc.plan.all()
-    tps = tps.select_related('author', 'type', 'product')
-
-    context_data = {
+    return render(request, 'case/get_plan.html', context={
         'test_case': tc,
-        'test_plans': tps,
-    }
-    return render(request, 'case/get_plan.html', context=context_data)
+        'test_plans': tc.plan.select_related('author', 'type', 'product'),
+    })

@@ -504,8 +504,6 @@ class TestOperateCasePlans(BasePlanCase):
             email='plantester@example.com',
             password='password')
 
-        cls.case_plans_url = reverse('case-plan', args=[cls.case_1.pk])
-
         cls.perm_add = 'testcases.add_testcaseplan'
         cls.perm_change = 'testcases.change_testcaseplan'
         user_should_have_perm(cls.plan_tester, cls.perm_add)
@@ -514,110 +512,118 @@ class TestOperateCasePlans(BasePlanCase):
     def setUp(self):
         self.login_tester(self.plan_tester, 'password')
 
-    # def tearDown(self):
-        # remove_perm_from_user(self.plan_tester, 'testcases.add_testcaseplan')
-        # remove_perm_from_user(self.plan_tester, 'testcases.change_testcaseplan')
+    def _contains_html(self, content, expected):
+        from django.test.testcases import assert_and_parse_html
+        parsed_content = assert_and_parse_html(
+            self, content, None, 'content is not valid html.'
+        )
+        parsed_expected = assert_and_parse_html(
+            self, expected, None, 'expected is not valid html.'
+        )
+        self.assertTrue(parsed_content.count(parsed_expected) > 0)
 
     def assert_list_case_plans(self, response, case):
-        for case_plan_rel in TestCasePlan.objects.filter(case=case):
-            plan = case_plan_rel.plan
+        self.assert200(response)
 
+        returned_html = json.loads(response.content)['html']
+        for rel in TestCasePlan.objects.filter(case=case):
+            plan = rel.plan
             slugified_name = slugify(plan.name)
-            self.assertContains(
-                response,
-                f'<a href="/plan/{plan.pk}/{slugified_name}">{plan.pk}</a>',
-                html=True)
-            self.assertContains(
-                response,
-                f'<a href="/plan/{plan.pk}/{slugified_name}">{plan.name}</a>',
-                html=True)
-
-    def test_list_plans(self):
-        response = self.client.get(self.case_plans_url)
-        self.assert_list_case_plans(response, self.case_1)
+            self._contains_html(
+                returned_html,
+                f'<a href="/plan/{plan.pk}/{slugified_name}">{plan.pk}</a>'
+            )
+            self._contains_html(
+                returned_html,
+                f'<a href="/plan/{plan.pk}/{slugified_name}">{plan.name}</a>'
+            )
 
     def test_missing_permission_to_add(self):
         remove_perm_from_user(self.plan_tester, self.perm_add)
-        response = self.client.get(self.case_plans_url, {
-            'a': 'add',
-            'plan_id': self.plan_test_add.pk
-        })
-        self.assertContains(response, 'Permission denied')
+        response = self.client.post(
+            reverse('case-add-to-plans', args=[self.case_1.pk]),
+            {'plan': self.plan_test_add.pk}
+        )
+        self.assert403(response)
 
     def test_missing_permission_to_remove(self):
         remove_perm_from_user(self.plan_tester, self.perm_change)
-        response = self.client.get(self.case_plans_url, {
-            'a': 'remove',
-            'plan_id': self.plan_test_remove.pk
-        })
-        self.assertContains(response, 'Permission denied')
+        response = self.client.post(
+            reverse('case-remove-from-plans', args=[self.case_1.pk]),
+            {'plan': self.plan_test_remove.pk}
+        )
+        self.assert403(response)
 
     def test_add_a_plan(self):
-        response = self.client.get(self.case_plans_url, {
-            'a': 'add',
-            'plan_id': self.plan_test_add.pk
-        })
+        response = self.client.post(
+            reverse('case-add-to-plans', args=[self.case_1.pk]),
+            {'plan': self.plan_test_add.pk}
+        )
 
         self.assert_list_case_plans(response, self.case_1)
 
-        self.assertTrue(TestCasePlan.objects.filter(
-            plan=self.plan_test_add, case=self.case_1).exists())
+        self.assertTrue(
+            TestCasePlan.objects
+            .filter(plan=self.plan_test_add, case=self.case_1)
+            .exists()
+        )
 
     def test_remove_a_plan(self):
-        response = self.client.get(self.case_plans_url, {
-            'a': 'remove',
-            'plan_id': self.plan_test_remove.pk
-        })
+        response = self.client.post(
+            reverse('case-remove-from-plans', args=[self.case_1.pk]),
+            {'plan': self.plan_test_remove.pk}
+        )
 
         self.assert_list_case_plans(response, self.case_1)
 
-        not_linked_to_plan = not TestCasePlan.objects.filter(
-            case=self.case_1, plan=self.plan_test_remove).exists()
-        self.assertTrue(not_linked_to_plan)
+        self.assertFalse(
+            TestCasePlan.objects
+            .filter(case=self.case_1, plan=self.plan_test_remove)
+            .exists()
+        )
 
     def test_add_a_few_of_plans(self):
         # This time, add a few plans to another case
-        url = reverse('case-plan', args=[self.case_2.pk])
+        response = self.client.post(
+            reverse('case-add-to-plans', args=[self.case_2.pk]),
+            {'plan': [self.plan_test_add.pk, self.plan_test_remove.pk]}
+        )
 
-        response = self.client.get(url, {
-            'a': 'add',
-            'plan_id': [self.plan_test_add.pk, self.plan_test_remove.pk]
-        })
-
-        self.assertTrue(TestCasePlan.objects.filter(
-            case=self.case_2, plan=self.plan_test_add).exists())
-        self.assertTrue(TestCasePlan.objects.filter(
-            case=self.case_2, plan=self.plan_test_remove).exists())
+        self.assertTrue(
+            TestCasePlan.objects
+            .filter(case=self.case_2, plan=self.plan_test_add)
+            .exists()
+        )
+        self.assertTrue(
+            TestCasePlan.objects
+            .filter(case=self.case_2, plan=self.plan_test_remove)
+            .exists()
+        )
 
         self.assert_list_case_plans(response, self.case_2)
 
     def test_missing_plan_id(self):
-        resp = self.client.get(self.case_plans_url, {'a': 'add'})
+        resp = self.client.post(
+            reverse('case-add-to-plans', args=[self.case_1.pk])
+        )
 
-        self.assertContains(resp, 'The case must specific one plan at leaset')
-        self.assertContains(
-            resp,
-            '<td colspan="7">No plan found for this case.</td>',
-            html=True)
+        self.assert400(resp)
+
+        data = json.loads(resp.content)
+        self.assertIn('Missing plan ids', data['message'][0])
 
     def test_all_plan_ids_do_not_exist(self):
-        result = TestPlan.objects.aggregate(max_pk=Max('pk'))
-        nonexisting_plan_ids = [
-            str(result['max_pk'] + 1),
-            str(result['max_pk'] + 2)
-        ]
-        resp = self.client.get(self.case_plans_url, {
-            'a': 'add',
-            'plan_id': nonexisting_plan_ids,
-        })
+        max_pk = TestPlan.objects.aggregate(max_pk=Max('pk'))['max_pk']
+        nonexisting_plan_ids = [max_pk + 1, max_pk + 2]
+        resp = self.client.post(
+            reverse('case-add-to-plans', args=[self.case_1.pk]),
+            {'plan': nonexisting_plan_ids}
+        )
 
-        self.assertContains(
-            resp,
-            f'None of plan IDs {", ".join(nonexisting_plan_ids)} exist')
-        self.assertContains(
-            resp,
-            '<td colspan="7">No plan found for this case.</td>',
-            html=True)
+        self.assert400(resp)
+
+        data = json.loads(resp.content)
+        self.assertIn('Nonexistent plan ids', data['message'][0])
 
 
 class TestOperateCaseTag(BasePlanCase):

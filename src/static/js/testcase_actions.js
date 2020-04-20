@@ -165,9 +165,10 @@ Nitrate.TestCases.List.on_load = function() {
 
 Nitrate.TestCases.Details.on_load = function() {
   let case_id = Nitrate.TestCases.Instance.pk;
+
   constructTagZone(jQ('#tag')[0], { 'case': case_id });
-  constructPlanCaseZone(jQ('#plan')[0], case_id);
-  jQ('li.tab a').on('click', function(i) {
+
+  jQ('li.tab a').on('click', function(e) {
     jQ('div.tab_list').hide();
     jQ('li.tab').removeClass('tab_focus');
     jQ(this).parent().addClass('tab_focus');
@@ -179,7 +180,7 @@ Nitrate.TestCases.Details.on_load = function() {
   }
 
   jQ('#id_add_component').on('click', function(e) {
-    if (this.diabled) {
+    if (this.disabled) {
       return false;
     }
 
@@ -297,24 +298,6 @@ Nitrate.TestCases.Details.on_load = function() {
           });
         });
       });
-  });
-
-  jQ('#testplans_table').dataTable({
-    "bFilter": false,
-    "bLengthChange": false,
-    "bPaginate": false,
-    "bInfo": false,
-    "bAutoWidth": false,
-    "aaSorting": [[ 0, "desc" ]],
-    "aoColumns": [
-      {"sType": "num-html"},
-      null,
-      {"sType": "html"},
-      {"sType": "html"},
-      {"sType": "html"},
-      null,
-      {"bSortable": false}
-    ]
   });
 
   jQ('#btn_edit,#btn_clone').on('click', function() {
@@ -811,78 +794,83 @@ function removeCaseIssue(issue_key, case_id, case_run_id) {
   });
 }
 
-function constructPlanCaseZone(container, case_id, parameters) {
-  jQ.ajax({
-    'url': Nitrate.http.URLConf.reverse({ name: 'case_plan', arguments: {id: case_id} }),
-    'type': 'GET',
-    'data': parameters,
-    'traditional': true,
-    'success': function (data, textStatus, jqXHR) {
-      jQ(container).html(data);
+
+/**
+ * Handle triggered by click event of Remove button to remove a plan from a
+ * case' plans table. This is bound to specific element in the template directly.
+ * @param {number} caseId
+ * @param {HTMLButtonElement} button - the element this handler is bound to.
+ */
+function removePlanFromPlansTableHandler(caseId, button) {
+  if (! window.confirm('Are you sure to remove the case from this plan?')) {
+    return;
+  }
+  jQ.ajax('/case/' + caseId + '/plans/remove/', {
+    type: 'POST',
+    dataType: 'json',
+    data: {plan: parseInt(jQ(button).data('planid'))},
+    success: function (data) {
+      jQ('#plan').html(data.html);
+      jQ('#plan_count').text(jQ('table#testplans_table').attr('count'));
     },
-    'complete': function (jqXHR, textStatus, errorThrown) {
-      jQ('#id_plan_form').on('submit', function(e) {
-        e.stopPropagation();
-        e.preventDefault();
-
-        let params = Nitrate.Utils.formSerialize(this);
-        if (!params.pk__in) {
-          window.alert(default_messages.alert.no_plan_specified);
-          return false;
-        }
-
-        previewPlan(
-          params,
-          Nitrate.http.URLConf.reverse({ name: 'case_plan', arguments: {id: case_id} }),
-          function (e) {
-          e.stopPropagation();
-          e.preventDefault();
-          let plan_ids = Nitrate.Utils.formSerialize(this).plan_id;
-          if (!plan_ids) {
-            window.alert(default_messages.alert.no_plan_specified);
-            return false;
-          }
-
-          constructPlanCaseZone(container, case_id, {a: 'add', plan_id: plan_ids});
-          clearDialog();
-          jQ('#plan_count').text(jQ('table#testplans_table').attr('count'));
-        });
-      });
-
-      if (jQ('#testplans_table td a').length) {
-        jQ('#testplans_table').dataTable({
-          "bFilter": false,
-          "bLengthChange": false,
-          "bPaginate": false,
-          "bInfo": false,
-          "bAutoWidth": false,
-          "aaSorting": [[ 0, "desc" ]],
-          "aoColumns": [
-            {"sType": "num-html"},
-            null,
-            {"sType": "html"},
-            {"sType": "html"},
-            {"sType": "html"},
-            null,
-            {"bSortable": false}
-          ]
-        });
+    statusCode: {
+      400: function (xhr) {
+        json_failure(xhr);
+      },
+      403: function () {
+        window.alert('You are not allowed to do this operation.');
       }
-
-      jQ('.js-remove-plan').on('click', function() {
-        let params = jQ(this).data('params');
-        removePlanFromCase(jQ('#testplans_table_wrapper')[0], params[0], params[1]);
-      });
     }
   });
 }
 
-function removePlanFromCase(container, plan_id, case_id) {
-  if (! window.confirm('Are you sure to remove the case from this plan?')) {
-    return false;
+/**
+ * Handler triggered by the form submit event to add plans to the case. This is
+ * called in form submit event directly in the template.
+ * @param {number} caseId
+ * @param {HTMLFormElement} form
+ */
+function addCaseToPlansHandler(caseId, form) {
+  let planIds = form.elements['pk__in'].value.trim();
+
+  if (planIds.length === 0) {
+    window.alert(default_messages.alert.no_plan_specified);
+    return;
   }
-  constructPlanCaseZone(container, case_id, {a: 'remove', plan_id: plan_id});
-  jQ('#plan_count').text(jQ('table#testplans_table').attr('count'));
+
+  let casePlansUrl = '/case/' + caseId + '/plans/';
+
+  previewPlan({pk__in: planIds}, casePlansUrl, function (e) {
+    e.stopPropagation();
+    e.preventDefault();
+
+    let plan_ids = Nitrate.Utils.formSerialize(this).plan_id;
+    if (!plan_ids) {
+      window.alert(default_messages.alert.no_plan_specified);
+      return false;
+    }
+
+    clearDialog();
+
+    jQ.ajax(casePlansUrl + 'add/', {
+      type: 'POST',
+      dataType: 'json',
+      data: {plan: plan_ids},
+      traditional: true,
+      success: function (data) {
+        jQ('#plan').html(data.html);
+        jQ('#plan_count').text(jQ('table#testplans_table').attr('count'));
+      },
+      statusCode: {
+        400: function (xhr) {
+          json_failure(xhr);
+        },
+        403: function () {
+          window.alert('You are not allowed to do this operation.');
+        }
+      }
+    });
+  });
 }
 
 function renderTagForm(container, parameters, form_observe) {

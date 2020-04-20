@@ -13,7 +13,14 @@ urlpatterns = [
          name='case-attachment'),
     path('<int:case_id>/log/', views.get_log, name='case-get-log'),
     path('<int:case_id>/issue/', views.manage_case_issues, name='case-issue'),
+
     path('<int:case_id>/plan/', views.plan, name='case-plan'),
+
+    path('<int:case_id>/plans/add/', views.AddCaseToPlansView.as_view(),
+         name='case-add-to-plans'),
+    path('<int:case_id>/plans/remove/', views.RemoveCaseFromPlansView.as_view(),
+         name='case-remove-from-plans'),
+
     path('<int:case_id>/readonly-pane/', views.SimpleTestCaseView.as_view(),
          name='case-readonly-pane'),
     path('<int:case_id>/review-pane/', views.TestCaseReviewPaneView.as_view(),

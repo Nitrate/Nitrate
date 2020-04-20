@@ -558,3 +558,23 @@ class CaseTagForm(forms.Form):
             # note: backwards relationship filter. TestCaseTag -> TestTag
             self.fields['o_tag'].queryset = TestTag.objects.filter(
                 cases__in=case_ids).order_by('name').distinct()
+
+
+class CasePlansForm(forms.Form):
+    """
+    Used for the plans tab inside a case page to add and remove plans
+    """
+    plan = forms.ModelMultipleChoiceField(
+        queryset=TestPlan.objects.only('pk'),
+        error_messages={
+            'required': 'Missing plan ids.',
+            'invalid_choice': 'Nonexistent plan ids %(value)s',
+        }
+    )
+    case = forms.ModelChoiceField(
+        queryset=TestCase.objects.only('pk'),
+        error_messages={
+            'required': 'Missing case id.',
+            'invalid_choice': 'Case with id %(value)s does not exist.',
+        }
+    )
