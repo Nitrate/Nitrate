@@ -1,27 +1,24 @@
 # -*- coding: utf-8 -*-
 # FIXME: Use exception to replace the feature
 
+from django.http import HttpRequest
 from django.shortcuts import render
 
+PROMPT_ALERT = 'alert'
+PROMPT_INFO = 'info'
 
-class Prompt:
-    """Common dialog to prompt to users"""
 
-    Alert = 'alert'
-    Info = 'info'
+def alert(request: HttpRequest, content: str, next_: str = None):
+    return render(request, 'prompt.html', context={
+        'type': PROMPT_ALERT,
+        'info': content,
+        'next': next_
+    })
 
-    def __init__(self, request, info_type=None, info=None, next=None):
-        super().__init__()
-        self.request = request
-        self.info_type = info_type
-        self.info = info
-        self.next = next
 
-    @classmethod
-    def render(cls, request, info_type=None, info=None, next=None):
-        """Generate the html to response"""
-        return render(request, 'prompt.html', context={
-            'type': info_type,
-            'info': info,
-            'next': next
-        })
+def info(request: HttpRequest, content: str, next_: str = None):
+    return render(request, 'prompt.html', context={
+        'type': PROMPT_INFO,
+        'info': content,
+        'next': next_
+    })

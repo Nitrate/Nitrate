@@ -17,7 +17,7 @@ from django.views import generic
 from django.views.decorators.http import require_GET, require_POST
 from six.moves.urllib_parse import unquote
 
-from tcms.core.views import Prompt
+from tcms.core.views import prompt
 from tcms.testcases.models import TestCase, TestCaseAttachment
 from tcms.testplans.models import TestPlan, TestPlanAttachment
 from tcms.management.models import TestAttachment, TestAttachmentData
@@ -35,12 +35,10 @@ class UploadFileView(PermissionRequiredMixin, generic.View):
         to_case_id = request.POST.get('to_case_id')
 
         if to_plan_id is None and to_case_id is None:
-            return Prompt.render(
-                request=request,
-                info_type=Prompt.Alert,
-                info='Uploading file works with plan or case. Nitrate cannot '
-                     'proceed without plan or case ID.',
-                next='javascript:window.history.go(-1);',
+            return prompt.alert(
+                request,
+                'Uploading file works with plan or case. Nitrate cannot '
+                'proceed without plan or case ID.',
             )
 
         if request.FILES.get('upload_file'):
@@ -49,12 +47,7 @@ class UploadFileView(PermissionRequiredMixin, generic.View):
             try:
                 upload_file.name.encode('utf8')
             except UnicodeEncodeError:
-                return Prompt.render(
-                    request=request,
-                    info_type=Prompt.Alert,
-                    info='Upload File name is not legal.',
-                    next='javascript:window.history.go(-1);',
-                )
+                return prompt.alert(request, 'Upload File name is not legal.')
 
             now = datetime.now()
 
@@ -65,12 +58,10 @@ class UploadFileView(PermissionRequiredMixin, generic.View):
             stored_file_name = smart_str(stored_file_name)
 
             if upload_file.size > settings.MAX_UPLOAD_SIZE:
-                return Prompt.render(
-                    request=request,
-                    info_type=Prompt.Alert,
-                    info=f'You upload entity is too large. Please ensure the file is'
-                         f' less than {settings.MAX_UPLOAD_SIZE} bytes.',
-                    next='javascript:window.history.go(-1);',
+                return prompt.alert(
+                    request,
+                    f'You upload entity is too large. Please ensure the file '
+                    f'is less than {settings.MAX_UPLOAD_SIZE} bytes.'
                 )
 
             # Create the upload directory when it's not exist
@@ -78,13 +69,10 @@ class UploadFileView(PermissionRequiredMixin, generic.View):
                 os.mkdir(settings.FILE_UPLOAD_DIR)
 
             if os.path.exists(stored_file_name):
-                return Prompt.render(
-                    request=request,
-                    info_type=Prompt.Alert,
-                    info=f"File named '{upload_file.name}' already exists in "
-                         f"upload folder, please rename to another name for "
-                         f"solve conflict.",
-                    next='javascript:window.history.go(-1);',
+                return prompt.alert(
+                    request,
+                    f"File named '{upload_file.name}' already exists in upload"
+                    f" folder, please rename to another name for solve conflict.",
                 )
 
             with open(stored_file_name, 'wb+') as f:
@@ -157,12 +145,7 @@ def check_file(request, file_id):
         except IOError:
             msg = 'Cannot read attachment file from server.'
             log.exception(msg)
-            return Prompt.render(
-                request=request,
-                info_type=Prompt.Alert,
-                info=msg,
-                next='javascript:window.history.go(-1);',
-            )
+            return prompt.alert(request, msg)
 
     response = HttpResponse(contents, content_type=str(attachment.mime_type))
     file_name = smart_str(attachment.file_name)

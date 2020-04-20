@@ -34,7 +34,7 @@ from tcms.core.raw_sql import RawSQL
 from tcms.core.responses import JsonResponseBadRequest, JsonResponseForbidden
 from tcms.core.utils import DataTableResult
 from tcms.core.utils import form_error_messags_to_list
-from tcms.core.views import Prompt
+from tcms.core.views import prompt
 from tcms.issuetracker.models import IssueTracker
 from tcms.logs.models import TCMSLogModel
 from tcms.management.models import Priority, TestTag
@@ -873,12 +873,11 @@ def get(request, case_id, template_name='case/get.html'):
         try:
             tp = tps.get(pk=plan_id_from_request)
         except TestPlan.DoesNotExist:
-            return Prompt.render(
-                request=request,
-                info_type=Prompt.Info,
-                info='''This case has been removed from the plan, but you
-                          can view the case detail''',
-                next=reverse('case-get', args=[case_id, ]),
+            return prompt.info(
+                request,
+                'This case has been removed from the plan, but you can view '
+                'the case detail',
+                reverse('case-get', args=[case_id])
             )
     else:
         tp = None
@@ -963,10 +962,7 @@ def printable(request, template_name='case/printable.html'):
     case_pks = request.POST.getlist('case')
 
     if not case_pks:
-        return Prompt.render(
-            request=request,
-            info_type=Prompt.Info,
-            info='At least one target is required.')
+        return prompt.info(request, 'At least one target is required.')
 
     repeat = len(case_pks)
     params_sql = ','.join(itertools.repeat('%s', repeat))
@@ -985,10 +981,7 @@ def export(request, template_name='case/export.xml'):
     case_pks = list(map(int, request.POST.getlist('case')))
 
     if not case_pks:
-        return Prompt.render(
-            request=request,
-            info_type=Prompt.Info,
-            info='At least one target is required.')
+        return prompt.info(request, 'At least one target is required.')
 
     context_data = {
         'cases_info': get_exported_cases_and_related_data(case_pks=case_pks),
@@ -1260,12 +1253,7 @@ def clone(request, template_name='case/clone.html'):
     request_data = getattr(request, request.method)
 
     if 'case' not in request_data:
-        return Prompt.render(
-            request=request,
-            info_type=Prompt.Info,
-            info='At least one case is required.',
-            next='javascript:window.history.go(-1)'
-        )
+        return prompt.info(request, 'At least one case is required.')
 
     # Do the clone action
     if request.method == 'POST':
@@ -1321,12 +1309,11 @@ def clone(request, template_name='case/clone.html'):
                     reverse('plan-get', args=[dest_plans[0].pk]))
 
             # Otherwise it will prompt to user the clone action is successful.
-            return Prompt.render(
-                request=request,
-                info_type=Prompt.Info,
-                info='Test case successful to clone, click following link '
-                     'to return to plans page.',
-                next=reverse('plans-all')
+            return prompt.info(
+                request,
+                'Test case successful to clone, click following link to return'
+                ' to plans page.',
+                reverse('plans-all')
             )
     else:
         selected_cases = get_selected_testcases(request)

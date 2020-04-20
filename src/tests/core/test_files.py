@@ -395,7 +395,7 @@ class TestCheckFile(BasePlanCase):
             resp = self.client.get(reverse('check-file', args=[self.file_deleted.pk]))
         self.assert404(resp)
 
-    @patch('tcms.core.views.Prompt.render')
+    @patch('tcms.core.views.prompt.render')
     def test_fail_to_read_file_content(self, render):
         # Following mock on the builtin open function will affect all calls to
         # it, so this test has to patch Prompt.render to return a response
@@ -417,3 +417,4 @@ class TestCheckFile(BasePlanCase):
                 fh = mock_open.return_value.__enter__.return_value
                 fh.read.side_effect = IOError('io error')
                 resp = self.client.get(url)
+                self.assertContains(resp, 'Cannot read file')

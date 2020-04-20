@@ -10,7 +10,7 @@ from django.views.decorators.http import require_http_methods
 
 from tcms.auth.forms import RegistrationForm
 from tcms.auth.models import UserActivateKey
-from tcms.core.views import Prompt
+from tcms.core.views import prompt
 
 
 @require_GET
@@ -31,11 +31,10 @@ def register(request, template_name='registration/registration_form.html'):
 
     if (user_pwd_backend_config is None or
             not user_pwd_backend_config.get('ALLOW_REGISTER')):
-        return Prompt.render(
-            request=request,
-            info_type=Prompt.Alert,
-            info='The backend is not allowed to register.',
-            next=request_data.get('next', reverse('nitrate-index'))
+        return prompt.alert(
+            request,
+            'The backend is not allowed to register.',
+            request_data.get('next', reverse('nitrate-index'))
         )
 
     if request.method == 'POST':
@@ -65,11 +64,8 @@ def register(request, template_name='registration/registration_form.html'):
                     msg.append('</ul>')
                     msg = ''.join(msg)
 
-            return Prompt.render(
-                request=request,
-                info_type=Prompt.Info,
-                info=msg,
-                next=request.POST.get('next', reverse('nitrate-index'))
+            return prompt.info(
+                request, msg, request.POST.get('next', reverse('nitrate-index'))
             )
     else:
         form = RegistrationForm()
@@ -89,12 +85,10 @@ def confirm(request, activation_key):
         ak = UserActivateKey.objects.select_related('user')
         ak = ak.get(activation_key=activation_key)
     except UserActivateKey.DoesNotExist:
-        msg = 'This key no longer exist in the database.'
-        return Prompt.render(
-            request=request,
-            info_type=Prompt.Info,
-            info=msg,
-            next=request.GET.get('next', reverse('nitrate-index'))
+        return prompt.info(
+            request,
+            'This key no longer exist in the database.',
+            request.GET.get('next', reverse('nitrate-index'))
         )
 
     # All thing done, start to active the user and use the user login
@@ -105,12 +99,10 @@ def confirm(request, activation_key):
     # login(request, user)
 
     # Response to web browser.
-    return Prompt.render(
-        request=request,
-        info_type=Prompt.Info,
-        info='Your account has been activated successfully, click next link to '
-             're-login.',
-        next=request.GET.get('next', reverse('user-profile-redirect'))
+    return prompt.info(
+        request,
+        'Your account has been activated successfully, click next link to re-login.',
+        request.GET.get('next', reverse('user-profile-redirect'))
     )
 
 

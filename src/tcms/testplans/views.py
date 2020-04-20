@@ -32,7 +32,7 @@ from tcms.core.models import TCMSLog
 from tcms.core.raw_sql import RawSQL
 from tcms.core.utils import checksum
 from tcms.core.utils import DataTableResult
-from tcms.core.views import Prompt
+from tcms.core.views import prompt
 from tcms.management.models import TCMSEnvGroup, Component
 from tcms.search.views import remove_from_request_path
 from tcms.search.order import order_plan_queryset
@@ -177,19 +177,9 @@ def delete(request, plan_id):
                     'tcms.testplans.views.all')
             )
         except Exception:
-            return Prompt.render(
-                request=request,
-                info_type=Prompt.Info,
-                info='Delete failed.',
-                next='javascript:window.history.go(-1)',
-            )
+            return prompt.info(request, 'Delete failed.')
     else:
-        return Prompt.render(
-            request=request,
-            info_type=Prompt.Info,
-            info='Nothing yet.',
-            next='javascript:window.history.go(-1)',
-        )
+        return prompt.info(request, 'Nothing yet.')
 
 
 @require_GET
@@ -501,12 +491,10 @@ class AddCasesToRunsView(PermissionRequiredMixin, View):
 
         # cases and runs are required in this process
         if not len(choosed_testrun_ids) or not len(to_be_added_cases):
-            return Prompt.render(
-                request=request,
-                info_type=Prompt.Info,
-                info='At least one test run and one case is required to add '
-                     'cases to runs.',
-                next=plan_url,
+            return prompt.info(
+                request,
+                'At least one test run and one case is required to add cases to runs.',
+                plan_url
             )
 
         # Adding cases to runs by recursion
@@ -649,21 +637,15 @@ def clone(request, template_name='plan/clone.html'):
 
     req_data = request.GET or request.POST
     if 'plan' not in req_data:
-        return Prompt.render(
-            request=request,
-            info_type=Prompt.Info,
-            info='At least one plan is required by clone function.',
-            next='javascript:window.history.go(-1)',
+        return prompt.info(
+            request, 'At least one plan is required by clone function.',
         )
 
     tps = TestPlan.objects.filter(pk__in=req_data.getlist('plan'))
 
     if not tps:
-        return Prompt.render(
-            request=request,
-            info_type=Prompt.Info,
-            info='The plan you specify does not exist in database.',
-            next='javascript:window.history.go(-1)',
+        return prompt.info(
+            request, 'The plan you specify does not exist in database.',
         )
 
     # Clone the plan if the form is submitted
@@ -917,18 +899,13 @@ class ImportCasesView(PermissionRequiredMixin, View):
 
     def post(self, request, plan_id):
         plan = get_object_or_404(TestPlan.objects.only('pk'), pk=int(plan_id))
+        next_url = reverse('plan-get', args=[plan_id]) + '#testcases'
         xml_form = ImportCasesViaXMLForm(request.POST, request.FILES)
         if xml_form.is_valid():
             plan.import_cases(xml_form.cleaned_data['xml_file'])
-            return HttpResponseRedirect(
-                reverse('plan-get', args=[plan_id]) + '#testcases')
+            return HttpResponseRedirect(next_url)
         else:
-            return Prompt.render(
-                request=request,
-                info_type=Prompt.Alert,
-                info=xml_form.errors,
-                next=reverse('plan-get', args=[plan_id]) + '#testcases'
-            )
+            return prompt.alert(request, xml_form.errors, next_url)
 
 
 class DeleteCasesView(View):
@@ -1045,10 +1022,7 @@ def printable(request, template_name='plan/printable.html'):
     plan_pks = request.GET.getlist('plan')
 
     if not plan_pks:
-        return Prompt.render(
-            request=request,
-            info_type=Prompt.Info,
-            info='At least one target is required.')
+        return prompt.info(request, 'At least one target is required.')
 
     tps = TestPlan.objects.filter(pk__in=plan_pks).only('pk', 'name')
 
@@ -1076,10 +1050,7 @@ def export(request, template_name='case/export.xml'):
     plan_pks = list(map(int, request.GET.getlist('plan')))
 
     if not plan_pks:
-        return Prompt.render(
-            request=request,
-            info_type=Prompt.Info,
-            info='At least one target is required.')
+        return prompt.info(request, 'At least one target is required.')
 
     context_data = {
         'cases_info': get_exported_cases_and_related_data(plan_pks),
