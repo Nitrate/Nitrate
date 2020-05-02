@@ -328,8 +328,6 @@ class TestAsyncTask(unittest.TestCase):
             self.assertTrue(thread.daemon)
             thread.start.assert_called_once()
 
-    @unittest.skipIf(PY37, 'Celery<4.3 does not work with Python 3.7. '
-                           'Waiting for 4.3 to be released.')
     @patch('celery.shared_task')
     def test_uses_celery(self, shared_task):
         with patch.object(settings, 'ASYNC_TASK', new=AsyncTask.CELERY.value):

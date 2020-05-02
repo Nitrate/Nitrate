@@ -61,7 +61,7 @@ extras_require = {
 
     # Required packages required to run async tasks
     'async': [
-        'celery == 4.2.0',
+        'celery == 4.4.2',
     ],
 
     'multiauth': [
