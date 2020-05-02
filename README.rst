@@ -1,6 +1,10 @@
 Nitrate - Test Case Management System
 =====================================
 
+.. image:: https://badges.gitter.im/Nitrate/Nitrate.svg
+   :alt: Gitter
+   :target: https://gitter.im/Nitrate/Nitrate?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
+
 .. image:: https://img.shields.io/pypi/v/nitrate-tcms
    :alt: PyPI
    :target: https://pypi.python.org/pypi/nitrate-tcms
@@ -107,6 +111,7 @@ Contact
 
 * Mailing List: `nitrate-devel at lists.fedorahosted.org`_
 * IRC: `#nitrate on irc.freenode.org`_
+* Gitter: https://gitter.im/Nitrate/Nitrate
 
 .. _nitrate-devel at lists.fedorahosted.org: mailto:nitrate-devel@lists.fedorahosted.org
 .. _#nitrate on irc.freenode.org: irc://irc.freenode.org/nitrate
