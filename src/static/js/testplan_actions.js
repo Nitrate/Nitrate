@@ -127,8 +127,8 @@ Nitrate.TestPlans.TreeView = {
 
     if (parent_obj && brother_obj.length) {
       parent_obj[0].children = brother_obj;
-      var brother_numbers = brother_obj.length;
-      for (let i = 0; i < brother_numbers; i++) {
+      let brotherCount = brother_obj.length;
+      for (let i = 0; i < brotherCount; i++) {
         if (parseInt(parent_obj[0].children[i].pk) === parseInt(tree.data[0].pk)) {
            parent_obj[0].children[i] = tree.data[0];
            break;
@@ -667,9 +667,9 @@ Nitrate.TestPlans.Details = {
     });
 
     // Display the tab indicated by hash along with URL.
-    var defaultSwitchTo = '#testcases';
-    var switchTo = window.location.hash;
-    var exist = jQ('#contentTab')
+    let defaultSwitchTo = '#testcases';
+    let switchTo = window.location.hash;
+    let exist = jQ('#contentTab')
       .find('a')
       .map(function(index, element) {
         return element.getAttribute('href');
@@ -717,14 +717,14 @@ Nitrate.TestPlans.Details = {
     });
   },
   'bindEventsOnLoadedCases': function(container) {
-    var elem;
+    let elem = null;
     if (typeof container === 'string') {
       elem = jQ('#' + container);
     } else {
       elem = jQ(container);
     }
-    var form = elem.children()[0];
-    var table = elem.children()[1];
+    let form = elem.children()[0];
+    let table = elem.children()[1];
     Nitrate.TestPlans.Details._bindEventsOnLoadedCases(table, form);
   },
   'observeEvents': function(plan_id) {
@@ -863,13 +863,13 @@ Nitrate.TestPlans.SearchCase.on_load = function() {
     }
   }
   // new feature for searching by case id.
-  var quick_search = jQ("#tp_quick_search_cases_form");
-  var normal_search = jQ("#tp_advanced_search_case_form");
-  var quick_tab = jQ("#quick_tab");
-  var normal_tab = jQ("#normal_tab");
-  var search_mode = jQ("#search_mode");
-  var errors = jQ(".errors");
-  var triggerFormDisplay = function(options) {
+  let quick_search = jQ("#tp_quick_search_cases_form");
+  let normal_search = jQ("#tp_advanced_search_case_form");
+  let quick_tab = jQ("#quick_tab");
+  let normal_tab = jQ("#normal_tab");
+  let search_mode = jQ("#search_mode");
+  let errors = jQ(".errors");
+  let triggerFormDisplay = function(options) {
     options.show.show();
     options.show_tab.addClass("profile_tab_active");
     options.hide.hide();
@@ -1078,9 +1078,9 @@ function toggleTestCaseReviewPane(options) {
  *   container is a TABLE.
  */
 function bindEventsOnLoadedCases(options) {
-  var parameters = options.parameters;
-  var plan_id = options.plan_id;
-  var cases_container = options.cases_container;
+  let parameters = options.parameters;
+  let plan_id = options.plan_id;
+  let cases_container = options.cases_container;
 
   return function(container, form) {
     //jQ(cases_container)
@@ -1097,9 +1097,9 @@ function bindEventsOnLoadedCases(options) {
     });
 
     jQ(container).parent().find('.change_status_selector.js-just-loaded').on('change', function(e) {
-      var be_confirmed = (parseInt(this.value) === 2);
-      var was_confirmed = (jQ(this).parent()[0].attributes.status.value === "CONFIRMED");
-      var case_id = jQ(this).parent().parent()[0].id;
+      let be_confirmed = (parseInt(this.value) === 2);
+      let was_confirmed = (jQ(this).parent()[0].attributes.status.value === "CONFIRMED");
+      let case_id = jQ(this).parent().parent()[0].id;
       changeTestCaseStatus(plan_id, this, case_id, be_confirmed, was_confirmed);
     });
 
@@ -1749,13 +1749,13 @@ function onTestCaseReviewerClick(options) {
  * Callback for constructPlanDetailsCasesZone.
  */
 function constructPlanDetailsCasesZoneCallback(options) {
-  var container = options.container;
-  var plan_id = options.planId;
-  var parameters = options.parameters;
+  let container = options.container;
+  let plan_id = options.planId;
+  let parameters = options.parameters;
 
   return function(response) {
-    var form = jQ(container).children()[0];
-    var table = jQ(container).children()[1];
+    let form = jQ(container).children()[0];
+    let table = jQ(container).children()[1];
 
     // Presume the first form element is the form
     if (form.tagName !== 'FORM') {
@@ -1763,7 +1763,7 @@ function constructPlanDetailsCasesZoneCallback(options) {
       return false;
     }
 
-    var filter = jQ(form).parent().find('.list_filter')[0];
+    let filter = jQ(form).parent().find('.list_filter')[0];
 
     // Filter cases
     jQ(form).on('submit', function(e) {
@@ -1830,7 +1830,7 @@ function constructPlanDetailsCasesZoneCallback(options) {
     }
 
     // Bind batch change case status selector
-    var element = jQ(form).parent().find('input[name="new_case_status_id"]')[0];
+    let element = jQ(form).parent().find('input[name="new_case_status_id"]')[0];
     if (element !== undefined) {
       jQ(element).on('change', onTestCaseStatusChange({
         'form': form, 'table': table, 'container': container, 'planId': plan_id
@@ -1917,12 +1917,12 @@ function constructPlanDetailsCasesZone(container, plan_id, parameters) {
 
   jQ(container).html('<div class="ajax_loading"></div>');
 
-  var postData = parameters;
+  let postData = parameters;
   if (!postData) {
     postData = {'a': 'initial', 'from_plan': plan_id};
   }
 
-  var complete = constructPlanDetailsCasesZoneCallback({
+  let complete = constructPlanDetailsCasesZoneCallback({
     'container': container,
     'planId': plan_id,
     'parameters': postData
@@ -1939,15 +1939,15 @@ function constructPlanDetailsCasesZone(container, plan_id, parameters) {
         jQ(this).hide().next().show();
       });
 
-      var type = '';
+      let type = '';
       if (typeof parameters.template_type === 'string') {
         type = (parameters.template_type === 'case') ? '-' : '-review-';
       } else {
         type = (parameters.template_type[0] === 'case') ? '-' : '-review-';
       }
-      var casesSection = (type === '-') ? jQ('#testcases')[0] : jQ('#reviewcases')[0];
-      var casesTable = jQ(casesSection).find('.js-cases-list')[0];
-      var navForm = jQ('#js' + type + 'cases-nav-form')[0];
+      let casesSection = (type === '-') ? jQ('#testcases')[0] : jQ('#reviewcases')[0];
+      let casesTable = jQ(casesSection).find('.js-cases-list')[0];
+      let navForm = jQ('#js' + type + 'cases-nav-form')[0];
 
       jQ('#js' + type + 'case-menu, #js' + type + 'new-case').on('click', function() {
         let params = jQ(this).data('params');
@@ -1992,7 +1992,7 @@ function constructPlanDetailsCasesZone(container, plan_id, parameters) {
         this.form.new_priority_id.value = jQ(this).data('param');
         fireEvent(this.form.new_priority_id, 'change');
       });
-      var $toggleAllCasesButton = (type === '-') ? jQ('#id_blind_all_link') : jQ('#review_id_blind_all_link');
+      let $toggleAllCasesButton = (type === '-') ? jQ('#id_blind_all_link') : jQ('#review_id_blind_all_link');
       $toggleAllCasesButton.find('.collapse-all').on('click', function() {
         toggleAllCases(this);
       });
@@ -2014,9 +2014,9 @@ function constructPlanComponentsZone(container, parameters, callback) {
     parameters = { plan: Nitrate.TestPlans.Instance.pk };
   }
 
-  var url = Nitrate.http.URLConf.reverse({ name: 'plan_components' });
+  let url = Nitrate.http.URLConf.reverse({ name: 'plan_components' });
 
-  var complete = function(t) {
+  let complete = function(t) {
     if (callback) {
       callback();
     }
@@ -2024,22 +2024,22 @@ function constructPlanComponentsZone(container, parameters, callback) {
     jQ('#id_form_plan_components').on('submit', function(e) {
       e.stopPropagation();
       e.preventDefault();
-      var p = Nitrate.Utils.formSerialize(this);
-      var submitButton = jQ(this).find(':submit')[0];
+      let p = Nitrate.Utils.formSerialize(this);
+      let submitButton = jQ(this).find(':submit')[0];
       p[submitButton.name] = submitButton.value;
       constructPlanComponentsZone(container, p, callback);
     });
 
     jQ('.link_remove_plan_component').on('click', function(e) {
-      var c = confirm(default_messages.confirm.remove_case_component);
+      let c = confirm(default_messages.confirm.remove_case_component);
       if(!c) {
         return false;
       }
-      var links = jQ('.link_remove_plan_component');
-      var index = links.index(this);
-      var component = jQ('input[type="checkbox"][name="component"]')[index];
+      let links = jQ('.link_remove_plan_component');
+      let index = links.index(this);
+      let component = jQ('input[type="checkbox"][name="component"]')[index];
 
-      var p = Nitrate.Utils.formSerialize(jQ('#id_form_plan_components')[0]);
+      let p = Nitrate.Utils.formSerialize(jQ('#id_form_plan_components')[0]);
       p.component = component.value;
       p.a = 'remove';
       constructPlanComponentsZone(container, p, callback);
@@ -2053,7 +2053,7 @@ function constructPlanComponentsZone(container, parameters, callback) {
       constructPlanComponentModificationDialog();
     });
 
-    var c_count = jQ('tbody#component').attr('count');
+    let c_count = jQ('tbody#component').attr('count');
     jQ('#component_count').text(c_count);
   };
 
@@ -2083,26 +2083,24 @@ function constructPlanComponentModificationDialog(container) {
   }
   jQ(container).show();
 
-  var d = jQ('<div>');
-
-  var parameters = { a: 'get_form', plan: Nitrate.TestPlans.Instance.pk };
-
-  var callback = function(t) {
-    var action = Nitrate.http.URLConf.reverse({ name: 'plan_components' });
-    var form_observe = function(e) {
+  let d = jQ('<div>');
+  let parameters = { a: 'get_form', plan: Nitrate.TestPlans.Instance.pk };
+  let callback = function(t) {
+    let action = Nitrate.http.URLConf.reverse({ name: 'plan_components' });
+    let form_observe = function(e) {
       e.stopPropagation();
       e.preventDefault();
-      var submitButton = jQ(this).find(':submit')[0];
+      let submitButton = jQ(this).find(':submit')[0];
       constructPlanComponentsZone(
         'components',
         jQ(this).serialize() + '&' + submitButton.name + '=' + submitButton.value
       );
       clearDialog();
     };
-    var notice = 'Press "Ctrl" to select multiple default component';
-    var s = jQ('<input>', {'type': 'submit', 'name': 'a', 'value': 'Update'});
+    let notice = 'Press "Ctrl" to select multiple default component';
+    let s = jQ('<input>', {'type': 'submit', 'name': 'a', 'value': 'Update'});
 
-    var f = constructForm(d.html(), action, form_observe, notice, s[0]);
+    let f = constructForm(d.html(), action, form_observe, notice, s[0]);
     jQ(container).html(f);
   };
 
@@ -2111,7 +2109,7 @@ function constructPlanComponentModificationDialog(container) {
 }
 
 function constructBatchTagProcessDialog(plan_id) {
-  var template = Handlebars.compile(jQ('#batch_tag_form_template').html());
+  let template = Handlebars.compile(jQ('#batch_tag_form_template').html());
   jQ('#dialog').html(template())
     .find('.js-cancel-button').on('click', function() {
       jQ('#dialog').hide();
@@ -2144,8 +2142,8 @@ function constructBatchTagProcessDialog(plan_id) {
 }
 
 function sortCase(container, plan_id, order) {
-  var form = jQ(container).children()[0];
-  var parameters = Nitrate.Utils.formSerialize(form);
+  let form = jQ(container).children()[0];
+  let parameters = Nitrate.Utils.formSerialize(form);
   parameters.a = 'sort';
 
   if (parameters.case_sort_by === order) {
@@ -2170,7 +2168,7 @@ function resortCasesDragAndDrop(container, button, form, table, parameters, call
 
     // Use the selector content to replace the selector
     jQ(form).parent().find('.change_status_selector').each(function(t) {
-      var w = this.selectedIndex;
+      let w = this.selectedIndex;
       jQ(this).replaceWith((jQ('<span>')).html(this.options[w].text));
     });
 
@@ -2203,7 +2201,7 @@ function resortCasesDragAndDrop(container, button, form, table, parameters, call
 }
 
 function FocusTabOnPlanPage(element) {
-  var tab_name = element.hash.slice(1);
+  let tab_name = element.hash.slice(1);
   jQ('#tab_treeview').removeClass('tab_focus');
   jQ('#treeview').hide();
   jQ('#tab_' + tab_name).addClass('tab_focus').children('a').click();
@@ -2239,7 +2237,7 @@ function expandCurrentPlan(element) {
 Nitrate.TestPlans.Runs = {
   'bind': function () {
     // Bind everything.
-    var that = this;
+    let that = this;
     jQ('#show_more_runs').on('click', that.showMore);
     jQ('#reload_runs').on('click', that.reload);
     jQ('#tab_testruns').on('click', that.initializeRunTab);
@@ -2250,9 +2248,9 @@ Nitrate.TestPlans.Runs = {
     return '/plan/' + planId + '/runs/';
   },
   'render': function (data, textStatus, jqXHR) {
-    var tbody = jQ('#testruns_body');
-    var html = jQ(data.html);
-    var btnCheckAll = jQ('#box_select_rest input:checkbox');
+    let tbody = jQ('#testruns_body');
+    let html = jQ(data.html);
+    let btnCheckAll = jQ('#box_select_rest input:checkbox');
     if (btnCheckAll.length > 0 && btnCheckAll.is(':checked')) {
       html.find('.run_selector').attr('checked', 'checked');
     }
@@ -2266,10 +2264,10 @@ Nitrate.TestPlans.Runs = {
      * 2. No testruns are ever loaded.
      *
      */
-    var that = Nitrate.TestPlans.Runs;
+    let that = Nitrate.TestPlans.Runs;
     if (jQ('#tab_testruns').hasClass('tab_focus')) {
       if (!jQ.fn.DataTable.fnIsDataTable(jQ('#testruns_table')[0])) {
-        var url = that.makeUrlFromPlanId(jQ('#testruns_table').data('param'));
+        let url = that.makeUrlFromPlanId(jQ('#testruns_table').data('param'));
         jQ('#testruns_table').dataTable({
           "aoColumnDefs":[
             { "bSortable": false, "aTargets":[0, 8, 9, 10] },
@@ -2286,7 +2284,7 @@ Nitrate.TestPlans.Runs = {
           "iDisplayLength": 20,
           "sPaginationType": "full_numbers",
           "fnServerParams": function(aoData) {
-            var params = jQ("#run_filter").serializeArray();
+            let params = jQ("#run_filter").serializeArray();
             params.forEach(function(param) {
               aoData.push(param);
             });
@@ -2296,9 +2294,9 @@ Nitrate.TestPlans.Runs = {
     }
   },
   'reactsToRunSelection': function () {
-    var that = Nitrate.TestPlans.Runs;
-    var selection = jQ('.run_selector:not(:checked)');
-    var controller = jQ('#id_check_all_runs');
+    let that = Nitrate.TestPlans.Runs;
+    let selection = jQ('.run_selector:not(:checked)');
+    let controller = jQ('#id_check_all_runs');
     if (selection.length === 0) {
       controller.attr('checked', true);
     } else {
@@ -2307,7 +2305,7 @@ Nitrate.TestPlans.Runs = {
     controller.trigger('change');
   },
   'reactsToAllRunSelectorChange': function (event) {
-    var that = Nitrate.TestPlans.Runs;
+    let that = Nitrate.TestPlans.Runs;
     if (jQ(event.target).attr('checked')) {
       that.toggleRemainingRunSelection('on');
     } else {
@@ -2315,7 +2313,7 @@ Nitrate.TestPlans.Runs = {
     }
   },
   'toggleRemainingRunSelection': function (status) {
-    var area = jQ('#box_select_rest');
+    let area = jQ('#box_select_rest');
     if (area.length) {
       if (status === 'off') {
         area.find('input:checkbox').attr('checked', false);
@@ -2327,8 +2325,8 @@ Nitrate.TestPlans.Runs = {
     }
   },
   'nextPage': function (planId) {
-    var that = this;
-    var url = that.makeUrlFromPlanId(planId);
+    let that = this;
+    let url = that.makeUrlFromPlanId(planId);
     return jQ.ajax({
       'dataType': 'json',
       'url': url,
@@ -2337,9 +2335,9 @@ Nitrate.TestPlans.Runs = {
     }).done(that.render);
   },
   'filter': function (data) {
-    var queryString = jQ("#run_filter").serialize();
+    let queryString = jQ("#run_filter").serialize();
     // store this string into the rest result select box
-    var box = jQ('#box_select_rest');
+    let box = jQ('#box_select_rest');
     box.find('input:checkbox').val(queryString);
     return queryString;
   },

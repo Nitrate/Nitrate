@@ -15,9 +15,9 @@ function getProdRelatedObj(prodIDs, target, targetID) {
 
 function buildOptions(data, target) {
   // target should be the ID of a select tag
-  var options = [];
-  for(var i=0;i<data.length;i++){
-    var pair = data[i];
+  let options = [];
+  for(let i=0;i<data.length;i++){
+    let pair = data[i];
     options.push('<option value="' + pair[0] + '">' + pair[1] + '</option>');
   }
   options = options.join();
@@ -30,34 +30,31 @@ function buildOptions(data, target) {
  * @ target select tag
  */
 function updateOptionOnProdChange(target, productID, targetID) {
-  jQ('#'+productID).change(function() {
-    var prodIDs = jQ('#' + productID).val();
-    getProdRelatedObj(prodIDs, target, targetID);
+  jQ('#' + productID).change(function() {
+    getProdRelatedObj(jQ('#' + productID).val(), target, targetID);
   });
 
   // whether get related objects immediately
-  var isTargetEmpty = jQ('#' + targetID + ' option').length === 0;
-  var prodIDs = jQ('#'+productID).val();
+  let isTargetEmpty = jQ('#' + targetID + ' option').length === 0;
+  let prodIDs = jQ('#' + productID).val();
   if (prodIDs && isTargetEmpty) {
     getProdRelatedObj(prodIDs, target, targetID);
   }
 }
 
 jQ(function() {
-  var searchForm = jQ('#frmSearch');
-  var targetInp = jQ('#inpTarget');
   // event listening for form submission
   jQ('#btnSearchPlan').click(function() {
-    targetInp.val('plan');
-    searchForm.submit();
+    jQ('#inpTarget').val('plan');
+    jQ('#frmSearch').submit();
   });
   jQ('#btnSearchCase').click(function() {
-    targetInp.val('case');
-    searchForm.submit();
+    jQ('#inpTarget').val('case');
+    jQ('#frmSearch').submit();
   });
   jQ('#btnSearchRun').click(function() {
-    targetInp.val('run');
-    searchForm.submit();
+    jQ('#inpTarget').val('run');
+    jQ('#frmSearch').submit();
   });
 });
 

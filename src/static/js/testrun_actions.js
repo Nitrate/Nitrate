@@ -122,16 +122,16 @@ function AddIssueDialog() {
 
     buttons: {
       Add: function() {
-        var dialog = jQ(this);
-        var selectedIssueTracker = dialog
+        let dialog = jQ(this);
+        let selectedIssueTracker = dialog
             .find('select[id="issue_tracker_id"] option:selected');
-        var issueTrackerID = selectedIssueTracker.val();
-        var validateRegex = selectedIssueTracker.data('validate-regex');
-        var issueInputSection = dialog.find('div#' + selectedIssueTracker.data('tab'));
+        let issueTrackerID = selectedIssueTracker.val();
+        let validateRegex = selectedIssueTracker.data('validate-regex');
+        let issueInputSection = dialog.find('div#' + selectedIssueTracker.data('tab'));
 
-        var issueKey = issueInputSection.find('input[name="issue_key"]').val();
-        var optLinkExternalTracker = issueInputSection.find('input[name="link_external_tracker"]');
-        var addIssueInfo = dialog.dialog('option', 'addIssueInfo');
+        let issueKey = issueInputSection.find('input[name="issue_key"]').val();
+        let optLinkExternalTracker = issueInputSection.find('input[name="link_external_tracker"]');
+        let addIssueInfo = dialog.dialog('option', 'addIssueInfo');
 
         if (! new RegExp(validateRegex).test(issueKey)) {
           window.alert('Issue key is malformated.');
@@ -176,8 +176,8 @@ function AddIssueDialog() {
             } else {
               // When add issue to a case run, only need to reload the updated case run.
               // Update issues count associated with just updated case run
-              for (var caseRunId in addIssueInfo.caseRunIds) {
-                var caseRunIssuesCount = responseJSON.caserun_issues_count[caseRunId];
+              for (let caseRunId in addIssueInfo.caseRunIds) {
+                let caseRunIssuesCount = responseJSON.caserun_issues_count[caseRunId];
                 updateIssuesCountInCaseRunRow(reloadInfo.caseRunRow, caseRunIssuesCount);
               }
               showTheNumberOfCaseRunIssues(responseJSON.run_issues_count, addIssueInfo.runId);
@@ -203,7 +203,7 @@ AddIssueDialog.prototype.open = function(addIssueInfo, reloadInfo) {
   if (addIssueInfo.caseRunIds === undefined || !Array.isArray(addIssueInfo.caseRunIds))
     throw new Error('addIssueInfo.caseRunIDs must be an array including case run IDs.');
 
-  var dialog = this.dialog;
+  let dialog = this.dialog;
 
   dialog.dialog('option', 'title', 'Add issue to case run');
   dialog.dialog('option', 'reloadInfo', reloadInfo);
@@ -215,7 +215,7 @@ AddIssueDialog.prototype.open = function(addIssueInfo, reloadInfo) {
       return jQ(this).css('display') === 'block';
     }).toggle();
 
-    var tabIdToShow = jQ('#issue_tracker_id option:selected').data('tab');
+    let tabIdToShow = jQ('#issue_tracker_id option:selected').data('tab');
     dialog.find('#' + tabIdToShow).toggle();
   });
 
@@ -225,7 +225,7 @@ AddIssueDialog.prototype.open = function(addIssueInfo, reloadInfo) {
 
 Nitrate.TestRuns.Details.on_load = function() {
 
-  var addIssueDialog = new AddIssueDialog();
+  let addIssueDialog = new AddIssueDialog();
 
   // Observe the interface buttons
   if (jQ('#id_sort').length) {
@@ -260,7 +260,7 @@ Nitrate.TestRuns.Details.on_load = function() {
       return false;
     } else {
       jQ(this).addClass('locked');
-      var element = jQ(this).children();
+      let element = jQ(this).children();
       if (element.is('.collapse-all')) {
         this.title = "Collapse all cases";
         blinddownAllCases(element[0]);
@@ -354,10 +354,10 @@ Nitrate.TestRuns.Details.on_load = function() {
   }
   //bind click to status btn
   jQ('.btn_status').on('click', function() {
-    var from = jQ(this).siblings('.btn_status:disabled')[0].title;
-    var to = this.title;
+    let from = jQ(this).siblings('.btn_status:disabled')[0].title;
+    let to = this.title;
     if (jQ('span#' + to + ' a').text() === '0') {
-      var htmlstr = "[<a href='javascript:void(0)' " +
+      let htmlstr = "[<a href='javascript:void(0)' " +
                     "onclick=\"showCaseRunsWithSelectedStatus(jQ('#id_filter')[0], '" +
                     jQ(this).attr('crs_id') +
                     "')\">0</a>]";
@@ -369,16 +369,16 @@ Nitrate.TestRuns.Details.on_load = function() {
     jQ('span#' + to + ' a').text(window.parseInt(jQ('span#' + to + ' a').text()) + 1);
     jQ('span#' + from + ' a').text(window.parseInt(jQ('span#' + from + ' a').text()) - 1);
 
-    var caseRunCount = window.parseInt(jQ('span#TOTAL').next().text()) || 0;
-    var passedCaseRunCount = window.parseInt(jQ('span#PASSED a').text()) || 0;
-    var errorCaseRunCount = window.parseInt(jQ('span#ERROR a').text()) || 0;
-    var failedCaseRunCount = window.parseInt(jQ('span#FAILED a').text()) || 0;
-    var waivedCaseRunCount = window.parseInt(jQ('span#WAIVED a').text()) || 0;
+    let caseRunCount = window.parseInt(jQ('span#TOTAL').next().text()) || 0;
+    let passedCaseRunCount = window.parseInt(jQ('span#PASSED a').text()) || 0;
+    let errorCaseRunCount = window.parseInt(jQ('span#ERROR a').text()) || 0;
+    let failedCaseRunCount = window.parseInt(jQ('span#FAILED a').text()) || 0;
+    let waivedCaseRunCount = window.parseInt(jQ('span#WAIVED a').text()) || 0;
 
-    var completedCasesCount = passedCaseRunCount + errorCaseRunCount + failedCaseRunCount + waivedCaseRunCount;
-    var completePercent = 100 * (completedCasesCount / caseRunCount).toFixed(2);
-    var unsuccessfulCasesCount = errorCaseRunCount + failedCaseRunCount;
-    var failedPercent = 100 * (unsuccessfulCasesCount / completedCasesCount).toFixed(2);
+    let completedCasesCount = passedCaseRunCount + errorCaseRunCount + failedCaseRunCount + waivedCaseRunCount;
+    let completePercent = 100 * (completedCasesCount / caseRunCount).toFixed(2);
+    let unsuccessfulCasesCount = errorCaseRunCount + failedCaseRunCount;
+    let failedPercent = 100 * (unsuccessfulCasesCount / completedCasesCount).toFixed(2);
 
     jQ('span#complete_percent').text(completePercent);
     jQ('div.progress-inner').attr('style', 'width:' + completePercent + '%');
@@ -386,7 +386,7 @@ Nitrate.TestRuns.Details.on_load = function() {
   });
 
   jQ('#btn_edit').on('click', function() {
-    var params = jQ(this).data('params');
+    let params = jQ(this).data('params');
     window.location.href = params[0] + '?from_plan=' + params[1];
   });
   jQ('#btn_clone').on('click', function() {
@@ -402,7 +402,7 @@ Nitrate.TestRuns.Details.on_load = function() {
     window.location.href = jQ(this).data('param') + '?format=xml&' + jQ('#id_form_case_runs').serialize();
   });
   jQ('.js-remove-tag').on('click', function() {
-    var params = jQ(this).data('params');
+    let params = jQ(this).data('params');
     removeRuntag(jQ('.js-tag-ul')[0], params[0], params[1]);
   });
   jQ('.js-add-tag').on('click', function() {
@@ -477,7 +477,7 @@ Nitrate.TestRuns.New.on_load = function() {
     toggleTestCaseContents(jQ(this).data('param'));
   });
   jQ('.js-remove-case').on('click', function() {
-    var params = jQ(this).data('params');
+    let params = jQ(this).data('params');
     removeItem(params[0], params[1]);
   });
 };
@@ -508,7 +508,7 @@ Nitrate.TestRuns.Clone.on_load = function() {
   jQ("input[type=checkbox][name^=select_property_id_]").each(function() {
     $this = jQ(this);
     $this.on('click', function(){
-      var parent = jQ(this).parent();
+      let parent = jQ(this).parent();
       if (this.checked) {
         jQ('select', parent).attr("disabled", false);
         jQ('input[type=hidden]', parent).attr("disabled", false);
@@ -546,9 +546,9 @@ Nitrate.TestRuns.ChooseRuns.on_load = function() {
     jQ('#help_assign').hide();
   });
   jQ('.js-toggle-button').on('click', function() {
-    var c = jQ(this).parents('.js-one-case');
-    var c_container = c.next();
-    var case_id = c.find('input[name="case"]').val();
+    let c = jQ(this).parents('.js-one-case');
+    let c_container = c.next();
+    let case_id = c.find('input[name="case"]').val();
     toggleTestCasePane({ 'case_id': case_id, 'casePaneContainer': c_container }, function() {
       c_container.children().attr('colspan', 9);
     });
@@ -678,7 +678,7 @@ function updateCaseRunStatus(e) {
 }
 
 function changeCaseRunOrder(run_id, case_run_id, sort_key) {
-  var nsk = window.prompt('Enter your new order number', sort_key); // New sort key
+  let nsk = window.prompt('Enter your new order number', sort_key); // New sort key
 
   if (!nsk) {
     return false;
@@ -728,8 +728,8 @@ function taggleSortCaseRun(event) {
     jQ('#id_table_cases .expandable').unbind();
 
     // init the tableDnD object
-    var table = document.getElementById('id_table_cases');
-    var tableDnD = new TableDnD();
+    let table = document.getElementById('id_table_cases');
+    let tableDnD = new TableDnD();
     tableDnD.init(table);
     jQ('#id_sort').html('Done Sorting');
   } else {
@@ -1179,10 +1179,10 @@ function addIssueToBatchCaseRunsHandler() {
   if (caseRunIds.length === 0) {
     window.alert(default_messages.alert.no_case_selected);
   } else {
-    var addIssueInfo = jQ(this).data('addIssueInfo');
+    let addIssueInfo = jQ(this).data('addIssueInfo');
     addIssueInfo.caseRunIds = caseRunIds;
-    var reloadInfo = jQ(this).data('reloadInfo');
-    var dialog = new AddIssueDialog();
+    let reloadInfo = jQ(this).data('reloadInfo');
+    let dialog = new AddIssueDialog();
     dialog.open(addIssueInfo, reloadInfo);
   }
 }
@@ -1229,19 +1229,19 @@ function removeIssueFromBatchCaseRunsHandler() {
 
 
 function showCommentForm() {
-  var dialog = getDialog();
+  let dialog = getDialog();
   let runs = getSelectedCaseRunIDs().case_run;
   if (!runs.length) {
     return window.alert(default_messages.alert.no_case_selected);
   }
-  var template = Handlebars.compile(jQ("#batch_add_comment_to_caseruns_template").html());
+  let template = Handlebars.compile(jQ("#batch_add_comment_to_caseruns_template").html());
   jQ(dialog).html(template());
 
-  var commentText = jQ('#commentText');
-  var commentsErr = jQ('#commentsErr');
+  let commentText = jQ('#commentText');
+  let commentsErr = jQ('#commentsErr');
   jQ('#btnComment').on('click', function() {
-    var error;
-    var comments = jQ.trim(commentText.val());
+    let error;
+    let comments = jQ.trim(commentText.val());
     if (!comments) {
       error = 'No comments given.';
     }

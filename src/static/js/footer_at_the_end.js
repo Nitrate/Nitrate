@@ -1,5 +1,5 @@
 function getWindowHeight() {
-  var windowHeight = 0;
+  let windowHeight = 0;
   if (typeof window.innerHeight === 'number') {
     windowHeight = window.innerHeight;
   } else {
@@ -13,13 +13,14 @@ function getWindowHeight() {
   }
   return windowHeight;
 }
+
 function setFooter() {
   if (document.getElementById) {
-    var windowHeight = getWindowHeight();
+    let windowHeight = getWindowHeight();
     if (windowHeight > 20) {
-      var contentHeight = document.getElementById('content').offsetHeight;
-      var footerElement = document.getElementById('footer');
-      var footerHeight  = footerElement.offsetHeight;
+      let contentHeight = document.getElementById('content').offsetHeight;
+      let footerElement = document.getElementById('footer');
+      let footerHeight  = footerElement.offsetHeight;
       if (windowHeight - (contentHeight + footerHeight) >= 150) {
         footerElement.style.position = 'absolute';
         footerElement.style.bottom = 0 + 'px';
@@ -30,9 +31,11 @@ function setFooter() {
     }
   }
 }
+
 window.onload = function() {
   setFooter();
 };
+
 window.onresize = function() {
   setFooter();
 };

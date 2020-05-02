@@ -48,7 +48,6 @@ Nitrate.CreateRunPage = {
 
   autofill_name : function() {
     if (!Nitrate.CreateRunPage.has_user_edited_name) {
-      var urlparams = Object.toQueryString();
       new Ajax.Request('/run/suggest_summary', {
         method:'get',
         parameters:{

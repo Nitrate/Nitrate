@@ -1,10 +1,9 @@
 // Create a dictionary to avoid polluting the global namespace:
-var Nitrate = window.Nitrate || {}; // Ironically, this global name is not respected. So u r on ur own.
+const Nitrate = window.Nitrate || {}; // Ironically, this global name is not respected. So u r on ur own.
 window.Nitrate = Nitrate;
 
 Nitrate.Utils = {};
-var SHORT_STRING_LENGTH = 100;
-var nil;
+const SHORT_STRING_LENGTH = 100;
 
 /*
     Utility function.
@@ -99,7 +98,7 @@ jQ(window).on('load', function(e) {
   }
 });
 
-var default_messages = {
+const default_messages = {
   'alert': {
     'no_case_selected': 'No cases selected! Please select at least one case.',
     'no_category_selected': 'No category selected! Please select a category firstly.',
@@ -138,7 +137,7 @@ var default_messages = {
  * http namespace and modules
  */
 (function() {
-  var http = Nitrate.http || {};
+  let http = Nitrate.http || {};
 
   http.URLConf = {
     _mapping: {
@@ -178,17 +177,16 @@ var default_messages = {
     },
 
     reverse: function(options) {
-      var name = options.name;
-      if (name === undefined) {
+      if (options.name === undefined) {
         return undefined;
       }
-      var arguments = options.arguments || {};
-      var urlpattern = this._mapping[name];
+      let urlpattern = this._mapping[options.name];
       if (urlpattern === undefined) {
           return undefined;
       }
-      var url = urlpattern;
-      for (var key in arguments) {
+      let url = urlpattern;
+      let arguments = options.arguments || {};
+      for (let key in arguments) {
           url = url.replace('$' + key, arguments[key].toString());
       }
       return url;
@@ -247,7 +245,7 @@ function setCookie(name, value, expires, path, domain, secure) {
 }
 
 function checkCookie() {
-  var exp = new Date();
+  let exp = new Date();
   exp.setTime(exp.getTime() + 1800000);
   // first write a test cookie
   setCookie("cookies", "cookies", exp, false, false, false);
@@ -263,17 +261,22 @@ function checkCookie() {
   }
 }
 
-function removeItem(item, tc_estimated_time) {
-  var tr_estimated_time = jQ('#estimated_time').data('time');
-  var remain_estimated_time = tr_estimated_time - tc_estimated_time;
-  var second_value = remain_estimated_time % 60;
-  var minute = parseInt(remain_estimated_time / 60);
-  var minute_value = minute % 60;
-  var hour = parseInt(minute / 60);
-  var hour_value = hour % 24;
-  var day_value = parseInt(hour / 24);
+/**
+ * Remove a case from test run new page.
+ * @param {string} item - the HTML id of a container element containing the case to be removed.
+ * @param {number} caseEstimatedTime - the case' estimated time.
+ */
+function removeItem(item, caseEstimatedTime) {
+  let tr_estimated_time = jQ('#estimated_time').data('time');
+  let remain_estimated_time = tr_estimated_time - caseEstimatedTime;
+  let second_value = remain_estimated_time % 60;
+  let minute = parseInt(remain_estimated_time / 60);
+  let minute_value = minute % 60;
+  let hour = parseInt(minute / 60);
+  let hour_value = hour % 24;
+  let day_value = parseInt(hour / 24);
 
-  var remain_estimated_time_value = day_value ? day_value + 'd' : '';
+  let remain_estimated_time_value = day_value ? day_value + 'd' : '';
   remain_estimated_time_value += hour_value ? hour_value + 'h' : '';
   remain_estimated_time_value += minute_value ? minute_value + 'm' : '';
   remain_estimated_time_value += second_value ? second_value + 's' : '';
@@ -289,12 +292,9 @@ function removeItem(item, tc_estimated_time) {
 }
 
 function splitString(str, num) {
-  let cut_for_dot = num - 3;
-
   if (str.length > num) {
-    return str.substring(0, cut_for_dot) + "...";
+    return str.substring(0, num - 3) + "...";
   }
-
   return str;
 }
 
@@ -665,9 +665,9 @@ function bind_component_selector_to_product(allow_blank, load, product_field, co
 
 // Stolen from http://www.webdeveloper.com/forum/showthread.php?t=161317
 function fireEvent(obj,evt) {
-  var fireOnThis = obj;
+  let fireOnThis = obj;
   if (document.createEvent) {
-    var evObj = document.createEvent('MouseEvents');
+    let evObj = document.createEvent('MouseEvents');
     evObj.initEvent( evt, true, false );
     fireOnThis.dispatchEvent(evObj);
   } else if(document.createEventObject) {
@@ -681,15 +681,15 @@ function postToURL(path, params, method) {
 
   // The rest of this code assumes you are not using a library.
   // It can be made less wordy if you use one.
-  var form = document.createElement("form");
+  let form = document.createElement("form");
   form.setAttribute("method", method);
   form.setAttribute("action", path);
 
   let hiddenField = null;
 
-  for(var key in params) {
+  for(let key in params) {
     if (typeof params[key] === 'object') {
-      for (var i in params[key]) {
+      for (let i in params[key]) {
         if (typeof params[key][i] !== 'string') {
           continue;
         }
