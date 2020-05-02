@@ -3,7 +3,7 @@
 		<div class='marginLeft fixed'>
 			{% if perms.testplans.change_testplancomponent %}
 				<input type="hidden" name="plan" value="{{ test_plan.pk }}" />
-				<input id="js-update-components" class="component icon_plan left_float" type="button" value="Update components" >
+				<input class="component icon_plan left_float js-update-components" type="button" value="Update components" >
 				<input class="delete icon_plan left_float" type="submit" name="a" value="Remove" />
 			{% endif %}
 		</div>
