@@ -11,13 +11,11 @@ jQ(window).on('load', function() {
 });
 
 function loginTCMS() {
-  var username = jQ('#id_username').val();
-
-  if (!username.replace(/\040/g, "").replace(/%20/g, "").length) {
+  let username = jQ('#id_username').val().replace(/\040/g, "").replace(/%20/g, "");
+  if (username.length === 0) {
     jQ("#id_username").effect('shake', 100).focus();
     return false;
   }
-
   jQ('#id_login_form').submit();
 }
 

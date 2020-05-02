@@ -30,7 +30,7 @@ Nitrate.TestCases.AdvanceList.on_load = function() {
       return false;
     } else {
       jQ(this).addClass('locked');
-      var element = jQ(this).children()[0];
+      let element = jQ(this).children()[0];
       if (jQ(element).is('.collapse-all')) {
         this.title = 'Collapse all cases';
         blinddownAllCases(element);
@@ -42,9 +42,9 @@ Nitrate.TestCases.AdvanceList.on_load = function() {
   });
 
   jQ('.expandable').on('click', function (e) {
-    var c = jQ(this).parent()[0]; // Container
-    var c_container = jQ(c).next()[0]; // Content Containers
-    var case_id = jQ(c).find('input[name="case"]')[0].value;
+    let c = jQ(this).parent()[0]; // Container
+    let c_container = jQ(c).next()[0]; // Content Containers
+    let case_id = jQ(c).find('input[name="case"]')[0].value;
 
     toggleTestCasePane({ case_id: case_id, casePaneContainer: jQ(c_container) });
     toggleExpandArrow({ caseRowContainer: jQ(c), expandPaneContainer: jQ(c_container) });
@@ -62,7 +62,7 @@ Nitrate.TestCases.AdvanceList.on_load = function() {
     blinddownAllCases();
   }
 
-  var listParams = Nitrate.TestCases.List.Param;
+  let listParams = Nitrate.TestCases.List.Param;
   jQ('#case_advance_printable').on('click', function() {
     postToURL(listParams.case_printable, Nitrate.Utils.formSerialize(this.form));
   });
@@ -94,7 +94,7 @@ Nitrate.TestCases.List.on_load = function() {
       return false;
     } else {
       jQ(this).addClass('locked');
-      var element = jQ(this).children()[0];
+      let element = jQ(this).children()[0];
       if (jQ(element).is('.collapse-all')) {
         this.title = "Collapse all cases";
         blinddownAllCases(element);
@@ -133,10 +133,10 @@ Nitrate.TestCases.List.on_load = function() {
     ]
   });
   jQ("#testcases_table tbody tr td.expandable").on("click", function() {
-    var tr = jQ(this).parent();
-    var caseRowContainer = tr;
-    var case_id = caseRowContainer.find('input[name="case"]').attr('value');
-    var detail_td = '<tr class="case_content hide" style="display: none;"><td colspan="11">' +
+    let tr = jQ(this).parent();
+    let caseRowContainer = tr;
+    let case_id = caseRowContainer.find('input[name="case"]').attr('value');
+    let detail_td = '<tr class="case_content hide" style="display: none;"><td colspan="11">' +
       '<div id="id_loading_' + case_id + '" class="ajax_loading"></div></td></tr>';
     if (!caseRowContainer.next().hasClass('hide')) {
       caseRowContainer.after(detail_td);
@@ -154,7 +154,7 @@ Nitrate.TestCases.List.on_load = function() {
     }
   });
 
-  var listParams = Nitrate.TestCases.List.Param;
+  let listParams = Nitrate.TestCases.List.Param;
   jQ('#case_list_printable').on('click', function() {
     postToURL(listParams.case_printable, Nitrate.Utils.formSerialize(this.form));
   });
@@ -338,10 +338,10 @@ Nitrate.TestCases.Create.on_load = function() {
   SelectFilter.init("id_component", "component", 0, "/static/admin/");
   //init category and components
   getCategoriesByProductId(false, jQ('#id_product')[0], jQ('#id_category')[0]);
-  var from = 'id_component_from';
-  var to = 'id_component_to';
-  var from_field = jQ('#' + from)[0];
-  var to_field = jQ('#' + to)[0];
+  let from = 'id_component_from';
+  let to = 'id_component_to';
+  let from_field = jQ('#' + from)[0];
+  let to_field = jQ('#' + to)[0];
   jQ(to_field).html('');
   getComponentsByProductId(false, jQ('#id_product')[0], from_field, function() {
     SelectBox.cache[from] = [];
@@ -352,15 +352,15 @@ Nitrate.TestCases.Create.on_load = function() {
   });
   // bind change on product to update component and category
   jQ('#id_product').change(function () {
-    var from = 'id_component_from';
-    var to = 'id_component_to';
-    var from_field = jQ('#' + from)[0];
-    var to_field = jQ('#' + to)[0];
+    let from = 'id_component_from';
+    let to = 'id_component_to';
+    let from_field = jQ('#' + from)[0];
+    let to_field = jQ('#' + to)[0];
     jQ(to_field).html('');
     getComponentsByProductId(false, jQ('#id_product')[0], from_field, function() {
       SelectBox.cache[from] = [];
       SelectBox.cache[to] = [];
-      for (var i = 0; (node = from_field.options[i]); i++) {
+      for (let i = 0; (node = from_field.options[i]); i++) {
         SelectBox.cache[from].push({value: node.value, text: node.text, displayed: 1});
       }
     });
@@ -444,9 +444,9 @@ Nitrate.TestCases.Clone.on_load = function() {
  *                              information.
  */
 function toggleExpandArrow(options) {
-  var container = options.caseRowContainer;
-  var content_container = options.expandPaneContainer;
-  var blind_icon = container.find('img.blind_icon');
+  let container = options.caseRowContainer;
+  let content_container = options.expandPaneContainer;
+  let blind_icon = container.find('img.blind_icon');
   if (content_container.css('display') === 'none') {
     blind_icon.removeClass('collapse').addClass('expand').attr('src', '/static/images/t1.gif');
   } else {
@@ -614,7 +614,7 @@ function blindupAllCases(element) {
 
 // Deprecated. Remove when it's unusable any more.
 function changeCaseOrder(parameters, callback) {
-  var nsk = '';
+  let nsk = '';
   if (parameters.hasOwnProperty('sortkey')) {
     nsk = window.prompt('Enter your new order number', parameters.sortkey);   // New sort key
     if (parseInt(nsk) === parseInt(parameters.sortkey)) {
@@ -640,17 +640,15 @@ function changeCaseOrder(parameters, callback) {
     window.alert('The value must be a number and limit between 0 to 32300.');
     return false;
   }
-  var ctype = 'testcases.testcaseplan';
-  var object_pk = parameters.testcaseplan;
-  var field = 'sortkey';
-  var value = nsk;
-  var vtype = 'int';
 
-  updateObject(ctype, object_pk, field, value, vtype, callback);
+  updateObject(
+    'testcases.testcaseplan', parameters.testcaseplan,
+    'sortkey', 'nsk', 'int', callback
+  );
 }
 
 function changeCaseOrder2(parameters, callback) {
-  var nsk = '';
+  let nsk = '';
   if (parameters.hasOwnProperty('sortkey')) {
     nsk = window.prompt('Enter your new order number', parameters.sortkey);   // New sort key
     if (parseInt(nsk) === parseInt(parameters.sortkey)) {
@@ -695,11 +693,11 @@ function changeCaseOrder2(parameters, callback) {
 }
 
 function addCaseIssue(form) {
-  var addIssueForm = jQ(form);
-  var issueKey = addIssueForm.find('input#issue_key').val().trim();
+  let addIssueForm = jQ(form);
+  let issueKey = addIssueForm.find('input#issue_key').val().trim();
 
-  var selectedIssueTrackerOption = addIssueForm.find('option:selected');
-  var issueKeyRegex = selectedIssueTrackerOption.data('issue-key-regex');
+  let selectedIssueTrackerOption = addIssueForm.find('option:selected');
+  let issueKeyRegex = selectedIssueTrackerOption.data('issue-key-regex');
   if (! RegExp(issueKeyRegex).test(issueKey)) {
     alert('Issue key is malformat.');
     return;
