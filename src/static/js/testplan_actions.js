@@ -839,9 +839,6 @@ Nitrate.TestPlans.Details = {
       let params = jQ(this).data('params');
       deleConfirm(params[0], 'from_plan', params[1]);
     });
-    jQ('#js-update-components').on('click', function() {
-      constructPlanComponentModificationDialog();
-    });
 
     let treeview = jQ('#treeview')[0];
     let planPK = parseInt(jQ('#id_tree_container').data('param'));
@@ -2052,6 +2049,10 @@ function constructPlanComponentsZone(container, parameters, callback) {
       clickedSelectAll(this, jQ(this).closest('form')[0], 'component');
     });
 
+    jQ('.js-update-components').click(function() {
+      constructPlanComponentModificationDialog();
+    });
+
     var c_count = jQ('tbody#component').attr('count');
     jQ('#component_count').text(c_count);
   };
@@ -2076,7 +2077,6 @@ function constructPlanComponentsZone(container, parameters, callback) {
   });
 }
 
-// No invocation.
 function constructPlanComponentModificationDialog(container) {
   if (!container) {
     container = getDialog();
