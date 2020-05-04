@@ -360,11 +360,6 @@ function json_failure(xhr) {
   return false;
 }
 
-function html_failure() {
-  window.alert(default_messages.alert.ajax_failure);
-  return false;
-}
-
 function addBookmark(url, method, parameters, callback) {
   parameters.a = 'add';
   // FIXME: use POST
@@ -1012,22 +1007,15 @@ function getForm(container, app_form, parameters, callback, format) {
  *                              server side.
  */
 function updateRunStatus(content_type, object_pk, field, value, value_type, callback) {
-  if (!value_type) {
-    value_type = 'str';
-  }
-  if (typeof object_pk === 'object') {
-    object_pk = object_pk.join(',');
-  }
-
   postRequest({
     url: '/ajax/update/case-run-status',
     success: callback,
     data: {
       content_type: content_type,
-      object_pk: object_pk,
+      object_pk: Array.isArray(object_pk) ? object_pk.join(',') : object_pk,
       field: field,
       value: value,
-      value_type: value_type
+      value_type: value_type || 'str'
     }
   });
 }
@@ -1046,23 +1034,15 @@ function updateRunStatus(content_type, object_pk, field, value, value_type, call
  *                                reloading current page will be triggered as a result.
  */
 function updateObject(content_type, object_pk, field, value, value_type, callback) {
-  if (!value_type) {
-    value_type = 'str';
-  }
-
-  if (typeof object_pk === 'object') {
-    object_pk = object_pk.join(',');
-  }
-
   postRequest({
     url: '/ajax/update/',
     success: callback,
     data: {
       content_type: content_type,
-      object_pk: object_pk,
+      object_pk: Array.isArray(object_pk) ? object_pk.join(',') : object_pk,
       field: field,
       value: value,
-      value_type: value_type
+      value_type: value_type || 'str'
     }
   });
 }
@@ -1076,7 +1056,7 @@ function getDialog(element) {
 
 function showDialog(element) {
   return jQ(getDialog(element)).show()[0];
-};
+}
 
 function clearDialog(element) {
   let dialog = getDialog(element);

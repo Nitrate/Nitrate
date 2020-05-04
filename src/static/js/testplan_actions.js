@@ -1834,9 +1834,8 @@ function constructPlanDetailsCasesZoneCallback(options) {
 
 
 function constructPlanDetailsCasesZone(container, plan_id, parameters) {
-  if (typeof container === 'string') {
-    container = jQ('#' + container)[0];
-  }
+  container =
+    typeof container === 'string' ? jQ('#' + container)[0] : container;
 
   jQ(container).html('<div class="ajax_loading"></div>');
 
@@ -1928,9 +1927,8 @@ function constructPlanDetailsCasesZone(container, plan_id, parameters) {
 }
 
 function constructPlanComponentsZone(container, parameters, callback) {
-  if (!parameters) {
-    parameters = { plan: Nitrate.TestPlans.Instance.pk };
-  }
+  container =
+    typeof container === 'string' ? jQ('#' + container) : container;
 
   let url = Nitrate.http.URLConf.reverse({ name: 'plan_components' });
 
@@ -1977,9 +1975,9 @@ function constructPlanComponentsZone(container, parameters, callback) {
 
   sendHTMLRequest({
     url: url,
-    data: parameters,
+    data: parameters || {plan: Nitrate.TestPlans.Instance.pk},
     traditional: true,
-    container: typeof container === 'string' ? jQ('#' + container) : jQ(container),
+    container: container,
     callbackAfterFillIn: complete,
   });
 }
