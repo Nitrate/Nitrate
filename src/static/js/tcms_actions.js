@@ -49,6 +49,157 @@ Nitrate.Utils.formSerialize = function(f) {
   return data;
 };
 
+/**
+ * Send a AJAX request to the backend server and handle the response. The response from backend is
+ * expected to be in JSON data format.
+ * @param {object} options - configure the jQuery.ajax call.
+ * @param {string} options.url - url of the resource.
+ * @param {string} [options.method] - type of the request. Default is POST.
+ * @param {object} [options.data] - request data.
+ * @param {boolean} [options.traditional] - whether to use the traditional style of param
+ *                                          serialization. Refer to traditional argument of
+ *                                          jQuery.ajax.
+ * @param {boolean} [options.sync] - send the request in a synchronous way.
+ * @param {string} [options.forbiddenMessage] - alternative message shown when server responses 403.
+ * @param {string} [options.badRequestMessage] - alternative message shown when server responses 400.
+ * @param {string} [options.errorMessage] - alternative message shown when server responses
+ *                                          unsuccessfully like 500 and 400. If omitted, default
+ *                                          message will be shown for each specific response,
+ *                                          please refer to the code.
+ * @param {function} [options.success] - hook to success option of jQuery.ajax. If omitted, a
+ *                                       default callback will be hooked to reload the page.
+ */
+function sendAjaxRequest(options) {
+  jQ.ajax(options.url, {
+    type: options.method || 'post',
+    dataType: 'json',
+    data: options.data,
+    async: !options.sync,
+    traditional: options.traditional,
+    success: options.success || function() { window.location.reload(); },
+    statusCode: {
+      500: function () {
+        if (options.errorMessage !== undefined) {
+          window.alert(options.errorMessage);
+          return;
+        }
+        window.alert(
+          'Something wrong in the server. ' +
+          'Please contact administrator to deal with this issue.'
+        );
+      },
+      // How about 404?
+      //
+      400: function (xhr) {
+        if (options.errorMessage !== undefined) {
+          window.alert(options.errorMessage);
+          return;
+        }
+        if (options.badRequestMessage !== undefined) {
+          window.alert(options.badRequestMessage);
+          return;
+        }
+
+        let data = JSON.parse(xhr.responseText);
+        // response property will be deprecated from server response.
+        // TODO: after the AJAX response is unified, just use the responseJSON.message.
+        let msg = data.message || data.response || data.messages || data;
+        if (Array.isArray(msg)) {
+          window.alert(msg.join('\n'));
+        } else {
+          window.alert(msg);
+        }
+      },
+      403: function () {
+        window.alert(
+          options.forbiddenMessage || 'You are not allowed to perform this operation.'
+        );
+      }
+    }
+  });
+}
+
+/**
+ * Wrapper of sendAjaxRequest to send an HTTP GET request.
+ * @param {object} options
+ */
+function getRequest(options) {
+  let forwardOptions = Object.assign({}, options, {'method': 'GET'})
+  return sendAjaxRequest(forwardOptions);
+}
+
+/**
+ * Wrapper of sendAjaxRequest to send an HTTP POST request.
+ * @param {object} options
+ */
+function postRequest(options) {
+  let forwardOptions = Object.assign({}, options, {'method': 'POST'})
+  return sendAjaxRequest(forwardOptions);
+}
+
+/**
+ * Send request and expect server responses content in HTML.
+ * @param {object} options - configure the jQuery.ajax call.
+ * @param {string} options.url - url of the resource.
+ * @param {string} [options.method] - type of the request. Default is GET.
+ * @param {object} [options.data] - request data.
+ * @param {boolean} [options.traditional] - whether to use the traditional style of param
+ *                                          serialization. Refer to traditional argument of
+ *                                          jQuery.ajax.
+ * @param {string} [options.forbiddenMessage] - alternative message shown when server responses 403.
+ * @param {string} [options.badRequestMessage] - alternative message shown when server responses 400.
+ * @param {string} [options.notFoundMessage] - alternative message shown when server responses 404.
+ * @param {function} [options.success] - hook to success option of jQuery.ajax. If omitted, a
+ *                                       default callback will be hooked to fill the content
+ *                                       returned from server side in the specified container
+ *                                       element and invoke the callback if specified.
+ * @param {HTMLElement} [options.container] - an HTML container element which the content
+ *                                            returned from server will be filled in.
+ * @param {function} [options.callbackAfterFillIn] - a function will be called after the returned
+ *                                                   content is filled in the given container.
+ */
+function sendHTMLRequest(options) {
+  jQ.ajax(options.url, {
+    type: options.method || 'GET',
+    data: options.data,
+    dataType: 'html',
+    traditional: options.traditional,
+    success: options.success || function (data, textStatus, xhr) {
+      jQ(options.container).html(data);
+      if (options.callbackAfterFillIn !== undefined)
+        options.callbackAfterFillIn(xhr)
+    },
+    statusCode: {
+      404: function (xhr) {
+        window.alert(
+          options.notFoundMessage ||
+          xhr.responseText ||
+          'Requested resource is not found.'
+        );
+      },
+      400: function (xhr) {
+        window.alert(
+          options.badRequestMessage ||
+          xhr.responseText ||
+          'The request is invalid to be processed by the server.'
+        );
+      },
+      403: function (xhr) {
+        window.alert(
+          options.forbiddenMessage ||
+          xhr.responseText ||
+          'You are not allowed to do this operation.'
+        );
+      }
+    }
+  });
+}
+
+function postHTMLRequest(options) {
+  let forwardOptions = Object.assign({}, options, {method: 'POST'});
+  sendHTMLRequest(forwardOptions);
+}
+
 jQ(window).on('load', function(e) {
   // Initial the drop menu
   jQ('.nav_li').hover(
@@ -61,6 +212,7 @@ jQ(window).on('load', function(e) {
     jQ('#id_bookmark_iform').on('submit', function(e) {
       e.stopPropagation();
       e.preventDefault();
+
       let url = this.action;
       let dialog = showDialog();
       let parameters = Nitrate.Utils.formSerialize(this);
@@ -70,14 +222,12 @@ jQ(window).on('load', function(e) {
         parameters.name = document.title;
       }
 
-      jQ.ajax(url, {
-        type: this.method,
+      sendHTMLRequest({
+        url: url,
         data: parameters,
-        success: function (data) {
-          jQ(dialog).html(data);
-        },
-        complete: function(jqXHR, textStatus) {
-          jQ(dialog).html(constructForm(jqXHR.responseText, url, function (e) {
+        container: dialog,
+        callbackAfterFillIn: function(xhr) {
+          jQ(dialog).html(constructForm(xhr.responseText, url, function (e) {
             e.stopPropagation();
             e.preventDefault();
 
@@ -88,11 +238,6 @@ jQ(window).on('load', function(e) {
             });
           }));
         },
-        statusCode: {
-          400: function (xhr) {
-            window.alert(xhr);
-          }
-        }
       });
     });
   }
@@ -198,6 +343,7 @@ const default_messages = {
 
 
 // Exceptions for Ajax
+// FIXME: remove this function from here eventually
 function json_failure(xhr) {
   let responseJSON = jQ.parseJSON(xhr.responseText);
   // response property will be deprecated from server response.
@@ -221,19 +367,8 @@ function html_failure() {
 
 function addBookmark(url, method, parameters, callback) {
   parameters.a = 'add';
-
-  jQ.ajax({
-    'url': url,
-    'type': method,
-    'dataType': 'json',
-    'data': parameters,
-    'success': function (data, textStatus, jqXHR) {
-      callback(data);
-    },
-    'error': function (jqXHR, textStatus, errorThrown) {
-      json_failure(jqXHR);
-    }
-  });
+  // FIXME: use POST
+  getRequest({url: url, data: parameters, success: callback});
 }
 
 function setCookie(name, value, expires, path, domain, secure) {
@@ -375,14 +510,14 @@ function getBuildsByProductId(allow_blank, product_field, build_field) {
     is_active = true;
   }
 
-  jQ.ajax('/management/getinfo/', {
-    type: 'GET',
-    dataType: 'json',
+  getRequest({
+    url: '/management/getinfo/',
     data: {
       'info_type': 'builds',
       'product_id': product_id,
       'is_active': is_active
     },
+    errorMessage: 'Update builds failed.',
     success: function (data) {
       setUpChoices(
         build_field,
@@ -396,14 +531,10 @@ function getBuildsByProductId(allow_blank, product_field, build_field) {
         }
       }
     },
-    error: function (jqXHR, textStatus, errorThrown) {
-      if (jqXHR.readyState !== 0 && errorThrown !== "") {
-        window.alert("Update builds and envs failed");
-      }
-    }
   });
 }
 
+// TODO: remove this function. It is not used.
 function getEnvsByProductId(allow_blank, product_field) {
   if (!product_field) {
     product_field = jQ('#id_product')[0];
@@ -422,23 +553,14 @@ function getEnvsByProductId(allow_blank, product_field) {
     return true;
   }
 
-  new Ajax.Request(
-    '/management/getinfo/',
-    {
-      method:'get',
-      parameters: {
-        info_type: 'envs',
-        product_id: product_id,
-        args: args,
-      },
-      requestHeaders: {Accept: 'application/json'
-    },
-    onSuccess: function(t) {
-      let returnobj = jQ.parseJSON(t.responseText);
-
+  getRequest({
+    url: '/management/getinfo/',
+    data: {info_type: 'envs', product_id: product_id, args: args},
+    errorMessage: 'Update builds and envs failed',
+    success: function (data) {
       setUpChoices(
         jQ('#id_env_id')[0],
-        returnobj.map(function(o) {return [o.pk, o.fields.name];}),
+        data.map(function(o) {return [o.pk, o.fields.name];}),
         allow_blank
       );
 
@@ -446,11 +568,6 @@ function getEnvsByProductId(allow_blank, product_field) {
         if (jQ('#id_env_id').html() === '') {
           window.alert('You should create new enviroment first before create new run');
         }
-      }
-    },
-    onFailure: function(jqXHR, textStatus, errorThrown) {
-      if (jqXHR.readyState !== 0 && errorThrown !== "") {
-        alert("Update builds and envs failed");
       }
     }
   });
@@ -476,9 +593,8 @@ function getVersionsByProductId(allow_blank, product_field, version_field) {
       return true;
   }
 
-  jQ.ajax('/management/getinfo/', {
-    type: 'GET',
-    dataType: 'json',
+  getRequest({
+    url: '/management/getinfo/',
     data: {'info_type': 'versions', 'product_id': product_id},
     success: function (data) {
       setUpChoices(
@@ -487,11 +603,7 @@ function getVersionsByProductId(allow_blank, product_field, version_field) {
         allow_blank
       );
     },
-    error: function (jqXHR, textStatus, errorThrown) {
-      if (jqXHR.readyState !== 0 && errorThrown !== "") {
-        window.alert("Update versions failed");
-      }
-    }
+    errorMessage: 'Update versions failed.',
   });
 }
 
@@ -524,10 +636,10 @@ function getComponentsByProductId(allow_blank, product_field, component_field, c
     return true;
   }
 
-  jQ.ajax('/management/getinfo/', {
-    type: 'GET',
+  getRequest({
+    url: '/management/getinfo/',
     data: parameters,
-    dataType: 'json',
+    errorMessage: 'Update components failed.',
     success: function (data) {
       setUpChoices(
         component_field,
@@ -539,11 +651,6 @@ function getComponentsByProductId(allow_blank, product_field, component_field, c
         callback.call();
       }
     },
-    error: function (jqXHR, textStatus, errorThrown) {
-      if (jqXHR.readyState !== 0 && errorThrown !== "") {
-        window.alert("Update components failed");
-      }
-    }
   });
 }
 
@@ -572,25 +679,20 @@ function getCategoriesByProductId(allow_blank, product_field, category_field) {
     return true;
   }
 
-  jQ.ajax('/management/getinfo/', {
-    type: 'GET',
-    dataType: 'json',
+  getRequest({
+    url: '/management/getinfo/',
     data: {
-      'info_type': 'categories',
-      'product_id': product_field.selectedOptions[0].value
+      info_type: 'categories',
+      product_id: product_field.selectedOptions[0].value
     },
+    errorMessage: 'Update category failed.',
     success: function (data) {
       setUpChoices(
         category_field,
-        data.map(function(o) { return [o.pk, o.fields.name]; }),
+        data.map(function(o) {return [o.pk, o.fields.name];}),
         allow_blank
       );
     },
-    error: function (jqXHR, textStatus, errorThrown) {
-      if (jqXHR.readyState !== 0 && errorThrown !== "") {
-        alert("Update category failed");
-      }
-    }
   });
 }
 
@@ -716,35 +818,36 @@ function postToURL(path, params, method) {
 function constructTagZone(container, parameters) {
   jQ(container).html('<div class="ajax_loading"></div>');
 
-  jQ.ajax({
-    'url': '/management/tags/',
-    'type': 'GET',
-    'data': parameters,
-    'success': function (data, textStatus, jqXHR) {
-      jQ(container).html(data);
-    },
-    'complete': function () {
+  sendHTMLRequest({
+    url: '/management/tags/',
+    data: parameters,
+    container: container,
+    callbackAfterFillIn: function () {
       jQ('#id_tags').autocomplete({
+        'minLength': 2,
+        'appendTo': '#id_tags_autocomplete',
         'source': function(request, response) {
-          jQ.ajax('/management/getinfo/', {
+          sendHTMLRequest({
+            url: '/management/getinfo/',
             data: {
-              'name__startswith': request.term,
-              'info_type': 'tags',
-              'format': 'ulli',
-              'field': 'name'
+              name__startswith: request.term,
+              info_type: 'tags',
+              format: 'ulli',
+              field: 'name'
             },
             success: function(data) {
               let processedData = [];
               if (data.indexOf('<li>') > -1) {
-                processedData = data.slice(data.indexOf('<li>') + 4, data.lastIndexOf('</li>'))
-                  .split('<li>').join('').split('</li>');
+                processedData = data
+                  .slice(data.indexOf('<li>') + 4, data.lastIndexOf('</li>'))
+                  .split('<li>')
+                  .join('')
+                  .split('</li>');
               }
               response(processedData);
             }
           });
         },
-        'minLength': 2,
-        'appendTo': '#id_tags_autocomplete'
       });
 
       jQ('#id_tag_form').on('submit', function(e) {
@@ -755,7 +858,7 @@ function constructTagZone(container, parameters) {
       });
 
       jQ('#tag_count').text(jQ('tbody#tag').attr('count'));
-    }
+    },
   });
 }
 
@@ -787,14 +890,11 @@ function editTag(container, tag) {
   let parameters = Nitrate.Utils.formSerialize(jQ('#id_tag_form')[0]);
   parameters.tags = nt;
 
-  jQ.ajax({
-    'url': '/management/tags/',
-    'type': 'GET',
-    'data': parameters,
-    'success': function (data, textStatus, jqXHR) {
-      jQ(container).html(data);
-    },
-    'complete': function () {
+  sendHTMLRequest({
+    url: '/management/tags/',
+    data: parameters,
+    container: container,
+    callbackAfterFillIn: function () {
       removeTag(container, tag);
     }
   });
@@ -805,69 +905,42 @@ function addBatchTag(parameters, callback, format) {
   parameters.t = 'json';
   parameters.f = format;
 
-  jQ.ajax('/management/tags/', {
-    type: 'GET',
+  sendHTMLRequest({
+    url: '/management/tags/',
     data: parameters,
-    dataType: 'json',
     traditional: true,
-    success: function (data, textStatus, jqXHR) {
-      if (!format) {
-        if (callback) {callback.call();}
-      } else {
-        callback(jqXHR);
-      }
-    },
-    statusCode: {
-      400: function (xhr) {
-        json_failure(xhr);
-      },
-      403: function () {
-        window.alert('You are not allowed to perform this operation.')
-      }
-    },
+    success: function (data, textStatus, xhr) { callback(xhr); },
   });
 }
 
 function removeComment(form, callback) {
   let parameters = Nitrate.Utils.formSerialize(form);
 
-  jQ.ajax(form.action, {
-    type: form.method,
-    dataType: 'json',
+  postRequest({
+    url: form.action,
     data: parameters,
     success: function (data) {
       updateCommentsCount(parameters.object_pk, false);
       callback(data);
-    },
-    statusCode: {
-      400: function (xhr) {
-        json_failure(xhr);
-      },
-      403: function () {
-        window.alert('You are not allowed to perform this operation.')
-      }
     },
   });
 }
 
 
 function submitComment(container, parameters, callback) {
+  // FIXME: Remove parameter container, it is not useless here.
   jQ(container).html('<div class="ajax_loading"></div>');
 
-  jQ.ajax({
-    'url': '/comments/post/',
-    'type': 'POST',
-    'dataType': 'json',
-    'data': parameters,
-    'success': function (data, textStatus, jqXHR) {
-      jQ(container).html(data);
-    },
-    'complete': function () {
+  postRequest({
+    url: '/comments/post/',
+    data: parameters,
+    success: function () {
       updateCommentsCount(parameters.object_pk, true);
       if (callback) callback();
     }
   });
 }
+
 
 function updateCommentsCount(caseId, increase) {
   let commentDiv = jQ("#" + caseId + "_case_comment_count");
@@ -900,16 +973,14 @@ function previewPlan(parameters, action, callback, notice, s, c) {
   clearDialog();
   jQ(dialog).show();
 
-  jQ.ajax({
-    'url': '/plans/',
-    'type': 'GET',
-    'data': Object.assign({}, parameters, {t: 'html', f: 'preview'}),
-    'success': function (data, textStatus, jqXHR) {
-      jQ(dialog).html(constructForm(jqXHR.responseText, action, callback, notice, s, c));
+  sendHTMLRequest({
+    url: '/plans/',
+    data: Object.assign({}, parameters, {t: 'html', f: 'preview'}),
+    success: function (data, textStatus, xhr) {
+      jQ(dialog).html(
+        constructForm(xhr.responseText, action, callback, notice, s, c)
+      );
     },
-    'error': function (jqXHR, textStatus, errorThrown) {
-      html_failure();
-    }
   });
 }
 
@@ -921,17 +992,11 @@ function getForm(container, app_form, parameters, callback, format) {
   parameters.app_form = app_form;
   parameters.format = format;
 
-  jQ.ajax(Nitrate.http.URLConf.reverse({ name: 'get_form'}), {
-    type: 'GET',
+  sendHTMLRequest({
+    url: Nitrate.http.URLConf.reverse({ name: 'get_form'}),
     data: parameters,
-    success: function (data, textStatus, jqXHR) {
-      jQ(container).html(data);
-      callback(jqXHR);
-    },
-    error: function (jqXHR, textStatus, errorThrown) {
-      window.alert('Getting form get errors');
-      return false;
-    }
+    container: container,
+    callbackAfterFillIn: callback
   });
 }
 
@@ -950,36 +1015,35 @@ function updateRunStatus(content_type, object_pk, field, value, value_type, call
   if (!value_type) {
     value_type = 'str';
   }
-
   if (typeof object_pk === 'object') {
     object_pk = object_pk.join(',');
   }
-  jQ.ajax({
-    'url': '/ajax/update/case-run-status',
-    'type': 'POST',
-    'dataType': 'json',
-    'data': {
-      'content_type': content_type,
-      'object_pk': object_pk,
-      'field': field,
-      'value': value,
-      'value_type': value_type
-    },
-    'success': function () { callback(); },
-    'error': function (xhr) { json_failure(xhr); }
+
+  postRequest({
+    url: '/ajax/update/case-run-status',
+    success: callback,
+    data: {
+      content_type: content_type,
+      object_pk: object_pk,
+      field: field,
+      value: value,
+      value_type: value_type
+    }
   });
 }
 
 /**
  * Update one object property at a time.
- * @param content_type
- * @param object_pk
- * @param field
- * @param value
- * @param value_type
- * @param {function} callback - a function will be called when AJAX request succeeds. This function
- *                              should accept only one argument, that is the parsed JSON data
- *                              returned from server side.
+ * @param {string} content_type
+ * @param {number} object_pk
+ * @param {string} field
+ * @param {string} value
+ * @param {string} value_type
+ * @param {function} [callback] - a function will be called when AJAX request succeeds. This
+ *                                function should accept only one argument, that is the parsed JSON
+ *                                data returned from server side. If omitted, it will cause
+ *                                undefined is passed to postRequest, and default behavior of
+ *                                reloading current page will be triggered as a result.
  */
 function updateObject(content_type, object_pk, field, value, value_type, callback) {
   if (!value_type) {
@@ -990,57 +1054,15 @@ function updateObject(content_type, object_pk, field, value, value_type, callbac
     object_pk = object_pk.join(',');
   }
 
-  jQ.ajax('/ajax/update/', {
-    type: 'POST',
-    dataType: 'json',
+  postRequest({
+    url: '/ajax/update/',
+    success: callback,
     data: {
-      'content_type': content_type,
-      'object_pk': object_pk,
-      'field': field,
-      'value': value,
-      'value_type': value_type
-    },
-    success: function (data) {
-      callback(data);
-    },
-    error: function (jqXHR) {
-      json_failure(jqXHR);
-    }
-  });
-}
-
-/**
- * Get info and update specific objects
- * @param {object} parameters - Use for getInfo method
- * @param {string} content_type - use for updateObject method
- * @param {number|number[]} object_pks - Int/Array - use for updateObject method
- * @param {string} field - use for updateObject method
- * @callback callback - use for updateObject method
- */
-function getInfoAndUpdateObject(parameters, content_type, object_pks, field) {
-  jQ.ajax('/management/getinfo/', {
-    type: 'GET',
-    dataType: 'json',
-    data: parameters,
-    success: function (data) {
-      // FIXME: Display multiple items and let user to select one
-      if (data.length === 0) {
-        window.alert('Nothing found in database');
-        return false;
-      }
-
-      if (data.length > 1) {
-        window.alert('Multiple instances reached, please define the condition more clear.');
-        return false;
-      }
-
-      updateObject(content_type, object_pks, field, data[0].pk, 'str', function () {
-        window.location.reload();
-      });
-    },
-    error: function (jqXHR, textStatus, errorThrown) {
-      window.alert("Get info " + parameters.info_type + " failed");
-      return false;
+      content_type: content_type,
+      object_pk: object_pk,
+      field: field,
+      value: value,
+      value_type: value_type
     }
   });
 }

@@ -151,17 +151,15 @@ function AddIssueDialog() {
           data.link_external_tracker = 'on';
         }
 
-        jQ.ajax({
+        // FIXME: should be POST
+        getRequest({
           url: '/run/' + addIssueInfo.runId + '/issues/',
-          // FIXME: should be POST
-          method: 'get',
-          dataType: 'json',
           data: data,
           traditional: true,
 
           // After adding an issue successfully, number of issues inside the run
           // page has to be updated and reload case run detail content eventually.
-          success: function(responseJSON, textStatus, jqXHR) {
+          success: function(data) {
             // After succeeding to add issue, we close the add dialog.
             dialog.dialog('close');
 
@@ -177,18 +175,14 @@ function AddIssueDialog() {
               // When add issue to a case run, only need to reload the updated case run.
               // Update issues count associated with just updated case run
               for (let caseRunId in addIssueInfo.caseRunIds) {
-                let caseRunIssuesCount = responseJSON.caserun_issues_count[caseRunId];
+                let caseRunIssuesCount = data.caserun_issues_count[caseRunId];
                 updateIssuesCountInCaseRunRow(reloadInfo.caseRunRow, caseRunIssuesCount);
               }
-              showTheNumberOfCaseRunIssues(responseJSON.run_issues_count, addIssueInfo.runId);
+              showTheNumberOfCaseRunIssues(data.run_issues_count, addIssueInfo.runId);
               constructCaseRunZone(
                 reloadInfo.caseRunDetailRow, reloadInfo.caseRunRow, addIssueInfo.caseId);
             }
           },
-
-          error: function(jqXHR, textStatus, errorThrown) {
-            json_failure(jqXHR);
-          }
         });
       },
 
@@ -699,9 +693,7 @@ function changeCaseRunOrder(run_id, case_run_id, sort_key) {
     return false;
   }
 
-  updateObject('testruns.testcaserun', case_run_id, 'sortkey', nsk, 'int', function () {
-    window.location.reload();
-  });
+  updateObject('testruns.testcaserun', case_run_id, 'sortkey', nsk, 'int');
 }
 
 function taggleSortCaseRun(event) {
@@ -757,29 +749,25 @@ function removeIssueFromCaseRuns(removeIssueInfo, reloadInfo) {
   if (removeIssueInfo.issueKey === undefined || removeIssueInfo.issueKey === '')
     throw new Error('Missing issue key to remove.');
 
-  jQ.ajax({
+  getRequest({
     url: '/run/' + removeIssueInfo.runId + '/issues/',
     data: {
       a: 'remove',
       case_run: removeIssueInfo.caseRunIds,
       issue_key: removeIssueInfo.issueKey
     },
-    dataType: 'json',
     traditional: true,
-    success: function(responseJSON, textStatus, jqXHR) {
+    success: function(data) {
       if (reloadInfo.reloadPage) {
         window.location.reload();
       } else {
-        let caseRunIssuesCount = responseJSON.caserun_issues_count[removeIssueInfo.caseRunId];
+        let caseRunIssuesCount = data.caserun_issues_count[removeIssueInfo.caseRunId];
         updateIssuesCountInCaseRunRow(reloadInfo.caseRunRow, caseRunIssuesCount);
-        showTheNumberOfCaseRunIssues(responseJSON.run_issues_count, removeIssueInfo.runId);
+        showTheNumberOfCaseRunIssues(data.run_issues_count, removeIssueInfo.runId);
         constructCaseRunZone(
           reloadInfo.caseRunDetailRow, reloadInfo.caseRunRow, removeIssueInfo.caseId);
       }
     },
-    error: function(jqXHR, textStatus, errorThrown) {
-      json_failure(jqXHR);
-    }
   });
 }
 
@@ -800,13 +788,10 @@ function editValue(form, hidebox, selectid, submitid) {
   let data = Nitrate.Utils.formSerialize(form);
   let env_property_id = data.env_property_id;
 
-  jQ.ajax('/management/getinfo/', {
-    type: 'GET',
-    dataType: 'json',
-    data: {
-      'info_type': 'env_values',
-      'env_property_id': env_property_id
-    },
+  getRequest({
+    url: '/management/getinfo/',
+    data: {info_type: 'env_values', env_property_id: env_property_id},
+    errorMessage: 'Update values failed',
     success: function(data) {
       let current_value = jQ("input[type=hidden][name=current_run_env]:eq(0)", form);
       let excludeValues = [];
@@ -828,9 +813,6 @@ function editValue(form, hidebox, selectid, submitid) {
 
       setUpChoices(jQ('#' + selectid)[0], values, false);
     },
-    error: function(jqXHR, textStatus, errorThrown) {
-      window.alert("Update values failed");
-    }
   });
 }
 
@@ -850,14 +832,13 @@ function submitValue(run_id, value, hidebox, select_field, submitid) {
     return false;
   }
 
-  jQ.ajax('/runs/env_value/', {
-    type: 'GET',
-    dataType: 'json',
+  getRequest({
+    url: '/runs/env_value/',
     data: {
-      'a': 'change',
-      'old_env_value_id': old_value,
-      'new_env_value_id': select_field.value,
-      'run_id': run_id
+      a: 'change',
+      old_env_value_id: old_value,
+      new_env_value_id: select_field.value,
+      run_id: run_id
     },
     success: function(data) {
       jQ('#' + hidebox).html(new_value).show();
@@ -865,14 +846,6 @@ function submitValue(run_id, value, hidebox, select_field, submitid) {
       jQ('#' + submitid).hide();
       jQ(select_field).prev().prev().val(select_field.value);
     },
-    statusCode: {
-      400: function (xhr) {
-        json_failure(xhr);
-      },
-      403: function () {
-        window.alert('You are not allowed to perform this operation.');
-      }
-    }
   });
 }
 
@@ -885,21 +858,16 @@ function removeProperty(run_id, element) {
   let emptySelf = jQ(element).closest("li");
   let env_value_id = jQ("input[type=hidden][name=current_run_env]", parent).get(0).value;
 
-  jQ.ajax('/runs/env_value/', {
-    type: 'GET',
-    dataType: 'json',
+  getRequest({
+    url: '/runs/env_value/',
     data: {
-      'a': 'remove',
-      'info_type': 'env_values',
-      'env_value_id': env_value_id,
-      'run_id': run_id
+      a: 'remove',
+      info_type: 'env_values',
+      env_value_id: env_value_id,
+      run_id: run_id
     },
-    success: function(data) {
-      emptySelf.remove();
-    },
-    error: function(jqXHR, textStatus, errorThrown) {
-      window.alert("Edit value failed");
-    }
+    errorMessage: 'Edit value failed',
+    success: function(data) { emptySelf.remove(); },
   });
 }
 
@@ -917,22 +885,16 @@ function addProperty(run_id, env_group_id) {
     .end().show();
 
 
-  jQ.ajax('/management/getinfo/', {
-    type: 'GET',
-    dataType: 'json',
-    data: {
-      'info_type': 'env_properties',
-      'env_group_id': env_group_id
-    },
+  getRequest({
+    url: '/management/getinfo/',
+    data: {info_type: 'env_properties', env_group_id: env_group_id},
+    errorMessage: 'Update properties failed',
     success: function (data) {
       setUpChoices(
         jQ('#id_add_env_property')[0],
         data.map(function(o) {return [o.pk, o.fields.name];}),
         false);
     },
-    error: function (jqXHR, textStatus, errorThrown) {
-      window.alert("Update properties failed");
-    }
   });
 
   jQ('#id_add_env_property').on('change', function(e) {
@@ -945,32 +907,27 @@ function addProperty(run_id, env_group_id) {
 }
 
 function change_value(env_property_id, selectid) {
-  jQ.ajax({
-    'url': '/management/getinfo/',
-    'type': 'GET',
-    'dataType': 'json',
-    'data': {'info_type': 'env_values', 'env_property_id': env_property_id},
-    'success': function (data, textStatus, jqXHR) {
+  getRequest({
+    url: '/management/getinfo/',
+    data: {info_type: 'env_values', env_property_id: env_property_id},
+    errorMessage: 'Update values failed',
+    success: function (data) {
       setUpChoices(
         jQ('#' + selectid)[0],
         data.map(function(o) {return [o.pk, o.fields.value];}),
         0);
     },
-    'error': function (jqXHR, textStatus, errorThrown) {
-      window.alert("Update values failed");
-    }
   });
 }
 
 function add_property_to_env(run_id, env_value_id) {
-  jQ.ajax('/runs/env_value/', {
-    type: 'GET',
-    dataType: 'json',
+  getRequest({
+    url: '/runs/env_value/',
     data: {
-      'a': 'add',
-      'info_type': 'env_values',
-      'env_value_id': env_value_id,
-      'run_id': run_id
+      a: 'add',
+      info_type: 'env_values',
+      env_value_id: env_value_id,
+      run_id: run_id
     },
     success: function(data) {
       jQ('#dialog').hide();
@@ -987,14 +944,6 @@ function add_property_to_env(run_id, env_value_id) {
         submitValue(params[0], params[1], params[2], jQ(this).prev()[0], params[3]);
       });
     },
-    statusCode: {
-      400: function (xhr) {
-        json_failure(xhr);
-      },
-      403: function () {
-        window.alert('You are not allowed to perform this operation.');
-      }
-    }
   });
 }
 
@@ -1003,12 +952,12 @@ function addRunTag(container, run_id) {
     return false;
   }
 
-  jQ.ajax({
-    'url': '/management/tags/',
-    'type': 'GET',
-    'data': {'a': 'add', 'run': run_id, 'tags': tag},
-    'success': function (data, textStatus, jqXHR) {
-      jQ(container).html(data);
+  // FIXME: should be a POST request
+  sendHTMLRequest({
+    url: '/management/tags/',
+    data: {a: 'add', run: run_id, tags: tag},
+    container: container,
+    callbackAfterFillIn: function () {
       jQ('.js-remove-tag').on('click', function() {
         let params = jQ(this).data('params');
         removeRuntag(jQ('.js-tag-ul')[0], params[0], params[1]);
@@ -1018,12 +967,12 @@ function addRunTag(container, run_id) {
 }
 
 function removeRuntag(container, run_id, tag) {
-  jQ.ajax({
-    'url': '/management/tags/',
-    'type': 'GET',
-    'data': {'a': 'remove', 'run': run_id, 'tags': tag},
-    'success': function (data, textStatus, jqXHR) {
-      jQ(container).html(data);
+  // FIXME: should be a POST request
+  sendHTMLRequest({
+    url: '/management/tags/',
+    data: {a: remove, run: run_id, tags: tag},
+    container: container,
+    callbackAfterFillIn: function () {
       jQ('.js-remove-tag').on('click', function() {
         let params = jQ(this).data('params');
         removeRuntag(jQ('.js-tag-ul')[0], params[0], params[1]);
@@ -1033,14 +982,11 @@ function removeRuntag(container, run_id, tag) {
 }
 
 function constructRunCC(container, run_id, parameters) {
-  jQ.ajax({
-    'url': '/run/' + run_id + '/cc/',
-    'type': 'GET',
-    'data': parameters,
-    'success': function (data, textStatus, jqXHR) {
-      jQ(container).html(data);
-    },
-    'complete': function() {
+  sendHTMLRequest({
+    url: '/run/' + run_id + '/cc/',
+    data: parameters,
+    container: container,
+    callbackAfterFillIn: function() {
       jQ('.js-remove-cc').on('click', function() {
         let params = jQ(this).data('params');
         removeRunCC(params[0], params[1], jQ('.js-cc-ul')[0]);
@@ -1082,10 +1028,10 @@ function changeCaseRunAssignee() {
 
   // First to get the user with input, if there is, then update selected case
   // runs' assignee to that user.
-  jQ.ajax('/management/getinfo/', {
-    type: 'GET',
-    dataType: 'json',
-    data: {'info_type': 'users', 'username': emailOrUsername},
+  getRequest({
+    url: '/management/getinfo/',
+    data: {info_type: 'users', username: emailOrUsername},
+    errorMessage: 'Fail to get user ' + emailOrUsername,
     success: function (data) {
       // FIXME: Display multiple items and let user to select one
       if (data.length === 0) {
@@ -1098,15 +1044,8 @@ function changeCaseRunAssignee() {
         return false;
       }
 
-      updateObject(
-        'testruns.testcaserun', selectedCaseRunIDs, 'assignee', data[0].pk, 'str', function () {
-          window.location.reload();
-        });
+      updateObject('testruns.testcaserun', selectedCaseRunIDs, 'assignee', data[0].pk, 'str');
     },
-    error: function (jqXHR, textStatus, errorThrown) {
-      window.alert('Fail to get user ' + emailOrUsername);
-      return false;
-    }
   });
 }
 
@@ -1249,17 +1188,10 @@ function showCommentForm() {
       commentsErr.html(error);
       return false;
     }
-    jQ.ajax('/caserun/comment-many/', {
-      type: 'POST',
-      data: {'comment': comments, 'run': runs},
-      dataType: 'json',
+    postRequest({
+      url: '/caserun/comment-many/',
+      data: {comment: comments, run: runs},
       traditional: true,
-      success: function(res) {
-        window.location.reload();
-      },
-      error: function (xhr) {
-        commentsErr.html(xhr.responseText);
-      }
     });
   });
   jQ('#btnCancelComment').on('click', function(){
@@ -1288,11 +1220,7 @@ jQ(document).ready(function(){
     if (!window.confirm(default_messages.confirm.change_case_status)) {
       return false;
     }
-    updateObject(
-      'testruns.testcaserun', object_pks, 'case_run_status', option, 'int', function () {
-        window.location.reload();
-      }
-    );
+    updateObject('testruns.testcaserun', object_pks, 'case_run_status', option, 'int');
   });
 });
 
@@ -1307,17 +1235,11 @@ function get_addlink_dialog() {
  * @param {number} link_id - the ID of an arbitrary link.
  */
 function removeLink(sender, link_id) {
-  jQ.ajax('/linkref/remove/' + link_id + '/', {
-    type: 'POST',
-    dataType: 'json',
-    success: function(data, textStatus, jqXHR) {
-      let li_node = sender.parentNode;
-      li_node.parentNode.removeChild(li_node);
-    },
-    error: function(xhr, textStatus, errorThrown) {
-      window.alert(JSON.parse(xhr.responseText).message);
-    }
-  });
+  let url = '/linkref/remove/' + link_id + '/';
+  postRequest({url: url, success: function() {
+    let li_node = sender.parentNode;
+    li_node.parentNode.removeChild(li_node);
+  }});
 }
 
 /**
@@ -1365,27 +1287,24 @@ function initialize_addlink_dialog(link_target) {
     buttons: {
       "OK": function() {
         // TODO: validate name and url
-        jQ.ajax('/linkref/add/', {
-          type: 'POST',
+        postRequest({
+          url: '/linkref/add/',
           data: {
             name: jQ('#testlog_name').attr('value'),
             url: jQ('#testlog_url').attr('value'),
             target: jQ(this).dialog('option', 'target'),
             target_id: jQ(this).dialog('option', 'target_id')
           },
-          dataType: 'json',
-          success: function(data, textStatus, xhr) {
+          success: function() {
             dialog_p.dialog('close');
 
             // Begin to construct case run area
             constructCaseRunZone(
               dialog_p.dialog('option', 'container'),
               dialog_p.dialog('option', 'title_container'),
-              dialog_p.dialog('option', 'case_id'));
+              dialog_p.dialog('option', 'case_id')
+            );
           },
-          error: function (xhr, textStatus, errorThrown) {
-            window.alert(JSON.parse(xhr.responseText).message);
-          }
         });
       },
       "Cancel": function() {

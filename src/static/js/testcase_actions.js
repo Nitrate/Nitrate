@@ -184,34 +184,19 @@ Nitrate.TestCases.Details.on_load = function() {
       return false;
     }
 
-    renderComponentForm(
-      getDialog(),
-      {
-        'case': Nitrate.TestCases.Instance.pk,
-        'product': Nitrate.TestCases.Instance.product_id,
-        'category': Nitrate.TestCases.Instance.category_id
-      },
-      function (e) {
-        e.stopPropagation();
-        e.preventDefault();
+    let params = {
+      'case': Nitrate.TestCases.Instance.pk,
+      'product': Nitrate.TestCases.Instance.product_id,
+      'category': Nitrate.TestCases.Instance.category_id
+    }
+    renderComponentForm(getDialog(), params, function (e) {
+      e.stopPropagation();
+      e.preventDefault();
 
-        let params = Nitrate.Utils.formSerialize(this);
-        params['case'] = Nitrate.TestCases.Instance.pk;
-
-        jQ.ajax('/cases/add-component/', {
-          type: 'POST',
-          dataType: 'json',
-          data: params,
-          traditional: true,
-          success: function (data, textStatus, xhr) {
-            window.location.reload();
-          },
-          error: function (xhr, textStatus, errorThrown) {
-            json_failure(xhr);
-          }
-        });
-      }
-    );
+      let params = Nitrate.Utils.formSerialize(this);
+      params['case'] = Nitrate.TestCases.Instance.pk;
+      postRequest({url: '/cases/add-component/', data: params, traditional: true});
+    });
   });
 
   jQ('#id_remove_component').on('click', function() {
@@ -224,26 +209,10 @@ Nitrate.TestCases.Details.on_load = function() {
       return false;
     }
 
-    jQ.ajax('/cases/remove-component/', {
-      type: 'POST',
-      dataType: 'json',
-      data: {
-        'case': Nitrate.TestCases.Instance.pk,
-        'o_component': params.component
-      },
-      traditional: true,
-      success: function () {
-        window.location.reload();
-      },
-      statusCode: {
-        400: function (xhr) {
-          json_failure(xhr);
-        },
-        403: function () {
-          window.alert('You are not allowed to remove component from case.');
-        }
-      }
-    });
+    postRequest({url: '/cases/remove-component/', traditional: true, data: {
+      'case': Nitrate.TestCases.Instance.pk,
+      'o_component': params.component
+    }});
   });
 
   jQ('.link_remove_component').on('click', function(e) {
@@ -251,25 +220,16 @@ Nitrate.TestCases.Details.on_load = function() {
       return false;
     }
 
-    jQ.ajax('/cases/remove-component/', {
-      type: 'POST',
-      dataType: 'json',
+    postRequest({
+      url: '/cases/remove-component/',
+      traditional: true,
+      forbiddenMessage: 'You are not allowed to add issue to case.',
       data: {
         'case': Nitrate.TestCases.Instance.pk,
-        'o_component': jQ('input[name="component"]')[jQ('.link_remove_component').index(this)].value
+        'o_component': jQ('input[name="component"]')[
+          jQ('.link_remove_component').index(this)
+        ].value
       },
-      traditional: true,
-      success: function () {
-        window.location.reload();
-      },
-      statusCode: {
-        400: function (xhr) {
-          json_failure(xhr);
-        },
-        403: function () {
-          window.alert('You are not allowed to add issue to case.');
-        }
-      }
     });
   });
 
@@ -398,13 +358,10 @@ Nitrate.TestCases.Clone.on_load = function() {
     let container = jQ('#id_plan_container');
     container.show();
 
-    jQ.ajax({
-      'url': '/plans/',
-      'type': 'GET',
-      'data': jQ(this).serialize(),
-      'success': function (data, textStatus, jqXHR) {
-        container.html(data);
-      }
+    sendHTMLRequest({
+      url: '/plans/',
+      data: jQ(this).serialize(),
+      container: container,
     });
   });
 
@@ -491,22 +448,18 @@ function toggleTestCaseContents(template_type, container, content_container, obj
   jQ(content_container).toggle();
 
   if (jQ('#id_loading_' + object_pk).length) {
-    jQ.ajax({
-      'url': Nitrate.http.URLConf.reverse({ name: 'case_details', arguments: {id: object_pk} }),
-      'data': {
+    sendHTMLRequest({
+      url: Nitrate.http.URLConf.reverse({
+        name: 'case_details',
+        arguments: {id: object_pk}
+      }),
+      data: {
         template_type: template_type,
         case_text_version: case_text_version,
         case_run_id: case_run_id
       },
-      'success': function (data, textStatus, jqXHR) {
-        jQ(content_container).html(data);
-      },
-      'error': function (jqXHR, textStatus, errorThrown) {
-        html_failure();
-      },
-      'complete': function (jqXHR, textStatus) {
-        callback(jqXHR);
-      }
+      container: content_container,
+      callbackAfterFillIn: callback
     });
   }
 
@@ -514,14 +467,13 @@ function toggleTestCaseContents(template_type, container, content_container, obj
 }
 
 function changeTestCaseStatus(plan_id, selector, case_id, be_confirmed, was_confirmed) {
-  jQ.ajax('/ajax/update/case-status/', {
-    type: 'POST',
-    dataType: 'json',
+  postRequest({
+    url: '/ajax/update/case-status/',
     data: {
-      'from_plan': plan_id,
-      'case': case_id,
-      'target_field': 'case_status',
-      'new_value': selector.value,
+      from_plan: plan_id,
+      case: case_id,
+      target_field: 'case_status',
+      new_value: selector.value,
     },
     success: function(data) {
       let case_status = '';
@@ -550,14 +502,6 @@ function changeTestCaseStatus(plan_id, selector, case_id, be_confirmed, was_conf
         Nitrate.TestPlans.Details.reopenTabHelper(curCasesContainer);
       }
     },
-    statusCode: {
-      400: function (xhr) {
-        json_failure(xhr);
-      },
-      403: function () {
-        window.alert('You are not allowed to add issue to case.');
-      }
-    }
   });
 }
 
@@ -641,10 +585,7 @@ function changeCaseOrder(parameters, callback) {
     return false;
   }
 
-  updateObject(
-    'testcases.testcaseplan', parameters.testcaseplan,
-    'sortkey', 'nsk', 'int', callback
-  );
+  updateObject('testcases.testcaseplan', parameters.testcaseplan, 'sortkey', 'nsk', 'int', callback);
 }
 
 function changeCaseOrder2(parameters, callback) {
@@ -678,19 +619,35 @@ function changeCaseOrder2(parameters, callback) {
   parameters.target_field = 'sortkey';
   parameters.new_value = nsk;
 
-  jQ.ajax('/ajax/update/cases-sortkey/', {
-    type: 'POST',
-    dataType: 'json',
+  postRequest({
+    url: '/ajax/update/cases-sortkey/',
     data: parameters,
     traditional: true,
-    success: function () {
-      callback();
-    },
-    error: function (xhr) {
-      json_failure(xhr);
-    }
+    success: callback
   });
 }
+
+
+/**
+ * A function bound to AJAX request success event to add or remove issue to and from a case. It
+ * displays the issues table returned from the backend, and bind necessary event handlers, count and
+ * display current number of issues added to case already.
+ * @param {object} data
+ * @param {string} data.html - a piece of HTML containing the issues table.
+ */
+function issueOperationSuccessCallback(data) {
+  jQ('div#issues').html(data.html);
+
+  jQ('.js-add-issue').on('click', function(event) {
+    addCaseIssue(jQ('#id_case_issue_form')[0]);
+  });
+  jQ('.js-remove-issue').on('click', function(event) {
+    let params = jQ(event.target).data('params');
+    removeCaseIssue(params.issueKey, params.caseId, params.caseRunId);
+  });
+  jQ('#case_issues_count').text(jQ('table#issues').attr('count'));
+}
+
 
 function addCaseIssue(form) {
   let addIssueForm = jQ(form);
@@ -708,87 +665,28 @@ function addCaseIssue(form) {
     return false;
   }
 
-  jQ.ajax(form.action, {
-    // URL has the case ID, hence no need to pass case ID again through request
-    // data.
+  getRequest({
+    url: form.action,
     data: {
       handle: 'add',
       issue_key: issueKey,
       tracker: parseInt(selectedIssueTrackerOption.val())
     },
-    dataType: 'json',
-    success: function (responseJSON, textStatus, jqXHR) {
-      jQ('#issues').html(responseJSON.html);
-    },
-    complete: function (jqXHR, textStatus) {
-      if (textStatus === 'error') {
-        return;
-      }
-
-      jQ('.js-add-issue').on('click', function(event) {
-        addCaseIssue(jQ('#id_case_issue_form')[0]);
-      });
-      jQ('.js-remove-issue').on('click', function(event) {
-        let params = jQ(event.target).data('params');
-        removeCaseIssue(params.issueKey, params.caseId, params.caseRunId);
-      });
-      if (jQ('#response').length) {
-        window.alert(jQ('#response').html());
-        return false;
-      }
-
-      jQ('#case_issues_count').text(jQ('table#issues').attr('count'));
-    },
-    statusCode: {
-      400: function (xhr) {
-        json_failure(xhr);
-      },
-      403: function () {
-        window.alert('You are not allowed to add issue to case.');
-      }
-    }
+    success: issueOperationSuccessCallback,
+    forbiddenMessage: 'You are not allowed to add issue to case.',
   });
 }
 
 function removeCaseIssue(issue_key, case_id, case_run_id) {
-  if(!window.confirm('Are you sure to remove issue $id?'.replace('$id', issue_key))) {
-    return false;
+  if(!window.confirm('Are you sure to remove issue ' + issue_key + '?')) {
+    return;
   }
 
-  jQ.ajax({
-    'url': '/case/' + case_id + '/issue/',
-    'type': 'GET',
-    'data': {
-      'handle': 'remove',
-      'issue_key': issue_key,
-      'case_run': case_run_id
-    },
-    'success': function (data) {
-      jQ('#issues').html(data.html);
-    },
-    'complete': function (jqXHR, textStatus) {
-      if (textStatus === 'error') {
-        return;
-      }
-
-      jQ('.js-remove-issue').on('click', function(event) {
-        let params = jQ(event.target).data('params');
-        removeCaseIssue(params.issueKey, params.caseId, params.caseRunId);
-      });
-      jQ('.js-add-issue').on('click', function(event) {
-        addCaseIssue(jQ('#id_case_issue_form')[0]);
-      });
-
-      jQ('#case_issues_count').text(jQ('table#issues').attr('count'));
-    },
-    statusCode: {
-      400: function (xhr) {
-        json_failure(xhr);
-      },
-      403: function () {
-        window.alert('You are not allowed to add issue to case.');
-      }
-    }
+  getRequest({
+    url: '/case/' + case_id + '/issue/',
+    data: {handle: 'remove', issue_key: issue_key, case_run: case_run_id},
+    success: issueOperationSuccessCallback,
+    forbiddenMessage: 'You are not allowed to remove issue from case.',
   });
 }
 
@@ -803,22 +701,13 @@ function removePlanFromPlansTableHandler(caseId, button) {
   if (! window.confirm('Are you sure to remove the case from this plan?')) {
     return;
   }
-  jQ.ajax('/case/' + caseId + '/plans/remove/', {
-    type: 'POST',
-    dataType: 'json',
+  postRequest({
+    url: '/case/' + caseId + '/plans/remove/',
     data: {plan: parseInt(jQ(button).data('planid'))},
     success: function (data) {
       jQ('#plan').html(data.html);
       jQ('#plan_count').text(jQ('table#testplans_table').attr('count'));
     },
-    statusCode: {
-      400: function (xhr) {
-        json_failure(xhr);
-      },
-      403: function () {
-        window.alert('You are not allowed to do this operation.');
-      }
-    }
   });
 }
 
@@ -850,23 +739,14 @@ function addCaseToPlansHandler(caseId, form) {
 
     clearDialog();
 
-    jQ.ajax(casePlansUrl + 'add/', {
-      type: 'POST',
-      dataType: 'json',
+    postRequest({
+      url: casePlansUrl + 'add/',
       data: {plan: plan_ids},
       traditional: true,
       success: function (data) {
         jQ('#plan').html(data.html);
         jQ('#plan_count').text(jQ('table#testplans_table').attr('count'));
       },
-      statusCode: {
-        400: function (xhr) {
-          json_failure(xhr);
-        },
-        403: function () {
-          window.alert('You are not allowed to do this operation.');
-        }
-      }
     });
   });
 }
@@ -878,32 +758,27 @@ function renderTagForm(container, parameters, form_observe) {
   }
   jQ(container).show();
 
-  jQ.ajax({
-    'url': Nitrate.http.URLConf.reverse({ name: 'cases_tag' }),
-    'type': 'POST',
-    'data': parameters,
-    'traditional': true,
-    'success': function (data, textStatus, jqXHR) {
-      d.html(data);
-    },
-    'error': function (jqXHR, textStatus, errorThrown) {
-      html_failure();
-    },
-    'complete': function() {
+  postHTMLRequest({
+    url: Nitrate.http.URLConf.reverse({ name: 'cases_tag' }),
+    data: parameters,
+    traditional: true,
+    container: d,
+    callbackAfterFillIn: function () {
       let h = jQ('<input>', {'type': 'hidden', 'name': 'a', 'value': 'remove'});
       let a = jQ('<input>', {'type': 'submit', 'value': 'Remove'});
       let c = jQ('<label>');
       c.append(h);
       c.append(a);
       a.on('click', function(e) { h.val('remove'); });
-      jQ(container).html(constructForm(
-        d.html(),
-        Nitrate.http.URLConf.reverse({name: 'cases_tag'}),
-        form_observe,
-        'Press "Ctrl" to select multiple default component',
-        c[0])
+      jQ(container).html(
+        constructForm(
+          d.html(), Nitrate.http.URLConf.reverse({name: 'cases_tag'}), form_observe,
+          'Press "Ctrl" to select multiple default component', c[0]
+        )
       );
-      bind_component_selector_to_product(false, false, jQ('#id_product')[0], jQ('#id_o_component')[0]);
+      bind_component_selector_to_product(
+        false, false, jQ('#id_product')[0], jQ('#id_o_component')[0]
+      );
     }
   });
 }
@@ -915,30 +790,23 @@ function renderComponentForm(container, parameters, form_observe) {
   }
   jQ(container).show();
 
-  jQ.ajax({
-    'url': '/cases/get-component-form/',
-    'type': 'POST',
-    'data': parameters,
-    'success': function (data, textStatus, jqXHR) {
-      d.html(data);
-    },
-    'error': function (jqXHR, textStatus, errorThrown) {
-      html_failure();
-    },
-    'complete': function() {
+  postHTMLRequest({
+    url: '/cases/get-component-form/',
+    data: parameters,
+    container: d,
+    callbackAfterFillIn: function () {
       let a = jQ('<input>', {'type': 'submit', 'value': 'Add'});
       let c = jQ('<label>');
       c.append(a);
       jQ(container).html(
         constructForm(
-          d.html(),
-          '/cases/add-component/',
-          form_observe,
-          'Press "Ctrl" to select multiple default component',
-          c[0])
+          d.html(), '/cases/add-component/', form_observe,
+          'Press "Ctrl" to select multiple default component', c[0]
+        )
       );
       bind_component_selector_to_product(
-        false, false, jQ('#id_product')[0], jQ('#id_o_component')[0]);
+        false, false, jQ('#id_product')[0], jQ('#id_o_component')[0]
+      );
     }
   });
 }
@@ -951,16 +819,11 @@ function renderCategoryForm(container, parameters, form_observe) {
   }
   jQ(container).show();
 
-  jQ.ajax('/cases/category/', {
-    type: 'POST',
+  postHTMLRequest({
+    url: '/cases/category/',
     data: parameters,
-    success: function (data) {
-      d.html(data);
-    },
-    error: function () {
-      html_failure();
-    },
-    complete: function() {
+    container: d,
+    callbackAfterFillIn: function () {
       let h = jQ('<input>', {'type': 'hidden', 'name': 'a', 'value': 'add'});
       let a = jQ('<input>', {'type': 'submit', 'value': 'Select'});
       let c = jQ('<label>');
@@ -968,26 +831,13 @@ function renderCategoryForm(container, parameters, form_observe) {
       c.append(a);
       a.on('click', function(e) { h.val('update'); });
       jQ(container).html(
-        constructForm(d.html(), '/cases/category/', form_observe, 'Select Category', c[0])
+        constructForm(
+          d.html(), '/cases/category/', form_observe, 'Select Category', c[0]
+        )
       );
       bind_category_selector_to_product(
-        false, false, jQ('#id_product')[0], jQ('#id_o_category')[0]);
-    }
-  });
-}
-
-// FIXME: abstract this function
-function updateCaseTag(url, parameters, callback) {
-  jQ.ajax({
-    'url': url,
-    'type': 'POST',
-    'dataType': 'json',
-    'data': parameters,
-    'success': function (data, textStatus, jqXHR) {
-      callback(data);
-    },
-    'error': function (jqXHR, textStatus, errorThrown) {
-      json_failure(jqXHR);
+        false, false, jQ('#id_product')[0], jQ('#id_o_category')[0]
+      );
     }
   });
 }
@@ -1021,22 +871,8 @@ function constructCaseAutomatedForm(container, options, callback) {
          * only value `change', here.
          */
         params = params.replace(/a=\w*/, 'a=change');
-        jQ.ajax(Nitrate.http.URLConf.reverse({ name: 'cases_automated' }), {
-          type: 'POST',
-          dataType: 'json',
-          data: params,
-          success: function () {
-            callback();
-          },
-          statusCode: {
-            400: function () {
-              window.alert('You are not allowed to change test case automation attribute.');
-            },
-            403: function (xhr) {
-              window.alert(JSON.parse(xhr.responseText).message);
-            }
-          }
-        });
+        let url = Nitrate.http.URLConf.reverse({ name: 'cases_automated' });
+        postRequest({url: url, data: params, success: callback});
       })
     );
   });
@@ -1094,19 +930,11 @@ function toggleCaseRunsByPlan(params, callback) {
   content_container.toggle();
 
   if (jQ('#id_loading_' + params.case_run_plan_id).length) {
-    jQ.ajax({
-      'url': '/case/' + params.case_id + '/caserun-list-pane/',
-      'type': 'GET',
-      'data': {plan_id: params.case_run_plan_id},
-      'success': function (data, textStatus, jqXHR) {
-        content_container.html(data);
-      },
-      'error': function (jqXHR, textStatus, errorThrown) {
-        html_failure();
-      },
-      'complete': function() {
-        callback();
-      }
+    sendHTMLRequest({
+      url: '/case/' + params.case_id + '/caserun-list-pane/',
+      data: {plan_id: params.case_run_plan_id},
+      container: content_container,
+      callbackAfterFillIn: callback,
     });
   }
 

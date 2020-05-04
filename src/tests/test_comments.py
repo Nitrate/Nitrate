@@ -12,7 +12,7 @@ from tcms.comments.models import add_comment
 from tests import factories as f, user_should_have_perm, HelperAssertions
 
 
-class TestPostComment(test.TestCase):
+class TestPostComment(HelperAssertions, test.TestCase):
     """Test post comments"""
 
     @classmethod
@@ -68,11 +68,7 @@ class TestPostComment(test.TestCase):
     def test_still_response_comments_even_if_fail_to_add_one(self):
         self.client.login(username=self.tester.username, password='password')
         response = self._post_comment('comment' * 2000)
-        self.assertContains(
-            response,
-            '<ul class="ul-no-format comment"></ul>',
-            html=True
-        )
+        self.assert400(response)
 
 
 class TestDeleteComment(HelperAssertions, test.TestCase):

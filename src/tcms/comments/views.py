@@ -5,7 +5,6 @@ import logging
 from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.http import JsonResponse
-from django.shortcuts import render
 from django.views import generic
 from django.views.decorators.http import require_POST
 
@@ -27,8 +26,10 @@ def post(request, template_name='comments/comments.html'):
         target, _ = post_comment(
             data, request.user, request.META.get('REMOTE_ADDR'))
     except InvalidCommentPostRequest as e:
-        target = e.target
-    return render(request, template_name, context={'object': target})
+        msg = f'Fail to add comment to object {e.target}'
+        log.exception(msg)
+        return JsonResponseBadRequest({'message': msg})
+    return JsonResponse({})
 
 
 class DeleteCommentView(PermissionRequiredMixin, generic.View):

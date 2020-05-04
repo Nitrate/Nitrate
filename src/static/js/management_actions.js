@@ -1,26 +1,28 @@
 Nitrate.Management = {};
 Nitrate.Management.Environment = {};
 
+const MgtEnv = Nitrate.Management.Environment;
+
 Nitrate.Management.Environment.Edit = {
   on_load: function() {
     SelectFilter.init("id_properties", "properties", 0, "/static/admin/");
 
+    /* @function */
+    let changeLocation = function () {
+      window.location = '/environment/groups/';
+    }
+
     jQ('#js-edit-group').submit(function(e) {
       e.preventDefault();
       let form = jQ(this);
-      jQ.ajax({
-        'url': form.attr('action'),
-        'type': form.attr('method'),
-        'data': form.serialize(),
-        'success': function() {
-          window.location = '/environment/groups/';
-        }
+      postHTMLRequest({
+        url: form.attr('action'),
+        data: form.serialize(),
+        success: changeLocation,
       });
     });
 
-    jQ('#js-back-button').on('click', function() {
-      window.location = '/environment/groups';
-    });
+    jQ('#js-back-button').click(changeLocation);
   }
 };
 
@@ -63,24 +65,15 @@ Nitrate.Management.Environment.Groups = {
     if (!group_name)
       return;
 
-    jQ.ajax(
-      Nitrate.Management.Environment.Groups.URLs.add_group, {
-        type: 'POST',
-        dataType: 'json',
-        data: {'name': group_name},
-        success: function (data, textStatus, jqXHR) {
-          window.location.href = Nitrate.Management.Environment.Groups.URLs.edit_group.replace('$id', data.env_group_id);
-        },
-        error: function (xhr, textStatus, errorThrown) {
-          window.alert(JSON.parse(xhr.responseText).message);
-        },
-        statusCode: {
-          403: function () {
-            window.alert('You are not allowed to add a environment group.');
-          }
-        }
-      }
-    );
+    postRequest({
+      url: Nitrate.Management.Environment.Groups.URLs.add_group,
+      data: {'name': group_name},
+      forbiddenMessage: 'You are not allowed to add an environment group.',
+      success: function (data) {
+        let url = Nitrate.Management.Environment.Groups.URLs.edit_group;
+        window.location.href = url.replace('$id', data.env_group_id);
+      },
+    });
   },
 
   /**
@@ -95,20 +88,12 @@ Nitrate.Management.Environment.Groups = {
     }
 
     let url = Nitrate.Management.Environment.Groups.URLs.delete_group.replace('$id', envGroupId);
-    jQ.ajax(url,{
-      type: 'POST',
-      dataType: 'json',
-      success: function (data, textStatus, jqXHR) {
+    postRequest({
+      url: url,
+      forbiddenMessage: 'You are not allowed to delete an environment group.',
+      success: function () {
         jQ('#' + envGroupId).remove();
       },
-      statusCode: {
-        400: function (xhr) {
-          window.alert(JSON.parse(xhr.responseText).message);
-        },
-        403: function () {
-          window.alert('You are not allowed to delete an environment group.')
-        }
-      }
     });
   },
 
@@ -119,11 +104,11 @@ Nitrate.Management.Environment.Groups = {
    */
   setEnvGroupStatus: function (envGroupID, status) {
     let url = Nitrate.Management.Environment.Groups.URLs.set_group_status.replace('$id', envGroupID);
-    jQ.ajax(url, {
-      type: 'POST',
-      dataType: 'json',
+    postRequest({
+      url: url,
       data: {status: status},
-      success: function (data, textStatus, jqXHR) {
+      forbiddenMessage: 'You are not allowed to set status for an environment group.',
+      success: function (data) {
         if (status === 0) {
           jQ('.js-enable-env-group').removeClass('hidden');
           jQ('.js-disable-env-group').addClass('hidden');
@@ -135,14 +120,6 @@ Nitrate.Management.Environment.Groups = {
           jQ('#' + data.env_group_id).find('label').removeClass('line-through');
         }
       },
-      statusCode: {
-        400: function (xhr) {
-          window.alert(JSON.parse(xhr.responseText).message);
-        },
-        403: function () {
-          window.alert('You are not allowed to set status for an environment group.')
-        }
-      }
     });
   },
 };
@@ -178,18 +155,11 @@ Nitrate.Management.Environment.Property = {
     jQ('#id_properties_container li.focus').removeClass('focus');
     jQ('#id_property_' + propertyId).addClass('focus');
 
-    let urls = Nitrate.Management.Environment.Property.URLs;
-
-    jQ.ajax(urls.list_property_values.replace('$id', propertyId),{
-      success: function (data, textStatus, jqXHR) {
-        jQ('#' + 'id_values_container').html(data);
-        Nitrate.Management.Environment.PropertyValue.bindPropertyValueActions();
-      },
-      statusCode: {
-        404: function () {
-          window.alert('Cannot find environment property with id ' + propertyId.toString());
-        },
-      }
+    sendHTMLRequest({
+      url: MgtEnv.Property.URLs.list_property_values.replace('$id', propertyId),
+      container: jQ('#' + 'id_values_container'),
+      callbackAfterFillIn: MgtEnv.PropertyValue.bindPropertyValueActions,
+      notFoundMessage: 'Cannot find environment property with id ' + propertyId.toString(),
     });
   },
 
@@ -204,21 +174,13 @@ Nitrate.Management.Environment.Property = {
 
     let urls = Nitrate.Management.Environment.Property.URLs;
 
-    jQ.ajax(urls.edit_property.replace('$id', id),{
-      type: 'POST',
-      dataType: 'json',
-      data: {'id': id, 'name': new_property_name},
-      success: function (data, textStatus, xhr) {
-        jQ('#id_property_name_' + id).html(JSON.parse(xhr.responseText).name);
+    postRequest({
+      url: urls.edit_property.replace('$id', id),
+      data: {id: id, name: new_property_name},
+      forbiddenMessage: 'You are not allowed to add environment property.',
+      success: function (data) {
+        jQ('#id_property_name_' + id).html(data.name);
       },
-      statusCode: {
-        400: function (xhr) {
-          window.alert(JSON.parse(xhr.responseText).message);
-        },
-        403: function () {
-          window.alert('You are not allowed to add environment property.');
-        }
-      }
     });
   },
 
@@ -231,11 +193,11 @@ Nitrate.Management.Environment.Property = {
       return;
 
     let urls = Nitrate.Management.Environment.Property.URLs;
-    jQ.ajax(urls.add_property,{
-      type: 'POST',
-      dataType: 'json',
-      data: {'name': property_name},
-      success: function (data, textStatus, jqXHR) {
+    postRequest({
+      url: urls.add_property,
+      data: {name: property_name},
+      forbiddenMessage: 'You are not allowed to add environment property.',
+      success: function (data) {
         jQ('#id_properties_container li.focus').removeClass('focus');
 
         let template = Handlebars.compile(jQ('#properties_container_template').html());
@@ -254,14 +216,6 @@ Nitrate.Management.Environment.Property = {
 
         Nitrate.Management.Environment.Property.selectEnvProperty(data.id);
       },
-      statusCode: {
-        400: function (xhr) {
-          window.alert(JSON.parse(xhr.responseText).message);
-        },
-        403: function () {
-          window.alert('You are not allowed to add environment property.');
-        }
-      }
     });
   },
 
@@ -285,14 +239,12 @@ Nitrate.Management.Environment.Property = {
     if (selectedPropertyIds.length === 0)
       return;
 
-    let urls = Nitrate.Management.Environment.Property.URLs;
-    jQ.ajax(urls.set_property_status, {
-      type: 'POST',
-      dataType: 'json',
+    postRequest({
+      url: MgtEnv.Property.URLs.set_property_status,
       data: {id: selectedPropertyIds, status: status},
       traditional: true,
-      success: function (data, textStatus, xhr) {
-        JSON.parse(xhr.responseText).property_ids.forEach(function (propertyId) {
+      success: function (data) {
+        data.property_ids.forEach(function (propertyId) {
           if (status === 0) {
             jQ('#id_property_name_' + propertyId).addClass('line-through');
           } else {
@@ -300,14 +252,6 @@ Nitrate.Management.Environment.Property = {
           }
         });
       },
-      statusCode: {
-        400: function (xhr) {
-          window.alert(JSON.parse(xhr.responseText).message);
-        },
-        403: function () {
-          window.alert('You are not allowed to change environment property status.');
-        }
-      }
     });
   },
 };
@@ -332,26 +276,13 @@ Nitrate.Management.Environment.PropertyValue = {
       if (s.length > 0) return s;
     });
 
-    let urls = Nitrate.Management.Environment.Property.URLs;
-    jQ.ajax(urls.add_property_value.replace('$id', propertyId),{
-      type: 'POST',
+    postHTMLRequest({
+      url: MgtEnv.Property.URLs.add_property_value.replace('$id', propertyId),
       traditional: true,
-      data: {'value': valuesToAdd},
-      success: function (data, textStatus, xhr) {
-        jQ('#id_values_container').html(data);
-        Nitrate.Management.Environment.PropertyValue.bindPropertyValueActions();
-      },
-      statusCode: {
-        400: function (xhr) {
-          window.alert(xhr.responseText);
-        },
-        403: function () {
-          window.alert('You are not allowed to change environment property status.');
-        },
-        404: function (xhr) {
-          window.alert(xhr.responseText);
-        },
-      }
+      data: {value: valuesToAdd},
+      container: jQ('#id_values_container'),
+      callbackAfterFillIn: MgtEnv.PropertyValue.bindPropertyValueActions,
+      forbiddenMessage: 'You are not allowed to change environment property status.',
     });
   },
 
@@ -365,25 +296,12 @@ Nitrate.Management.Environment.PropertyValue = {
     if (! newValueName)
       return;
 
-    let urls = Nitrate.Management.Environment.Property.URLs;
-    jQ.ajax(urls.edit_property_value.replace('$id', valueId.toString()),{
-      type: 'POST',
+    postHTMLRequest({
+      url: MgtEnv.Property.URL.edit_property_value.replace('$id', valueId.toString()),
       data: {value: newValueName},
-      success: function (data, textStatus, jqXHR) {
-        jQ('#id_values_container').html(data);
-        Nitrate.Management.Environment.PropertyValue.bindPropertyValueActions();
-      },
-      statusCode: {
-        400: function (xhr) {
-          window.alert(xhr.responseText);
-        },
-        403: function () {
-          window.alert('You are not allowed to change environment property status.');
-        },
-        404: function (xhr) {
-          window.alert(xhr.responseText);
-        },
-      }
+      container: jQ('#id_values_container'),
+      callbackAfterFillIn: MgtEnv.PropertyValue.bindPropertyValueActions,
+      forbiddenMessage: 'You are not allowed to change environment property status.',
     });
   },
 
@@ -401,23 +319,13 @@ Nitrate.Management.Environment.PropertyValue = {
       return;
     }
 
-    let urls = Nitrate.Management.Environment.Property.URLs;
-    jQ.ajax(urls.set_property_values_status,{
-      type: 'POST',
+    postHTMLRequest({
+      url: MgtEnv.Property.URLs.set_property_values_status,
       data: {status: status, id: selectedPropertyValues},
       traditional: true,
-      success: function (data, textStatus, xhr) {
-        jQ('#id_values_container').html(data);
-        Nitrate.Management.Environment.PropertyValue.bindPropertyValueActions();
-      },
-      statusCode: {
-        400: function (xhr) {
-          window.alert(xhr.responseText);
-        },
-        403: function () {
-          window.alert('You are not allowed to change environment property status.');
-        }
-      }
+      container: jQ('#id_values_container'),
+      callbackAfterFillIn: MgtEnv.PropertyValue.bindPropertyValueActions,
+      forbiddenMessage: 'You are not allowed to change environment property status.',
     });
   },
 
@@ -429,21 +337,23 @@ Nitrate.Management.Environment.PropertyValue = {
       return false;
     });
 
+    const PropertyValue = MgtEnv.PropertyValue;
+
     jQ('#js-add-prop-value').on('click', function() {
-      Nitrate.Management.Environment.PropertyValue.add(propId);
+      PropertyValue.add(propId);
     });
 
     jQ('#js-disable-prop-value').on('click', function() {
-      Nitrate.Management.Environment.PropertyValue.setStatus(0);
+      PropertyValue.setStatus(0);
     });
 
     jQ('#js-enable-prop-value').on('click', function() {
-      Nitrate.Management.Environment.PropertyValue.setStatus(1);
+      PropertyValue.setStatus(1);
     });
 
     jQ('.js-edit-prop-value').on('click', function() {
       let valueId = parseInt(jQ(this).data('param'));
-      Nitrate.Management.Environment.PropertyValue.edit(propId, valueId);
+      PropertyValue.edit(propId, valueId);
     });
 
     jQ('#property_values_form input[name=value_name]').focus();

@@ -34,20 +34,6 @@ Nitrate.Profiles.Bookmarks.on_load = function() {
       return false;
     }
 
-    jQ.ajax(this.action, {
-      type: this.method,
-      data: parameters,
-      dataType: 'json',
-      traditional: true,
-      success: function () {
-        // using location.reload will cause firefox(tested) remember the checking status
-        window.location = window.location;
-      },
-      statusCode: {
-        400: function (xhr) {
-          json_failure(xhr);
-        }
-      }
-    });
+    postRequest({url: this.action, data: parameters, traditional: true});
   });
 };

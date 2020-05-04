@@ -3,12 +3,11 @@ function getProdRelatedObj(prodIDs, target, targetID) {
     prodIDs = [prodIDs];
   }
   // Separator , used to join/split values
-  jQ.ajax({
+  getRequest({
     url: '/ajax/get-prod-relate-obj/',
-    dataType: 'json',
     data: {'p_ids': prodIDs.join(','), 'target': target, 'sep': ','},
-    success: function(res){
-      buildOptions(res, targetID);
+    success: function(data){
+      buildOptions(data, targetID);
     }
   });
 }

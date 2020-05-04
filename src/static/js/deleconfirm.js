@@ -3,17 +3,12 @@ function deleConfirm(attachment_id, home, plan_id) {
     return false;
   }
 
-  jQ.ajax({
+  postRequest({
     url: '/management/deletefile/',
-    type: 'POST',
-    dataType: 'json',
     data: {file_id: attachment_id, from_plan: plan_id},
-    success: function(data, textStatus, jqXHR) {
+    success: function() {
       jQ('#' + attachment_id).remove();
       jQ('#attachment_count').text(parseInt(jQ('#attachment_count').text()) - 1);
     },
-    error: function (jqXHR, textStatus, errorThrown) {
-      window.alert(jqXHR.responseJSON.message);
-    }
   });
 }
