@@ -437,13 +437,12 @@ function toggleSimpleCaseRunPane(options) {
 function toggleTestCaseContents(template_type, container, content_container, object_pk, case_text_version, case_run_id, callback) {
   // TODO: should container and content_container be in string type?
 
-  if (typeof container === 'string') {
-    container = jQ('#' + container)[0];
-  }
+  container =
+    typeof container === 'string' ? jQ('#' + container)[0] : container;
 
-  if(typeof content_container === 'string') {
-    content_container = jQ('#' + content_container)[0];
-  }
+  content_container =
+    typeof content_container === 'string' ?
+      jQ('#' + content_container)[0] : content_container;
 
   jQ(content_container).toggle();
 
