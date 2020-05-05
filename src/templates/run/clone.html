@@ -38,7 +38,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.Clone.on_load);
 		>> Clone
 	</div>
 	<h2>Clone Test Run - {{ test_run.summary }}</h2>
-	<form action="{% url "run-new" %}" method="post">
+	<form action="{% url "run-new" %}" method="post">{% csrf_token %}
 		<input type="hidden" id="id_plan_id" name="from_plan" value="{{ test_run.plan_id }}" />
 		<input type="hidden" id="id_product_id" name="product_id" value="{{ test_run.plan.product_id }}" />
 		<input type="hidden" name="do" value="clone_run" />

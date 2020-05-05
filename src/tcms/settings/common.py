@@ -161,7 +161,6 @@ MIDDLEWARE = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'tcms.core.middleware.CsrfDisableMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -171,6 +170,8 @@ ROOT_URLCONF = 'tcms.urls'
 
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'tcms.wsgi.application'
+
+CSRF_USE_SESSIONS = True
 
 INSTALLED_APPS = (
     'django.contrib.admin',

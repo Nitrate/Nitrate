@@ -1845,7 +1845,7 @@ function constructPlanDetailsCasesZone(container, plan_id, parameters) {
   }
 
   postHTMLRequest({
-    url: Nitrate.http.URLConf.reverse({ name: 'search_case' }),
+    url: '/cases/',
     data: postData,
     traditional: true,
     container: container,

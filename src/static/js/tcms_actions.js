@@ -50,6 +50,22 @@ Nitrate.Utils.formSerialize = function(f) {
 };
 
 /**
+ * Simple wrapper of jQuery.ajax to add header for CSRF.
+ * @param {string} url
+ * @param {object} options
+ */
+function $ajax(url, options) {
+  options = Object.assign({}, options, {
+    beforeSend: function (xhr, settings) {
+      if (!/^(GET|HEAD|OPTIONS|TRACE)$/.test(settings.type) && !this.crossDomain) {
+        xhr.setRequestHeader("X-CSRFToken", globalCsrfToken);
+      }
+    },
+  });
+  jQ.ajax(url, options);
+}
+
+/**
  * Send a AJAX request to the backend server and handle the response. The response from backend is
  * expected to be in JSON data format.
  * @param {object} options - configure the jQuery.ajax call.
@@ -70,7 +86,7 @@ Nitrate.Utils.formSerialize = function(f) {
  *                                       default callback will be hooked to reload the page.
  */
 function sendAjaxRequest(options) {
-  jQ.ajax(options.url, {
+  $ajax(options.url, {
     type: options.method || 'post',
     dataType: 'json',
     data: options.data,
@@ -159,7 +175,7 @@ function postRequest(options) {
  *                                                   content is filled in the given container.
  */
 function sendHTMLRequest(options) {
-  jQ.ajax(options.url, {
+  $ajax(options.url, {
     type: options.method || 'GET',
     data: options.data,
     dataType: 'html',
@@ -805,6 +821,12 @@ function postToURL(path, params, method) {
       form.appendChild(hiddenField);
     }
   }
+
+  let csrfTokenHidden = document.createElement('input');
+  csrfTokenHidden.setAttribute('type', 'hidden');
+  csrfTokenHidden.setAttribute('name', 'csrfmiddlewaretoken');
+  csrfTokenHidden.setAttribute('value', globalCsrfToken);
+  form.appendChild(csrfTokenHidden);
 
   document.body.appendChild(form);    // Not entirely sure if this is necessary
   form.submit();

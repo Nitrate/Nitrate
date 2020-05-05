@@ -27,6 +27,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
 from django.template.loader import get_template
+from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
 from django.views.decorators.http import require_http_methods
@@ -65,6 +66,7 @@ logger = logging.getLogger(__name__)
 
 
 @require_POST
+@csrf_protect
 @permission_required('testruns.add_testrun')
 def new(request, template_name='run/new.html'):
     """Display the create test run page."""

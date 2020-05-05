@@ -42,6 +42,7 @@
 	{% block extra_head %}{% endblock %}
 </head>
 <body id="body">
+	{% include "csrf.html" %}
 	<div id="header">
 		<div class="logo">
 		<a href="{% url "nitrate-index" %}"><img src="{% static "images/logo_shipshape_1.png" %}" alt="logo" /></a>
