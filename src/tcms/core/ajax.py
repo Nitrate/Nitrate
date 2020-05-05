@@ -765,16 +765,18 @@ def comment_case_runs(request):
     comment = data.get('comment', None)
     if not comment:
         return JsonResponseBadRequest({'message': 'Comments needed'})
-    run_ids = [i for i in data.get('run', '').split(',') if i]
+    run_ids = [int(item) for item in data.getlist('run')]
     if not run_ids:
         return JsonResponseBadRequest({'message': 'No runs selected.'})
-    case_run_ids = TestCaseRun.objects.filter(
-        pk__in=run_ids).values_list('pk', flat=True)
+    case_run_ids = (
+        TestCaseRun.objects.filter(pk__in=run_ids).values_list('pk', flat=True)
+    )
     if not case_run_ids:
         return JsonResponseBadRequest({'message': 'No caserun found.'})
     tcms.comments.models.add_comment(
         request.user, 'testruns.testcaserun', case_run_ids, comment,
-        request.META.get('REMOTE_ADDR'))
+        request.META.get('REMOTE_ADDR')
+    )
     return JsonResponse({})
 
 
