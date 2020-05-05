@@ -144,9 +144,10 @@ class TestCommentCaseRuns(BaseCaseRun):
     def test_refuse_if_passed_case_run_pks_not_exist(self):
         self.client.login(username=self.tester.username, password='password')
 
-        response = self.client.post(self.many_comments_url,
-                                    {'comment': 'new comment',
-                                     'run': '99999998,1009900'})
+        response = self.client.post(self.many_comments_url, {
+            'comment': 'new comment',
+            'run': [99999998, 1009900]
+        })
         self.assertJsonResponse(
             response,
             {'message': 'No caserun found.'},
@@ -159,7 +160,7 @@ class TestCommentCaseRuns(BaseCaseRun):
         new_comment = 'new comment'
         response = self.client.post(self.many_comments_url, {
             'comment': new_comment,
-            'run': f'{self.case_run_1.pk},{self.case_run_2.pk}'
+            'run': [self.case_run_1.pk, self.case_run_2.pk]
         })
         self.assertJsonResponse(response, {})
 
