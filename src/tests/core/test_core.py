@@ -6,6 +6,7 @@ from unittest.mock import patch, Mock
 
 from django import test
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core import mail
 
@@ -15,6 +16,7 @@ from tcms.core.utils import string_to_list
 from tcms.core.mailto import mailto
 from tcms.core.task import AsyncTask
 from tcms.core.task import Task
+from tcms.management.models import Classification
 from tests import HelperAssertions
 from tests.factories import TestPlanFactory
 
@@ -375,3 +377,34 @@ class TestMailTo(test.SimpleTestCase):
         EmailMessage.return_value.send.side_effect = smtplib.SMTPException
         mailto('mail_template', 'Start Test', ['tester@localhost'])
         logger.exception.assert_called_once()
+
+
+class TestModelLogAction(test.TestCase):
+    """Test TCMSModel.log_action"""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.tester = User.objects.create_user(
+            username='tester', email='tester@localhost'
+        )
+        cls.classification = Classification.objects.create(name='webapp')
+
+    def test_log_action(self):
+        # who, new_value, field, original_value
+        test_cases = (
+            (self.tester, 'new value', None, None),
+            (self.tester, 'new value', '', None),
+            (self.tester, 'new value', '', ''),
+            (self.tester, 'new value', None, ''),
+            (self.tester, 'new value', 'field', None),
+            (self.tester, 'new value', 'field', 'old value'),
+        )
+
+        for log_args in test_cases:
+            log = self.classification.log_action(*log_args)
+
+            who, new_value, field, original_value = log_args
+            self.assertEqual(who, log.who)
+            self.assertEqual(new_value, log.new_value)
+            self.assertEqual(field or '', log.field)
+            self.assertEqual(original_value or '', log.original_value)

@@ -44,11 +44,11 @@ class TCMSLog:
             'new_value': self.new_value,
         }
 
-    def make(self, who, new_value, field='', original_value=''):
+    def make(self, who, new_value, field=None, original_value=None):
         """Create new log"""
         self.who = who
-        self.field = field
-        self.original_value = original_value
+        self.field = field or ''
+        self.original_value = original_value or ''
         self.new_value = new_value
 
         model = self.get_new_log_object()
