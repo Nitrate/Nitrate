@@ -36,7 +36,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestCases.Create.on_load);
 		{% endif %}
 		>> Create new case
 	</div>
-	<form action="{% url "cases-new" %}{% if test_plan %}?from_plan={{ test_plan.plan_id }}{% endif %}" method="POST">
+	<form action="{% url "cases-new" %}{% if test_plan %}?from_plan={{ test_plan.plan_id }}{% endif %}" method="POST">{% csrf_token %}
 		{% if test_plan %}
 		<input type="hidden" name="from_plan" value="{{ test_plan.plan_id }}" />
 		{% endif %}

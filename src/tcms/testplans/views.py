@@ -21,6 +21,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.http import HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import get_template
+from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_http_methods
 from django.views.generic import View
@@ -77,79 +78,145 @@ def update_plan_email_settings(tp, form):
 
 
 # _____________________________________________________________________________
-# view functons
+# view functions
 
 
-@require_http_methods(['GET', 'POST'])
-@permission_required('testplans.add_testplan')
-def new(request, template_name='plan/new.html'):
-    """New testplan"""
+class CreateNewPlanView(PermissionRequiredMixin, View):
+    """Create a new test plan view"""
 
-    SUB_MODULE_NAME = "new_plan"
+    sub_module_name = "new_plan"
+    template_name = 'plan/new.html'
+    permission_required = (
+        'testplans.add_testplan',
+        'testplans.add_testplantext',
+        'management.add_tcmsenvplanmap'
+    )
 
-    # If the form has been submitted...
-    if request.method == 'POST':
-        # A form bound to the POST data
+    def make_response(self, form):
+        return render(self.request, self.template_name, context={
+            'module': MODULE_NAME,
+            'sub_module': self.sub_module_name,
+            'form': form,
+        })
+
+    def get(self, request):
+        return self.make_response(NewPlanForm())
+
+    @method_decorator(csrf_protect)
+    def post(self, request):
         form = NewPlanForm(request.POST, request.FILES)
         form.populate(product_id=request.POST.get('product'))
 
-        # Process the upload plan document
-        if form.is_valid():
-            if form.cleaned_data.get('upload_plan_text'):
-                # Set the summary form field to the uploaded text
-                form.data['text'] = form.cleaned_data['text']
+        if not form.is_valid():
+            return self.make_response(form)
 
-                # Generate the form
-                context_data = {
-                    'module': MODULE_NAME,
-                    'sub_module': SUB_MODULE_NAME,
-                    'form': form,
-                }
-                return render(request, template_name, context=context_data)
+        # Process the upload plan document
+        if form.cleaned_data.get('upload_plan_text'):
+            # Set the summary form field to the uploaded text
+            form.data['text'] = form.cleaned_data['text']
+            return self.make_response(form)
 
         # Process the test plan submit to the form
+        tp = TestPlan.objects.create(
+            product=form.cleaned_data['product'],
+            author=request.user,
+            owner=request.user,
+            product_version=form.cleaned_data['product_version'],
+            type=form.cleaned_data['type'],
+            name=form.cleaned_data['name'],
+            create_date=datetime.datetime.now(),
+            extra_link=form.cleaned_data['extra_link'],
+            parent=form.cleaned_data['parent'],
+        )
 
-        if form.is_valid():
-            tp = TestPlan.objects.create(
-                product=form.cleaned_data['product'],
-                author=request.user,
-                owner=request.user,
-                product_version=form.cleaned_data['product_version'],
-                type=form.cleaned_data['type'],
-                name=form.cleaned_data['name'],
-                create_date=datetime.datetime.now(),
-                extra_link=form.cleaned_data['extra_link'],
-                parent=form.cleaned_data['parent'],
+        TestPlanEmailSettings.objects.create(plan=tp)
+
+        tp.add_text(author=request.user, plan_text=form.cleaned_data['text'])
+
+        # Add test plan environment groups
+        if request.POST.get('env_group'):
+            env_groups = TCMSEnvGroup.objects.filter(
+                id__in=request.POST.getlist('env_group')
             )
 
-            TestPlanEmailSettings.objects.create(plan=tp)
+            for env_group in env_groups:
+                tp.add_env_group(env_group=env_group)
 
-            # Add test plan text
-            if request.user.has_perm('testplans.add_testplantext'):
-                tp.add_text(author=request.user, plan_text=form.cleaned_data['text'])
+        return HttpResponseRedirect(
+            reverse('plan-get', args=[tp.plan_id])
+        )
 
-            # Add test plan environment groups
-            if request.user.has_perm('management.add_tcmsenvplanmap'):
-                if request.POST.get('env_group'):
-                    env_groups = TCMSEnvGroup.objects.filter(
-                        id__in=request.POST.getlist('env_group')
-                    )
 
-                    for env_group in env_groups:
-                        tp.add_env_group(env_group=env_group)
-
-            return HttpResponseRedirect(
-                reverse('plan-get', args=[tp.plan_id])
-            )
-    else:
-        form = NewPlanForm()
-
-    context_data = {
-        'module': MODULE_NAME,
-        'sub_module': SUB_MODULE_NAME,
-        'form': form,
-    }
-    return render(request, template_name, context=context_data)
+# @require_http_methods(['GET', 'POST'])
+# @permission_required('testplans.add_testplan')
+# def new(request, template_name='plan/new.html'):
+#     """New testplan"""
+#
+#     SUB_MODULE_NAME = "new_plan"
+#
+#     # If the form has been submitted...
+#     if request.method == 'POST':
+#         # A form bound to the POST data
+#         form = NewPlanForm(request.POST, request.FILES)
+#         form.populate(product_id=request.POST.get('product'))
+#
+#         # Process the upload plan document
+#         if form.is_valid():
+#             if form.cleaned_data.get('upload_plan_text'):
+#                 # Set the summary form field to the uploaded text
+#                 form.data['text'] = form.cleaned_data['text']
+#
+#                 # Generate the form
+#                 context_data = {
+#                     'module': MODULE_NAME,
+#                     'sub_module': SUB_MODULE_NAME,
+#                     'form': form,
+#                 }
+#                 return render(request, template_name, context=context_data)
+#
+#         # Process the test plan submit to the form
+#
+#         if form.is_valid():
+#             tp = TestPlan.objects.create(
+#                 product=form.cleaned_data['product'],
+#                 author=request.user,
+#                 owner=request.user,
+#                 product_version=form.cleaned_data['product_version'],
+#                 type=form.cleaned_data['type'],
+#                 name=form.cleaned_data['name'],
+#                 create_date=datetime.datetime.now(),
+#                 extra_link=form.cleaned_data['extra_link'],
+#                 parent=form.cleaned_data['parent'],
+#             )
+#
+#             TestPlanEmailSettings.objects.create(plan=tp)
+#
+#             # Add test plan text
+#             if request.user.has_perm('testplans.add_testplantext'):
+#                 tp.add_text(author=request.user, plan_text=form.cleaned_data['text'])
+#
+#             # Add test plan environment groups
+#             if request.user.has_perm('management.add_tcmsenvplanmap'):
+#                 if request.POST.get('env_group'):
+#                     env_groups = TCMSEnvGroup.objects.filter(
+#                         id__in=request.POST.getlist('env_group')
+#                     )
+#
+#                     for env_group in env_groups:
+#                         tp.add_env_group(env_group=env_group)
+#
+#             return HttpResponseRedirect(
+#                 reverse('plan-get', args=[tp.plan_id])
+#             )
+#     else:
+#         form = NewPlanForm()
+#
+#     context_data = {
+#         'module': MODULE_NAME,
+#         'sub_module': SUB_MODULE_NAME,
+#         'form': form,
+#     }
+#     return render(request, template_name, context=context_data)
 
 
 @require_GET
