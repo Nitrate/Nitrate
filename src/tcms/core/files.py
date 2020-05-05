@@ -12,8 +12,10 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
+from django.utils.decorators import method_decorator
 from django.utils.encoding import smart_str
 from django.views import generic
+from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_GET, require_POST
 from six.moves.urllib_parse import unquote
 
@@ -30,6 +32,7 @@ class UploadFileView(PermissionRequiredMixin, generic.View):
 
     permission_required = 'management.add_testattachment'
 
+    @method_decorator(csrf_protect)
     def post(self, request):
         to_plan_id = request.POST.get('to_plan_id')
         to_case_id = request.POST.get('to_case_id')
