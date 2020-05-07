@@ -619,14 +619,11 @@ function getVersionsByProductId(allow_blank, product_field, version_field) {
 }
 
 function getComponentsByProductId(allow_blank, product_field, component_field, callback, parameters) {
-  if (!parameters) {
-    parameters = {};
-  }
-
+  parameters = parameters || {};
   parameters.info_type = 'components';
 
   // Initial the product get from
-  if (!parameters || !parameters.product_id) {
+  if (! parameters.product_id) {
     if (!product_field) {
       product_field = jQ('#id_product')[0];
     }
@@ -658,9 +655,7 @@ function getComponentsByProductId(allow_blank, product_field, component_field, c
         allow_blank
       );
 
-      if (typeof callback === 'function') {
-        callback.call();
-      }
+      if (callback) { callback(); }
     },
   });
 }

@@ -1080,7 +1080,7 @@ function showCaseRunsWithSelectedStatus(form, status_id) {
 function serializeRunsFromInputList(table) {
   let elements = jQ('#' + table).parent().find('input[name="run"]:checked');
   let case_ids = [];
-  elements.each(function(i) {
+  elements.each(function() {
     if (typeof this.value === 'string') {
       case_ids.push(this.value);
     }

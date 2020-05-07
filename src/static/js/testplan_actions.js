@@ -699,12 +699,7 @@ Nitrate.TestPlans.Details = {
     });
   },
   'bindEventsOnLoadedCases': function(container) {
-    let elem = null;
-    if (typeof container === 'string') {
-      elem = jQ('#' + container);
-    } else {
-      elem = jQ(container);
-    }
+    let elem = typeof container === 'string' ? jQ('#' + container) : jQ(container);
     let form = elem.children()[0];
     let table = elem.children()[1];
     Nitrate.TestPlans.Details._bindEventsOnLoadedCases(table, form);
@@ -1033,7 +1028,7 @@ function toggleTestCaseReviewPane(options) {
     jQ.get('/case/' + options.case_id + '/review-pane/', function(data) {
       casePaneContainer.html(data);
 
-      if (typeof options.callback === 'function') {
+      if (options.callback) {
         options.callback();
       }
     }, 'html');
@@ -1834,16 +1829,9 @@ function constructPlanDetailsCasesZoneCallback(options) {
 
 
 function constructPlanDetailsCasesZone(container, plan_id, parameters) {
-  container =
-    typeof container === 'string' ? jQ('#' + container)[0] : container;
-
+  container = typeof container === 'string' ? jQ('#' + container)[0] : container;
   jQ(container).html('<div class="ajax_loading"></div>');
-
-  let postData = parameters;
-  if (!postData) {
-    postData = {'a': 'initial', 'from_plan': plan_id};
-  }
-
+  let postData = parameters || {a: 'initial', from_plan: plan_id};
   postHTMLRequest({
     url: '/cases/',
     data: postData,
@@ -1854,12 +1842,9 @@ function constructPlanDetailsCasesZone(container, plan_id, parameters) {
         jQ(this).hide().next().show();
       });
 
-      let type = '';
-      if (typeof parameters.template_type === 'string') {
-        type = (parameters.template_type === 'case') ? '-' : '-review-';
-      } else {
-        type = (parameters.template_type[0] === 'case') ? '-' : '-review-';
-      }
+      let type = typeof parameters.template_type === 'string' ?
+        (parameters.template_type === 'case') ? '-' : '-review-' :
+        (parameters.template_type[0] === 'case') ? '-' : '-review-';
       let casesSection = (type === '-') ? jQ('#testcases')[0] : jQ('#reviewcases')[0];
       let casesTable = jQ(casesSection).find('.js-cases-list')[0];
       let navForm = jQ('#js' + type + 'cases-nav-form')[0];
@@ -1983,9 +1968,7 @@ function constructPlanComponentsZone(container, parameters, callback) {
 }
 
 function constructPlanComponentModificationDialog(container) {
-  if (!container) {
-    container = getDialog();
-  }
+  container = container || getDialog();
   jQ(container).show();
 
   let d = jQ('<div>');
