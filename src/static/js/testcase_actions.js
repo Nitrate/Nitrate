@@ -934,7 +934,7 @@ function toggleCaseRunsByPlan(params, callback) {
   }
 
   let container = typeof params.container === 'string' ?
-    jQ('#' + params.container) : jQ(container);
+    jQ('#' + params.container) : jQ(params.container);
 
   let blind_icon = container.find('img').first();
   if (contentContainer.is(':hidden')) {
