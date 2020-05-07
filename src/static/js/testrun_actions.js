@@ -1332,35 +1332,32 @@ function initialize_addlink_dialog(link_target) {
 /**
  * Toggle TestCaseRun panel to edit a case run in run page.
  *
- * Arguments:
- * options.casrunContainer:
- * options.expandPaneContainer:
- * options.caseId:
- * options.caserunId:
- * options.caseTextVersion:
- * options.callback:
+ * @param {Object} options
+ * @param {HTMLElement} options.caserunRowContainer
+ * @param {HTMLElement} options.expandPaneContainer
+ * @param {number} options.caseId
+ * @param {number} options.caserunId
+ * @param {number} options.caseTextVersion
+ * @param {function} options.callback
  */
 function toggleTestCaseRunPane(options) {
-  let content_container = options.expandPaneContainer;
+  let container = options.expandPaneContainer;
+  container.toggle();
 
-  content_container.toggle();
-
-  if (content_container.find('.ajax_loading').length) {
-    jQ.get(
-      '/case/' + options.caseId + '/caserun-detail-pane/',
-      {
+  if (container.find('.ajax_loading').length) {
+    sendHTMLRequest({
+      url: '/case/' + options.caseId + '/caserun-detail-pane/',
+      container: container,
+      callbackAfterFillIn: options.callback,
+      data: {
         case_run_id: options.caserunId,
         case_text_version: options.caseTextVersion
       },
-      function(data, textStatus) {
-        content_container.html(data);
-        options.callback();
-      },
-      'html');
+    });
   }
 
   toggleExpandArrow({
     caseRowContainer: options.caserunRowContainer,
-    expandPaneContainer: content_container
+    expandPaneContainer: container
   });
 }

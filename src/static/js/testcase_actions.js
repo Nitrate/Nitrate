@@ -419,13 +419,11 @@ function toggleSimpleCaseRunPane(options) {
   options.expandPaneContainer.toggle();
 
   if (options.caserunRowContainer.next().find('.ajax_loading').length) {
-    jQ.get(
-      '/case/' + options.caseId + '/caserun-simple-pane/',
-      {case_run_id: options.caserunId},
-      function(data, textStatus) {
-        options.expandPaneContainer.html(data);
-      },
-      'html');
+    sendHTMLRequest({
+      url: '/case/' + options.caseId + '/caserun-simple-pane/',
+      data: {case_run_id: options.caserunId},
+      container: options.expandPaneContainer
+    })
   }
 
   toggleExpandArrow({
