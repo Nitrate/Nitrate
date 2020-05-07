@@ -1003,12 +1003,11 @@ function toggleTestCasePane(options, callback) {
   casePaneContainer.toggle();
 
   if (casePaneContainer.find('.ajax_loading').length) {
-    jQ.get('/case/' + options.case_id + '/readonly-pane/', function(data) {
-      casePaneContainer.html(data);
-      if (callback) {
-        callback();
-      }
-    }, 'html');
+    sendHTMLRequest({
+      url: '/case/' + options.case_id + '/readonly-pane/',
+      container: casePaneContainer,
+      callbackAfterFillIn: callback
+    });
   }
 
 }
@@ -1025,13 +1024,11 @@ function toggleTestCaseReviewPane(options) {
   casePaneContainer.toggle();
 
   if (casePaneContainer.find('.ajax_loading').length) {
-    jQ.get('/case/' + options.case_id + '/review-pane/', function(data) {
-      casePaneContainer.html(data);
-
-      if (options.callback) {
-        options.callback();
-      }
-    }, 'html');
+    sendHTMLRequest({
+      url: '/case/' + options.case_id + '/review-pane/',
+      container: casePaneContainer,
+      callbackAfterFillIn: options.callback
+    });
   }
 }
 
