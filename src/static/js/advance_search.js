@@ -1,7 +1,5 @@
 function getProdRelatedObj(prodIDs, target, targetID) {
-  if (typeof prodIDs ==='string') {
-    prodIDs = [prodIDs];
-  }
+  prodIDs = Array.isArray(prodIDs) ? prodIDs : [prodIDs];
   // Separator , used to join/split values
   getRequest({
     url: '/ajax/get-prod-relate-obj/',

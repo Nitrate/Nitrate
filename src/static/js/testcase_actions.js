@@ -909,36 +909,35 @@ function addCaseIssueViaEnterKey(element, e) {
   }
 }
 
+/**
+ * Toggle case runs by plan
+ * @param {Object} params
+ * @param {string|HTMLElement} params.c_container
+ * @param {string|HTMLElement} params.container
+ * @param {number} params.case_id
+ * @param {number} params.case_run_plan_id
+ * @param callback
+ */
 function toggleCaseRunsByPlan(params, callback) {
-  let container = params.container;
+  let contentContainer = typeof params.c_container === 'string' ?
+    jQ('#' + params.c_container) : jQ(params.c_container);
 
-  if (typeof container === 'string') {
-    container = jQ('#' + container);
-  } else {
-    container = jQ(container);
-  }
-
-  let content_container = params.c_container;
-
-  if(typeof content_container === 'string') {
-    content_container = jQ('#' + content_container);
-  } else {
-    content_container = jQ(content_container);
-  }
-
-  content_container.toggle();
+  contentContainer.toggle();
 
   if (jQ('#id_loading_' + params.case_run_plan_id).length) {
     sendHTMLRequest({
       url: '/case/' + params.case_id + '/caserun-list-pane/',
       data: {plan_id: params.case_run_plan_id},
-      container: content_container,
+      container: contentContainer[0],
       callbackAfterFillIn: callback,
     });
   }
 
+  let container = typeof params.container === 'string' ?
+    jQ('#' + params.container) : jQ(container);
+
   let blind_icon = container.find('img').first();
-  if (content_container.is(':hidden')) {
+  if (contentContainer.is(':hidden')) {
     blind_icon.removeClass('collapse').addClass('expand').attr('src', '/static/images/t1.gif');
   } else {
     blind_icon.removeClass('expand').addClass('collapse').attr('src', '/static/images/t2.gif');
