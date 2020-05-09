@@ -15,6 +15,7 @@
 import django
 import sys
 import os
+from datetime import datetime
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -35,6 +36,7 @@ release = pkg_version
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx',
+    'sphinx_rtd_theme',
 ]
 
 templates_path = ['_templates']
@@ -42,18 +44,19 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 project = 'Nitrate'
-copyright = '2013 - 2020, Red Hat, Inc.'
+copyright = f'2013 - {datetime.utcnow().year}, Red Hat, Inc.'
 
 exclude_patterns = []
 pygments_style = 'sphinx'
 
-html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 htmlhelp_basename = 'nitratedoc'
 
-epub_title = 'Nitrate'
-epub_author = 'hlin,weizhou,cqi,qduanmu'
-epub_publisher = 'hlin,weizhou,cqi,qduanmu'
-epub_copyright = copyright
+html_theme = 'sphinx_rtd_theme'
+html_logo = '_static/logo.png'
+html_favicon = '_static/logo.png'
+html_theme_options = {
+    'logo_only': True,
+}
 
 intersphinx_mapping = {'http://docs.python.org/': None}
