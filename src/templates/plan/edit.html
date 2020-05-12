@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block custom_stylesheet %}
-<link rel="stylesheet" type="text/css" href="{% static "style/print.css" media="print" %}" />
+<link rel="stylesheet" type="text/css" href="{% static "style/print.css" %} media="print" %}" />
 <style>
 .display_summary textarea{ background:red; }
 </style>
@@ -105,26 +105,26 @@ Nitrate.Utils.after_page_load(Nitrate.TestPlans.Edit.on_load);
 						<div class="errors">{{ form.type.errors }}</div>
 					</td>
 				</tr>
-                <tr>
-                    <td>
-                        <label class="lab">Parent ID</label>
-                    </td>
-                    <td>
-                        <div class="name">{{ form.parent }}</div>
-                        <div class="errors">{{ form.parent.errors }}</div>
-                    </td>
-                </tr>
+				<tr>
+					<td>
+						<label class="lab">Parent ID</label>
+					</td>
+					<td>
+						<div class="name">{{ form.parent }}</div>
+						<div class="errors">{{ form.parent.errors }}</div>
+					</td>
+				</tr>
 				<tr>
 					<td><label class="lab strong">Plan Document</label></td>
 					<td>
 						<div id="display_summary"  class="mec">
 							{{ form.text }}
 						</div>
-                        <div >{{ form.text.errors }}</div>
-                        <span>Or upload a plan document</span>
-                        {{ form.upload_plan_text }}
-                        <span class="grey">Html, Plain text or ODT is acceptable.</span>
-                        <div >{{ form.upload_plan_text.errors }}</div>
+						<div >{{ form.text.errors }}</div>
+						<span>Or upload a plan document</span>
+						{{ form.upload_plan_text }}
+						<span class="grey">Html, Plain text or ODT is acceptable.</span>
+						<div >{{ form.upload_plan_text.errors }}</div>
 						<div class="errors">{{ form.text.errors }}</div>
 					</td>
 				</tr>
@@ -156,22 +156,21 @@ Nitrate.Utils.after_page_load(Nitrate.TestPlans.Edit.on_load);
 					</td>
 				</tr>
 				<tr>
-				    <td><label>Notification include</label></td>
-				    <td>
-				        <div>{{ form.auto_to_plan_owner }}{{ form.auto_to_plan_owner.label }}{{ form.auto_to_plan_owner.errors }}</div>
-				        <div>{{ form.auto_to_plan_author }}{{ form.auto_to_plan_author.label }}{{ form.auto_to_plan_author.errors }}</div>
-				        <div>{{ form.auto_to_case_owner }}{{ form.auto_to_case_owner.label }}{{ form.auto_to_case_owner.errors }}</div>
-				        <div>{{ form.auto_to_case_default_tester }}{{ form.auto_to_case_default_tester.label }}{{ form.auto_to_case_default_tester.errors }}</div>
-				    </td>
+					<td><label>Notification include</label></td>
+					<td>
+						<div>{{ form.auto_to_plan_owner }}{{ form.auto_to_plan_owner.label }}{{ form.auto_to_plan_owner.errors }}</div>
+						<div>{{ form.auto_to_plan_author }}{{ form.auto_to_plan_author.label }}{{ form.auto_to_plan_author.errors }}</div>
+						<div>{{ form.auto_to_case_owner }}{{ form.auto_to_case_owner.label }}{{ form.auto_to_case_owner.errors }}</div>
+						<div>{{ form.auto_to_case_default_tester }}{{ form.auto_to_case_default_tester.label }}{{ form.auto_to_case_default_tester.errors }}</div>
+					</td>
 				</tr>
 				<tr>
-				    <td><label>Notification Trigger</label></td>
-				    <td>
-				       
-				       <div>{{ form.notify_on_plan_update }}{{ form.notify_on_plan_update.label }}{{ form.notify_on_plan_update.errors }}</div>
-				       <div>{{ form.notify_on_plan_delete }}{{ form.notify_on_plan_delete.label }}{{ form.notify_on_plan_delete.errors }}</div>
-				       <div>{{ form.notify_on_case_update }}{{ form.notify_on_case_update.label }}{{ form.notify_on_case_update.errors }}</div>
-				    </td>
+					<td><label>Notification Trigger</label></td>
+					<td>
+						<div>{{ form.notify_on_plan_update }}{{ form.notify_on_plan_update.label }}{{ form.notify_on_plan_update.errors }}</div>
+						<div>{{ form.notify_on_plan_delete }}{{ form.notify_on_plan_delete.label }}{{ form.notify_on_plan_delete.errors }}</div>
+						<div>{{ form.notify_on_case_update }}{{ form.notify_on_case_update.label }}{{ form.notify_on_case_update.errors }}</div>
+					</td>
 				</tr>
 			</table>
 			<div class="submit-row" id="control_box">
