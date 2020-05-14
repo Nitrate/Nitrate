@@ -1,0 +1,125 @@
+.. _4.6:
+
+4.6
+===
+
+*May 15, 2020*
+
+Django 2.0 is not recommended to be used with Nitrate. It has been removed
+from dependency.
+
+CSRF is enabled to ensure the security. Both form submittion and AJAX POST
+request must include csrf token.
+
+The codebase continues to be cleaned up. Lots of JavaScript code are
+refactored and simplified, and new test suite based on QUnit is added.
+Meanwhile, the JavaScript code is on the way to be modernized. If you are an
+experienced JavaScript developer, Nitrate needs your help.
+
+Get and install
+---------------
+
+From PyPI::
+
+    pip install nitrate-tcms
+
+From image registry::
+
+    docker pull quay.io/nitrate/nitrate:4.6
+
+Refer to :ref:`how_to_run` for details of installation.
+
+Database Migration
+------------------
+
+No database migration in this release.
+
+Change Log
+----------
+
+* Massive update docs (Chenxiong Qi)
+* JS: simplify handling default value (Chenxiong Qi)
+* Avoid submitting issue key when press enter (Chenxiong Qi)
+* Add missing csrf check for attachment upload (Chenxiong Qi)
+* Remove Django 2.0 from project classifiers (Chenxiong Qi)
+* Fix log_action to handle None original value correctly - `#610`_ (Chenxiong Qi)
+* Comment out all selected case runs correctly - `#609`_ (Chenxiong Qi)
+* Enable CSRF - `#501`_ (Chenxiong Qi)
+* JS: clean some code (Chenxiong Qi)
+* JS: abstract jQuery.ajax calls (Chenxiong Qi)
+* Upgrade celery to 4.4 - `#457`_ (Chenxiong Qi)
+* Talk on Gitter (Chenxiong Qi)
+* JS: use let or const instead of var - `#513`_ (Chenxiong Qi)
+* Update components button works again (Chenxiong Qi)
+* Massive refactor of adding case to plans (Chenxiong Qi)
+* Simplify Prompt.render (Chenxiong Qi)
+* Refine more HTTP response status code and fix js (Chenxiong Qi)
+* Refine HTTP response in app testruns (Chenxiong Qi)
+* Cleanup core/ajax.py for the JSON response (Chenxiong Qi)
+* Use HTTP status code properly in testcases (Chenxiong Qi)
+* Add more tests (Chenxiong Qi)
+* Cleanup template tags (Chenxiong Qi)
+* Fix wrong import of mock (Chenxiong Qi)
+* Remove Django 2.0 from tox.ini (Chenxiong Qi)
+* Refine testplans AJAX response (Chenxiong Qi)
+* Refine linkreference AJAX response (Chenxiong Qi)
+* Massive refactor management environment views (Chenxiong Qi)
+* Remove Django 2.0 - `#563`_ (Chenxiong Qi)
+* Set HTTP response status code properly for removing attachment (Chenxiong Qi)
+* JS: remove unused code (Chenxiong Qi)
+* Remove cases select all - `#558`_ (Chenxiong Qi)
+* JS: relayout tests (Chenxiong Qi)
+* JS: remove duplicate serializeCaseForm and serializeCaseForm2 (Chenxiong Qi)
+* JS: write more tests for functions (Chenxiong Qi)
+* JS: start to test js code with qunit (Chenxiong Qi)
+* JS: rewrite serializeCaseRunFromInputList (Chenxiong Qi)
+* Fix test run clone page (Chenxiong Qi)
+* JS: call callback properly when succeed to submit a comment to a case run (Chenxiong Qi)
+* Fix location to load django jQuery lib (Chenxiong Qi)
+* JS: fix location to load django admin jquery (Chenxiong Qi)
+* JS: use let to declare global variable jQ (Chenxiong Qi)
+* JS: replace live and bind with on (Chenxiong Qi)
+* JS: remove constructPlanParentPreviewDialog (Chenxiong Qi)
+* JS: massive refactor TreeView (Chenxiong Qi)
+* JS: remove unused removeBatchTag (Chenxiong Qi)
+* JS: fix typo initializaRunTab (Chenxiong Qi)
+* JS: fix typo serialzeCaseForm (Chenxiong Qi)
+* Use apps.get_model in bookmark (Chenxiong Qi)
+* JS: more small fixes (Chenxiong Qi)
+* JS: use jquery ajax dataType argument (Chenxiong Qi)
+* JS: massive refactors (Chenxiong Qi)
+* JS: fix function name typo and refactor it (Chenxiong Qi)
+* JS: fix incorrect variable name (Chenxiong Qi)
+* Add missing load tag to load static (Chenxiong Qi)
+* Remove unused CSS from templates (Chenxiong Qi)
+* Convert some templates from dos to unix format (Chenxiong Qi)
+* Use static template tag - `#480`_ (Chenxiong Qi)
+* Replace deprecated inspect.getargspec with inspect.getfullargspec - `#458`_ (Chenxiong Qi)
+* Write tests for log_call and fix it (Chenxiong Qi)
+* Fix typo in log_call docstring (Chenxiong Qi)
+* JS: remove unused function (Chenxiong Qi)
+* JS: fix wrong variable name in plan treeview (Chenxiong Qi)
+* Replace url with path in URLconf - `#510`_ (Chenxiong Qi)
+* JS: convert file format from dos to unix (Chenxiong Qi)
+* Remove dependency of mock - `#503`_ (Chenxiong Qi)
+* JS: fix various issues detected by jshint (Chenxiong Qi)
+* JS: many minor fixes (Chenxiong Qi)
+* JS: use !== strict inequality (Chenxiong Qi)
+* JS: fix duplicate and redundant variable declaration (Chenxiong Qi)
+* JS: fix implicitly variable declaration (Chenxiong Qi)
+* JS: use triple equals (Chenxiong Qi)
+* Global exclude pyc files from sdist (Chenxiong Qi)
+* Use tar.gz for sdist (Chenxiong Qi)
+* Add PyPI badge to README (Chenxiong Qi)
+
+.. _#457: https://github.com/Nitrate/Nitrate/issues/457
+.. _#458: https://github.com/Nitrate/Nitrate/issues/458
+.. _#480: https://github.com/Nitrate/Nitrate/issues/480
+.. _#501: https://github.com/Nitrate/Nitrate/issues/501
+.. _#503: https://github.com/Nitrate/Nitrate/issues/503
+.. _#510: https://github.com/Nitrate/Nitrate/issues/510
+.. _#513: https://github.com/Nitrate/Nitrate/issues/513
+.. _#558: https://github.com/Nitrate/Nitrate/issues/558
+.. _#563: https://github.com/Nitrate/Nitrate/issues/563
+.. _#609: https://github.com/Nitrate/Nitrate/issues/609
+.. _#610: https://github.com/Nitrate/Nitrate/issues/610
