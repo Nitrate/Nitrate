@@ -1,5 +1,6 @@
 include AUTHORS CHANGELOG.rst README.rst LICENSE VERSION.txt
 include nitrate.spec Makefile requirements.txt
+include src/manage.py
 
 graft contrib
 graft src/locale
