@@ -1,4 +1,4 @@
-SPECFILE=nitrate.spec
+SPECFILE=python-nitrate-tcms.spec
 
 default: help
 
@@ -12,7 +12,7 @@ tarball:
 
 
 .PHONY: srpm
-srpm: tarball
+srpm:
 	@rpmbuild $(DEFINE_OPTS) -bs $(SPECFILE)
 
 
@@ -59,10 +59,15 @@ DOCKER_ORG ?= quay.io/nitrate
 IMAGE_TAG = $(DOCKER_ORG)/nitrate:$(RELEASE_VERSION)
 
 release-image:
-	docker build -t $(IMAGE_TAG) -f ./docker/released/Dockerfile --build-arg version=$(RELEASE_VERSION) .
+	@docker build -t $(IMAGE_TAG) -f ./docker/released/Dockerfile --build-arg version=$(RELEASE_VERSION) .
+
+.PHONY: publish-release-image
+publish-release-image:
+	@docker login quay.io
+	@docker push $(IMAGE_TAG)
 
 dev-image:
-	docker build -t $(IMAGE_TAG:$(RELEASE_VERSION)=dev) -f ./docker/dev/Dockerfile .
+	@docker build -t $(IMAGE_TAG:$(RELEASE_VERSION)=dev) -f ./docker/dev/Dockerfile .
 
 # By default, released image is pulled from remote registry.
 # For the purpose of testing released image locally, execute target
@@ -120,6 +125,12 @@ testbox-image: remove-testbox-image
 push-testbox-image: $(if $(skip_build),,testbox-image)
 	@docker login quay.io
 	@docker push $(testbox_image_tag)
+
+
+.PHONY: publish-to-pypi
+publish-to-pypi:
+	@twine upload dist/nitrate-tcms-$(RELEASE_VERSION).tar.gz
+
 
 .PHONY: help
 help:
