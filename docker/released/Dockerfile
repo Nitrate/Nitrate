@@ -13,8 +13,31 @@ username and password are 'admin'." \
 
 # install virtualenv and libraries needed to build the python dependencies
 RUN dnf update -y && \
-    dnf install -y --setopt=deltarpm=0 --setopt=install_weak_deps=false --setopt=tsflags=nodocs \
-      gcc python3-devel graphviz-devel httpd python3-mod_wsgi mariadb mariadb-devel && \
+    dnf install -y \
+      --setopt=deltarpm=0 \
+      --setopt=install_weak_deps=false \
+      --setopt=tsflags=nodocs \
+      dnf-utils && \
+    dnf copr enable -y cqi/python-nitrate-tcms && \
+    dnf install -y \
+      --setopt=deltarpm=0 \
+      --setopt=install_weak_deps=false \
+      --setopt=tsflags=nodocs \
+      httpd \
+      python3-beautifulsoup4 \
+      python3-bugzilla \
+      python3-celery \
+      python3-django \
+      python3-django-contrib-comments \
+      python3-django-tinymce \
+      python3-django-uuslug \
+      python3-html2text \
+      python3-kerberos \
+      python3-kobo-django \
+      python3-mod_wsgi \
+      python3-odfpy \
+      python3-PyMySQL \
+      python3-xmltodict && \
     dnf clean all
 
 WORKDIR /code
@@ -26,7 +49,8 @@ COPY ./docker/released/product.py src/tcms/settings/product.py
 # Create a virtualenv for the application dependencies
 # Using --system-site-packages b/c Apache configuration
 # expects the tcms directory to be there!
-RUN python3 -m venv --system-site-packages /prodenv && /prodenv/bin/pip install --no-cache-dir .[mysql]
+RUN python3 -m venv --system-site-packages /prodenv && \
+    /prodenv/bin/pip install --no-deps .
 
 COPY ./contrib/conf/nitrate-httpd.conf /etc/httpd/conf.d/
 
