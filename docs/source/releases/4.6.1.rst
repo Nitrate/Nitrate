@@ -1,0 +1,37 @@
+.. _4.6.1:
+
+4.6.1
+=====
+
+*May 16, 2020*
+
+This is a maintenance release focusing on the infrastructure for building and
+releasing Nitrate in various ways like image and RPM package.
+
+Get and install
+---------------
+
+From PyPI::
+
+    pip install nitrate-tcms
+
+From image registry::
+
+    docker pull quay.io/nitrate/nitrate:4.6.1
+
+Refer to :ref:`how_to_run` for details of installation.
+
+Database Migration
+------------------
+
+No database migration within this release.
+
+Change Log
+----------
+
+* Refine and add new targets to Makefile (Chenxiong Qi)
+* Upgrade base image to fedora:31 for dev and release images (Chenxiong Qi)
+* Do not install dependencies from PyPI during building release image (Chenxiong Qi)
+* Cleanup, rename and fix SPEC (Chenxiong Qi)
+* Add missing src/manage.py (Chenxiong Qi)
+

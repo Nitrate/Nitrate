@@ -2,6 +2,7 @@
 
 import re
 import argparse
+import subprocess
 
 from datetime import datetime
 from typing import Tuple
@@ -80,7 +81,14 @@ with open('docker/released/README.md', 'r') as f:
     content = f.read()
 with open('docker/released/README.md', 'w+') as f:
     f.write(
-        re.sub(r'quay.io/nitrate/nitrate:\d+\.\d+',
+        re.sub(r'quay.io/nitrate/nitrate:\d+\.\d+(\.\d+)?',
                f'quay.io/nitrate/nitrate:{new_version}',
                content)
     )
+
+subprocess.check_call([
+    'rpmdev-bumpspec',
+    '-n', new_version,
+    '-c', f'Built for version {new_version}',
+    'python-nitrate-tcms.spec'
+])
