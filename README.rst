@@ -48,7 +48,7 @@ It has a lot of great features, such as:
 Nitrate works with:
 
 * Python: ``3.6`` and ``3.7``.
-* Django: ``2.x``.
+* Django: ``2.x`` and ``3.0``.
 
 What's more, Nitrate is tested with the following database versions:
 

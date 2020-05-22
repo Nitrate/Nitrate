@@ -12,7 +12,6 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MaxLengthValidator, RegexValidator
 from django.db import models
 from django.db.models import Count
-from django.utils.encoding import python_2_unicode_compatible
 
 from tcms.core.models import TCMSActionModel
 from tcms.issuetracker import validators
@@ -43,7 +42,6 @@ class CredentialTypes(enum.Enum):
     Token = 'Token based'
 
 
-@python_2_unicode_compatible
 class IssueTrackerProduct(TCMSActionModel):
     """Representing a specific issue tracker product
 
@@ -71,7 +69,6 @@ class IssueTrackerProduct(TCMSActionModel):
         return getattr(module, class_name)
 
 
-@python_2_unicode_compatible
 class ProductIssueTrackerRelationship(TCMSActionModel):
     """Many-to-many relationship between Product and IssueTracker
 
@@ -111,7 +108,6 @@ class ProductIssueTrackerRelationship(TCMSActionModel):
         unique_together = ('product', 'issue_tracker')
 
 
-@python_2_unicode_compatible
 class IssueTracker(TCMSActionModel):
     """Represent a deployed issue tracker instance"""
 
@@ -407,7 +403,6 @@ class Credential(TCMSActionModel):
             self.check_secret_file(self.secret_file)
 
 
-@python_2_unicode_compatible
 class UserPwdCredential(Credential):
     """Username/password credential for logging into issue tracker"""
 
@@ -458,7 +453,6 @@ class UserPwdCredential(Credential):
                 raise ValidationError({'password': 'Missing password.'})
 
 
-@python_2_unicode_compatible
 class TokenCredential(Credential):
     """Token based authentication for logging into issue tracker"""
 
@@ -508,7 +502,6 @@ class TokenCredential(Credential):
                 raise ValidationError('Expiration date is prior to today.')
 
 
-@python_2_unicode_compatible
 class Issue(TCMSActionModel):
     """This is the issue which could be added to case or case run
 
