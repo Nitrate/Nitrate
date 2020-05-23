@@ -145,9 +145,7 @@ class TestCaseRemovePlan(BasePlanCase):
         self.new_case.remove_plan(self.plan)
 
         found = self.plan.case.filter(pk=self.new_case.pk).exists()
-        self.assertFalse(
-            found, 'Case {0} should has no relationship to plan {0} now.'.format(self.new_case.pk,
-                                                                                 self.plan.pk))
+        self.assertFalse(found)
 
 
 class TestCaseRemoveTag(BasePlanCase):

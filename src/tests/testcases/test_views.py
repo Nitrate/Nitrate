@@ -1794,7 +1794,7 @@ class TestAddComponent(BasePlanCase):
         msgs = sorted(data['message'])
         self.assertIn(
             f'Nonexistent component id(s) {nonexisting_component_id}', msgs[0])
-        self.assertIn(f'Nonexistent product id', msgs[1])
+        self.assertIn('Nonexistent product id', msgs[1])
 
     @patch('tcms.testcases.models.TestCase.add_component')
     def test_failed_to_add_component(self, add_component):
