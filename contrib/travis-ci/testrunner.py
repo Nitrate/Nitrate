@@ -32,7 +32,10 @@ DB_CONTAINER_NAME = 'nitrate-test-db'
 TEST_DB_NAME = 'nitrate'
 TEST_BOX_IMAGE = 'quay.io/nitrate/testbox:latest'
 VALID_NITRATE_DB_NAMES = ['mysql', 'mariadb', 'postgres', 'sqlite']
-VALID_PYTHON_VERSIONS = ['py36', 'py37']
+# Since this script was written originally to work inside Travis-CI, using
+# Python version 3.6 and 3.7 would be much easier to match the value of
+# environment variable TRAVIS_PYTHON_VERSION.
+VALID_PYTHON_VERSIONS = ['3.6', '3.7']
 DB_CONTAINER_INFO = {
     'mysql': {
         'db_engine': 'mysql',
@@ -147,7 +150,7 @@ def main():
     parser.add_argument(
         '--python-ver',
         choices=VALID_PYTHON_VERSIONS,
-        default='py37',
+        default='3.7',
         help='Specify Python version')
     parser.add_argument(
         '--django-ver',
@@ -227,7 +230,7 @@ def main():
             }
         }
 
-    test_box_container_name = f'nitrate-testbox-{args.python_ver}'
+    test_box_container_name = f'nitrate-testbox-py{args.python_ver.replace(".", "")}'
     test_box_run_opts.update({
         'rm': True,
         'interactive': True,
@@ -236,7 +239,7 @@ def main():
         'volumes': [f'{args.project_dir}:/code:Z'],
     })
     test_box_run_opts['envs'].update({
-        'PYTHON_VER': args.python_ver,
+        'PYTHON_VER': f'py{args.python_ver.replace(".", "")}',
         'DJANGO_VER': args.django_ver,
         'TEST_TARGETS': '"{}"'.format(' '.join(args.targets)),
     })
