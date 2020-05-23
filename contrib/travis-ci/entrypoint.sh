@@ -29,5 +29,3 @@ pip uninstall --yes Django
 pip install "$DJANGO_VER"
 
 py.test $(echo $TEST_TARGETS | xargs)
-flake8 src/tcms src/tests
-cd docs; make html
