@@ -48,6 +48,8 @@ Nitrate.CreateRunPage = {
 
   autofill_name : function() {
     if (!Nitrate.CreateRunPage.has_user_edited_name) {
+      /* eslint no-undef:off */
+      // FIXME: replace Ajax.Request with jQuery AJAX
       new Ajax.Request('/run/suggest_summary', {
         method:'get',
         parameters:{

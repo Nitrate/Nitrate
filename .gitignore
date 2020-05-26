@@ -32,3 +32,4 @@ uploads/
 Vagrantfile
 *.retry
 .DS_Store
+node_modules/

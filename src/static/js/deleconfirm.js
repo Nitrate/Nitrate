@@ -1,3 +1,6 @@
+/* eslint no-redeclare: "off" */
+/* eslint no-unused-vars: "off" */
+
 function deleConfirm(attachment_id, home, plan_id) {
   if (!window.confirm("Are you sure to delete the attachment?")) {
     return false;
