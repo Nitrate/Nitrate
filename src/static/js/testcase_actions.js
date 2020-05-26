@@ -11,7 +11,7 @@ Nitrate.TestCases.AdvanceList.on_load = function() {
   bind_component_selector_to_product(true, true, jQ('#id_product')[0], jQ('#id_component')[0]);
 
   if (jQ('#id_checkbox_all_case').length) {
-    jQ('#id_checkbox_all_case').on('click', function(e) {
+    jQ('#id_checkbox_all_case').on('click', function() {
       clickedSelectAll(this, jQ(this).closest('form')[0], 'case');
       if (this.checked) {
         jQ('#case_advance_printable').attr('disabled', false);
@@ -21,7 +21,7 @@ Nitrate.TestCases.AdvanceList.on_load = function() {
     });
   }
 
-  jQ('#id_blind_all_link').on('click', function(e) {
+  jQ('#id_blind_all_link').on('click', function() {
     if (!jQ('div[id^="id_loading_"]').length) {
       jQ(this).removeClass('locked');
     }
@@ -41,7 +41,7 @@ Nitrate.TestCases.AdvanceList.on_load = function() {
     }
   });
 
-  jQ('.expandable').on('click', function (e) {
+  jQ('.expandable').on('click', function () {
     let c = jQ(this).parent()[0]; // Container
     let c_container = jQ(c).next()[0]; // Content Containers
     let case_id = jQ(c).find('input[name="case"]')[0].value;
@@ -75,7 +75,7 @@ Nitrate.TestCases.List.on_load = function() {
   bind_category_selector_to_product(true, true, jQ('#id_product')[0], jQ('#id_category')[0]);
   bind_component_selector_to_product(true, true, jQ('#id_product')[0], jQ('#id_component')[0]);
   if (jQ('#id_checkbox_all_case')[0]) {
-    jQ('#id_checkbox_all_case').on('click', function(e) {
+    jQ('#id_checkbox_all_case').on('click', function() {
       clickedSelectAll(this, jQ(this).closest('table')[0], 'case');
       if (this.checked) {
         jQ('#case_list_printable').attr('disabled', false);
@@ -85,7 +85,7 @@ Nitrate.TestCases.List.on_load = function() {
     });
   }
 
-  jQ('#id_blind_all_link').on('click', function(e) {
+  jQ('#id_blind_all_link').on('click', function() {
     if (!jQ('div[id^="id_loading_"]').length) {
       jQ(this).removeClass('locked');
     }
@@ -168,7 +168,7 @@ Nitrate.TestCases.Details.on_load = function() {
 
   constructTagZone(jQ('#tag')[0], { 'case': case_id });
 
-  jQ('li.tab a').on('click', function(e) {
+  jQ('li.tab a').on('click', function() {
     jQ('div.tab_list').hide();
     jQ('li.tab').removeClass('tab_focus');
     jQ(this).parent().addClass('tab_focus');
@@ -176,10 +176,10 @@ Nitrate.TestCases.Details.on_load = function() {
   });
 
   if (window.location.hash) {
-    fireEvent(jQ('a[href=\"' + window.location.hash + '\"]')[0], 'click');
+    fireEvent(jQ('a[href="' + window.location.hash + '"]')[0], 'click');
   }
 
-  jQ('#id_add_component').on('click', function(e) {
+  jQ('#id_add_component').on('click', function() {
     if (this.disabled) {
       return false;
     }
@@ -215,7 +215,7 @@ Nitrate.TestCases.Details.on_load = function() {
     }});
   });
 
-  jQ('.link_remove_component').on('click', function(e) {
+  jQ('.link_remove_component').on('click', function() {
     if (! window.confirm(default_messages.confirm.remove_case_component)) {
       return false;
     }
@@ -233,9 +233,11 @@ Nitrate.TestCases.Details.on_load = function() {
     });
   });
 
-  bindSelectAllCheckbox(jQ('#id_checkbox_all_components')[0], jQ('#id_form_case_component')[0], 'component');
+  jQ('#id_checkbox_all_components').on('click', function () {
+    clickedSelectAll(this, jQ('#id_form_case_component')[0], 'component');
+  });
 
-  jQ('.plan_expandable').on('click', function (e) {
+  jQ('.plan_expandable').on('click', function () {
     let c = jQ(this).parent();
     toggleCaseRunsByPlan(
       {
@@ -245,8 +247,8 @@ Nitrate.TestCases.Details.on_load = function() {
         'case_id': c.find('input').first().val(),
         'case_run_plan_id': c[0].id
       },
-      function (e) {
-        jQ('#table_case_runs_by_plan .expandable').on('click', function (e) {
+      function () {
+        jQ('#table_case_runs_by_plan .expandable').on('click', function () {
           let c = jQ(this).parent(); // Container
           // FIXME: case_text_version is not used in the backend to show caserun
           //        information, notes, logs, and comments.
@@ -274,7 +276,7 @@ Nitrate.TestCases.Details.on_load = function() {
     removeCaseIssue(params.issueKey, params.caseId, params.caseRunId);
   });
 
-  jQ('.js-add-issue').on('click', function(event) {
+  jQ('.js-add-issue').on('click', function() {
     addCaseIssue(jQ('#id_case_issue_form')[0]);
   });
 
@@ -288,7 +290,7 @@ Nitrate.TestCases.Details.on_load = function() {
  * This is used to avoid a bug of TinyMCE in Firefox 11.
  */
 function resize_tinymce_editors() {
-  jQ('.mceEditor .mceIframeContainer iframe').each(function(item) {
+  jQ('.mceEditor .mceIframeContainer iframe').each(function() {
     let elem = jQ(this);
     elem.height(elem.height() + 1);
   });
@@ -306,6 +308,7 @@ Nitrate.TestCases.Create.on_load = function() {
   getComponentsByProductId(false, jQ('#id_product')[0], from_field, function() {
     SelectBox.cache[from] = [];
     SelectBox.cache[to] = [];
+    let node = null;
     for (let i = 0; (node = from_field.options[i]); i++) {
       SelectBox.cache[from].push({value: node.value, text: node.text, displayed: 1});
     }
@@ -320,6 +323,7 @@ Nitrate.TestCases.Create.on_load = function() {
     getComponentsByProductId(false, jQ('#id_product')[0], from_field, function() {
       SelectBox.cache[from] = [];
       SelectBox.cache[to] = [];
+      let node = null;
       for (let i = 0; (node = from_field.options[i]); i++) {
         SelectBox.cache[from].push({value: node.value, text: node.text, displayed: 1});
       }
@@ -365,7 +369,7 @@ Nitrate.TestCases.Clone.on_load = function() {
     });
   });
 
-  jQ('#id_use_filterplan').on('click', function(e) {
+  jQ('#id_use_filterplan').on('click', function() {
     jQ('#id_form_search_plan :input').attr('disabled', false);
     jQ('#id_plan_id').val('');
     jQ('#id_plan_id').attr('name', '');
@@ -373,7 +377,7 @@ Nitrate.TestCases.Clone.on_load = function() {
   });
 
   if (jQ('#id_use_sameplan').length) {
-    jQ('#id_use_sameplan').on('click', function(e) {
+    jQ('#id_use_sameplan').on('click', function() {
       jQ('#id_form_search_plan :input').attr('disabled', true);
       jQ('#id_plan_id').val(jQ('#value_plan_id').val());
       jQ('#id_plan_id').attr('name', 'plan');
@@ -387,29 +391,6 @@ Nitrate.TestCases.Clone.on_load = function() {
   });
 
 };
-
-
-/*
- * Used for expanding test case in test plan page specifically
- *
- * Arguments:
- * options.caseRowContainer: a jQuery object referring to the container of the
- *                           test case that is being expanded to show more
- *                           information.
- * options.expandPaneContainer: a jQuery object referring to the container of
- *                              the expanded pane showing test case detail
- *                              information.
- */
-function toggleExpandArrow(options) {
-  let container = options.caseRowContainer;
-  let content_container = options.expandPaneContainer;
-  let blind_icon = container.find('img.blind_icon');
-  if (content_container.css('display') === 'none') {
-    blind_icon.removeClass('collapse').addClass('expand').attr('src', '/static/images/t1.gif');
-  } else {
-    blind_icon.removeClass('expand').addClass('collapse').attr('src', '/static/images/t2.gif');
-  }
-}
 
 
 /*
@@ -432,199 +413,6 @@ function toggleSimpleCaseRunPane(options) {
   });
 }
 
-function toggleTestCaseContents(template_type, container, content_container, object_pk, case_text_version, case_run_id, callback) {
-  // TODO: should container and content_container be in string type?
-
-  container =
-    typeof container === 'string' ? jQ('#' + container)[0] : container;
-
-  content_container =
-    typeof content_container === 'string' ?
-      jQ('#' + content_container)[0] : content_container;
-
-  jQ(content_container).toggle();
-
-  if (jQ('#id_loading_' + object_pk).length) {
-    sendHTMLRequest({
-      url: Nitrate.http.URLConf.reverse({
-        name: 'case_details',
-        arguments: {id: object_pk}
-      }),
-      data: {
-        template_type: template_type,
-        case_text_version: case_text_version,
-        case_run_id: case_run_id
-      },
-      container: content_container,
-      callbackAfterFillIn: callback
-    });
-  }
-
-  toggleExpandArrow({ caseRowContainer: jQ(container), expandPaneContainer: jQ(content_container) });
-}
-
-function changeTestCaseStatus(plan_id, selector, case_id, be_confirmed, was_confirmed) {
-  postRequest({
-    url: '/ajax/update/case-status/',
-    data: {
-      from_plan: plan_id,
-      case: case_id,
-      target_field: 'case_status',
-      new_value: selector.value,
-    },
-    success: function(data) {
-      let case_status = '';
-      for (let i = 0; (node = selector.options[i]); i++) {
-        if (node.selected) {
-          case_status = node.innerHTML;
-        }
-      }
-
-      // container should be got before selector is hidden.
-      let curCasesContainer = jQ(selector).parents('.tab_list');
-
-      let label = jQ(selector).prev()[0];
-      jQ(label).html(case_status).show();
-      jQ(selector).hide();
-
-      if (be_confirmed || was_confirmed) {
-        jQ('#run_case_count').text(data.run_case_count);
-        jQ('#case_count').text(data.case_count);
-        jQ('#review_case_count').text(data.review_case_count);
-        jQ('#' + case_id).next().remove();
-        jQ('#' + case_id).remove();
-
-        // We have to reload the other side of cases to reflect the status
-        // change. This MUST be done before selector is hided.
-        Nitrate.TestPlans.Details.reopenTabHelper(curCasesContainer);
-      }
-    },
-  });
-}
-
-function toggleAllCheckBoxes(element, container, name) {
-  if (element.checked) {
-    jQ('#' + container).parent().find('input[name="' + name + '"]').not(':disabled').attr('checked', true);
-  } else {
-    jQ('#' + container).parent().find('input[name="'+ name + '"]').not(':disabled').attr('checked', false);
-  }
-}
-
-function toggleAllCases(element) {
-  //If and only if both case length is 0, remove the lock.
-  if (jQ('div[id^="id_loading_"].normal_cases').length === 0 && jQ('div[id^="id_loading_"].review_cases').length === 0){
-    jQ(element).removeClass('locked');
-  }
-
-  if (jQ(element).is('.locked')) {
-    return false;
-  } else {
-    jQ(element).addClass('locked');
-    if (jQ(element).is('.collapse-all')) {
-      element.title = "Collapse all cases";
-      blinddownAllCases(element);
-    } else {
-      element.title = "Expand all cases";
-      blindupAllCases(element);
-    }
-  }
-}
-
-function blinddownAllCases(element) {
-  jQ('img.expand').each(function(e) {
-    fireEvent(this, 'click');
-  });
-  if (element) {
-    jQ(element)
-      .removeClass('collapse-all').addClass('expand-all')
-      .attr('src', '/static/images/t2.gif');
-  }
-}
-
-function blindupAllCases(element) {
-  jQ('.collapse').each(function(e) {
-    fireEvent(this, 'click');
-  });
-
-  if (element) {
-    jQ(element)
-      .removeClass('expand-all').addClass('collapse-all')
-      .attr('src', '/static/images/t1.gif');
-  }
-}
-
-// Deprecated. Remove when it's unusable any more.
-function changeCaseOrder(parameters, callback) {
-  let nsk = '';
-  if (parameters.hasOwnProperty('sortkey')) {
-    nsk = window.prompt('Enter your new order number', parameters.sortkey);   // New sort key
-    if (parseInt(nsk) === parseInt(parameters.sortkey)) {
-      window.alert('Nothing changed');
-      return false;
-    }
-  } else {
-    nsk = window.prompt('Enter your new order number');
-  }
-
-  if (!nsk) {
-    return false;
-  }
-
-  if (isNaN(nsk)) {
-    window.alert('The value must be an integer number and limit between 0 to 32300.');
-    return false;
-  }
-
-  nsk = parseInt(nsk);
-
-  if (nsk > 32300 || nsk < 0) {
-    window.alert('The value must be a number and limit between 0 to 32300.');
-    return false;
-  }
-
-  updateObject('testcases.testcaseplan', parameters.testcaseplan, 'sortkey', 'nsk', 'int', callback);
-}
-
-function changeCaseOrder2(parameters, callback) {
-  let nsk = '';
-  if (parameters.hasOwnProperty('sortkey')) {
-    nsk = window.prompt('Enter your new order number', parameters.sortkey);   // New sort key
-    if (parseInt(nsk) === parseInt(parameters.sortkey)) {
-      window.alert('Nothing changed');
-      return false;
-    }
-  } else {
-    nsk = window.prompt('Enter your new order number');
-  }
-
-  if (!nsk) {
-    return false;
-  }
-
-  if (isNaN(nsk)) {
-    window.alert('The value must be a number and limit between 0 to 32300.');
-    return false;
-  }
-
-  nsk = parseInt(nsk);
-
-  if (nsk > 32300 || nsk < 0) {
-    window.alert('The value must be an integer number and limit between 0 to 32300.');
-    return false;
-  }
-
-  parameters.target_field = 'sortkey';
-  parameters.new_value = nsk;
-
-  postRequest({
-    url: '/ajax/update/cases-sortkey/',
-    data: parameters,
-    traditional: true,
-    success: callback
-  });
-}
-
-
 /**
  * A function bound to AJAX request success event to add or remove issue to and from a case. It
  * displays the issues table returned from the backend, and bind necessary event handlers, count and
@@ -635,7 +423,7 @@ function changeCaseOrder2(parameters, callback) {
 function issueOperationSuccessCallback(data) {
   jQ('div#issues').html(data.html);
 
-  jQ('.js-add-issue').on('click', function(event) {
+  jQ('.js-add-issue').on('click', function() {
     addCaseIssue(jQ('#id_case_issue_form')[0]);
   });
   jQ('.js-remove-issue').on('click', function(event) {
@@ -688,6 +476,7 @@ function removeCaseIssue(issue_key, case_id, case_run_id) {
 }
 
 
+/* eslint no-unused-vars:off */
 /**
  * Handle triggered by click event of Remove button to remove a plan from a
  * case' plans table. This is bound to specific element in the template directly.
@@ -746,159 +535,6 @@ function addCaseToPlansHandler(caseId, form) {
       },
     });
   });
-}
-
-function renderTagForm(container, parameters, form_observe) {
-  let d = jQ('<div>');
-  if (!container) {
-    container = getDialog();
-  }
-  jQ(container).show();
-
-  postHTMLRequest({
-    url: Nitrate.http.URLConf.reverse({ name: 'cases_tag' }),
-    data: parameters,
-    traditional: true,
-    container: d,
-    callbackAfterFillIn: function () {
-      let h = jQ('<input>', {'type': 'hidden', 'name': 'a', 'value': 'remove'});
-      let a = jQ('<input>', {'type': 'submit', 'value': 'Remove'});
-      let c = jQ('<label>');
-      c.append(h);
-      c.append(a);
-      a.on('click', function(e) { h.val('remove'); });
-      jQ(container).html(
-        constructForm(
-          d.html(), Nitrate.http.URLConf.reverse({name: 'cases_tag'}), form_observe,
-          'Press "Ctrl" to select multiple default component', c[0]
-        )
-      );
-      bind_component_selector_to_product(
-        false, false, jQ('#id_product')[0], jQ('#id_o_component')[0]
-      );
-    }
-  });
-}
-
-function renderComponentForm(container, parameters, form_observe) {
-  let d = jQ('<div>');
-  if (!container) {
-    container = getDialog();
-  }
-  jQ(container).show();
-
-  postHTMLRequest({
-    url: '/cases/get-component-form/',
-    data: parameters,
-    container: d,
-    callbackAfterFillIn: function () {
-      let a = jQ('<input>', {'type': 'submit', 'value': 'Add'});
-      let c = jQ('<label>');
-      c.append(a);
-      jQ(container).html(
-        constructForm(
-          d.html(), '/cases/add-component/', form_observe,
-          'Press "Ctrl" to select multiple default component', c[0]
-        )
-      );
-      bind_component_selector_to_product(
-        false, false, jQ('#id_product')[0], jQ('#id_o_component')[0]
-      );
-    }
-  });
-}
-
-
-function renderCategoryForm(container, parameters, form_observe) {
-  let d = jQ('<div>');
-  if (!container) {
-    container = getDialog();
-  }
-  jQ(container).show();
-
-  postHTMLRequest({
-    url: '/cases/category/',
-    data: parameters,
-    container: d,
-    callbackAfterFillIn: function () {
-      let h = jQ('<input>', {'type': 'hidden', 'name': 'a', 'value': 'add'});
-      let a = jQ('<input>', {'type': 'submit', 'value': 'Select'});
-      let c = jQ('<label>');
-      c.append(h);
-      c.append(a);
-      a.on('click', function(e) { h.val('update'); });
-      jQ(container).html(
-        constructForm(
-          d.html(), '/cases/category/', form_observe, 'Select Category', c[0]
-        )
-      );
-      bind_category_selector_to_product(
-        false, false, jQ('#id_product')[0], jQ('#id_o_category')[0]
-      );
-    }
-  });
-}
-
-function constructCaseAutomatedForm(container, options, callback) {
-  jQ(container).html(getAjaxLoading());
-  jQ(container).show();
-  let d = jQ('<div>', { 'class': 'automated_form' })[0];
-
-  getForm(d, 'testcases.CaseAutomatedForm', {}, function (jqXHR) {
-    let returntext = jqXHR.responseText;
-
-    jQ(container).html(
-      constructForm(returntext, '/cases/automated/', function (e) {
-        e.stopPropagation();
-        e.preventDefault();
-
-        if (!jQ(this).find('input[type="checkbox"]:checked').length) {
-          window.alert('Nothing selected');
-          return false;
-        }
-
-        let params = serializeFormData({
-          form: this,
-          zoneContainer: options.zoneContainer,
-          selectedCaseIDs: options.selectedCaseIDs,
-        });
-        /*
-         * Have to add this. The form generated before does not contain a
-         * default value `change'. In fact, the field a onust contain the
-         * only value `change', here.
-         */
-        params = params.replace(/a=\w*/, 'a=change');
-        let url = Nitrate.http.URLConf.reverse({ name: 'cases_automated' });
-        postRequest({url: url, data: params, success: callback});
-      })
-    );
-  });
-}
-
-/**
- * Collect selected case IDs from a given container HTML element.
- * @param {HTMLElement} container - could be any container like HTML element from where to find out
- *                                  checked inputs with type checkbox and name case.
- * @returns {string[]} a list of selected case IDs without parsing to integer value.
- */
-function getSelectedCaseIDs(container) {
-  return jQ(container).find('input[name="case"]:checked').map(function () {
-    return jQ(this).val();
-  }).get();
-}
-
-function toggleDiv(link, divId) {
-  link = jQ(link);
-  let div = jQ('#' + divId);
-  let show = 'Show All';
-  let hide = 'Hide All';
-  div.toggle();
-  let text = link.html();
-  if (text !== show) {
-    link.html(show);
-  } else {
-    link.html(hide);
-  }
 }
 
 function addCaseIssueViaEnterKey(element, e) {

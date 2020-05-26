@@ -1,4 +1,4 @@
-QUnit.module('testcase_action.js', function () {
+QUnit.module('testplan_action.js', function () {
   QUnit.module('Test getSelectedCaseIDs', function () {
     QUnit.test('get selected case IDs', function (assert) {
       let container = jQ(

@@ -1,3 +1,6 @@
+/* eslint no-redeclare: "off" */
+/* eslint no-unused-vars: "off" */
+
 // Create a dictionary to avoid polluting the global namespace:
 const Nitrate = window.Nitrate || {}; // Ironically, this global name is not respected. So u r on ur own.
 window.Nitrate = Nitrate;
@@ -216,7 +219,7 @@ function postHTMLRequest(options) {
   sendHTMLRequest(forwardOptions);
 }
 
-jQ(window).on('load', function(e) {
+jQ(window).on('load', function() {
   // Initial the drop menu
   jQ('.nav_li').hover(
     function() { jQ(this).children(':eq(1)').show(); },
@@ -346,9 +349,9 @@ const default_messages = {
           return undefined;
       }
       let url = urlpattern;
-      let arguments = options.arguments || {};
-      for (let key in arguments) {
-          url = url.replace('$' + key, arguments[key].toString());
+      let args = options.arguments || {};
+      for (let key in args) {
+          url = url.replace('$' + key, args[key].toString());
       }
       return url;
     }
@@ -380,61 +383,6 @@ function addBookmark(url, method, parameters, callback) {
   parameters.a = 'add';
   // FIXME: use POST
   getRequest({url: url, data: parameters, success: callback});
-}
-
-function setCookie(name, value, expires, path, domain, secure) {
-  document.cookie = name + "=" + escape(value) +
-    ((expires) ? "; expires=" + expires.toGMTString() : "") +
-    ((path) ? "; path=" + path : "") +
-    ((domain) ? "; domain=" + domain : "") +
-    ((secure) ? "; secure" : "");
-}
-
-function checkCookie() {
-  let exp = new Date();
-  exp.setTime(exp.getTime() + 1800000);
-  // first write a test cookie
-  setCookie("cookies", "cookies", exp, false, false, false);
-  if (document.cookie.indexOf('cookies') !== -1) {
-    // now delete the test cookie
-    exp = new Date();
-    exp.setTime(exp.getTime() - 1800000);
-    setCookie("cookies", "cookies", exp, false, false, false);
-
-    return true;
-  } else {
-    return false;
-  }
-}
-
-/**
- * Remove a case from test run new page.
- * @param {string} item - the HTML id of a container element containing the case to be removed.
- * @param {number} caseEstimatedTime - the case' estimated time.
- */
-function removeItem(item, caseEstimatedTime) {
-  let tr_estimated_time = jQ('#estimated_time').data('time');
-  let remain_estimated_time = tr_estimated_time - caseEstimatedTime;
-  let second_value = remain_estimated_time % 60;
-  let minute = parseInt(remain_estimated_time / 60);
-  let minute_value = minute % 60;
-  let hour = parseInt(minute / 60);
-  let hour_value = hour % 24;
-  let day_value = parseInt(hour / 24);
-
-  let remain_estimated_time_value = day_value ? day_value + 'd' : '';
-  remain_estimated_time_value += hour_value ? hour_value + 'h' : '';
-  remain_estimated_time_value += minute_value ? minute_value + 'm' : '';
-  remain_estimated_time_value += second_value ? second_value + 's' : '';
-
-  if (!remain_estimated_time_value.length) {
-    remain_estimated_time_value = '0m';
-  }
-
-  jQ('#estimated_time').data('time', remain_estimated_time);
-  // TODO: can't set value through jquery setAttribute.
-  document.getElementById('id_estimated_time').value = remain_estimated_time_value;
-  jQ('#' + item).remove();
 }
 
 function splitString(str, num) {
@@ -912,19 +860,6 @@ function editTag(container, tag) {
   });
 }
 
-function addBatchTag(parameters, callback, format) {
-  parameters.a = 'add';
-  parameters.t = 'json';
-  parameters.f = format;
-
-  sendHTMLRequest({
-    url: '/management/tags/',
-    data: parameters,
-    traditional: true,
-    success: function (data, textStatus, xhr) { callback(xhr); },
-  });
-}
-
 function removeComment(form, callback) {
   let parameters = Nitrate.Utils.formSerialize(form);
 
@@ -996,47 +931,6 @@ function previewPlan(parameters, action, callback, notice, s, c) {
   });
 }
 
-function getForm(container, app_form, parameters, callback, format) {
-  if (!parameters) {
-    parameters = {};
-  }
-
-  parameters.app_form = app_form;
-  parameters.format = format;
-
-  sendHTMLRequest({
-    url: Nitrate.http.URLConf.reverse({ name: 'get_form'}),
-    data: parameters,
-    container: container,
-    callbackAfterFillIn: callback
-  });
-}
-
-/**
- * Update run status.
- * @param content_type
- * @param object_pk
- * @param field
- * @param value
- * @param value_type
- * @param {function} callback - a function will be called when AJAX request succeeds. This function
- *                              accepts only one argument of the parsed JSON data returned from
- *                              server side.
- */
-function updateRunStatus(content_type, object_pk, field, value, value_type, callback) {
-  postRequest({
-    url: '/ajax/update/case-run-status',
-    success: callback,
-    data: {
-      content_type: content_type,
-      object_pk: Array.isArray(object_pk) ? object_pk.join(',') : object_pk,
-      field: field,
-      value: value,
-      value_type: value_type || 'str'
-    }
-  });
-}
-
 /**
  * Update one object property at a time.
  * @param {string} content_type
@@ -1098,12 +992,6 @@ function clickedSelectAll(checkbox, form, name) {
   }
 }
 
-function bindSelectAllCheckbox(element, form, name) {
-  jQ(element).on('click', function(e) {
-    clickedSelectAll(this, form, name);
-  });
-}
-
 /**
  * Construct an HTML form element.
  * @param content
@@ -1127,7 +1015,7 @@ function constructForm(content, action, form_observe, info, s, c) {
 
   if (!c) {
     c = jQ('<input>', {'type': 'button', 'value': 'Cancel'});
-    c.on('click', function(e) {
+    c.on('click', function() {
       clearDialog();
     });
   }
@@ -1166,17 +1054,97 @@ function popupAddAnotherWindow(triggeringLink, parameters) {
   return false;
 }
 
-/**
- * Collect selected case IDs from a given container and submit them to a specific location. The
- * container element should have children HTMLInputElement with type checkbox and name case.
- * @param {string} url - the URL for exporting cases.
- * @param {HTMLElement} container - a container element from where to find out selected case IDs.
+/*
+ * Used for expanding test case in test plan page specifically
+ *
+ * Arguments:
+ * options.caseRowContainer: a jQuery object referring to the container of the
+ *                           test case that is being expanded to show more
+ *                           information.
+ * options.expandPaneContainer: a jQuery object referring to the container of
+ *                              the expanded pane showing test case detail
+ *                              information.
  */
-function submitSelectedCaseIDs(url, container) {
-  let selectedCaseIDs = getSelectedCaseIDs(container);
-  if (selectedCaseIDs.length === 0) {
-    window.alert(default_messages.alert.no_case_selected);
+function toggleExpandArrow(options) {
+  let container = options.caseRowContainer;
+  let content_container = options.expandPaneContainer;
+  let blind_icon = container.find('img.blind_icon');
+  if (content_container.css('display') === 'none') {
+    blind_icon.removeClass('collapse').addClass('expand').attr('src', '/static/images/t1.gif');
+  } else {
+    blind_icon.removeClass('expand').addClass('collapse').attr('src', '/static/images/t2.gif');
+  }
+}
+
+function blinddownAllCases(element) {
+  jQ('img.expand').each(function () {
+    fireEvent(this, 'click');
+  });
+  if (element) {
+    jQ(element)
+      .removeClass('collapse-all').addClass('expand-all')
+      .attr('src', '/static/images/t2.gif');
+  }
+}
+
+function blindupAllCases(element) {
+  jQ('.collapse').each(function() {
+    fireEvent(this, 'click');
+  });
+
+  if (element) {
+    jQ(element)
+      .removeClass('expand-all').addClass('collapse-all')
+      .attr('src', '/static/images/t1.gif');
+  }
+}
+
+function toggleTestCasePane(options, callback) {
+  let casePaneContainer = options.casePaneContainer;
+
+  // If any of these is invalid, just keep quiet and don't display anything.
+  if (options.case_id === undefined || casePaneContainer === undefined) {
     return;
   }
-  postToURL(url, {case: selectedCaseIDs});
+
+  casePaneContainer.toggle();
+
+  if (casePaneContainer.find('.ajax_loading').length) {
+    sendHTMLRequest({
+      url: '/case/' + options.case_id + '/readonly-pane/',
+      container: casePaneContainer,
+      callbackAfterFillIn: callback
+    });
+  }
+
 }
+
+function renderComponentForm(container, parameters, form_observe) {
+  let d = jQ('<div>');
+  if (!container) {
+    container = getDialog();
+  }
+  jQ(container).show();
+
+  postHTMLRequest({
+    url: '/cases/get-component-form/',
+    data: parameters,
+    container: d,
+    callbackAfterFillIn: function () {
+      let a = jQ('<input>', {'type': 'submit', 'value': 'Add'});
+      let c = jQ('<label>');
+      c.append(a);
+      jQ(container).html(
+        constructForm(
+          d.html(), '/cases/add-component/', form_observe,
+          'Press "Ctrl" to select multiple default component', c[0]
+        )
+      );
+      bind_component_selector_to_product(
+        false, false, jQ('#id_product')[0], jQ('#id_o_component')[0]
+      );
+    }
+  });
+}
+
+

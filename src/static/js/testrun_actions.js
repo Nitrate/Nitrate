@@ -8,6 +8,115 @@ Nitrate.TestRuns.Clone = {};
 Nitrate.TestRuns.ChooseRuns = {};
 Nitrate.TestRuns.AssignCase = {};
 
+
+function toggleAllCheckBoxes(element, container, name) {
+  if (element.checked) {
+    jQ('#' + container).parent().find('input[name="' + name + '"]').not(':disabled').attr('checked', true);
+  } else {
+    jQ('#' + container).parent().find('input[name="'+ name + '"]').not(':disabled').attr('checked', false);
+  }
+}
+
+function toggleDiv(link, divId) {
+  link = jQ(link);
+  let div = jQ('#' + divId);
+  let show = 'Show All';
+  let hide = 'Hide All';
+  div.toggle();
+  let text = link.html();
+  if (text !== show) {
+    link.html(show);
+  } else {
+    link.html(hide);
+  }
+}
+
+function toggleTestCaseContents(template_type, container, content_container, object_pk, case_text_version, case_run_id, callback) {
+  // TODO: should container and content_container be in string type?
+
+  container =
+    typeof container === 'string' ? jQ('#' + container)[0] : container;
+
+  content_container =
+    typeof content_container === 'string' ?
+      jQ('#' + content_container)[0] : content_container;
+
+  jQ(content_container).toggle();
+
+  if (jQ('#id_loading_' + object_pk).length) {
+    sendHTMLRequest({
+      url: Nitrate.http.URLConf.reverse({
+        name: 'case_details',
+        arguments: {id: object_pk}
+      }),
+      data: {
+        template_type: template_type,
+        case_text_version: case_text_version,
+        case_run_id: case_run_id
+      },
+      container: content_container,
+      callbackAfterFillIn: callback
+    });
+  }
+
+  toggleExpandArrow({ caseRowContainer: jQ(container), expandPaneContainer: jQ(content_container) });
+}
+
+/**
+ * Update run status.
+ * @param content_type
+ * @param object_pk
+ * @param field
+ * @param value
+ * @param value_type
+ * @param {function} callback - a function will be called when AJAX request succeeds. This function
+ *                              accepts only one argument of the parsed JSON data returned from
+ *                              server side.
+ */
+function updateRunStatus(content_type, object_pk, field, value, value_type, callback) {
+  postRequest({
+    url: '/ajax/update/case-run-status',
+    success: callback,
+    data: {
+      content_type: content_type,
+      object_pk: Array.isArray(object_pk) ? object_pk.join(',') : object_pk,
+      field: field,
+      value: value,
+      value_type: value_type || 'str'
+    }
+  });
+}
+
+/**
+ * Remove a case from test run new page.
+ * @param {string} item - the HTML id of a container element containing the case to be removed.
+ * @param {number} caseEstimatedTime - the case' estimated time.
+ */
+function removeItem(item, caseEstimatedTime) {
+  let tr_estimated_time = jQ('#estimated_time').data('time');
+  let remain_estimated_time = tr_estimated_time - caseEstimatedTime;
+  let second_value = remain_estimated_time % 60;
+  let minute = parseInt(remain_estimated_time / 60);
+  let minute_value = minute % 60;
+  let hour = parseInt(minute / 60);
+  let hour_value = hour % 24;
+  let day_value = parseInt(hour / 24);
+
+  let remain_estimated_time_value = day_value ? day_value + 'd' : '';
+  remain_estimated_time_value += hour_value ? hour_value + 'h' : '';
+  remain_estimated_time_value += minute_value ? minute_value + 'm' : '';
+  remain_estimated_time_value += second_value ? second_value + 's' : '';
+
+  if (!remain_estimated_time_value.length) {
+    remain_estimated_time_value = '0m';
+  }
+
+  jQ('#estimated_time').data('time', remain_estimated_time);
+  // TODO: can't set value through jquery setAttribute.
+  document.getElementById('id_estimated_time').value = remain_estimated_time_value;
+  jQ('#' + item).remove();
+}
+
 Nitrate.TestRuns.List.on_load = function() {
   bind_version_selector_to_product(true, jQ('#id_product')[0]);
   bind_build_selector_to_product(true, jQ('#id_product')[0]);
@@ -15,7 +124,7 @@ Nitrate.TestRuns.List.on_load = function() {
   Nitrate.Utils.enableShiftSelectOnCheckbox('run_selector');
 
   if (jQ('#testruns_table').length) {
-    jQ('#id_check_all_runs').on('click',function(e) {
+    jQ('#id_check_all_runs').on('click',function() {
       clickedSelectAll(this, jQ('#testruns_table')[0], 'run');
     });
   }
@@ -27,7 +136,7 @@ Nitrate.TestRuns.List.on_load = function() {
   }
 
   if (jQ('#run_column_add').length) {
-    jQ('#run_column_add').on('change', function(t) {
+    jQ('#run_column_add').on('change', function() {
       switch(this.value) {
         case 'col_plan':
           jQ('#col_plan_head').show();
@@ -114,7 +223,7 @@ function AddIssueDialog() {
     resizable: false,
     modal: true,
 
-    beforeClose: function(event, ui) {
+    beforeClose: function() {
       // Whenever dialog is closed, previous input issue key should be cleared
       // in order to not confuse user when use next time.
       jQ(this).find('input:text').val('');
@@ -204,7 +313,7 @@ AddIssueDialog.prototype.open = function(addIssueInfo, reloadInfo) {
   dialog.dialog('option', 'addIssueInfo', addIssueInfo);
 
   // Switch issue tracker tab
-  dialog.find('#issue_tracker_id').change(function (event) {
+  dialog.find('#issue_tracker_id').change(function () {
     dialog.find('div[id^="issue-tracker-"]').filter(function () {
       return jQ(this).css('display') === 'block';
     }).toggle();
@@ -226,7 +335,7 @@ Nitrate.TestRuns.Details.on_load = function() {
     jQ('#id_sort').on('click', taggleSortCaseRun);
   }
 
-  jQ('#id_check_all_button').on('click', function(e) {
+  jQ('#id_check_all_button').on('click', function() {
     toggleAllCheckBoxes(this, 'id_table_cases', 'case_run');
   });
 
@@ -245,7 +354,7 @@ Nitrate.TestRuns.Details.on_load = function() {
     }
   });
 
-  jQ('#id_blind_all_link').on('click', function(e) {
+  jQ('#id_blind_all_link').on('click', function() {
     if (!jQ('td[id^="id_loading_"]').length) {
       jQ(this).removeClass('locked');
     }
@@ -266,12 +375,12 @@ Nitrate.TestRuns.Details.on_load = function() {
   });
 
   // Observe the case run toggle and the comment form
-  jQ('.expandable').on('click', function (e) {
+  jQ('.expandable').on('click', function () {
     let c = jQ(this).parent(); // Case run row
     let c_container = c.next(); // Next row to show case run details
     let case_id = c.find('input[name="case"]')[0].value;
 
-    let callback = function(t) {
+    let callback = function() {
       // Observe the update case run status/comment form
       c_container.parent().find('.update_form').off('submit').on('submit', updateCaseRunStatus);
 
@@ -331,12 +440,12 @@ Nitrate.TestRuns.Details.on_load = function() {
 
   // Auto show the case run contents.
   if (window.location.hash !== '') {
-    fireEvent(jQ('a[href=\"' + window.location.hash + '\"]')[0], 'click');
+    fireEvent(jQ('a[href="' + window.location.hash + '"]')[0], 'click');
   }
 
   // Filter Case-Run
   if (jQ('#filter_case_run').length) {
-    jQ('#filter_case_run').on('click',function(e){
+    jQ('#filter_case_run').on('click', function(){
       if (jQ('#id_filter').is(':hidden')){
         jQ('#id_filter').show();
         jQ(this).html(default_messages.link.hide_filter);
@@ -409,7 +518,7 @@ Nitrate.TestRuns.Details.on_load = function() {
     window.location.href = jQ(this).data('param') + '?finished=1';
   });
   jQ('.js-del-case').on('click', function() {
-    delCaseRun(jQ(this).data('param'));
+    delCaseRun();
   });
   jQ('.js-update-case').on('click', function() {
     postToURL(jQ(this).data('param'), getSelectedCaseRunIDs());
@@ -500,8 +609,7 @@ Nitrate.TestRuns.Clone.on_load = function() {
   bind_version_selector_to_product(false);
   bind_build_selector_to_product(false);
   jQ("input[type=checkbox][name^=select_property_id_]").each(function() {
-    $this = jQ(this);
-    $this.on('click', function(){
+    jQ(this).on('click', function(){
       let parent = jQ(this).parent();
       if (this.checked) {
         jQ('select', parent).attr("disabled", false);
@@ -526,7 +634,7 @@ Nitrate.TestRuns.Clone.on_load = function() {
 
 Nitrate.TestRuns.ChooseRuns.on_load = function() {
   if (jQ('#id_check_all_button').length) {
-    jQ('#id_check_all_button').on('click', function(m) {
+    jQ('#id_check_all_button').on('click', function() {
       toggleAllCheckBoxes(this, 'id_table_runs', 'run');
     });
   }
@@ -552,12 +660,12 @@ Nitrate.TestRuns.ChooseRuns.on_load = function() {
 
 Nitrate.TestRuns.AssignCase.on_load = function() {
   if (jQ('#id_check_all_button').length) {
-    jQ('#id_check_all_button').on('click', function(m) {
+    jQ('#id_check_all_button').on('click', function() {
       toggleAllCheckBoxes(this, 'id_table_cases', 'case');
     });
   }
 
-  jQ('input[name="case"]').on('click', function(t) {
+  jQ('input[name="case"]').on('click', function() {
     if (this.checked) {
       jQ(this).closest('tr').addClass('selection_row');
       jQ(this).parent().siblings().eq(7).html('<div class="apply_icon"></div>');
@@ -588,7 +696,7 @@ function updateCaseRunDetailAfterCommentIsAdded(caseRunRow, expandedCaseRunDetai
   if (caseRunStatusId !== '') {
     // Update the case run status icon
     let crs = Nitrate.TestRuns.CaseRunStatus;
-    caseRunRow.find('.icon_status').each(function(index) {
+    caseRunRow.find('.icon_status').each(function() {
       for (let i in crs) {
         if (typeof crs[i] === 'string' && jQ(this).is('.btn_' + crs[i])) {
           jQ(this).removeClass('btn_' + crs[i]);
@@ -598,7 +706,7 @@ function updateCaseRunDetailAfterCommentIsAdded(caseRunRow, expandedCaseRunDetai
     });
 
     // Update related people
-    caseRunRow.find('.link_tested_by').each(function(i) {
+    caseRunRow.find('.link_tested_by').each(function() {
       this.href = 'mailto:' + Nitrate.User.email;
       jQ(this).html(Nitrate.User.username);
     });
@@ -707,12 +815,12 @@ function taggleSortCaseRun(event) {
     jQ('#id_table_cases .blind_icon').remove();
 
     // Use the title to replace the blind down title link
-    jQ('#id_table_cases .blind_title_link').each(function(index) {
+    jQ('#id_table_cases .blind_title_link').each(function() {
       jQ(this).replaceWith((jQ('<span>')).html(this.innerHTML));
     });
 
     // Use the sortkey content to replace change sort key link
-    jQ('#id_table_cases .mark').each(function(index) {
+    jQ('#id_table_cases .mark').each(function() {
       jQ(this).parent().html(this.innerHTML);
     });
 
@@ -772,7 +880,7 @@ function removeIssueFromCaseRuns(removeIssueInfo, reloadInfo) {
 }
 
 
-function delCaseRun(run_id) {
+function delCaseRun() {
   let caseruns = getSelectedCaseRunIDs();
   let numCaseRuns = caseruns.case_run.length;
   if (window.confirm('You are about to delete ' + numCaseRuns + ' case run(s). Are you sure?')) {
@@ -840,7 +948,7 @@ function submitValue(run_id, value, hidebox, select_field, submitid) {
       new_env_value_id: select_field.value,
       run_id: run_id
     },
-    success: function(data) {
+    success: function() {
       jQ('#' + hidebox).html(new_value).show();
       jQ(select_field).hide();
       jQ('#' + submitid).hide();
@@ -867,7 +975,7 @@ function removeProperty(run_id, element) {
       run_id: run_id
     },
     errorMessage: 'Edit value failed',
-    success: function(data) { emptySelf.remove(); },
+    success: function() { emptySelf.remove(); },
   });
 }
 
@@ -897,11 +1005,11 @@ function addProperty(run_id, env_group_id) {
     },
   });
 
-  jQ('#id_add_env_property').on('change', function(e) {
+  jQ('#id_add_env_property').on('change', function() {
     change_value(jQ('#id_add_env_property').val(), 'id_add_env_value');
   });
 
-  jQ('#id_env_add').on('click',function(e) {
+  jQ('#id_env_add').on('click',function() {
     add_property_to_env(run_id, jQ('#id_add_env_value').val());
   });
 }
@@ -948,7 +1056,8 @@ function add_property_to_env(run_id, env_value_id) {
 }
 
 function addRunTag(container, run_id) {
-  if (! window.prompt('Please type new tag.')) {
+  let tag = window.prompt('Please type new tag.');
+  if (!tag) {
     return false;
   }
 
@@ -970,7 +1079,7 @@ function removeRuntag(container, run_id, tag) {
   // FIXME: should be a POST request
   sendHTMLRequest({
     url: '/management/tags/',
-    data: {a: remove, run: run_id, tags: tag},
+    data: {a: 'remove', run: run_id, tags: tag},
     container: container,
     callbackAfterFillIn: function () {
       jQ('.js-remove-tag').on('click', function() {
@@ -1062,15 +1171,6 @@ function getSelectedCaseRunIDs() {
   }
 }
 
-function sortCaseRun(form, order) {
-  if (form.order_by.value === order) {
-    form.order_by.value = '-' + order;
-  } else {
-    form.order_by.value = order;
-  }
-  fireEvent(jQ(form).find('input[type="submit"]')[0], 'click');
-}
-
 function showCaseRunsWithSelectedStatus(form, status_id) {
   form.case_run_status__pk.value = status_id;
   fireEvent(jQ(form).find('input[type="submit"]')[0], 'click');
@@ -1094,7 +1194,7 @@ function insertCasesIntoTestRun() {
   }
 
   let case_ids = [];
-  jQ('[name="case"]').each(function(i) {
+  jQ('[name="case"]').each(function() {
     case_ids.push(this.value);
   });
 
@@ -1262,6 +1362,7 @@ function addLinkToCaseRun(sender, case_id, case_run_id) {
   dialog_p.dialog('open');
 }
 
+/* eslint no-unused-vars: off */
 /**
  * Initialize dialog for getting information about new link, which is attached
  * to an arbitrary instance of TestCaseRun

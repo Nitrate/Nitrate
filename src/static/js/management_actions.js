@@ -33,7 +33,7 @@ Nitrate.Management.Environment.Groups = {
         return false;
     });
 
-    jQ('a.loglink').on('click', function(e) {
+    jQ('a.loglink').on('click', function() {
       jQ(this).parents('.js-env-group').next().toggle();
     });
 

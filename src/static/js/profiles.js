@@ -15,7 +15,7 @@ Nitrate.Profiles.Bookmarks.on_load = function() {
   }
 
   if (jQ('#id_check_all_bookmark').length) {
-    jQ('#id_check_all_bookmark').on('click', function(e) {
+    jQ('#id_check_all_bookmark').on('click', function() {
       clickedSelectAll(this, jQ('#id_table_bookmark')[0], 'pk');
     });
   }
