@@ -12,7 +12,7 @@ RUN dnf update -y && \
         --setopt=install_weak_deps=false \
         --setopt=tsflags=nodocs \
         gcc redhat-rpm-config make mariadb python36 \
-        python3-devel mariadb-devel postgresql-devel krb5-devel && \
+        python3-devel mariadb-devel postgresql-devel krb5-devel libxcrypt-compat && \
     dnf clean all
 
 # Container will have two virtual environments created with Python 3.6 and 3.7
