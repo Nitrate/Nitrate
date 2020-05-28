@@ -15,6 +15,9 @@ env:
   - DJANGO_REL="django>=3.0,<3.1" NITRATE_DB=mariadb
   - DJANGO_REL="django>=3.0,<3.1" NITRATE_DB=postgres
 install: pip install coveralls
+before_script: |
+  docker pull quay.io/nitrate/testbox:latest || \
+    docker build -t quay.io/nitrate/testbox:latest -f contrib/travis-ci/Dockerfile .
 script: |
   contrib/travis-ci/testrunner.py \
     --python-ver $TRAVIS_PYTHON_VERSION \
@@ -30,6 +33,7 @@ jobs:
     - stage: Misc tests
       name: Lint JavaScript code
       install: pip install tox
+      before_script: echo "No need of testbox image. Skip building the image."
       script: |
         docker run --rm -v $PWD:/code:Z -it fedora:32 /bin/bash -c "
           dnf install -y node npm python3-tox
@@ -39,7 +43,9 @@ jobs:
         "
     - name: Check Python code style
       install: pip install tox
+      before_script: echo "No need of testbox image. Skip building the image."
       script: tox -e flake8
     - name: Test build docs
       install: pip install tox
+      before_script: echo "No need of testbox image. Skip building the image."
       script: tox -e docs
