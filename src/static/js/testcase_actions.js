@@ -7,8 +7,8 @@ Nitrate.TestCases.Edit = {};
 Nitrate.TestCases.Clone = {};
 
 Nitrate.TestCases.AdvanceList.on_load = function() {
-  bind_category_selector_to_product(true, true, jQ('#id_product')[0], jQ('#id_category')[0]);
-  bind_component_selector_to_product(true, true, jQ('#id_product')[0], jQ('#id_component')[0]);
+  bindCategorySelectorToProduct(true, true, jQ('#id_product')[0], jQ('#id_category')[0]);
+  bindComponentSelectorToProduct(true, true, jQ('#id_product')[0], jQ('#id_component')[0]);
 
   if (jQ('#id_checkbox_all_case').length) {
     jQ('#id_checkbox_all_case').on('click', function() {
@@ -43,18 +43,24 @@ Nitrate.TestCases.AdvanceList.on_load = function() {
 
   jQ('.expandable').on('click', function () {
     let c = jQ(this).parent()[0]; // Container
-    let c_container = jQ(c).next()[0]; // Content Containers
-    let case_id = jQ(c).find('input[name="case"]')[0].value;
+    let cContainer = jQ(c).next()[0]; // Content Containers
+    let caseId = jQ(c).find('input[name="case"]')[0].value;
 
-    toggleTestCasePane({ case_id: case_id, casePaneContainer: jQ(c_container) });
-    toggleExpandArrow({ caseRowContainer: jQ(c), expandPaneContainer: jQ(c_container) });
+    toggleTestCasePane({
+      case_id: caseId,
+      casePaneContainer: jQ(cContainer)
+    });
+    toggleExpandArrow({
+      caseRowContainer: jQ(c),
+      expandPaneContainer: jQ(cContainer)
+    });
   });
 
-  jQ("#testcases_table tbody tr input[type=checkbox][name=case]").on('click', function() {
+  jQ('#testcases_table tbody tr input[type=checkbox][name=case]').on('click', function() {
     if (jQ('input[type=checkbox][name=case]:checked').length) {
-      jQ("#case_advance_printable").attr('disabled', false);
+      jQ('#case_advance_printable').attr('disabled', false);
     } else {
-      jQ("#case_advance_printable").attr('disabled', true);
+      jQ('#case_advance_printable').attr('disabled', true);
     }
   });
 
@@ -72,8 +78,8 @@ Nitrate.TestCases.AdvanceList.on_load = function() {
 };
 
 Nitrate.TestCases.List.on_load = function() {
-  bind_category_selector_to_product(true, true, jQ('#id_product')[0], jQ('#id_category')[0]);
-  bind_component_selector_to_product(true, true, jQ('#id_product')[0], jQ('#id_component')[0]);
+  bindCategorySelectorToProduct(true, true, jQ('#id_product')[0], jQ('#id_category')[0]);
+  bindComponentSelectorToProduct(true, true, jQ('#id_product')[0], jQ('#id_component')[0]);
   if (jQ('#id_checkbox_all_case')[0]) {
     jQ('#id_checkbox_all_case').on('click', function() {
       clickedSelectAll(this, jQ(this).closest('table')[0], 'case');
@@ -96,10 +102,10 @@ Nitrate.TestCases.List.on_load = function() {
       jQ(this).addClass('locked');
       let element = jQ(this).children()[0];
       if (jQ(element).is('.collapse-all')) {
-        this.title = "Collapse all cases";
+        this.title = 'Collapse all cases';
         blinddownAllCases(element);
       } else {
-        this.title = "Expand all cases";
+        this.title = 'Expand all cases';
         blindupAllCases(element);
       }
     }
@@ -110,47 +116,54 @@ Nitrate.TestCases.List.on_load = function() {
   }
 
   jQ('#testcases_table').dataTable({
-    "iDisplayLength": 20,
-    "sPaginationType": "full_numbers",
-    "bFilter": false,
-    "bLengthChange": false,
-    "aaSorting": [[ 2, "desc" ]],
-    "bProcessing": true,
-    "bServerSide": true,
-    "sAjaxSource": "/cases/ajax/"+this.window.location.search,
-    "aoColumns": [
-      {"bSortable": false,"sClass": "expandable" },
-      {"bSortable": false },
-      {"sType": "html","sClass": "expandable"},
-      {"sType": "html","sClass": "expandable"},
-      {"sType": "html","sClass": "expandable"},
-      {"sClass": "expandable"},
-      {"sClass": "expandable"},
-      {"sClass": "expandable"},
-      {"sClass": "expandable"},
-      {"sClass": "expandable"},
-      {"sClass": "expandable"}
+    'iDisplayLength': 20,
+    'sPaginationType': 'full_numbers',
+    'bFilter': false,
+    'bLengthChange': false,
+    'aaSorting': [[ 2, 'desc' ]],
+    'bProcessing': true,
+    'bServerSide': true,
+    'sAjaxSource': '/cases/ajax/'+this.window.location.search,
+    'aoColumns': [
+      {'bSortable': false,'sClass': 'expandable'},
+      {'bSortable': false},
+      {'sType': 'html','sClass': 'expandable'},
+      {'sType': 'html','sClass': 'expandable'},
+      {'sType': 'html','sClass': 'expandable'},
+      {'sClass': 'expandable'},
+      {'sClass': 'expandable'},
+      {'sClass': 'expandable'},
+      {'sClass': 'expandable'},
+      {'sClass': 'expandable'},
+      {'sClass': 'expandable'}
     ]
   });
-  jQ("#testcases_table tbody tr td.expandable").on("click", function() {
+
+  jQ('#testcases_table tbody tr td.expandable').on('click', function() {
     let tr = jQ(this).parent();
     let caseRowContainer = tr;
-    let case_id = caseRowContainer.find('input[name="case"]').attr('value');
-    let detail_td = '<tr class="case_content hide" style="display: none;"><td colspan="11">' +
-      '<div id="id_loading_' + case_id + '" class="ajax_loading"></div></td></tr>';
+    let caseId = caseRowContainer.find('input[name="case"]').attr('value');
+    let detailTd = '<tr class="case_content hide" style="display: none;"><td colspan="11">' +
+      '<div id="id_loading_' + caseId + '" class="ajax_loading"></div></td></tr>';
     if (!caseRowContainer.next().hasClass('hide')) {
-      caseRowContainer.after(detail_td);
+      caseRowContainer.after(detailTd);
     }
 
-    toggleTestCasePane({ case_id: case_id, casePaneContainer: tr.next() });
-    toggleExpandArrow({ caseRowContainer: tr, expandPaneContainer: tr.next() });
+    toggleTestCasePane({
+      case_id: caseId,
+      casePaneContainer: tr.next()
+    });
+    toggleExpandArrow({
+      caseRowContainer: tr,
+      expandPaneContainer: tr.next()
+    });
   });
 
-  jQ("#testcases_table tbody tr input[type=checkbox][name=case]").on("click", function() {
-    if (jQ("input[type=checkbox][name=case]:checked").length) {
-      jQ("#case_list_printable").attr('disabled', false);
+  jQ('#testcases_table tbody tr input[type=checkbox][name=case]').on('click', function() {
+    if (jQ('input[type=checkbox][name=case]:checked').length) {
+      jQ('#case_list_printable').attr('disabled', false);
     } else {
-      jQ("#case_list_printable").attr('disabled', true);
+      jQ('#case_list_printable').attr('disabled', true);
     }
   });
 
@@ -164,9 +177,9 @@ Nitrate.TestCases.List.on_load = function() {
 };
 
 Nitrate.TestCases.Details.on_load = function() {
-  let case_id = Nitrate.TestCases.Instance.pk;
+  let caseId = Nitrate.TestCases.Instance.pk;
 
-  constructTagZone(jQ('#tag')[0], { 'case': case_id });
+  constructTagZone(jQ('#tag')[0], {'case': caseId});
 
   jQ('li.tab a').on('click', function() {
     jQ('div.tab_list').hide();
@@ -200,7 +213,7 @@ Nitrate.TestCases.Details.on_load = function() {
   });
 
   jQ('#id_remove_component').on('click', function() {
-    if (! window.confirm(default_messages.confirm.remove_case_component)) {
+    if (! window.confirm(defaultMessages.confirm.remove_case_component)) {
       return false;
     }
 
@@ -216,7 +229,7 @@ Nitrate.TestCases.Details.on_load = function() {
   });
 
   jQ('.link_remove_component').on('click', function() {
-    if (! window.confirm(default_messages.confirm.remove_case_component)) {
+    if (! window.confirm(defaultMessages.confirm.remove_case_component)) {
       return false;
     }
 
@@ -289,7 +302,7 @@ Nitrate.TestCases.Details.on_load = function() {
  * Resize all editors within the webpage after they are rendered.
  * This is used to avoid a bug of TinyMCE in Firefox 11.
  */
-function resize_tinymce_editors() {
+function resizeTinymceEditors() {
   jQ('.mceEditor .mceIframeContainer iframe').each(function() {
     let elem = jQ(this);
     elem.height(elem.height() + 1);
@@ -297,41 +310,43 @@ function resize_tinymce_editors() {
 }
 
 Nitrate.TestCases.Create.on_load = function() {
-  SelectFilter.init("id_component", "component", 0, "/static/admin/");
+
+  SelectFilter.init('id_component', 'component', 0, '/static/admin/');
   //init category and components
   getCategoriesByProductId(false, jQ('#id_product')[0], jQ('#id_category')[0]);
   let from = 'id_component_from';
   let to = 'id_component_to';
-  let from_field = jQ('#' + from)[0];
-  let to_field = jQ('#' + to)[0];
-  jQ(to_field).html('');
-  getComponentsByProductId(false, jQ('#id_product')[0], from_field, function() {
+  let fromField = jQ('#' + from)[0];
+  let toField = jQ('#' + to)[0];
+  jQ(toField).html('');
+  getComponentsByProductId(false, jQ('#id_product')[0], fromField, function() {
     SelectBox.cache[from] = [];
     SelectBox.cache[to] = [];
     let node = null;
-    for (let i = 0; (node = from_field.options[i]); i++) {
+    for (let i = 0; (node = fromField.options[i]); i++) {
       SelectBox.cache[from].push({value: node.value, text: node.text, displayed: 1});
     }
   });
+
   // bind change on product to update component and category
   jQ('#id_product').change(function () {
     let from = 'id_component_from';
     let to = 'id_component_to';
-    let from_field = jQ('#' + from)[0];
-    let to_field = jQ('#' + to)[0];
-    jQ(to_field).html('');
-    getComponentsByProductId(false, jQ('#id_product')[0], from_field, function() {
+    let fromField = jQ('#' + from)[0];
+    let toField = jQ('#' + to)[0];
+    jQ(toField).html('');
+    getComponentsByProductId(false, jQ('#id_product')[0], fromField, function() {
       SelectBox.cache[from] = [];
       SelectBox.cache[to] = [];
       let node = null;
-      for (let i = 0; (node = from_field.options[i]); i++) {
+      for (let i = 0; (node = fromField.options[i]); i++) {
         SelectBox.cache[from].push({value: node.value, text: node.text, displayed: 1});
       }
     });
     getCategoriesByProductId(false, jQ('#id_product')[0], jQ('#id_category')[0]);
   });
 
-  resize_tinymce_editors();
+  resizeTinymceEditors();
 
   jQ('.js-case-cancel').on('click', function() {
     window.history.go(-1);
@@ -344,8 +359,8 @@ Nitrate.TestCases.Create.on_load = function() {
 };
 
 Nitrate.TestCases.Edit.on_load = function() {
-  bind_category_selector_to_product(false, false, jQ('#id_product')[0], jQ('#id_category')[0]);
-  resize_tinymce_editors();
+  bindCategorySelectorToProduct(false, false, jQ('#id_product')[0], jQ('#id_category')[0]);
+  resizeTinymceEditors();
 
   jQ('.js-back-button').on('click', function() {
     window.history.go(-1);
@@ -353,7 +368,7 @@ Nitrate.TestCases.Edit.on_load = function() {
 };
 
 Nitrate.TestCases.Clone.on_load = function() {
-  bind_version_selector_to_product(true);
+  bindVersionSelectorToProduct(true);
 
   jQ('#id_form_search_plan').on('submit', function(e) {
     e.stopPropagation();
@@ -462,14 +477,14 @@ function addCaseIssue(form) {
   });
 }
 
-function removeCaseIssue(issue_key, case_id, case_run_id) {
-  if(!window.confirm('Are you sure to remove issue ' + issue_key + '?')) {
+function removeCaseIssue(issueKey, caseId, caseRunId) {
+  if(!window.confirm('Are you sure to remove issue ' + issueKey + '?')) {
     return;
   }
 
   getRequest({
-    url: '/case/' + case_id + '/issue/',
-    data: {handle: 'remove', issue_key: issue_key, case_run: case_run_id},
+    url: '/case/' + caseId + '/issue/',
+    data: {handle: 'remove', issue_key: issueKey, case_run: caseRunId},
     success: issueOperationSuccessCallback,
     forbiddenMessage: 'You are not allowed to remove issue from case.',
   });
@@ -507,7 +522,7 @@ function addCaseToPlansHandler(caseId, form) {
   let planIds = form.elements['pk__in'].value.trim();
 
   if (planIds.length === 0) {
-    window.alert(default_messages.alert.no_plan_specified);
+    window.alert(defaultMessages.alert.no_plan_specified);
     return;
   }
 
@@ -517,9 +532,9 @@ function addCaseToPlansHandler(caseId, form) {
     e.stopPropagation();
     e.preventDefault();
 
-    let plan_ids = Nitrate.Utils.formSerialize(this).plan_id;
-    if (!plan_ids) {
-      window.alert(default_messages.alert.no_plan_specified);
+    let planIds = Nitrate.Utils.formSerialize(this).plan_id;
+    if (!planIds) {
+      window.alert(defaultMessages.alert.no_plan_specified);
       return false;
     }
 
@@ -527,7 +542,7 @@ function addCaseToPlansHandler(caseId, form) {
 
     postRequest({
       url: casePlansUrl + 'add/',
-      data: {plan: plan_ids},
+      data: {plan: planIds},
       traditional: true,
       success: function (data) {
         jQ('#plan').html(data.html);
@@ -570,10 +585,10 @@ function toggleCaseRunsByPlan(params, callback) {
   let container = typeof params.container === 'string' ?
     jQ('#' + params.container) : jQ(params.container);
 
-  let blind_icon = container.find('img').first();
+  let blindIcon = container.find('img').first();
   if (contentContainer.is(':hidden')) {
-    blind_icon.removeClass('collapse').addClass('expand').attr('src', '/static/images/t1.gif');
+    blindIcon.removeClass('collapse').addClass('expand').attr('src', '/static/images/t1.gif');
   } else {
-    blind_icon.removeClass('expand').addClass('collapse').attr('src', '/static/images/t2.gif');
+    blindIcon.removeClass('expand').addClass('collapse').attr('src', '/static/images/t2.gif');
   }
 }

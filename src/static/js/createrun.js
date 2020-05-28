@@ -8,15 +8,14 @@ Nitrate.CreateRunPage = {
         Wire up the <select> elements.
         They may not be blank.
     */
-    bind_build_selector_to_product(false);
-    // bind_env_selector_to_product(false);
-    bind_version_selector_to_product(false);
+    bindBuildSelectorToProduct(false);
+    bindVersionSelectorToProduct(false);
 
     /*
         NewRun_Name_autofill: the new run page shall contain a field for
         entering the name of the new plan. If the user has not touched the
         field, the field shall automatically populate with text of the form:
-          * (planname):(environmentname):(number of runs made with this plan/environment combo) 
+          * (planname):(environmentname):(number of runs made with this plan/environment combo)
 
         and the field shall update as environments are selected, until the
         user manually edits the field. For example, a sample value might read:

@@ -61,7 +61,7 @@ function $ajax(url, options) {
   options = Object.assign({}, options, {
     beforeSend: function (xhr, settings) {
       if (!/^(GET|HEAD|OPTIONS|TRACE)$/.test(settings.type) && !this.crossDomain) {
-        xhr.setRequestHeader("X-CSRFToken", globalCsrfToken);
+        xhr.setRequestHeader('X-CSRFToken', globalCsrfToken);
       }
     },
   });
@@ -185,8 +185,9 @@ function sendHTMLRequest(options) {
     traditional: options.traditional,
     success: options.success || function (data, textStatus, xhr) {
       jQ(options.container).html(data);
-      if (options.callbackAfterFillIn !== undefined)
+      if (options.callbackAfterFillIn !== undefined) {
         options.callbackAfterFillIn(xhr)
+      }
     },
     statusCode: {
       404: function (xhr) {
@@ -252,7 +253,7 @@ jQ(window).on('load', function() {
 
             addBookmark(this.action, this.method, Nitrate.Utils.formSerialize(this), function (responseData) {
               clearDialog();
-              window.alert(default_messages.alert.bookmark_added);
+              window.alert(defaultMessages.alert.bookmark_added);
               return responseData;
             });
           }));
@@ -262,7 +263,7 @@ jQ(window).on('load', function() {
   }
 });
 
-const default_messages = {
+const defaultMessages = {
   'alert': {
     'no_case_selected': 'No cases selected! Please select at least one case.',
     'no_category_selected': 'No category selected! Please select a category firstly.',
@@ -285,7 +286,7 @@ const default_messages = {
     'hide_filter': 'Hide filter options',
     'show_filter': 'Show filter options',
   },
-  'prompt': { 'edit_tag': 'Please type your new tag' },
+  'prompt': {'edit_tag': 'Please type your new tag'},
   'report': {
     'hide_search': 'Hide the coverage search',
     'show_search': 'Show the coverage search'
@@ -346,12 +347,12 @@ const default_messages = {
       }
       let urlpattern = this._mapping[options.name];
       if (urlpattern === undefined) {
-          return undefined;
+        return undefined;
       }
       let url = urlpattern;
       let args = options.arguments || {};
       for (let key in args) {
-          url = url.replace('$' + key, args[key].toString());
+        url = url.replace('$' + key, args[key].toString());
       }
       return url;
     }
@@ -361,24 +362,6 @@ const default_messages = {
 }());
 
 
-// Exceptions for Ajax
-// FIXME: remove this function from here eventually
-function json_failure(xhr) {
-  let responseJSON = jQ.parseJSON(xhr.responseText);
-  // response property will be deprecated from server response.
-  // TODO: after the AJAX response is unified, just use the responseJSON.message.
-  let msg = responseJSON.message ||
-            responseJSON.response ||
-            responseJSON.messages ||
-            responseJSON;
-  if (Array.isArray(msg)) {
-    window.alert(msg.join('\n'));
-  } else {
-    window.alert(msg);
-  }
-  return false;
-}
-
 function addBookmark(url, method, parameters, callback) {
   parameters.a = 'add';
   // FIXME: use POST
@@ -387,7 +370,7 @@ function addBookmark(url, method, parameters, callback) {
 
 function splitString(str, num) {
   if (str.length > num) {
-    return str.substring(0, num - 3) + "...";
+    return str.substring(0, num - 3) + '...';
   }
   return str;
 }
@@ -403,12 +386,15 @@ function setUpChoices(elemSelect, values, addBlankOption) {
   let selectedOptions = elemSelect.selectedOptions;
   for (let i = 0; i < selectedOptions.length; i++) {
     let option = selectedOptions[i];
-    if (option.selected) originalSelectedIds.push(option.value);
+    if (option.selected) {
+      originalSelectedIds.push(option.value);
+    }
   }
 
   // Remove all options
-  for (let i = elemSelect.options.length - 1; i >= 0; i--)
+  for (let i = elemSelect.options.length - 1; i >= 0; i--) {
     elemSelect.options[i].remove();
+  }
 
   let newOption = null;
 
@@ -437,55 +423,55 @@ function setUpChoices(elemSelect, values, addBlankOption) {
   });
 }
 
-function getBuildsByProductId(allow_blank, product_field, build_field) {
-  if (!product_field) {
-    product_field = jQ('#id_product')[0];
+function getBuildsByProductId(allowBlank, productField, buildField) {
+  if (!productField) {
+    productField = jQ('#id_product')[0];
   }
 
-  if (!build_field) {
+  if (!buildField) {
     if (jQ('#id_build').length) {
-      build_field = jQ('#id_build')[0];
+      buildField = jQ('#id_build')[0];
     } else {
       window.alert('Build field does not exist');
       return false;
     }
   }
 
-  let product_id = jQ(product_field).val();
-  let no_product_is_selected = product_id === '' || product_id === null;
-  if (no_product_is_selected) {
-    jQ(build_field).html('<option value="">---------</option>');
+  let productId = jQ(productField).val();
+  let noProductIsSelected = productId === '' || productId === null;
+  if (noProductIsSelected) {
+    jQ(buildField).html('<option value="">---------</option>');
     return false;
   }
 
-  let is_active = '';
+  let isActive = '';
   if (jQ('#value_sub_module').length) {
-    if (jQ('#value_sub_module').val() === "new_run") {
-      is_active = true;
+    if (jQ('#value_sub_module').val() === 'new_run') {
+      isActive = true;
     }
   }
 
-  if (is_active) {
-    is_active = true;
+  if (isActive) {
+    isActive = true;
   }
 
   getRequest({
     url: '/management/getinfo/',
     data: {
       'info_type': 'builds',
-      'product_id': product_id,
-      'is_active': is_active
+      'product_id': productId,
+      'is_active': isActive
     },
     errorMessage: 'Update builds failed.',
     success: function (data) {
       setUpChoices(
-        build_field,
+        buildField,
         data.map(function(o) { return [o.pk, o.fields.name]; }),
-        allow_blank
+        allowBlank
       );
 
       if (jQ('#value_sub_module').length && jQ('#value_sub_module').val() === 'new_run') {
-        if(jQ(build_field).html() === '') {
+        if(jQ(buildField).html() === '') {
           window.alert('You should create new build first before create new run');
         }
       }
@@ -494,12 +480,12 @@ function getBuildsByProductId(allow_blank, product_field, build_field) {
 }
 
 // TODO: remove this function. It is not used.
-function getEnvsByProductId(allow_blank, product_field) {
-  if (!product_field) {
-    product_field = jQ('#id_product')[0];
+function getEnvsByProductId(allowBlank, productField) {
+  if (!productField) {
+    productField = jQ('#id_product')[0];
   }
 
-  let product_id = jQ(product_field).val();
+  let productId = jQ(productField).val();
   let args = false;
   if (jQ('#value_sub_module').length) {
     if (jQ('#value_sub_module').val() === 'new_run') {
@@ -507,23 +493,23 @@ function getEnvsByProductId(allow_blank, product_field) {
     }
   }
 
-  if(product_id === '') {
+  if(productId === '') {
     jQ('#id_env_id').html('<option value="">---------</option>');
     return true;
   }
 
   getRequest({
     url: '/management/getinfo/',
-    data: {info_type: 'envs', product_id: product_id, args: args},
+    data: {info_type: 'envs', product_id: productId, args: args},
     errorMessage: 'Update builds and envs failed',
     success: function (data) {
       setUpChoices(
         jQ('#id_env_id')[0],
         data.map(function(o) {return [o.pk, o.fields.name];}),
-        allow_blank
+        allowBlank
       );
 
-      if (document.title === "Create new test run") {
+      if (document.title === 'Create new test run') {
         if (jQ('#id_env_id').html() === '') {
           window.alert('You should create new enviroment first before create new run');
         }
@@ -532,55 +518,55 @@ function getEnvsByProductId(allow_blank, product_field) {
   });
 }
 
-function getVersionsByProductId(allow_blank, product_field, version_field) {
+function getVersionsByProductId(allowBlank, productField, versionField) {
   // FIXME: why not use the passed-in value?
-  product_field = jQ('#id_product')[0];
+  productField = jQ('#id_product')[0];
 
-  if (!version_field) {
+  if (!versionField) {
     if (jQ('#id_product_version').length) {
-      version_field = jQ('#id_product_version')[0];
+      versionField = jQ('#id_product_version')[0];
     } else {
       window.alert('Version field does not exist');
       return false;
     }
   }
 
-  let product_id = jQ(product_field).val();
+  let productId = jQ(productField).val();
 
-  if (!product_id && allow_blank) {
-    jQ(version_field).html('<option value="">---------</option>');
-      return true;
+  if (!productId && allowBlank) {
+    jQ(versionField).html('<option value="">---------</option>');
+    return true;
   }
 
   getRequest({
     url: '/management/getinfo/',
-    data: {'info_type': 'versions', 'product_id': product_id},
+    data: {'info_type': 'versions', 'product_id': productId},
     success: function (data) {
       setUpChoices(
-        version_field,
+        versionField,
         data.map(function(o) { return [o.pk, o.fields.value]; }),
-        allow_blank
+        allowBlank
       );
     },
     errorMessage: 'Update versions failed.',
   });
 }
 
-function getComponentsByProductId(allow_blank, product_field, component_field, callback, parameters) {
+function getComponentsByProductId(allowBlank, productField, componentField, callback, parameters) {
   parameters = parameters || {};
   parameters.info_type = 'components';
 
   // Initial the product get from
   if (! parameters.product_id) {
-    if (!product_field) {
-      product_field = jQ('#id_product')[0];
+    if (!productField) {
+      productField = jQ('#id_product')[0];
     }
-    parameters.product_id = jQ(product_field).val();
+    parameters.product_id = jQ(productField).val();
   }
 
-  if (!component_field) {
+  if (!componentField) {
     if (jQ('#id_component').length) {
-      component_field = jQ('#id_component')[0];
+      componentField = jQ('#id_component')[0];
     } else {
       window.alert('Component field does not exist');
       return false;
@@ -588,7 +574,7 @@ function getComponentsByProductId(allow_blank, product_field, component_field, c
   }
 
   if (parameters.product_id === '') {
-    jQ(component_field).html('<option value="">---------</option>');
+    jQ(componentField).html('<option value="">---------</option>');
     return true;
   }
 
@@ -598,9 +584,9 @@ function getComponentsByProductId(allow_blank, product_field, component_field, c
     errorMessage: 'Update components failed.',
     success: function (data) {
       setUpChoices(
-        component_field,
+        componentField,
         data.map(function(o) { return [o.pk, o.fields.name]; }),
-        allow_blank
+        allowBlank
       );
 
       if (callback) { callback(); }
@@ -610,26 +596,26 @@ function getComponentsByProductId(allow_blank, product_field, component_field, c
 
 /**
  * Refresh categories related to a product and fill in a SELECT element.
- * @param {boolean} allow_blank - whether to add a special option item to SELECT as a blank selected option.
- * @param product_field - the SELECT element.
- * @param category_field - the category element to fill in.
+ * @param {boolean} allowBlank - whether to add a special option item to SELECT as a blank selected option.
+ * @param productField - the SELECT element.
+ * @param categoryField - the category element to fill in.
  */
-function getCategoriesByProductId(allow_blank, product_field, category_field) {
-  if (!product_field) {
-    product_field = jQ('#id_product')[0];
+function getCategoriesByProductId(allowBlank, productField, categoryField) {
+  if (!productField) {
+    productField = jQ('#id_product')[0];
   }
 
-  if (!category_field) {
+  if (!categoryField) {
     if (jQ('#id_category').length) {
-      category_field = jQ('#id_category')[0];
+      categoryField = jQ('#id_category')[0];
     } else {
       window.alert('Category field does not exist');
       return false;
     }
   }
 
-  if (jQ(product_field).val() === '') {
-    jQ(category_field).html('<option value="">---------</option>');
+  if (jQ(productField).val() === '') {
+    jQ(categoryField).html('<option value="">---------</option>');
     return true;
   }
 
@@ -637,22 +623,22 @@ function getCategoriesByProductId(allow_blank, product_field, category_field) {
     url: '/management/getinfo/',
     data: {
       info_type: 'categories',
-      product_id: product_field.selectedOptions[0].value
+      product_id: productField.selectedOptions[0].value
     },
     errorMessage: 'Update category failed.',
     success: function (data) {
       setUpChoices(
-        category_field,
+        categoryField,
         data.map(function(o) {return [o.pk, o.fields.name];}),
-        allow_blank
+        allowBlank
       );
     },
   });
 }
 
-function checkProductField(product_field) {
-  if (product_field) {
-    return product_field;
+function checkProductField(productField) {
+  if (productField) {
+    return productField;
   }
 
   if (jQ('#id_product').length) {
@@ -662,59 +648,54 @@ function checkProductField(product_field) {
   return false;
 }
 
-function bind_build_selector_to_product(allow_blank, product_field, build_field) {
-  product_field = checkProductField(product_field);
+function bindBuildSelectorToProduct(allowBlank, productField, buildField) {
+  productField = checkProductField(productField);
 
-  if (product_field) {
-    jQ(product_field).on('change', function() {
-      getBuildsByProductId(allow_blank, product_field, build_field);
+  if (productField) {
+    jQ(productField).on('change', function() {
+      getBuildsByProductId(allowBlank, productField, buildField);
     });
 
-    getBuildsByProductId(allow_blank, product_field, build_field);
+    getBuildsByProductId(allowBlank, productField, buildField);
   }
 }
 
-function bind_env_selector_to_product(allow_blank) {
-  jQ('#id_product_id').on('change', function() { getEnvsByProductId(allow_blank); });
-  getEnvsByProductId(allow_blank);
-}
+function bindVersionSelectorToProduct(allowBlank, load, productField, versionField) {
+  productField = checkProductField(productField);
 
-function bind_version_selector_to_product(allow_blank, load, product_field, version_field) {
-  product_field = checkProductField(product_field);
-
-  if (product_field) {
-    jQ(product_field).on('change', function() {
-      getVersionsByProductId(allow_blank, product_field, version_field);
+  if (productField) {
+    jQ(productField).on('change', function() {
+      getVersionsByProductId(allowBlank, productField, versionField);
     });
     if (load) {
-      getVersionsByProductId(allow_blank, product_field, version_field);
+      getVersionsByProductId(allowBlank, productField, versionField);
     }
   }
 }
 
-function bind_category_selector_to_product(allow_blank, load, product_field, category_field) {
-  product_field = checkProductField(product_field);
+function bindCategorySelectorToProduct(allowBlank, load, productField, categoryField) {
+  productField = checkProductField(productField);
 
-  if (product_field) {
-    jQ(product_field).on('change', function() {
-      getCategoriesByProductId(allow_blank, product_field, category_field);
+  if (productField) {
+    jQ(productField).on('change', function() {
+      getCategoriesByProductId(allowBlank, productField, categoryField);
     });
     if (load) {
-      getCategoriesByProductId(allow_blank);
+      getCategoriesByProductId(allowBlank);
     }
   }
 }
 
-function bind_component_selector_to_product(allow_blank, load, product_field, component_field) {
-  product_field = checkProductField(product_field);
+function bindComponentSelectorToProduct(allowBlank, load, productField, componentField) {
+  productField = checkProductField(productField);
 
-  if (product_field) {
-    jQ(product_field).on('change', function() {
-      getComponentsByProductId(allow_blank, product_field, component_field);
+  if (productField) {
+    jQ(productField).on('change', function() {
+      getComponentsByProductId(allowBlank, productField, componentField);
     });
 
     if (load) {
-      getComponentsByProductId(allow_blank);
+      getComponentsByProductId(allowBlank);
     }
   }
 }
@@ -733,13 +714,13 @@ function fireEvent(obj,evt) {
 
 // Stolen from http://stackoverflow.com/questions/133925/javascript-post-request-like-a-form-submit
 function postToURL(path, params, method) {
-  method = method || "post"; // Set method to post by default, if not specified.
+  method = method || 'post'; // Set method to post by default, if not specified.
 
   // The rest of this code assumes you are not using a library.
   // It can be made less wordy if you use one.
-  let form = document.createElement("form");
-  form.setAttribute("method", method);
-  form.setAttribute("action", path);
+  let form = document.createElement('form');
+  form.setAttribute('method', method);
+  form.setAttribute('action', path);
 
   let hiddenField = null;
 
@@ -750,17 +731,17 @@ function postToURL(path, params, method) {
           continue;
         }
 
-        hiddenField = document.createElement("input");
-        hiddenField.setAttribute("type", "hidden");
-        hiddenField.setAttribute("name", key);
-        hiddenField.setAttribute("value", params[key][i]);
+        hiddenField = document.createElement('input');
+        hiddenField.setAttribute('type', 'hidden');
+        hiddenField.setAttribute('name', key);
+        hiddenField.setAttribute('value', params[key][i]);
         form.appendChild(hiddenField);
       }
     } else {
-      hiddenField = document.createElement("input");
-      hiddenField.setAttribute("type", "hidden");
-      hiddenField.setAttribute("name", key);
-      hiddenField.setAttribute("value", params[key]);
+      hiddenField = document.createElement('input');
+      hiddenField.setAttribute('type', 'hidden');
+      hiddenField.setAttribute('name', key);
+      hiddenField.setAttribute('value', params[key]);
       form.appendChild(hiddenField);
     }
   }
@@ -824,8 +805,8 @@ function constructTagZone(container, parameters) {
 
 
 function addTag(container) {
-  let tag_name = jQ('#id_tags').attr('value');
-  if (!tag_name.length) {
+  let tagName = jQ('#id_tags').attr('value');
+  if (!tagName.length) {
     jQ('#id_tags').focus();
   } else {
     constructTagZone(container, Nitrate.Utils.formSerialize(jQ('#id_tag_form')[0]));
@@ -842,7 +823,7 @@ function removeTag(container, tag) {
 }
 
 function editTag(container, tag) {
-  let nt = prompt(default_messages.prompt.edit_tag, tag);
+  let nt = prompt(defaultMessages.prompt.edit_tag, tag);
   if (!nt) {
     return false;
   }
@@ -883,25 +864,27 @@ function submitComment(container, parameters, callback) {
     data: parameters,
     success: function () {
       updateCommentsCount(parameters.object_pk, true);
-      if (callback) callback();
+      if (callback) {
+        callback();
+      }
     }
   });
 }
 
 
 function updateCommentsCount(caseId, increase) {
-  let commentDiv = jQ("#" + caseId + "_case_comment_count");
-  let countText = jQ("#" + caseId + "_comments_count");
+  let commentDiv = jQ('#' + caseId + '_case_comment_count');
+  let countText = jQ('#' + caseId + '_comments_count');
   if (increase) {
     if (commentDiv.children().length === 1) {
-      commentDiv.prepend("<img src=\"/static/images/comment.png\" style=\"vertical-align: middle;\">");
+      commentDiv.prepend('<img src="/static/images/comment.png" style="vertical-align: middle;">');
     }
-    countText.text(" " + (parseInt(countText.text()) + 1));
+    countText.text(' ' + (parseInt(countText.text()) + 1));
   } else {
     if (parseInt(countText.text(), 10) === 1) {
-      commentDiv.html("<span id=\""+caseId+"_comments_count\"> 0</span>");
+      commentDiv.html('<span id="' + caseId + '_comments_count"> 0</span>');
     } else {
-      countText.text(" " + (parseInt(commentDiv.text()) - 1));
+      countText.text(' ' + (parseInt(commentDiv.text()) - 1));
     }
   }
 }
@@ -933,27 +916,27 @@ function previewPlan(parameters, action, callback, notice, s, c) {
 
 /**
  * Update one object property at a time.
- * @param {string} content_type
- * @param {number} object_pk
+ * @param {string} contentType
+ * @param {number} objectPk
  * @param {string} field
  * @param {string} value
- * @param {string} value_type
+ * @param {string} valueType
  * @param {function} [callback] - a function will be called when AJAX request succeeds. This
  *                                function should accept only one argument, that is the parsed JSON
  *                                data returned from server side. If omitted, it will cause
  *                                undefined is passed to postRequest, and default behavior of
  *                                reloading current page will be triggered as a result.
  */
-function updateObject(content_type, object_pk, field, value, value_type, callback) {
+function updateObject(contentType, objectPk, field, value, valueType, callback) {
   postRequest({
     url: '/ajax/update/',
     success: callback,
     data: {
-      content_type: content_type,
-      object_pk: Array.isArray(object_pk) ? object_pk.join(',') : object_pk,
+      content_type: contentType,
+      object_pk: Array.isArray(objectPk) ? objectPk.join(',') : objectPk,
       field: field,
       value: value,
-      value_type: value_type || 'str'
+      value_type: valueType || 'str'
     }
   });
 }
@@ -1002,7 +985,7 @@ function clickedSelectAll(checkbox, form, name) {
  * @param c
  * @returns the form element.
  */
-function constructForm(content, action, form_observe, info, s, c) {
+function constructForm(content, action, formObserve, info, s, c) {
   let f = jQ('<form>', {'action': action});
   let i = jQ('<div>', {'class': 'alert'});
   if (info) {
@@ -1020,8 +1003,8 @@ function constructForm(content, action, form_observe, info, s, c) {
     });
   }
 
-  if (form_observe) {
-    f.on('submit', form_observe);
+  if (formObserve) {
+    f.on('submit', formObserve);
   }
 
   f.html(content);
@@ -1067,12 +1050,12 @@ function popupAddAnotherWindow(triggeringLink, parameters) {
  */
 function toggleExpandArrow(options) {
   let container = options.caseRowContainer;
-  let content_container = options.expandPaneContainer;
-  let blind_icon = container.find('img.blind_icon');
-  if (content_container.css('display') === 'none') {
-    blind_icon.removeClass('collapse').addClass('expand').attr('src', '/static/images/t1.gif');
+  let contentContainer = options.expandPaneContainer;
+  let blindIcon = container.find('img.blind_icon');
+  if (contentContainer.css('display') === 'none') {
+    blindIcon.removeClass('collapse').addClass('expand').attr('src', '/static/images/t1.gif');
   } else {
-    blind_icon.removeClass('expand').addClass('collapse').attr('src', '/static/images/t2.gif');
+    blindIcon.removeClass('expand').addClass('collapse').attr('src', '/static/images/t2.gif');
   }
 }
 
@@ -1119,7 +1102,7 @@ function toggleTestCasePane(options, callback) {
 
 }
 
-function renderComponentForm(container, parameters, form_observe) {
+function renderComponentForm(container, parameters, formObserve) {
   let d = jQ('<div>');
   if (!container) {
     container = getDialog();
@@ -1136,11 +1119,11 @@ function renderComponentForm(container, parameters, form_observe) {
       c.append(a);
       jQ(container).html(
         constructForm(
-          d.html(), '/cases/add-component/', form_observe,
+          d.html(), '/cases/add-component/', formObserve,
           'Press "Ctrl" to select multiple default component', c[0]
         )
       );
-      bind_component_selector_to_product(
+      bindComponentSelectorToProduct(
         false, false, jQ('#id_product')[0], jQ('#id_o_component')[0]
       );
     }

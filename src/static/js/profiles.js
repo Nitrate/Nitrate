@@ -1,16 +1,16 @@
-Nitrate.Profiles = { Infos: {}, Bookmarks: {} };
+Nitrate.Profiles = {Infos: {}, Bookmarks: {}};
 
 Nitrate.Profiles.Bookmarks.on_load = function() {
   if (jQ('#id_table_bookmark').length) {
     jQ('#id_table_bookmark').dataTable({
-      "aoColumnDefs":[{ "bSortable":false, "aTargets":[ 0 ] }],
-      "aaSorting": [[ 1, "asc" ]],
-      "sPaginationType": "full_numbers",
-      "bFilter": false,
-      "aLengthMenu": [[10, 20, 50, -1], [10, 20, 50, "All"]],
-      "iDisplayLength": 10,
-      "bProcessing": true,
-      "oLanguage": { "sEmptyTable": "No bookmark was found." }
+      'aoColumnDefs':[{'bSortable':false, 'aTargets':[ 0 ]}],
+      'aaSorting': [[ 1, 'asc' ]],
+      'sPaginationType': 'full_numbers',
+      'bFilter': false,
+      'aLengthMenu': [[10, 20, 50, -1], [10, 20, 50, 'All']],
+      'iDisplayLength': 10,
+      'bProcessing': true,
+      'oLanguage': {'sEmptyTable': 'No bookmark was found.'}
     });
   }
 
@@ -24,7 +24,7 @@ Nitrate.Profiles.Bookmarks.on_load = function() {
     e.stopPropagation();
     e.preventDefault();
 
-    if (!window.confirm(default_messages.confirm.remove_bookmark)) {
+    if (!window.confirm(defaultMessages.confirm.remove_bookmark)) {
       return false;
     }
 
