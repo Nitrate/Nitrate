@@ -11,7 +11,7 @@ RUN dnf update -y && \
         --setopt=deltarpm=0 \
         --setopt=install_weak_deps=false \
         --setopt=tsflags=nodocs \
-        gcc redhat-rpm-config make mariadb python36 \
+        gcc redhat-rpm-config make mariadb postgresql python36 \
         python3-devel mariadb-devel postgresql-devel krb5-devel libxcrypt-compat && \
     dnf clean all
 

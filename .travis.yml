@@ -15,9 +15,8 @@ env:
   - DJANGO_REL="django>=3.0,<3.1" NITRATE_DB=mariadb
   - DJANGO_REL="django>=3.0,<3.1" NITRATE_DB=postgres
 install: pip install coveralls
-before_script: |
-  docker pull quay.io/nitrate/testbox:latest || \
-    docker build -t quay.io/nitrate/testbox:latest -f contrib/travis-ci/Dockerfile .
+before_script:
+  - docker build -t quay.io/nitrate/testbox:latest -f contrib/travis-ci/Dockerfile .
 script: |
   contrib/travis-ci/testrunner.py \
     --python-ver $TRAVIS_PYTHON_VERSION \

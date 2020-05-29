@@ -21,6 +21,27 @@
 
 set -ex
 
+if [ "$NITRATE_DB_ENGINE" == "mysql" ]; then
+    while true; do
+        echo "Waiting for database server to launch completely ..."
+        sleep 1
+        if echo "use $NITRATE_DB_NAME" | mysql -u root -h $NITRATE_DB_HOST; then
+            break
+        fi
+    done
+elif [ "$NITRATE_DB_ENGINE" == "pgsql" ]; then
+    export PGPASSWORD=admin
+    while true; do
+        echo "Waiting for database server to launch completely ..."
+        sleep 1
+        if psql -U postgres -h $NITRATE_DB_HOST -c "\\l" >/dev/null; then
+            break
+        fi
+    done
+fi
+
+echo "Database is ready 🎉"
+
 cd /code
 
 . "/testenv-${PYTHON_VER}/bin/activate"
