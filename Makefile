@@ -119,7 +119,9 @@ remove-testbox-image:
 
 .PHONY: testbox-image
 testbox-image: remove-testbox-image
-	@docker build -t $(testbox_image_tag) -f contrib/travis-ci/Dockerfile .
+	@docker build -t $(testbox_image_tag) \
+		$(if $(index_url),--build-arg pypi_index=$(index_url),) \
+		-f contrib/travis-ci/Dockerfile .
 
 .PHONY: push-testbox-image
 push-testbox-image: $(if $(skip_build),,testbox-image)

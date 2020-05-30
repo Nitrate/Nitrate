@@ -3,6 +3,8 @@ LABEL maintainer="Chenxiong Qi <qcxhome@gmail.com>" \
       description="Test box for running Nitrate tests. This test box must work with a database image." \
       version="0.3"
 
+ARG pypi_index=https://pypi.org/simple
+
 # The image has Python 3.7 by default. So, python36 has to be installed explicitly.
 
 RUN dnf update -y && \
@@ -24,12 +26,16 @@ ADD VERSION.txt README.rst setup.py /code/
 
 RUN mkdir /code/src && \
     python3.6 -m venv /testenv-py36 && \
-    /testenv-py36/bin/python -m pip install --no-cache-dir --upgrade pip && \
-    /testenv-py36/bin/python -m pip install --no-cache-dir -e \
+    /testenv-py36/bin/python -m pip install \
+        --index-url $pypi_index --no-cache-dir --upgrade pip && \
+    /testenv-py36/bin/python -m pip install \
+        --index-url $pypi_index --no-cache-dir -e \
         /code[tests,async,mysql,pgsql,docs,krbauth] && \
     python3.7 -m venv /testenv-py37 && \
-    /testenv-py37/bin/python -m pip install --no-cache-dir --upgrade pip && \
-    /testenv-py37/bin/python -m pip install --no-cache-dir -e \
+    /testenv-py37/bin/python -m pip install \
+        --index-url $pypi_index --no-cache-dir --upgrade pip && \
+    /testenv-py37/bin/python -m pip install \
+        --index-url $pypi_index --no-cache-dir -e \
         /code[tests,async,mysql,pgsql,docs,krbauth] && \
     rm -r /code
 
