@@ -1,7 +1,7 @@
-FROM registry.fedoraproject.org/fedora:31
+FROM fedora:32
 LABEL maintainer="Chenxiong Qi <qcxhome@gmail.com>" \
       description="Test box for running Nitrate tests. This test box must work with a database image." \
-      version="0.2"
+      version="0.3"
 
 # The image has Python 3.7 by default. So, python36 has to be installed explicitly.
 
@@ -11,7 +11,7 @@ RUN dnf update -y && \
         --setopt=deltarpm=0 \
         --setopt=install_weak_deps=false \
         --setopt=tsflags=nodocs \
-        gcc redhat-rpm-config make mariadb postgresql python36 \
+        gcc redhat-rpm-config make mariadb postgresql python36 python37 \
         python3-devel mariadb-devel postgresql-devel krb5-devel libxcrypt-compat && \
     dnf clean all
 
