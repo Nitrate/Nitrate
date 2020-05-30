@@ -470,7 +470,7 @@ Nitrate.TestPlans.Create.on_load = function() {
   // Ensure product versions are loaded for the default product shown in
   // Product list.
   if (jQ('#id_product').length && !jQ('#id_product_version').val()) {
-    fireEvent(jQ('#id_product')[0],'change');
+    jQ('#id_product').trigger('change');
   }
 };
 
@@ -691,7 +691,7 @@ Nitrate.TestPlans.Details = {
     if (!exist) {
       switchTo = defaultSwitchTo;
     }
-    fireEvent(jQ('a[href="' + switchTo + '"]')[0], 'click');
+    jQ('a[href="' + switchTo + '"]').trigger('click');
   },
   /*
    * Load cases table.
@@ -946,7 +946,7 @@ Nitrate.TestPlans.Clone.on_load = function() {
   });
   // Populate product version field.
   if (jQ('#id_product').length && !jQ('#id_product_version').val()) {
-    fireEvent(jQ('#id_product')[0],'change');
+    jQ('#id_product').trigger('change');
   }
 
   jQ('.js-cancel-button').on('click', function() {
@@ -1171,9 +1171,9 @@ function bindEventsOnLoadedCases(options) {
             let td = jQ('<td>', {colspan: 12});
             td.append(getAjaxLoading('id_loading_' + params.object_pk));
             jQ(content).html(td);
-            // FIXME: Why trigger twice? Remove one if it's doable.
-            fireEvent(btn, 'click');
-            fireEvent(btn, 'click');
+            // FIXME: refresh the content only once
+            jQ(btn).trigger('click');
+            jQ(btn).trigger('click');
           });
         });
 
@@ -1191,8 +1191,9 @@ function bindEventsOnLoadedCases(options) {
             let td = jQ('<td>', {colspan: 12});
             td.append(getAjaxLoading('id_loading_' + caseId));
             jQ(content).html(td);
-            fireEvent(btn, 'click');
-            fireEvent(btn, 'click');
+            // FIXME: refresh the content only once.
+            jQ(btn).trigger('click');
+            jQ(btn).trigger('click');
           });
         });
       };
@@ -1965,7 +1966,7 @@ function constructPlanDetailsCasesZoneCallback(options) {
     if (jQ(form).parent().find('.taglist a[href="#testcases"]').length) {
       jQ(form).parent().find('.taglist a').on('click', function() {
         if (filter.style.display === 'none') {
-          fireEvent(jQ(form).parent().find('.filtercase')[0], 'click');
+          jQ(form).parent().find('.filtercase').trigger('click');
         }
         if (form.tag__name__in.value) {
           form.tag__name__in.value = form.tag__name__in.value + ',' + this.textContent;
@@ -2146,11 +2147,11 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
       });
       jQ('.js' + type + 'status-item').on('click', function() {
         this.form.new_case_status_id.value = jQ(this).data('param');
-        fireEvent(this.form.new_case_status_id, 'change');
+        jQ(this.form.new_case_status_id).trigger('change');
       });
       jQ('.js' + type + 'priority-item').on('click', function() {
         this.form.new_priority_id.value = jQ(this).data('param');
-        fireEvent(this.form.new_priority_id, 'change');
+        jQ(this.form.new_priority_id).trigger('change');
       });
       let $toggleAllCasesButton = (type === '-') ? jQ('#id_blind_all_link') : jQ('#review_id_blind_all_link');
       $toggleAllCasesButton.find('.collapse-all').on('click', function() {

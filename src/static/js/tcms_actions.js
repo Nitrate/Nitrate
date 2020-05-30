@@ -700,18 +700,6 @@ function bindComponentSelectorToProduct(allowBlank, load, productField, componen
   }
 }
 
-// Stolen from http://www.webdeveloper.com/forum/showthread.php?t=161317
-function fireEvent(obj,evt) {
-  let fireOnThis = obj;
-  if (document.createEvent) {
-    let evObj = document.createEvent('MouseEvents');
-    evObj.initEvent( evt, true, false );
-    fireOnThis.dispatchEvent(evObj);
-  } else if(document.createEventObject) {
-    fireOnThis.fireEvent('on'+evt);
-  }
-}
-
 // Stolen from http://stackoverflow.com/questions/133925/javascript-post-request-like-a-form-submit
 function postToURL(path, params, method) {
   method = method || 'post'; // Set method to post by default, if not specified.
@@ -1061,7 +1049,7 @@ function toggleExpandArrow(options) {
 
 function blinddownAllCases(element) {
   jQ('img.expand').each(function () {
-    fireEvent(this, 'click');
+    jQ(this).trigger('click');
   });
   if (element) {
     jQ(element)
@@ -1072,7 +1060,7 @@ function blinddownAllCases(element) {
 
 function blindupAllCases(element) {
   jQ('.collapse').each(function() {
-    fireEvent(this, 'click');
+    jQ(this).trigger('click');
   });
 
   if (element) {

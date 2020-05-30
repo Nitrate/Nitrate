@@ -445,7 +445,7 @@ Nitrate.TestRuns.Details.on_load = function() {
 
   // Auto show the case run contents.
   if (window.location.hash !== '') {
-    fireEvent(jQ('a[href="' + window.location.hash + '"]')[0], 'click');
+    jQ('a[href="' + window.location.hash + '"]').trigger('click');
   }
 
   // Filter Case-Run
@@ -726,18 +726,18 @@ function updateCaseRunDetailAfterCommentIsAdded(caseRunRow, expandedCaseRunDetai
   }
 
   // Blind down next case
-  let expandableElem = caseRunRow.find('.expandable')[0];
-  fireEvent(expandableElem, 'click');
+  let expandableElem = caseRunRow.find('.expandable');
+  expandableElem.trigger('click');
   if (jQ('#id_check_box_auto_blinddown').attr('checked') && caseRunStatusId !== '') {
     let nextTitle = expandedCaseRunDetailRow.next();
     if (!nextTitle.length) {
       return false;
     }
     if (nextTitle.next().is(':hidden')) {
-      fireEvent(nextTitle.find('.expandable')[0], 'click');
+      nextTitle.find('.expandable').trigger('click');
     }
   } else {
-    fireEvent(expandableElem, 'click');
+    expandableElem.trigger('click');
   }
 }
 
@@ -847,7 +847,6 @@ function taggleSortCaseRun(event) {
 }
 
 function constructCaseRunZone(container, titleContainer, caseId) {
-  let link = jQ(titleContainer).find('.expandable')[0];
   if (container) {
     let td = jQ('<td>', {'id': 'id_loading_' + caseId, 'colspan': 12});
     td.html(getAjaxLoading());
@@ -855,8 +854,9 @@ function constructCaseRunZone(container, titleContainer, caseId) {
   }
 
   if (titleContainer) {
-    fireEvent(link, 'click');
-    fireEvent(link, 'click');
+    let link = jQ(titleContainer).find('.expandable');
+    link.trigger('click');
+    link.trigger('click');
   }
 }
 
@@ -1182,7 +1182,7 @@ function getSelectedCaseRunIDs() {
 
 function showCaseRunsWithSelectedStatus(form, statusId) {
   form.case_run_status__pk.value = statusId;
-  fireEvent(jQ(form).find('input[type="submit"]')[0], 'click');
+  jQ(form).find('input[type="submit"]').trigger('click');
 }
 
 //Added for choose runs and add cases to those runs
