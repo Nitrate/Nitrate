@@ -27,7 +27,7 @@ install_requires = [
 
 extras_require = {
     'mysql': ['mysqlclient >= 1.2.3'],
-    'pgsql': ['psycopg2 == 2.7.5'],
+    'pgsql': ['psycopg2-binary == 2.7.5'],
 
     # Required for tcms.auth.backends.KerberosBackend
     'krbauth': [
