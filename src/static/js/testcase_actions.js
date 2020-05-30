@@ -189,7 +189,7 @@ Nitrate.TestCases.Details.on_load = function() {
   });
 
   if (window.location.hash) {
-    fireEvent(jQ('a[href="' + window.location.hash + '"]')[0], 'click');
+    jQ('a[href="' + window.location.hash + '"]').trigger('click');
   }
 
   jQ('#id_add_component').on('click', function() {
