@@ -58,9 +58,9 @@ Nitrate works with:
 
 What's more, Nitrate is tested with the following database versions:
 
-* MariaDB: ``10.2.21``.
-* MySQL: ``5.7``.
-* PostgreSQL: ``10.6``.
+* MariaDB: ``10.4.12``.
+* MySQL: ``8.0.20``.
+* PostgreSQL: ``12.2``.
 
 .. _Python: https://www.python.org/
 .. _Django: https://docs.djangoproject.com/

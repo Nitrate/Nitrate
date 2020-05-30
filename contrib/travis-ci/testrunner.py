@@ -39,11 +39,11 @@ VALID_PYTHON_VERSIONS = ['3.6', '3.7']
 DB_CONTAINER_INFO = {
     'mysql': {
         'db_engine': 'mysql',
-        'db_image': 'mysql:5.7',
+        'db_image': 'mysql:8.0.20',
     },
     'mariadb': {
         'db_engine': 'mysql',
-        'db_image': 'mariadb:10.2.21',
+        'db_image': 'mariadb:10.4.12',
     },
     'sqlite': {
         'db_engine': 'sqlite',
@@ -51,7 +51,7 @@ DB_CONTAINER_INFO = {
     },
     'postgres': {
         'db_engine': 'pgsql',
-        'db_image': 'postgres:10.6',
+        'db_image': 'postgres:12.2',
     },
 }
 
