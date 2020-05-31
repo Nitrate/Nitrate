@@ -11,9 +11,9 @@ Nitrate.TestRuns.AssignCase = {};
 
 function toggleAllCheckBoxes(element, container, name) {
   if (element.checked) {
-    jQ('#' + container).parent().find('input[name="' + name + '"]').not(':disabled').attr('checked', true);
+    jQ('#' + container).parent().find('input[name="' + name + '"]').not(':disabled').prop('checked', true);
   } else {
-    jQ('#' + container).parent().find('input[name="'+ name + '"]').not(':disabled').attr('checked', false);
+    jQ('#' + container).parent().find('input[name="'+ name + '"]').not(':disabled').prop('checked', false);
   }
 }
 
@@ -132,9 +132,9 @@ Nitrate.TestRuns.List.on_load = function() {
     });
   }
   if (jQ('#id_people_type').length) {
-    jQ('#id_search_people').attr('name', jQ('#id_people_type').val());
+    jQ('#id_search_people').prop('name', jQ('#id_people_type').val());
     jQ('#id_people_type').on('change', function() {
-      jQ('#id_search_people').attr('name', jQ('#id_people_type').val());
+      jQ('#id_search_people').prop('name', jQ('#id_people_type').val());
     });
   }
 
@@ -344,7 +344,7 @@ Nitrate.TestRuns.Details.on_load = function() {
 
   Nitrate.Utils.enableShiftSelectOnCheckbox('caserun_selector');
 
-  if (jQ('#id_check_box_highlight').attr('checked')) {
+  if (jQ('#id_check_box_highlight').prop('checked')) {
     jQ('.mine').addClass('highlight');
   }
 
@@ -468,7 +468,7 @@ Nitrate.TestRuns.Details.on_load = function() {
     if (jQ('span#' + to + ' a').text() === '0') {
       let htmlstr =
         '[<a href="javascript:void(0)" ' +
-        'onclick="showCaseRunsWithSelectedStatus(jQ(\'#id_filter\')[0], ' + jQ(this).attr('crs_id') + ')">0</a>]';
+        'onclick="showCaseRunsWithSelectedStatus(jQ(\'#id_filter\')[0], ' + jQ(this).prop('crs_id') + ')">0</a>]';
       jQ('span#' + to).html(htmlstr);
     }
     if (jQ('span#' + from + ' a').text() === '1') {
@@ -489,8 +489,8 @@ Nitrate.TestRuns.Details.on_load = function() {
     let failedPercent = 100 * (unsuccessfulCasesCount / completedCasesCount).toFixed(2);
 
     jQ('span#complete_percent').text(completePercent);
-    jQ('div.progress-inner').attr('style', 'width:' + completePercent + '%');
-    jQ('div.progress-failed').attr('style', 'width:' + failedPercent + '%');
+    jQ('div.progress-inner').prop('style', 'width:' + completePercent + '%');
+    jQ('div.progress-failed').prop('style', 'width:' + failedPercent + '%');
   });
 
   jQ('#btn_edit').on('click', function() {
@@ -593,15 +593,15 @@ Nitrate.TestRuns.New.on_load = function() {
 Nitrate.TestRuns.Edit.on_load = function() {
   bindVersionSelectorToProduct(false);
   bindBuildSelectorToProduct(false);
-  if (jQ('#id_auto_update_run_status').attr('checked')) {
-    jQ('#id_finished').attr({'checked': false, 'disabled': true});
+  if (jQ('#id_auto_update_run_status').prop('checked')) {
+    jQ('#id_finished').prop({'checked': false, 'disabled': true});
   }
   jQ('#id_auto_update_run_status').on('click', function(){
-    if (jQ('#id_auto_update_run_status').attr('checked')) {
-      jQ('#id_finished').attr({'checked': false, 'disabled': true});
+    if (jQ('#id_auto_update_run_status').prop('checked')) {
+      jQ('#id_finished').prop({'checked': false, 'disabled': true});
     } else {
-      if (jQ('#id_finished').attr('disabled')) {
-        jQ('#id_finished').attr('disabled', false);
+      if (jQ('#id_finished').prop('disabled')) {
+        jQ('#id_finished').prop('disabled', false);
       }
     }
   });
@@ -617,11 +617,11 @@ Nitrate.TestRuns.Clone.on_load = function() {
     jQ(this).on('click', function(){
       let parent = jQ(this).parent();
       if (this.checked) {
-        jQ('select', parent).attr('disabled', false);
-        jQ('input[type=hidden]', parent).attr('disabled', false);
+        jQ('select', parent).prop('disabled', false);
+        jQ('input[type=hidden]', parent).prop('disabled', false);
       } else {
-        jQ('select', parent).attr('disabled', true);
-        jQ('input[type=hidden]', parent).attr('disabled', true);
+        jQ('select', parent).prop('disabled', true);
+        jQ('input[type=hidden]', parent).prop('disabled', true);
       }
     });
   });
@@ -657,7 +657,7 @@ Nitrate.TestRuns.ChooseRuns.on_load = function() {
     let cContainer = c.next();
     let caseId = c.find('input[name="case"]').val();
     toggleTestCasePane({'case_id': caseId, 'casePaneContainer': cContainer}, function() {
-      cContainer.children().attr('colspan', 9);
+      cContainer.children().prop('colspan', 9);
     });
     toggleExpandArrow({
       'caseRowContainer': c,
@@ -728,7 +728,7 @@ function updateCaseRunDetailAfterCommentIsAdded(caseRunRow, expandedCaseRunDetai
   // Blind down next case
   let expandableElem = caseRunRow.find('.expandable');
   expandableElem.trigger('click');
-  if (jQ('#id_check_box_auto_blinddown').attr('checked') && caseRunStatusId !== '') {
+  if (jQ('#id_check_box_auto_blinddown').prop('checked') && caseRunStatusId !== '') {
     let nextTitle = expandedCaseRunDetailRow.next();
     if (!nextTitle.length) {
       return false;
@@ -841,7 +841,7 @@ function taggleSortCaseRun(event) {
     tableDnD.init(table);
     jQ('#id_sort').html('Done Sorting');
   } else {
-    jQ('#id_table_cases input[type=checkbox]').attr({'checked': true, 'disabled': false});
+    jQ('#id_table_cases input[type=checkbox]').prop({'checked': true, 'disabled': false});
     postToURL('ordercaserun/', getSelectedCaseRunIDs());
   }
 }
@@ -1317,7 +1317,7 @@ jQ(document).ready(function(){
     jQ(this).find('ul').hide();
   });
   jQ('ul.statusOptions a').click(function() {
-    let option = jQ(this).attr('value');
+    let option = jQ(this).prop('value');
     if (option === '') {
       return false;
     }
@@ -1400,8 +1400,8 @@ function initializeAddLinkDialog(linkTarget) {
         postRequest({
           url: '/linkref/add/',
           data: {
-            name: jQ('#testlog_name').attr('value'),
-            url: jQ('#testlog_url').attr('value'),
+            name: jQ('#testlog_name').prop('value'),
+            url: jQ('#testlog_url').prop('value'),
             target: jQ(this).dialog('option', 'target'),
             target_id: jQ(this).dialog('option', 'target_id')
           },

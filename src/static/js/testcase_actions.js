@@ -14,9 +14,9 @@ Nitrate.TestCases.AdvanceList.on_load = function() {
     jQ('#id_checkbox_all_case').on('click', function() {
       clickedSelectAll(this, jQ(this).closest('form')[0], 'case');
       if (this.checked) {
-        jQ('#case_advance_printable').attr('disabled', false);
+        jQ('#case_advance_printable').prop('disabled', false);
       } else {
-        jQ('#case_advance_printable').attr('disabled', true);
+        jQ('#case_advance_printable').prop('disabled', true);
       }
     });
   }
@@ -58,9 +58,9 @@ Nitrate.TestCases.AdvanceList.on_load = function() {
 
   jQ('#testcases_table tbody tr input[type=checkbox][name=case]').on('click', function() {
     if (jQ('input[type=checkbox][name=case]:checked').length) {
-      jQ('#case_advance_printable').attr('disabled', false);
+      jQ('#case_advance_printable').prop('disabled', false);
     } else {
-      jQ('#case_advance_printable').attr('disabled', true);
+      jQ('#case_advance_printable').prop('disabled', true);
     }
   });
 
@@ -84,9 +84,9 @@ Nitrate.TestCases.List.on_load = function() {
     jQ('#id_checkbox_all_case').on('click', function() {
       clickedSelectAll(this, jQ(this).closest('table')[0], 'case');
       if (this.checked) {
-        jQ('#case_list_printable').attr('disabled', false);
+        jQ('#case_list_printable').prop('disabled', false);
       } else {
-        jQ('#case_list_printable').attr('disabled', true);
+        jQ('#case_list_printable').prop('disabled', true);
       }
     });
   }
@@ -142,7 +142,7 @@ Nitrate.TestCases.List.on_load = function() {
   jQ('#testcases_table tbody tr td.expandable').on('click', function() {
     let tr = jQ(this).parent();
     let caseRowContainer = tr;
-    let caseId = caseRowContainer.find('input[name="case"]').attr('value');
+    let caseId = caseRowContainer.find('input[name="case"]').prop('value');
     let detailTd = '<tr class="case_content hide" style="display: none;"><td colspan="11">' +
       '<div id="id_loading_' + caseId + '" class="ajax_loading"></div></td></tr>';
     if (!caseRowContainer.next().hasClass('hide')) {
@@ -161,9 +161,9 @@ Nitrate.TestCases.List.on_load = function() {
 
   jQ('#testcases_table tbody tr input[type=checkbox][name=case]').on('click', function() {
     if (jQ('input[type=checkbox][name=case]:checked').length) {
-      jQ('#case_list_printable').attr('disabled', false);
+      jQ('#case_list_printable').prop('disabled', false);
     } else {
-      jQ('#case_list_printable').attr('disabled', true);
+      jQ('#case_list_printable').prop('disabled', true);
     }
   });
 
@@ -385,19 +385,19 @@ Nitrate.TestCases.Clone.on_load = function() {
   });
 
   jQ('#id_use_filterplan').on('click', function() {
-    jQ('#id_form_search_plan :input').attr('disabled', false);
+    jQ('#id_form_search_plan :input').prop('disabled', false);
     jQ('#id_plan_id').val('');
-    jQ('#id_plan_id').attr('name', '');
-    jQ('#id_copy_case').attr('checked', true);
+    jQ('#id_plan_id').prop('name', '');
+    jQ('#id_copy_case').prop('checked', true);
   });
 
   if (jQ('#id_use_sameplan').length) {
     jQ('#id_use_sameplan').on('click', function() {
-      jQ('#id_form_search_plan :input').attr('disabled', true);
+      jQ('#id_form_search_plan :input').prop('disabled', true);
       jQ('#id_plan_id').val(jQ('#value_plan_id').val());
-      jQ('#id_plan_id').attr('name', 'plan');
+      jQ('#id_plan_id').prop('name', 'plan');
       jQ('#id_plan_container').html('<div class="ajax_loading"></div>').hide();
-      jQ('#id_copy_case').attr('checked', false);
+      jQ('#id_copy_case').prop('checked', false);
     });
   }
 
@@ -445,7 +445,7 @@ function issueOperationSuccessCallback(data) {
     let params = jQ(event.target).data('params');
     removeCaseIssue(params.issueKey, params.caseId, params.caseRunId);
   });
-  jQ('#case_issues_count').text(jQ('table#issues').attr('count'));
+  jQ('#case_issues_count').text(jQ('table#issues').prop('count'));
 }
 
 
@@ -507,7 +507,7 @@ function removePlanFromPlansTableHandler(caseId, button) {
     data: {plan: parseInt(jQ(button).data('planid'))},
     success: function (data) {
       jQ('#plan').html(data.html);
-      jQ('#plan_count').text(jQ('table#testplans_table').attr('count'));
+      jQ('#plan_count').text(jQ('table#testplans_table').prop('count'));
     },
   });
 }
@@ -546,7 +546,7 @@ function addCaseToPlansHandler(caseId, form) {
       traditional: true,
       success: function (data) {
         jQ('#plan').html(data.html);
-        jQ('#plan_count').text(jQ('table#testplans_table').attr('count'));
+        jQ('#plan_count').text(jQ('table#testplans_table').prop('count'));
       },
     });
   });
@@ -587,8 +587,8 @@ function toggleCaseRunsByPlan(params, callback) {
 
   let blindIcon = container.find('img').first();
   if (contentContainer.is(':hidden')) {
-    blindIcon.removeClass('collapse').addClass('expand').attr('src', '/static/images/t1.gif');
+    blindIcon.removeClass('collapse').addClass('expand').prop('src', '/static/images/t1.gif');
   } else {
-    blindIcon.removeClass('expand').addClass('collapse').attr('src', '/static/images/t2.gif');
+    blindIcon.removeClass('expand').addClass('collapse').prop('src', '/static/images/t2.gif');
   }
 }
