@@ -72,5 +72,8 @@ module.exports = {
     "operator-linebreak": ["error", "after"],
     "func-call-spacing": "error",
     "no-trailing-spaces": "error",
+    "space-before-function-paren": ["error", {"anonymous": "always", "named": "never", "asyncArrow": "always"}],
+    "comma-spacing": "error",
+    "space-infix-ops": "error",
   }
 };

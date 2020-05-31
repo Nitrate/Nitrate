@@ -32,10 +32,10 @@ function setFooter() {
   }
 }
 
-window.onload = function() {
+window.onload = function () {
   setFooter();
 };
 
-window.onresize = function() {
+window.onresize = function () {
   setFooter();
 };

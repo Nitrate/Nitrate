@@ -9,7 +9,7 @@ function deleConfirm(attachmentId, home, planId) {
   postRequest({
     url: '/management/deletefile/',
     data: {file_id: attachmentId, from_plan: planId},
-    success: function() {
+    success: function () {
       jQ('#' + attachmentId).remove();
       jQ('#attachment_count').text(parseInt(jQ('#attachment_count').text()) - 1);
     },

@@ -1,6 +1,6 @@
 Nitrate.Profiles = {Infos: {}, Bookmarks: {}};
 
-Nitrate.Profiles.Bookmarks.on_load = function() {
+Nitrate.Profiles.Bookmarks.on_load = function () {
   if (jQ('#id_table_bookmark').length) {
     jQ('#id_table_bookmark').dataTable({
       'aoColumnDefs':[{'bSortable':false, 'aTargets':[ 0 ]}],
@@ -15,12 +15,12 @@ Nitrate.Profiles.Bookmarks.on_load = function() {
   }
 
   if (jQ('#id_check_all_bookmark').length) {
-    jQ('#id_check_all_bookmark').on('click', function() {
+    jQ('#id_check_all_bookmark').on('click', function () {
       clickedSelectAll(this, jQ('#id_table_bookmark')[0], 'pk');
     });
   }
 
-  jQ('#id_form_bookmark').on('submit', function(e) {
+  jQ('#id_form_bookmark').on('submit', function (e) {
     e.stopPropagation();
     e.preventDefault();
 

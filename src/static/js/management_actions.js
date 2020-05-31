@@ -4,10 +4,10 @@ Nitrate.Management.Environment = {};
 const MgtEnv = Nitrate.Management.Environment;
 
 Nitrate.Management.Environment.Edit = {
-  on_load: function() {
+  on_load: function () {
     SelectFilter.init('id_properties', 'properties', 0, '/static/admin/');
 
-    jQ('#js-edit-group').submit(function(e) {
+    jQ('#js-edit-group').submit(function (e) {
       e.preventDefault();
       let form = jQ(this);
       postHTMLRequest({
@@ -33,15 +33,15 @@ Nitrate.Management.Environment.Groups = {
       }
     });
 
-    jQ('a.loglink').on('click', function() {
+    jQ('a.loglink').on('click', function () {
       jQ(this).parents('.js-env-group').next().toggle();
     });
 
-    jQ('.js-add-env-group').on('click', function() {
+    jQ('.js-add-env-group').on('click', function () {
       Nitrate.Management.Environment.Groups.addEnvGroup();
     });
 
-    jQ('.js-del-env-group').on('click', function() {
+    jQ('.js-del-env-group').on('click', function () {
       let params = jQ(this).parents('.js-env-group').data('params');
       Nitrate.Management.Environment.Groups.deleteEnvGroup(params[0], params[1]);
     });
@@ -126,22 +126,22 @@ Nitrate.Management.Environment.Groups = {
 };
 
 Nitrate.Management.Environment.Property = {
-  on_load: function() {
-    jQ('#js-add-prop').on('click', function() {
+  on_load: function () {
+    jQ('#js-add-prop').on('click', function () {
       Nitrate.Management.Environment.Property.addEnvProperty();
     });
-    jQ('#js-disable-prop').on('click', function() {
+    jQ('#js-disable-prop').on('click', function () {
       Nitrate.Management.Environment.Property.setEnvPropertyStatus(0);
     });
-    jQ('#js-enable-prop').on('click', function() {
+    jQ('#js-enable-prop').on('click', function () {
       Nitrate.Management.Environment.Property.setEnvPropertyStatus(1);
     });
-    jQ('.js-prop-name').on('click', function() {
+    jQ('.js-prop-name').on('click', function () {
       Nitrate.Management.Environment.Property.selectEnvProperty(
         parseInt(jQ(this).parents('.js-one-prop').data('param'))
       );
     });
-    jQ('.js-edit-prop').on('click', function() {
+    jQ('.js-edit-prop').on('click', function () {
       Nitrate.Management.Environment.Property.editEnvProperty(
         parseInt(jQ(this).parents('.js-one-prop').data('param'))
       );
@@ -206,12 +206,12 @@ Nitrate.Management.Environment.Property = {
         let template = Handlebars.compile(jQ('#properties_container_template').html());
         let context = {'id': data.id, 'name': data.name};
         jQ('#id_properties_container')
-          .append(template(context)).find('.js-prop-name').on('click', function() {
+          .append(template(context)).find('.js-prop-name').on('click', function () {
             Nitrate.Management.Environment.Property.selectEnvProperty(
               parseInt(jQ(this).parent().data('param'))
             );
           })
-          .end().find('.js-rename-prop').on('click', function() {
+          .end().find('.js-rename-prop').on('click', function () {
             Nitrate.Management.Environment.Property.editEnvProperty(
               parseInt(jQ(this).parent().data('param'))
             );
@@ -349,19 +349,19 @@ Nitrate.Management.Environment.PropertyValue = {
 
     const PropertyValue = MgtEnv.PropertyValue;
 
-    jQ('#js-add-prop-value').on('click', function() {
+    jQ('#js-add-prop-value').on('click', function () {
       PropertyValue.add(propId);
     });
 
-    jQ('#js-disable-prop-value').on('click', function() {
+    jQ('#js-disable-prop-value').on('click', function () {
       PropertyValue.setStatus(0);
     });
 
-    jQ('#js-enable-prop-value').on('click', function() {
+    jQ('#js-enable-prop-value').on('click', function () {
       PropertyValue.setStatus(1);
     });
 
-    jQ('.js-edit-prop-value').on('click', function() {
+    jQ('.js-edit-prop-value').on('click', function () {
       let valueId = parseInt(jQ(this).data('param'));
       PropertyValue.edit(propId, valueId);
     });
