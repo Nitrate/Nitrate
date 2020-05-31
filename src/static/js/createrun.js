@@ -3,7 +3,7 @@ Nitrate.CreateRunPage = {
   has_user_edited_name : false,
 
   /* Page-loading callback: */
-  on_load : function() {
+  on_load : function () {
     /*
         Wire up the <select> elements.
         They may not be blank.
@@ -32,7 +32,7 @@ Nitrate.CreateRunPage = {
 
 
     // Once the user manually touches the summary field, stop auto-filling it:
-    jQ('#id_summary').on('change', function() {
+    jQ('#id_summary').on('change', function () {
       Nitrate.CreateRunPage.has_user_edited_name = true;
     });
 
@@ -45,7 +45,7 @@ Nitrate.CreateRunPage = {
     */
   },
 
-  autofill_name : function() {
+  autofill_name : function () {
     if (!Nitrate.CreateRunPage.has_user_edited_name) {
       /* eslint no-undef:off */
       // FIXME: replace Ajax.Request with jQuery AJAX
@@ -58,7 +58,7 @@ Nitrate.CreateRunPage = {
           build_id : $('id_build_id').value
         },
         requestHeaders: {Accept: 'application/json'},
-        onSuccess: function(t) {
+        onSuccess: function (t) {
           let obj = jQ.parseJSON(t.responseText);
           $('id_summary').setValue(obj.suggestedSummary);
         },

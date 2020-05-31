@@ -12,7 +12,7 @@ const SHORT_STRING_LENGTH = 100;
     Utility function.
     Set up a function callback for after the page has loaded
  */
-Nitrate.Utils.after_page_load = function(callback) {
+Nitrate.Utils.after_page_load = function (callback) {
   jQ(window).on('load', callback);
 };
 
@@ -20,7 +20,7 @@ Nitrate.Utils.enableShiftSelectOnCheckbox = function (className) {
   jQ('.' + className).shiftcheckbox();
 };
 
-Nitrate.Utils.convert = function(argument, data) {
+Nitrate.Utils.convert = function (argument, data) {
   switch (argument) {
     case 'obj_to_list':
       if (data.length !== 0 && !data.length) {
@@ -35,7 +35,7 @@ Nitrate.Utils.convert = function(argument, data) {
  * @param {HTMLFormElement} f - A HTML form from where to collect data.
  * @returns {Object} a mapping containing form data.
  */
-Nitrate.Utils.formSerialize = function(f) {
+Nitrate.Utils.formSerialize = function (f) {
   let data = {};
   jQ(f).serializeArray().forEach(function (field) {
     let name = field.name;
@@ -95,7 +95,7 @@ function sendAjaxRequest(options) {
     data: options.data,
     async: !options.sync,
     traditional: options.traditional,
-    success: options.success || function() { window.location.reload(); },
+    success: options.success || function () { window.location.reload(); },
     statusCode: {
       500: function () {
         if (options.errorMessage !== undefined) {
@@ -220,16 +220,16 @@ function postHTMLRequest(options) {
   sendHTMLRequest(forwardOptions);
 }
 
-jQ(window).on('load', function() {
+jQ(window).on('load', function () {
   // Initial the drop menu
   jQ('.nav_li').hover(
-    function() { jQ(this).children(':eq(1)').show(); },
-    function() { jQ(this).children(':eq(1)').hide(); }
+    function () { jQ(this).children(':eq(1)').show(); },
+    function () { jQ(this).children(':eq(1)').hide(); }
   );
 
   // Observe the bookmark form
   if (jQ('#id_bookmark_iform').length) {
-    jQ('#id_bookmark_iform').on('submit', function(e) {
+    jQ('#id_bookmark_iform').on('submit', function (e) {
       e.stopPropagation();
       e.preventDefault();
 
@@ -246,7 +246,7 @@ jQ(window).on('load', function() {
         url: url,
         data: parameters,
         container: dialog,
-        callbackAfterFillIn: function(xhr) {
+        callbackAfterFillIn: function (xhr) {
           jQ(dialog).html(constructForm(xhr.responseText, url, function (e) {
             e.stopPropagation();
             e.preventDefault();
@@ -301,7 +301,7 @@ const defaultMessages = {
 /*
  * http namespace and modules
  */
-(function() {
+(function () {
   let http = Nitrate.http || {};
 
   http.URLConf = {
@@ -341,7 +341,7 @@ const defaultMessages = {
       runs_env_value: '/runs/env_value/'
     },
 
-    reverse: function(options) {
+    reverse: function (options) {
       if (options.name === undefined) {
         return undefined;
       }
@@ -466,7 +466,7 @@ function getBuildsByProductId(allowBlank, productField, buildField) {
     success: function (data) {
       setUpChoices(
         buildField,
-        data.map(function(o) { return [o.pk, o.fields.name]; }),
+        data.map(function (o) { return [o.pk, o.fields.name]; }),
         allowBlank
       );
 
@@ -505,7 +505,7 @@ function getEnvsByProductId(allowBlank, productField) {
     success: function (data) {
       setUpChoices(
         jQ('#id_env_id')[0],
-        data.map(function(o) {return [o.pk, o.fields.name];}),
+        data.map(function (o) {return [o.pk, o.fields.name];}),
         allowBlank
       );
 
@@ -544,7 +544,7 @@ function getVersionsByProductId(allowBlank, productField, versionField) {
     success: function (data) {
       setUpChoices(
         versionField,
-        data.map(function(o) { return [o.pk, o.fields.value]; }),
+        data.map(function (o) { return [o.pk, o.fields.value]; }),
         allowBlank
       );
     },
@@ -585,7 +585,7 @@ function getComponentsByProductId(allowBlank, productField, componentField, call
     success: function (data) {
       setUpChoices(
         componentField,
-        data.map(function(o) { return [o.pk, o.fields.name]; }),
+        data.map(function (o) { return [o.pk, o.fields.name]; }),
         allowBlank
       );
 
@@ -629,7 +629,7 @@ function getCategoriesByProductId(allowBlank, productField, categoryField) {
     success: function (data) {
       setUpChoices(
         categoryField,
-        data.map(function(o) {return [o.pk, o.fields.name];}),
+        data.map(function (o) {return [o.pk, o.fields.name];}),
         allowBlank
       );
     },
@@ -652,7 +652,7 @@ function bindBuildSelectorToProduct(allowBlank, productField, buildField) {
   productField = checkProductField(productField);
 
   if (productField) {
-    jQ(productField).on('change', function() {
+    jQ(productField).on('change', function () {
       getBuildsByProductId(allowBlank, productField, buildField);
     });
 
@@ -664,7 +664,7 @@ function bindVersionSelectorToProduct(allowBlank, load, productField, versionFie
   productField = checkProductField(productField);
 
   if (productField) {
-    jQ(productField).on('change', function() {
+    jQ(productField).on('change', function () {
       getVersionsByProductId(allowBlank, productField, versionField);
     });
     if (load) {
@@ -677,7 +677,7 @@ function bindCategorySelectorToProduct(allowBlank, load, productField, categoryF
   productField = checkProductField(productField);
 
   if (productField) {
-    jQ(productField).on('change', function() {
+    jQ(productField).on('change', function () {
       getCategoriesByProductId(allowBlank, productField, categoryField);
     });
     if (load) {
@@ -690,7 +690,7 @@ function bindComponentSelectorToProduct(allowBlank, load, productField, componen
   productField = checkProductField(productField);
 
   if (productField) {
-    jQ(productField).on('change', function() {
+    jQ(productField).on('change', function () {
       getComponentsByProductId(allowBlank, productField, componentField);
     });
 
@@ -755,7 +755,7 @@ function constructTagZone(container, parameters) {
       jQ('#id_tags').autocomplete({
         'minLength': 2,
         'appendTo': '#id_tags_autocomplete',
-        'source': function(request, response) {
+        'source': function (request, response) {
           sendHTMLRequest({
             url: '/management/getinfo/',
             data: {
@@ -764,7 +764,7 @@ function constructTagZone(container, parameters) {
               format: 'ulli',
               field: 'name'
             },
-            success: function(data) {
+            success: function (data) {
               let processedData = [];
               if (data.indexOf('<li>') > -1) {
                 processedData = data
@@ -779,7 +779,7 @@ function constructTagZone(container, parameters) {
         },
       });
 
-      jQ('#id_tag_form').on('submit', function(e) {
+      jQ('#id_tag_form').on('submit', function (e) {
         e.stopPropagation();
         e.preventDefault();
 
@@ -957,9 +957,9 @@ function getAjaxLoading(id) {
 }
 
 function clickedSelectAll(checkbox, form, name) {
-  let checkboxes = jQ(form).parent().find('input[name='+ name + ']');
+  let checkboxes = jQ(form).parent().find('input[name=' + name + ']');
   for (let i = 0; i < checkboxes.length; i++) {
-    checkboxes[i].checked = checkbox.checked? true:false;
+    checkboxes[i].checked = checkbox.checked ? true : false;
   }
 }
 
@@ -986,7 +986,7 @@ function constructForm(content, action, formObserve, info, s, c) {
 
   if (!c) {
     c = jQ('<input>', {'type': 'button', 'value': 'Cancel'});
-    c.on('click', function() {
+    c.on('click', function () {
       clearDialog();
     });
   }
@@ -1059,7 +1059,7 @@ function blinddownAllCases(element) {
 }
 
 function blindupAllCases(element) {
-  jQ('.collapse').each(function() {
+  jQ('.collapse').each(function () {
     jQ(this).trigger('click');
   });
 

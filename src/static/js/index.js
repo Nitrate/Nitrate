@@ -23,7 +23,7 @@ function checkCookie() {
   }
 }
 
-jQ(window).on('load', function() {
+jQ(window).on('load', function () {
   if (!checkCookie()) {
     jQ('#login_info').html('<font color="red">Browser cookie support maybe disabled, please enable it for login.</font>');
     jQ('#login_info').parent().show();

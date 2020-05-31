@@ -13,7 +13,7 @@ function toggleAllCheckBoxes(element, container, name) {
   if (element.checked) {
     jQ('#' + container).parent().find('input[name="' + name + '"]').not(':disabled').prop('checked', true);
   } else {
-    jQ('#' + container).parent().find('input[name="'+ name + '"]').not(':disabled').prop('checked', false);
+    jQ('#' + container).parent().find('input[name="' + name + '"]').not(':disabled').prop('checked', false);
   }
 }
 
@@ -120,26 +120,26 @@ function removeItem(item, caseEstimatedTime) {
   jQ('#' + item).remove();
 }
 
-Nitrate.TestRuns.List.on_load = function() {
+Nitrate.TestRuns.List.on_load = function () {
   bindVersionSelectorToProduct(true, jQ('#id_product')[0]);
   bindBuildSelectorToProduct(true, jQ('#id_product')[0]);
 
   Nitrate.Utils.enableShiftSelectOnCheckbox('run_selector');
 
   if (jQ('#testruns_table').length) {
-    jQ('#id_check_all_runs').on('click',function() {
+    jQ('#id_check_all_runs').on('click', function () {
       clickedSelectAll(this, jQ('#testruns_table')[0], 'run');
     });
   }
   if (jQ('#id_people_type').length) {
     jQ('#id_search_people').prop('name', jQ('#id_people_type').val());
-    jQ('#id_people_type').on('change', function() {
+    jQ('#id_people_type').on('change', function () {
       jQ('#id_search_people').prop('name', jQ('#id_people_type').val());
     });
   }
 
   if (jQ('#run_column_add').length) {
-    jQ('#run_column_add').on('change', function() {
+    jQ('#run_column_add').on('change', function () {
       switch(this.value) {
         case 'col_plan':
           jQ('#col_plan_head').show();
@@ -177,7 +177,7 @@ Nitrate.TestRuns.List.on_load = function() {
       'oLanguage': {'sEmptyTable': 'No run was found.'}
     });
   }
-  jQ('.js-clone-testruns').on('click', function() {
+  jQ('.js-clone-testruns').on('click', function () {
     postToURL(jQ(this).data('param'), Nitrate.Utils.formSerialize(this.form), 'get');
   });
 };
@@ -226,14 +226,14 @@ function AddIssueDialog() {
     resizable: false,
     modal: true,
 
-    beforeClose: function() {
+    beforeClose: function () {
       // Whenever dialog is closed, previous input issue key should be cleared
       // in order to not confuse user when use next time.
       jQ(this).find('input:text').val('');
     },
 
     buttons: {
-      Add: function() {
+      Add: function () {
         let dialog = jQ(this);
         let selectedIssueTracker = dialog.find('select[id="issue_tracker_id"] option:selected');
         let issueTrackerID = selectedIssueTracker.val();
@@ -270,7 +270,7 @@ function AddIssueDialog() {
 
           // After adding an issue successfully, number of issues inside the run
           // page has to be updated and reload case run detail content eventually.
-          success: function(data) {
+          success: function (data) {
             // After succeeding to add issue, we close the add dialog.
             dialog.dialog('close');
 
@@ -297,14 +297,14 @@ function AddIssueDialog() {
         });
       },
 
-      Cancel: function() {
+      Cancel: function () {
         jQ(this).dialog('close');
       }
     }
   });
 }
 
-AddIssueDialog.prototype.open = function(addIssueInfo, reloadInfo) {
+AddIssueDialog.prototype.open = function (addIssueInfo, reloadInfo) {
   if (addIssueInfo.caseRunIds === undefined || !Array.isArray(addIssueInfo.caseRunIds)) {
     throw new Error('addIssueInfo.caseRunIDs must be an array including case run IDs.');
   }
@@ -329,7 +329,7 @@ AddIssueDialog.prototype.open = function(addIssueInfo, reloadInfo) {
 };
 
 
-Nitrate.TestRuns.Details.on_load = function() {
+Nitrate.TestRuns.Details.on_load = function () {
 
   let addIssueDialog = new AddIssueDialog();
 
@@ -338,7 +338,7 @@ Nitrate.TestRuns.Details.on_load = function() {
     jQ('#id_sort').on('click', taggleSortCaseRun);
   }
 
-  jQ('#id_check_all_button').on('click', function() {
+  jQ('#id_check_all_button').on('click', function () {
     toggleAllCheckBoxes(this, 'id_table_cases', 'case_run');
   });
 
@@ -348,7 +348,7 @@ Nitrate.TestRuns.Details.on_load = function() {
     jQ('.mine').addClass('highlight');
   }
 
-  jQ('#id_check_box_highlight').on('click', function(e) {
+  jQ('#id_check_box_highlight').on('click', function (e) {
     e = jQ('.mine');
     if (this.checked) {
       e.addClass('highlight');
@@ -357,7 +357,7 @@ Nitrate.TestRuns.Details.on_load = function() {
     }
   });
 
-  jQ('#id_blind_all_link').on('click', function() {
+  jQ('#id_blind_all_link').on('click', function () {
     if (!jQ('td[id^="id_loading_"]').length) {
       jQ(this).removeClass('locked');
     }
@@ -385,7 +385,7 @@ Nitrate.TestRuns.Details.on_load = function() {
 
     /* eslint func-style:off */
     // FIXME: move this function outside of this callback
-    let callback = function() {
+    let callback = function () {
       // Observe the update case run status/comment form
       cContainer.parent().find('.update_form').off('submit').on('submit', updateCaseRunStatus);
 
@@ -400,32 +400,32 @@ Nitrate.TestRuns.Details.on_load = function() {
         });
       });
 
-      cContainer.find('.js-status-button').on('click', function() {
+      cContainer.find('.js-status-button').on('click', function () {
         this.form.value.value = jQ(this).data('formvalue');
       });
-      cContainer.find('.js-show-comments').on('click', function() {
+      cContainer.find('.js-show-comments').on('click', function () {
         toggleDiv(this, jQ(this).data('param'));
       });
-      cContainer.find('.js-show-changelog').on('click', function() {
+      cContainer.find('.js-show-changelog').on('click', function () {
         toggleDiv(this, jQ(this).data('param'));
       });
-      cContainer.find('.js-add-caserun-issue').on('click', function() {
+      cContainer.find('.js-add-caserun-issue').on('click', function () {
         addIssueDialog.open(jQ(this).data('params'), {
           caseRunRow: c[0],
           caseRunDetailRow: cContainer[0]
         });
       });
-      cContainer.find('.js-remove-caserun-issue').on('click', function(){
+      cContainer.find('.js-remove-caserun-issue').on('click', function (){
         removeIssueFromCaseRuns(jQ(this).data('params'), {
           caseRunRow: c[0],
           caseRunDetailRow: cContainer[0]
         });
       });
-      cContainer.find('.js-add-testlog').on('click', function(){
+      cContainer.find('.js-add-testlog').on('click', function (){
         let params = jQ(this).data('params');
         addLinkToCaseRun(this, params[0], params[1]);
       });
-      cContainer.find('.js-remove-testlog').on('click', function(){
+      cContainer.find('.js-remove-testlog').on('click', function (){
         removeLink(this, window.parseInt(jQ(this).data('param')));
       });
     };
@@ -450,7 +450,7 @@ Nitrate.TestRuns.Details.on_load = function() {
 
   // Filter Case-Run
   if (jQ('#filter_case_run').length) {
-    jQ('#filter_case_run').on('click', function(){
+    jQ('#filter_case_run').on('click', function (){
       if (jQ('#id_filter').is(':hidden')){
         jQ('#id_filter').show();
         jQ(this).html(defaultMessages.link.hide_filter);
@@ -462,7 +462,7 @@ Nitrate.TestRuns.Details.on_load = function() {
   }
 
   //bind click to status btn
-  jQ('.btn_status').on('click', function() {
+  jQ('.btn_status').on('click', function () {
     let from = jQ(this).siblings('.btn_status:disabled')[0].title;
     let to = this.title;
     if (jQ('span#' + to + ' a').text() === '0') {
@@ -493,110 +493,110 @@ Nitrate.TestRuns.Details.on_load = function() {
     jQ('div.progress-failed').prop('style', 'width:' + failedPercent + '%');
   });
 
-  jQ('#btn_edit').on('click', function() {
+  jQ('#btn_edit').on('click', function () {
     let params = jQ(this).data('params');
     window.location.href = params[0] + '?from_plan=' + params[1];
   });
-  jQ('#btn_clone').on('click', function() {
+  jQ('#btn_clone').on('click', function () {
     postToURL(jQ(this).data('param'), getSelectedCaseRunIDs());
   });
-  jQ('#btn_delete').on('click', function() {
+  jQ('#btn_delete').on('click', function () {
     window.location.href = jQ(this).data('param');
   });
-  jQ('#btn_export_csv').on('click', function() {
+  jQ('#btn_export_csv').on('click', function () {
     window.location.href = jQ(this).data('param') + '?format=csv&' + jQ('#id_form_case_runs').serialize();
   });
-  jQ('#btn_export_xml').on('click', function() {
+  jQ('#btn_export_xml').on('click', function () {
     window.location.href = jQ(this).data('param') + '?format=xml&' + jQ('#id_form_case_runs').serialize();
   });
-  jQ('.js-remove-tag').on('click', function() {
+  jQ('.js-remove-tag').on('click', function () {
     let params = jQ(this).data('params');
     removeRuntag(jQ('.js-tag-ul')[0], params[0], params[1]);
   });
-  jQ('.js-add-tag').on('click', function() {
+  jQ('.js-add-tag').on('click', function () {
     addRunTag(jQ('.js-tag-ul')[0], jQ(this).data('param'));
   });
-  jQ('.js-set-running').on('click', function() {
+  jQ('.js-set-running').on('click', function () {
     window.location.href = jQ(this).data('param') + '?finished=0';
   });
-  jQ('.js-set-finished').on('click', function() {
+  jQ('.js-set-finished').on('click', function () {
     window.location.href = jQ(this).data('param') + '?finished=1';
   });
-  jQ('.js-del-case').on('click', function() {
+  jQ('.js-del-case').on('click', function () {
     delCaseRun();
   });
-  jQ('.js-update-case').on('click', function() {
+  jQ('.js-update-case').on('click', function () {
     postToURL(jQ(this).data('param'), getSelectedCaseRunIDs());
   });
-  jQ('.js-change-assignee').on('click', function() {
+  jQ('.js-change-assignee').on('click', function () {
     changeCaseRunAssignee();
   });
   jQ('.js-add-issues').on('click', addIssueToBatchCaseRunsHandler);
   jQ('.js-remove-issues').on('click', removeIssueFromBatchCaseRunsHandler);
-  jQ('.js-show-commentdialog').on('click', function() {
+  jQ('.js-show-commentdialog').on('click', function () {
     showCommentForm();
   });
-  jQ('.js-add-cc').on('click', function() {
+  jQ('.js-add-cc').on('click', function () {
     addRunCC(jQ(this).data('param'), jQ('.js-cc-ul')[0]);
   });
-  jQ('.js-remove-cc').on('click', function() {
+  jQ('.js-remove-cc').on('click', function () {
     let params = jQ(this).data('params');
     removeRunCC(params[0], params[1], jQ('.js-cc-ul')[0]);
   });
-  jQ('.js-add-property').on('click', function() {
+  jQ('.js-add-property').on('click', function () {
     let params = jQ(this).data('params');
     addProperty(params[0], params[1]);
   });
-  jQ('.js-edit-property').on('click', function() {
+  jQ('.js-edit-property').on('click', function () {
     let params = jQ(this).data('params');
     editValue(jQ(this).parents('form.js-run-env')[0], params[0], params[1], params[2]);
   });
-  jQ('.js-remove-property').on('click', function() {
+  jQ('.js-remove-property').on('click', function () {
     removeProperty(jQ(this).data('param'), this);
   });
-  jQ('.js-env-submit').on('click', function() {
+  jQ('.js-env-submit').on('click', function () {
     let params = jQ(this).data('params');
-    submitValue(params[0],params[1],params[2], jQ(this).prev()[0], params[3]);
+    submitValue(params[0], params[1], params[2], jQ(this).prev()[0], params[3]);
   });
-  jQ('.js-caserun-total').on('click', function() {
+  jQ('.js-caserun-total').on('click', function () {
     showCaseRunsWithSelectedStatus(jQ('#id_filter')[0], '');
   });
-  jQ('.js-status-subtotal').on('click', function() {
+  jQ('.js-status-subtotal').on('click', function () {
     showCaseRunsWithSelectedStatus(jQ('#id_filter')[0], jQ(this).data('param'));
   });
-  jQ('.js-change-order').on('click', function() {
+  jQ('.js-change-order').on('click', function () {
     let params = jQ(this).data('params');
     changeCaseRunOrder(params[0], params[1], params[2]);
   });
 };
 
-Nitrate.TestRuns.New.on_load = function() {
+Nitrate.TestRuns.New.on_load = function () {
   if (jQ('#testcases').length) {
     jQ('#testcases').dataTable({'bPaginate': false, 'bFilter': false, 'bProcessing': true});
   }
 
-  jQ('#add_id_product_version, #add_id_build').on('click', function() {
+  jQ('#add_id_product_version, #add_id_build').on('click', function () {
     return popupAddAnotherWindow(this, 'product');
   });
-  jQ('.js-cancel-button').on('click', function() {
+  jQ('.js-cancel-button').on('click', function () {
     window.history.go(-1);
   });
-  jQ('.js-case-summary').on('click', function() {
+  jQ('.js-case-summary').on('click', function () {
     toggleTestCaseContents(jQ(this).data('param'));
   });
-  jQ('.js-remove-case').on('click', function() {
+  jQ('.js-remove-case').on('click', function () {
     let params = jQ(this).data('params');
     removeItem(params[0], params[1]);
   });
 };
 
-Nitrate.TestRuns.Edit.on_load = function() {
+Nitrate.TestRuns.Edit.on_load = function () {
   bindVersionSelectorToProduct(false);
   bindBuildSelectorToProduct(false);
   if (jQ('#id_auto_update_run_status').prop('checked')) {
     jQ('#id_finished').prop({'checked': false, 'disabled': true});
   }
-  jQ('#id_auto_update_run_status').on('click', function(){
+  jQ('#id_auto_update_run_status').on('click', function (){
     if (jQ('#id_auto_update_run_status').prop('checked')) {
       jQ('#id_finished').prop({'checked': false, 'disabled': true});
     } else {
@@ -605,16 +605,16 @@ Nitrate.TestRuns.Edit.on_load = function() {
       }
     }
   });
-  jQ('#add_id_product_version, #add_id_build').on('click', function() {
+  jQ('#add_id_product_version, #add_id_build').on('click', function () {
     return popupAddAnotherWindow(this, 'product');
   });
 };
 
-Nitrate.TestRuns.Clone.on_load = function() {
+Nitrate.TestRuns.Clone.on_load = function () {
   bindVersionSelectorToProduct(false);
   bindBuildSelectorToProduct(false);
-  jQ('input[type=checkbox][name^=select_property_id_]').each(function() {
-    jQ(this).on('click', function(){
+  jQ('input[type=checkbox][name^=select_property_id_]').each(function () {
+    jQ(this).on('click', function (){
       let parent = jQ(this).parent();
       if (this.checked) {
         jQ('select', parent).prop('disabled', false);
@@ -626,37 +626,37 @@ Nitrate.TestRuns.Clone.on_load = function() {
     });
   });
 
-  jQ('#add_id_product_version, #add_id_build').on('click', function() {
+  jQ('#add_id_product_version, #add_id_build').on('click', function () {
     return popupAddAnotherWindow(this, 'product');
   });
-  jQ('.js-cancel-button').on('click', function() {
+  jQ('.js-cancel-button').on('click', function () {
     window.history.go(-1);
   });
-  jQ('.js-remove-button').on('click', function() {
+  jQ('.js-remove-button').on('click', function () {
     jQ(this).parents('.js-one-case').remove();
   });
 };
 
-Nitrate.TestRuns.ChooseRuns.on_load = function() {
+Nitrate.TestRuns.ChooseRuns.on_load = function () {
   if (jQ('#id_check_all_button').length) {
-    jQ('#id_check_all_button').on('click', function() {
+    jQ('#id_check_all_button').on('click', function () {
       toggleAllCheckBoxes(this, 'id_table_runs', 'run');
     });
   }
-  jQ('.js-update-button').on('click', function() {
+  jQ('.js-update-button').on('click', function () {
     insertCasesIntoTestRun();
   });
-  jQ('.js-help-info').on('click', function() {
+  jQ('.js-help-info').on('click', function () {
     jQ('#help_assign').show();
   });
-  jQ('.js-close-help').on('click', function() {
+  jQ('.js-close-help').on('click', function () {
     jQ('#help_assign').hide();
   });
-  jQ('.js-toggle-button').on('click', function() {
+  jQ('.js-toggle-button').on('click', function () {
     let c = jQ(this).parents('.js-one-case');
     let cContainer = c.next();
     let caseId = c.find('input[name="case"]').val();
-    toggleTestCasePane({'case_id': caseId, 'casePaneContainer': cContainer}, function() {
+    toggleTestCasePane({'case_id': caseId, 'casePaneContainer': cContainer}, function () {
       cContainer.children().prop('colspan', 9);
     });
     toggleExpandArrow({
@@ -666,14 +666,14 @@ Nitrate.TestRuns.ChooseRuns.on_load = function() {
   });
 };
 
-Nitrate.TestRuns.AssignCase.on_load = function() {
+Nitrate.TestRuns.AssignCase.on_load = function () {
   if (jQ('#id_check_all_button').length) {
-    jQ('#id_check_all_button').on('click', function() {
+    jQ('#id_check_all_button').on('click', function () {
       toggleAllCheckBoxes(this, 'id_table_cases', 'case');
     });
   }
 
-  jQ('input[name="case"]').on('click', function() {
+  jQ('input[name="case"]').on('click', function () {
     if (this.checked) {
       jQ(this).closest('tr').addClass('selection_row');
       jQ(this).parent().siblings().eq(7).html('<div class="apply_icon"></div>');
@@ -683,13 +683,13 @@ Nitrate.TestRuns.AssignCase.on_load = function() {
     }
   });
 
-  jQ('.js-how-assign-case').on('click', function() {
+  jQ('.js-how-assign-case').on('click', function () {
     jQ('#help_assign').show();
   });
-  jQ('.js-close-how-assign').on('click', function() {
+  jQ('.js-close-how-assign').on('click', function () {
     jQ('#help_assign').hide();
   });
-  jQ('.js-toggle-button, .js-case-summary').on('click', function() {
+  jQ('.js-toggle-button, .js-case-summary').on('click', function () {
     toggleTestCaseContents(jQ(this).data('param'));
   });
 };
@@ -704,7 +704,7 @@ function updateCaseRunDetailAfterCommentIsAdded(caseRunRow, expandedCaseRunDetai
   if (caseRunStatusId !== '') {
     // Update the case run status icon
     let crs = Nitrate.TestRuns.CaseRunStatus;
-    caseRunRow.find('.icon_status').each(function() {
+    caseRunRow.find('.icon_status').each(function () {
       for (let i in crs) {
         if (typeof crs[i] === 'string' && jQ(this).is('.btn_' + crs[i])) {
           jQ(this).removeClass('btn_' + crs[i]);
@@ -714,7 +714,7 @@ function updateCaseRunDetailAfterCommentIsAdded(caseRunRow, expandedCaseRunDetai
     });
 
     // Update related people
-    caseRunRow.find('.link_tested_by').each(function() {
+    caseRunRow.find('.link_tested_by').each(function () {
       this.href = 'mailto:' + Nitrate.User.email;
       jQ(this).html(Nitrate.User.username);
     });
@@ -823,12 +823,12 @@ function taggleSortCaseRun(event) {
     jQ('#id_table_cases .blind_icon').remove();
 
     // Use the title to replace the blind down title link
-    jQ('#id_table_cases .blind_title_link').each(function() {
+    jQ('#id_table_cases .blind_title_link').each(function () {
       jQ(this).replaceWith((jQ('<span>')).html(this.innerHTML));
     });
 
     // Use the sortkey content to replace change sort key link
-    jQ('#id_table_cases .mark').each(function() {
+    jQ('#id_table_cases .mark').each(function () {
       jQ(this).parent().html(this.innerHTML);
     });
 
@@ -874,7 +874,7 @@ function removeIssueFromCaseRuns(removeIssueInfo, reloadInfo) {
       issue_key: removeIssueInfo.issueKey
     },
     traditional: true,
-    success: function(data) {
+    success: function (data) {
       if (reloadInfo.reloadPage) {
         window.location.reload();
       } else {
@@ -909,11 +909,11 @@ function editValue(form, hidebox, selectid, submitid) {
     url: '/management/getinfo/',
     data: {info_type: 'env_values', env_property_id: envPropertyId},
     errorMessage: 'Update values failed',
-    success: function(data) {
+    success: function (data) {
       let currentValue = jQ('input[type=hidden][name=current_run_env]:eq(0)', form);
       let excludeValues = [];
 
-      jQ('input[type=hidden][name=current_run_env]').each(function(index, element) {
+      jQ('input[type=hidden][name=current_run_env]').each(function (index, element) {
         if (element.value !== currentValue.val()) {
           excludeValues.push(window.parseInt(element.value));
         }
@@ -921,7 +921,7 @@ function editValue(form, hidebox, selectid, submitid) {
       });
 
       let values = [];
-      jQ.each(data, function(index, value) {
+      jQ.each(data, function (index, value) {
         if (jQ.inArray(value.pk, excludeValues) < 0) {
           values.push([value.pk, value.fields.value]);
         }
@@ -938,7 +938,7 @@ function submitValue(runId, value, hidebox, selectField, submitid) {
   let oldValue = jQ(selectField).prev().prev().val();
 
   let dupValues = [];
-  jQ('input[type=hidden][name=current_run_env]').each(function(index, element) {
+  jQ('input[type=hidden][name=current_run_env]').each(function (index, element) {
     if (element.value !== oldValue) {
       dupValues.push(element.value);
     }
@@ -957,7 +957,7 @@ function submitValue(runId, value, hidebox, selectField, submitid) {
       new_env_value_id: selectField.value,
       run_id: runId
     },
-    success: function() {
+    success: function () {
       jQ('#' + hidebox).html(newValue).show();
       jQ(selectField).hide();
       jQ('#' + submitid).hide();
@@ -984,7 +984,7 @@ function removeProperty(runId, element) {
       run_id: runId
     },
     errorMessage: 'Edit value failed',
-    success: function() { emptySelf.remove(); },
+    success: function () { emptySelf.remove(); },
   });
 }
 
@@ -996,7 +996,7 @@ function removeProperty(runId, element) {
 function addProperty(runId, envGroupId) {
   let template = Handlebars.compile(jQ('#add_property_template').html());
   jQ('#dialog').html(template())
-    .find('.js-close-button, .js-cancel-button').on('click', function() {
+    .find('.js-close-button, .js-cancel-button').on('click', function () {
       jQ('#dialog').hide();
     })
     .end().show();
@@ -1009,16 +1009,16 @@ function addProperty(runId, envGroupId) {
     success: function (data) {
       setUpChoices(
         jQ('#id_add_env_property')[0],
-        data.map(function(o) {return [o.pk, o.fields.name];}),
+        data.map(function (o) {return [o.pk, o.fields.name];}),
         false);
     },
   });
 
-  jQ('#id_add_env_property').on('change', function() {
+  jQ('#id_add_env_property').on('change', function () {
     changeValue(jQ('#id_add_env_property').val(), 'id_add_env_value');
   });
 
-  jQ('#id_env_add').on('click',function() {
+  jQ('#id_env_add').on('click', function () {
     addPropertyToEnv(runId, jQ('#id_add_env_value').val());
   });
 }
@@ -1031,7 +1031,7 @@ function changeValue(envPropertyId, selectid) {
     success: function (data) {
       setUpChoices(
         jQ('#' + selectid)[0],
-        data.map(function(o) {return [o.pk, o.fields.value];}),
+        data.map(function (o) {return [o.pk, o.fields.value];}),
         0);
     },
   });
@@ -1046,17 +1046,17 @@ function addPropertyToEnv(runId, envValueId) {
       env_value_id: envValueId,
       run_id: runId
     },
-    success: function(data) {
+    success: function (data) {
       jQ('#dialog').hide();
       jQ('#env_area').html(data.fragment);
-      jQ('.js-edit-property').on('click', function() {
+      jQ('.js-edit-property').on('click', function () {
         let params = jQ(this).data('params');
         editValue(jQ(this).parents('form.js-run-env')[0], params[0], params[1], params[2]);
       });
-      jQ('.js-remove-property').on('click', function() {
+      jQ('.js-remove-property').on('click', function () {
         removeProperty(jQ(this).data('param'), this);
       });
-      jQ('.js-env-submit').on('click', function() {
+      jQ('.js-env-submit').on('click', function () {
         let params = jQ(this).data('params');
         submitValue(params[0], params[1], params[2], jQ(this).prev()[0], params[3]);
       });
@@ -1076,7 +1076,7 @@ function addRunTag(container, runId) {
     data: {a: 'add', run: runId, tags: tag},
     container: container,
     callbackAfterFillIn: function () {
-      jQ('.js-remove-tag').on('click', function() {
+      jQ('.js-remove-tag').on('click', function () {
         let params = jQ(this).data('params');
         removeRuntag(jQ('.js-tag-ul')[0], params[0], params[1]);
       });
@@ -1091,7 +1091,7 @@ function removeRuntag(container, runId, tag) {
     data: {a: 'remove', run: runId, tags: tag},
     container: container,
     callbackAfterFillIn: function () {
-      jQ('.js-remove-tag').on('click', function() {
+      jQ('.js-remove-tag').on('click', function () {
         let params = jQ(this).data('params');
         removeRuntag(jQ('.js-tag-ul')[0], params[0], params[1]);
       });
@@ -1104,8 +1104,8 @@ function constructRunCC(container, runId, parameters) {
     url: '/run/' + runId + '/cc/',
     data: parameters,
     container: container,
-    callbackAfterFillIn: function() {
-      jQ('.js-remove-cc').on('click', function() {
+    callbackAfterFillIn: function () {
+      jQ('.js-remove-cc').on('click', function () {
         let params = jQ(this).data('params');
         removeRunCC(params[0], params[1], jQ('.js-cc-ul')[0]);
       });
@@ -1189,7 +1189,7 @@ function showCaseRunsWithSelectedStatus(form, statusId) {
 function serializeRunsFromInputList(table) {
   let elements = jQ('#' + table).parent().find('input[name="run"]:checked');
   let caseIds = [];
-  elements.each(function() {
+  elements.each(function () {
     if (typeof this.value === 'string') {
       caseIds.push(this.value);
     }
@@ -1203,7 +1203,7 @@ function insertCasesIntoTestRun() {
   }
 
   let caseIds = [];
-  jQ('[name="case"]').each(function() {
+  jQ('[name="case"]').each(function () {
     caseIds.push(this.value);
   });
 
@@ -1256,13 +1256,13 @@ function removeIssueFromBatchCaseRunsHandler() {
       modal: true,
       resizable: false,
       buttons: {
-        Ok: function() {
+        Ok: function () {
           // Don't care about closing or destroying current dialog.
           // Whole page will be reloaded.
           removeIssueInfo.issueKey = jQ(this).find('input[id=issueKeyToRemove]').val();
           removeIssueFromCaseRuns(removeIssueInfo, reloadInfo);
         },
-        Cancel: function() {
+        Cancel: function () {
           jQ(this).dialog('close');
         }
       }
@@ -1287,7 +1287,7 @@ function showCommentForm() {
 
   let commentText = jQ('#commentText');
   let commentsErr = jQ('#commentsErr');
-  jQ('#btnComment').on('click', function() {
+  jQ('#btnComment').on('click', function () {
     let error;
     let comments = jQ.trim(commentText.val());
     if (!comments) {
@@ -1303,20 +1303,20 @@ function showCommentForm() {
       traditional: true,
     });
   });
-  jQ('#btnCancelComment').on('click', function(){
+  jQ('#btnCancelComment').on('click', function (){
     jQ(dialog).hide();
     commentText.val('');
   });
   jQ(dialog).show();
 }
 
-jQ(document).ready(function(){
-  jQ('.btnBlueCaserun').mouseover(function() {
+jQ(document).ready(function (){
+  jQ('.btnBlueCaserun').mouseover(function () {
     jQ(this).find('ul').show();
-  }).mouseout(function() {
+  }).mouseout(function () {
     jQ(this).find('ul').hide();
   });
-  jQ('ul.statusOptions a').click(function() {
+  jQ('ul.statusOptions a').click(function () {
     let option = jQ(this).prop('value');
     if (option === '') {
       return false;
@@ -1345,7 +1345,7 @@ function getAddLinkDialog() {
  */
 function removeLink(sender, linkId) {
   let url = '/linkref/remove/' + linkId + '/';
-  postRequest({url: url, success: function() {
+  postRequest({url: url, success: function () {
     let liNode = sender.parentNode;
     liNode.parentNode.removeChild(liNode);
   }});
@@ -1387,7 +1387,7 @@ function initializeAddLinkDialog(linkTarget) {
     resizable: false,
     height: 300,
     width: 400,
-    open: function() {
+    open: function () {
       jQ(this).off('submit').on('submit', function (e) {
         e.stopPropagation();
         e.preventDefault();
@@ -1395,7 +1395,7 @@ function initializeAddLinkDialog(linkTarget) {
       });
     },
     buttons: {
-      'OK': function() {
+      'OK': function () {
         // TODO: validate name and url
         postRequest({
           url: '/linkref/add/',
@@ -1405,7 +1405,7 @@ function initializeAddLinkDialog(linkTarget) {
             target: jQ(this).dialog('option', 'target'),
             target_id: jQ(this).dialog('option', 'target_id')
           },
-          success: function() {
+          success: function () {
             dialog.dialog('close');
 
             // Begin to construct case run area
@@ -1417,11 +1417,11 @@ function initializeAddLinkDialog(linkTarget) {
           },
         });
       },
-      'Cancel': function() {
+      'Cancel': function () {
         jQ(this).dialog('close');
       }
     },
-    beforeClose: function() {
+    beforeClose: function () {
       // clean name and url for next input
       jQ('#testlog_name').val('');
       jQ('#testlog_url').val('');

@@ -3,11 +3,11 @@ Nitrate.Report.List = {};
 Nitrate.Report.CustomSearch = {};
 Nitrate.Report.CustomDetails = {};
 
-Nitrate.Report.List.on_load = function() {};
+Nitrate.Report.List.on_load = function () {};
 
 Nitrate.Report.Builds = {};
 
-Nitrate.Report.Builds.on_load = function() {
+Nitrate.Report.Builds.on_load = function () {
   if (jQ('#report_build').length) {
     jQ('#report_build').dataTable({
       'bPaginate': false,
@@ -18,7 +18,7 @@ Nitrate.Report.Builds.on_load = function() {
   }
 };
 
-Nitrate.Report.CustomSearch.on_load = function() {
+Nitrate.Report.CustomSearch.on_load = function () {
   if (jQ('#id_pk__in').length) {
     bindBuildSelectorToProduct(false, jQ('#id_product')[0], jQ('#id_pk__in')[0]);
   }
@@ -47,7 +47,7 @@ Nitrate.Report.CustomSearch.on_load = function() {
     });
   }
 
-  jQ('.build_link').on('click', function(e) {
+  jQ('.build_link').on('click', function (e) {
     e.stopPropagation();
     e.preventDefault();
     let params = Nitrate.Utils.formSerialize(jQ('#id_form_search')[0]);
@@ -57,7 +57,7 @@ Nitrate.Report.CustomSearch.on_load = function() {
   });
 };
 
-Nitrate.Report.CustomDetails.on_load = function() {
+Nitrate.Report.CustomDetails.on_load = function () {
   if (jQ('#id_pk__in').length) {
     bindBuildSelectorToProduct(false, jQ('#id_product')[0], jQ('#id_pk__in')[0]);
   }

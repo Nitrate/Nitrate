@@ -1,7 +1,7 @@
 QUnit.module('tcms_actions.js', function () {
 
-  QUnit.module('Test setUpChoices', function() {
-    QUnit.test('simple basic setup', function(assert) {
+  QUnit.module('Test setUpChoices', function () {
+    QUnit.test('simple basic setup', function (assert) {
       let options = [['1', 'case 1'], ['2', 'case 2'], ['3', 'case 3']];
       let select = jQ('<select name="test_setup_choices"></select>')[0];
 
@@ -15,7 +15,7 @@ QUnit.module('tcms_actions.js', function () {
       }
     });
 
-    QUnit.test('add a blank option', function(assert) {
+    QUnit.test('add a blank option', function (assert) {
       let options = [['1', 'case 1']];
       let select = jQ('<select name="test_setup_choices"></select>')[0];
 
@@ -30,13 +30,13 @@ QUnit.module('tcms_actions.js', function () {
       assert.equal('case 1', addedOption.text);
     });
 
-    QUnit.test('empty options', function(assert) {
+    QUnit.test('empty options', function (assert) {
       let select = jQ('<select name="test_setup_choices"></select>')[0];
       setUpChoices(select, [], false);
       assert.equal(0, select.options.length);
     });
 
-    QUnit.test('preserve selected option', function(assert) {
+    QUnit.test('preserve selected option', function (assert) {
       let select =
         jQ('<select name="test_setup_choices">' +
           '<option value="1">case 1</option>'  +
