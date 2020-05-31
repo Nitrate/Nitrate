@@ -75,6 +75,6 @@
       return checkedIndex;
     };
 
-    $(selectorStr).live("click", handleClick);
+    $(selectorStr).on("click", handleClick);
   };
 })(jQuery);

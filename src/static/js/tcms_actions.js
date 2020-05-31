@@ -786,14 +786,14 @@ function constructTagZone(container, parameters) {
         constructTagZone(container, Nitrate.Utils.formSerialize(this));
       });
 
-      jQ('#tag_count').text(jQ('tbody#tag').attr('count'));
+      jQ('#tag_count').text(jQ('tbody#tag').prop('count'));
     },
   });
 }
 
 
 function addTag(container) {
-  let tagName = jQ('#id_tags').attr('value');
+  let tagName = jQ('#id_tags').prop('value');
   if (!tagName.length) {
     jQ('#id_tags').focus();
   } else {
@@ -1041,9 +1041,9 @@ function toggleExpandArrow(options) {
   let contentContainer = options.expandPaneContainer;
   let blindIcon = container.find('img.blind_icon');
   if (contentContainer.css('display') === 'none') {
-    blindIcon.removeClass('collapse').addClass('expand').attr('src', '/static/images/t1.gif');
+    blindIcon.removeClass('collapse').addClass('expand').prop('src', '/static/images/t1.gif');
   } else {
-    blindIcon.removeClass('expand').addClass('collapse').attr('src', '/static/images/t2.gif');
+    blindIcon.removeClass('expand').addClass('collapse').prop('src', '/static/images/t2.gif');
   }
 }
 
@@ -1054,7 +1054,7 @@ function blinddownAllCases(element) {
   if (element) {
     jQ(element)
       .removeClass('collapse-all').addClass('expand-all')
-      .attr('src', '/static/images/t2.gif');
+      .prop('src', '/static/images/t2.gif');
   }
 }
 
@@ -1066,7 +1066,7 @@ function blindupAllCases(element) {
   if (element) {
     jQ(element)
       .removeClass('expand-all').addClass('collapse-all')
-      .attr('src', '/static/images/t1.gif');
+      .prop('src', '/static/images/t1.gif');
   }
 }
 
