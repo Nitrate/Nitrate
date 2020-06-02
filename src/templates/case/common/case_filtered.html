@@ -1,5 +1,5 @@
 {% load static %}
-<form id="cases_form" action="{% url "cases-clone" %}" method="post">
+<form id="cases_form" action="{% url "cases-clone" %}" method="post">{% csrf_token %}
 	<div id="contentTab" class="mixbar">
 		{#}<span class="tit">{{ test_cases.count }} Cases</span>{#}
 		<span>

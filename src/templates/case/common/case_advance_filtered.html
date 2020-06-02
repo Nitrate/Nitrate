@@ -1,5 +1,5 @@
 {% load static %}
-<form id="cases_form" action="{% url "cases-clone" %}" method="post">
+<form id="cases_form" action="{% url "cases-clone" %}" method="post">{% csrf_token %}
 	<div id="contentTab" class="mixbar">
 		{#}<span class="tit">{{ this_page.object_list|length }} Cases</span>{#}
 		<span>
