@@ -2302,13 +2302,15 @@ function sortCase(container, planId, order) {
 }
 
 function resortCasesDragAndDrop(container, button, form, table, parameters, callback) {
+  let $table = jQ(table);
+
   if (button.innerHTML !== 'Done Sorting') {
     // Remove the elements affect the page
     jQ(form).parent().find('.blind_all_link').remove(); // Remove blind all link
     jQ(form).parent().find('.case_content').remove();
     jQ(form).parent().find('.blind_icon').remove();
     jQ(form).parent().find('.show_change_status_link').remove();
-    jQ(table).parent().find('.expandable').unbind();
+    $table.parent().find('.expandable').unbind();
 
     // Use the selector content to replace the selector
     jQ(form).parent().find('.change_status_selector').each(function () {
@@ -2316,14 +2318,14 @@ function resortCasesDragAndDrop(container, button, form, table, parameters, call
       jQ(this).replaceWith((jQ('<span>')).html(this.options[w].text));
     });
 
-    // init the tableDnD object
-    new TableDnD().init(table);
+    $table.find('tbody').sortable();
+
     button.innerHTML = 'Done Sorting';
-    jQ(table).parent().find('tr').addClass('cursor_move');
+    $table.parent().find('tr').addClass('cursor_move');
   } else {
     jQ(button).replaceWith((jQ('<span>')).html('...Submitting changes'));
 
-    jQ(table).parent().find('input[type=checkbox]').each(function () {
+    $table.parent().find('input[type=checkbox]').each(function () {
       this.checked = true;
       this.disabled = false;
     });
