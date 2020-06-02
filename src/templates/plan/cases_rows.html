@@ -14,7 +14,7 @@ test_cases should be a queryset of a list of TestCases.
 	<td class="expandable js-just-loaded">
 		<img class="expand blind_icon" src="{% static "images/t1.gif" %}" border="0" alt="">
 	</td>
-	<td>
+	<td class="selector_cell">
 		{# FIXME: replacing selected_case_ids with selected_cases_ids is proper  #}
 		<input type="checkbox" name="case" value="{{ test_case.pk }}"
 		class="checkbox case_selector" {% if not selected_case_ids or test_case.pk in selected_case_ids %}checked{% endif %} />

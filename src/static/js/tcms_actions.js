@@ -16,10 +16,6 @@ Nitrate.Utils.after_page_load = function (callback) {
   jQ(window).on('load', callback);
 };
 
-Nitrate.Utils.enableShiftSelectOnCheckbox = function (className) {
-  jQ('.' + className).shiftcheckbox();
-};
-
 Nitrate.Utils.convert = function (argument, data) {
   switch (argument) {
     case 'obj_to_list':
@@ -954,13 +950,6 @@ function getAjaxLoading(id) {
   }
 
   return e;
-}
-
-function clickedSelectAll(checkbox, form, name) {
-  let checkboxes = jQ(form).parent().find('input[name=' + name + ']');
-  for (let i = 0; i < checkboxes.length; i++) {
-    checkboxes[i].checked = checkbox.checked ? true : false;
-  }
 }
 
 /**

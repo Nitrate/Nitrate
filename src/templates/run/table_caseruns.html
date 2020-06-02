@@ -3,7 +3,7 @@
 	<thead>
 		<tr>
 			<th width="20">
-				<input id="id_check_all_button" type="checkbox" title="Select all cases/Select none case" />
+				<input id="id_check_all_button" type="checkbox" class="js-select-all" title="Select all cases/Select none case" />
 			</th>
 			<th width="18">
 				<a id="id_blind_all_link" title="Expand all cases">
@@ -27,8 +27,8 @@
 	<tbody>
 		{% for test_case_run, tester, assignee, priority_value, status_name, comments_count, issues_count in test_case_runs %}
 		<tr class="{% cycle 'odd' 'even' %} {% ifequal test_case_run.assignee_id user.pk %} mine {% endifequal %}">
-			<td>
-				<input type="checkbox" name="case_run" value="{{ test_case_run.pk }}" class="caserun_selector" title="Select/Unselect" />
+			<td class="selector_cell">
+				<input type="checkbox" name="case_run" value="{{ test_case_run.pk }}" title="Select/Unselect" />
 				<input type="hidden" name="case" value="{{ test_case_run.case.pk }}" />
 				<input type="hidden" name="case_text_version" value="{{ test_case_run.case_text_version }}" />
 			</td>

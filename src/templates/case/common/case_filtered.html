@@ -4,12 +4,12 @@
 		{#}<span class="tit">{{ test_cases.count }} Cases</span>{#}
 		<span>
 			{% if perms.testcases.add_testcase %}
-			<input type="submit" value="Clone" title="clone selected test plans" />
+			<input type="submit" value="Clone" id="clone_cases" title="clone selected test plans" disabled />
 			{% endif %}
-			<input type="button" disabled="disabled"
+			<input type="button" disabled
                    id="case_list_printable" value="Printable copy"
                    title="Create the printable copy for selected cases." />
-			<input type="button" id="export_selected_cases" value="Export" title="Export the cases for selected cases." />
+			<input type="button" id="export_selected_cases" value="Export" title="Export the cases for selected cases." disabled />
 		</span>
 	</div>
 	<table class="list border-bottom" id="testcases_table" cellpadding="0" cellspacing="0" border="0">
@@ -21,7 +21,7 @@
 					</a>
 				</th>
 				<th width="20" class="nosort">
-					<input type="checkbox" id="id_checkbox_all_case" title="Select all/Select none">
+					<input type="checkbox" id="id_checkbox_all_case" class="js-select-all" title="Select all/Select none">
 				</th>
 				<th class="widthID">ID</th>
 				<th>Summary</th>

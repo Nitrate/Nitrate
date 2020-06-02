@@ -146,6 +146,8 @@ Nitrate.Management.Environment.Property = {
         parseInt(jQ(this).parents('.js-one-prop').data('param'))
       );
     });
+
+    jQ('#id_properties_container :checkbox').shiftcheckbox();
   },
 
   /**

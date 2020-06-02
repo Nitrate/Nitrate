@@ -10,16 +10,16 @@ Nitrate.TestCases.AdvanceList.on_load = function () {
   bindCategorySelectorToProduct(true, true, jQ('#id_product')[0], jQ('#id_category')[0]);
   bindComponentSelectorToProduct(true, true, jQ('#id_product')[0], jQ('#id_component')[0]);
 
-  if (jQ('#id_checkbox_all_case').length) {
-    jQ('#id_checkbox_all_case').on('click', function () {
-      clickedSelectAll(this, jQ(this).closest('form')[0], 'case');
-      if (this.checked) {
-        jQ('#case_advance_printable').prop('disabled', false);
-      } else {
-        jQ('#case_advance_printable').prop('disabled', true);
-      }
-    });
-  }
+  jQ('#testcases_table :checkbox').on('change', function () {
+    jQ('#case_advance_printable').prop(
+      'disabled', jQ('#testcases_table tbody :checkbox:checked').length === 0
+    );
+  });
+
+  jQ('#testcases_table tbody tr td:nth-child(2)').shiftcheckbox({
+    checkboxSelector: ':checkbox',
+    selectAll: '#testcases_table .js-select-all'
+  });
 
   jQ('#id_blind_all_link').on('click', function () {
     if (!jQ('div[id^="id_loading_"]').length) {
@@ -56,14 +56,6 @@ Nitrate.TestCases.AdvanceList.on_load = function () {
     });
   });
 
-  jQ('#testcases_table tbody tr input[type=checkbox][name=case]').on('click', function () {
-    if (jQ('input[type=checkbox][name=case]:checked').length) {
-      jQ('#case_advance_printable').prop('disabled', false);
-    } else {
-      jQ('#case_advance_printable').prop('disabled', true);
-    }
-  });
-
   if (window.location.hash === '#expandall') {
     blinddownAllCases();
   }
@@ -80,16 +72,8 @@ Nitrate.TestCases.AdvanceList.on_load = function () {
 Nitrate.TestCases.List.on_load = function () {
   bindCategorySelectorToProduct(true, true, jQ('#id_product')[0], jQ('#id_category')[0]);
   bindComponentSelectorToProduct(true, true, jQ('#id_product')[0], jQ('#id_component')[0]);
-  if (jQ('#id_checkbox_all_case')[0]) {
-    jQ('#id_checkbox_all_case').on('click', function () {
-      clickedSelectAll(this, jQ(this).closest('table')[0], 'case');
-      if (this.checked) {
-        jQ('#case_list_printable').prop('disabled', false);
-      } else {
-        jQ('#case_list_printable').prop('disabled', true);
-      }
-    });
-  }
+
+  /* Event handlers of case expansion/collapse */
 
   jQ('#id_blind_all_link').on('click', function () {
     if (!jQ('div[id^="id_loading_"]').length) {
@@ -109,34 +93,6 @@ Nitrate.TestCases.List.on_load = function () {
         blindupAllCases(element);
       }
     }
-  });
-
-  if (window.location.hash === '#expandall') {
-    blinddownAllCases();
-  }
-
-  jQ('#testcases_table').dataTable({
-    'iDisplayLength': 20,
-    'sPaginationType': 'full_numbers',
-    'bFilter': false,
-    'bLengthChange': false,
-    'aaSorting': [[ 2, 'desc' ]],
-    'bProcessing': true,
-    'bServerSide': true,
-    'sAjaxSource': '/cases/ajax/' + this.window.location.search,
-    'aoColumns': [
-      {'bSortable': false, 'sClass': 'expandable'},
-      {'bSortable': false},
-      {'sType': 'html', 'sClass': 'expandable'},
-      {'sType': 'html', 'sClass': 'expandable'},
-      {'sType': 'html', 'sClass': 'expandable'},
-      {'sClass': 'expandable'},
-      {'sClass': 'expandable'},
-      {'sClass': 'expandable'},
-      {'sClass': 'expandable'},
-      {'sClass': 'expandable'},
-      {'sClass': 'expandable'}
-    ]
   });
 
   jQ('#testcases_table tbody tr td.expandable').on('click', function () {
@@ -159,13 +115,58 @@ Nitrate.TestCases.List.on_load = function () {
     });
   });
 
-  jQ('#testcases_table tbody tr input[type=checkbox][name=case]').on('click', function () {
-    if (jQ('input[type=checkbox][name=case]:checked').length) {
-      jQ('#case_list_printable').prop('disabled', false);
-    } else {
-      jQ('#case_list_printable').prop('disabled', true);
+  if (window.location.hash === '#expandall') {
+    blinddownAllCases();
+  }
+
+  /* Initialize cases search result table and relative controls */
+
+  jQ('#testcases_table').dataTable({
+    'iDisplayLength': 20,
+    'sPaginationType': 'full_numbers',
+    'bFilter': false,
+    'bLengthChange': false,
+    'aaSorting': [[ 2, 'desc' ]],
+    'bProcessing': true,
+    'bServerSide': true,
+    'sAjaxSource': '/cases/ajax/' + this.window.location.search,
+    'aoColumns': [
+      {'bSortable': false, 'sClass': 'expandable'},
+      {'bSortable': false},
+      {'sType': 'html', 'sClass': 'expandable'},
+      {'sType': 'html', 'sClass': 'expandable'},
+      {'sType': 'html', 'sClass': 'expandable'},
+      {'sClass': 'expandable'},
+      {'sClass': 'expandable'},
+      {'sClass': 'expandable'},
+      {'sClass': 'expandable'},
+      {'sClass': 'expandable'},
+      {'sClass': 'expandable'}
+    ],
+    'fnDrawCallback': function () {
+      jQ('#testcases_table tbody tr td:nth-child(2)').shiftcheckbox({
+        checkboxSelector: ':checkbox',
+        selectAll: '#testcases_table .js-select-all'
+      });
+
+      jQ('#testcases_table :checkbox').on('change', function () {
+        let disable = jQ('#testcases_table tbody :checkbox:checked').length === 0;
+        jQ('#case_list_printable').prop('disabled', disable);
+        jQ('#clone_cases').prop('disabled', disable);
+        jQ('#export_selected_cases').prop('disabled', disable);
+      });
     }
   });
+
+  if (jQ('#id_checkbox_all_case')[0]) {
+    jQ('#id_checkbox_all_case').on('click', function () {
+      if (this.checked) {
+        jQ('#case_list_printable').prop('disabled', false);
+      } else {
+        jQ('#case_list_printable').prop('disabled', true);
+      }
+    });
+  }
 
   let listParams = Nitrate.TestCases.List.Param;
   jQ('#case_list_printable').on('click', function () {
@@ -246,8 +247,9 @@ Nitrate.TestCases.Details.on_load = function () {
     });
   });
 
-  jQ('#id_checkbox_all_components').on('click', function () {
-    clickedSelectAll(this, jQ('#id_form_case_component')[0], 'component');
+  jQ('#case-components-table tbody tr td:nth-child(1)').shiftcheckbox({
+    checkboxSelector: ':checkbox',
+    selectAll: '#case-components-table .js-select-all'
   });
 
   jQ('.plan_expandable').on('click', function () {

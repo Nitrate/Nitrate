@@ -7,6 +7,7 @@ Nitrate.TestRuns.Execute = {};
 Nitrate.TestRuns.Clone = {};
 Nitrate.TestRuns.ChooseRuns = {};
 Nitrate.TestRuns.AssignCase = {};
+Nitrate.TestRuns.AdvancedSearch = {};
 
 
 function toggleAllCheckBoxes(element, container, name) {
@@ -120,17 +121,31 @@ function removeItem(item, caseEstimatedTime) {
   jQ('#' + item).remove();
 }
 
+function cloneRunsClickHandler() {
+  postToURL(jQ(this).data('param'), Nitrate.Utils.formSerialize(this.form), 'get');
+}
+
+Nitrate.TestRuns.AdvancedSearch.on_load = function () {
+  jQ('#testruns_table tbody tr td:nth-child(1)').shiftcheckbox({
+    checkboxSelector: ':checkbox',
+    selectAll: '#testruns_table .js-select-all',
+  });
+
+  jQ('#testruns_table :checkbox').on('change', function () {
+    jQ('.js-clone-testruns').prop(
+      'disabled', jQ('#testruns_table tbody :checkbox:checked').length === 0
+    );
+  });
+
+  jQ('.js-clone-testruns').on('click', cloneRunsClickHandler);
+}
+
 Nitrate.TestRuns.List.on_load = function () {
   bindVersionSelectorToProduct(true, jQ('#id_product')[0]);
   bindBuildSelectorToProduct(true, jQ('#id_product')[0]);
 
-  Nitrate.Utils.enableShiftSelectOnCheckbox('run_selector');
+  //Nitrate.Utils.enableShiftSelectOnCheckbox('run_selector');
 
-  if (jQ('#testruns_table').length) {
-    jQ('#id_check_all_runs').on('click', function () {
-      clickedSelectAll(this, jQ('#testruns_table')[0], 'run');
-    });
-  }
   if (jQ('#id_people_type').length) {
     jQ('#id_search_people').prop('name', jQ('#id_people_type').val());
     jQ('#id_people_type').on('change', function () {
@@ -150,36 +165,39 @@ Nitrate.TestRuns.List.on_load = function () {
     });
   }
 
-  if (!jQ('#testruns_table').hasClass('js-advance-search-runs')) {
-    jQ('#testruns_table').dataTable({
-      'iDisplayLength': 20,
-      'sPaginationType': 'full_numbers',
-      'bFilter': false,
-      'bLengthChange': false,
-      'aaSorting': [[ 1, 'desc' ]],
-      'bProcessing': true,
-      'bServerSide': true,
-      'sAjaxSource': '/runs/ajax/' + this.window.location.search,
-      'aoColumns': [
-        {'bSortable': false},
-        {'sType': 'numeric'},
-        {'sType': 'html'},
-        {'sType': 'html'},
-        {'sType': 'html'},
-        {'bVisible': false},
-        null,
-        null,
-        null,
-        {'sType': 'numeric', 'bSortable': false},
-        null,
-        {'bSortable': false}
-      ],
-      'oLanguage': {'sEmptyTable': 'No run was found.'}
-    });
-  }
-  jQ('.js-clone-testruns').on('click', function () {
-    postToURL(jQ(this).data('param'), Nitrate.Utils.formSerialize(this.form), 'get');
+  jQ('#testruns_table').dataTable({
+    'iDisplayLength': 20,
+    'sPaginationType': 'full_numbers',
+    'bFilter': false,
+    'bLengthChange': false,
+    'aaSorting': [[ 1, 'desc' ]],
+    'bProcessing': true,
+    'bServerSide': true,
+    'sAjaxSource': '/runs/ajax/' + this.window.location.search,
+    'aoColumns': [
+      {'bSortable': false},
+      {'sType': 'numeric'},
+      {'sType': 'html'},
+      {'sType': 'html'},
+      {'sType': 'html'},
+      {'bVisible': false},
+      null,
+      null,
+      null,
+      {'sType': 'numeric', 'bSortable': false},
+      null,
+      {'bSortable': false}
+    ],
+    'oLanguage': {'sEmptyTable': 'No run was found.'},
+    'fnDrawCallback': function () {
+      jQ('#testruns_table tbody tr td:nth-child(1)').shiftcheckbox({
+        checkboxSelector: ':checkbox',
+        selectAll: '#testruns_table .js-select-all'
+      });
+    }
   });
+
+  jQ('.js-clone-testruns').on('click', cloneRunsClickHandler);
 };
 
 
@@ -338,12 +356,6 @@ Nitrate.TestRuns.Details.on_load = function () {
     jQ('#id_sort').on('click', taggleSortCaseRun);
   }
 
-  jQ('#id_check_all_button').on('click', function () {
-    toggleAllCheckBoxes(this, 'id_table_cases', 'case_run');
-  });
-
-  Nitrate.Utils.enableShiftSelectOnCheckbox('caserun_selector');
-
   if (jQ('#id_check_box_highlight').prop('checked')) {
     jQ('.mine').addClass('highlight');
   }
@@ -441,6 +453,11 @@ Nitrate.TestRuns.Details.on_load = function () {
       'caserunRowContainer': c,
       'expandPaneContainer': cContainer
     });
+  });
+
+  jQ('#id_table_cases tbody .selector_cell').shiftcheckbox({
+    checkboxSelector: ':checkbox',
+    selectAll: '#id_table_cases .js-select-all'
   });
 
   // Auto show the case run contents.

@@ -493,16 +493,17 @@ Nitrate.TestPlans.Advance_Search_List.on_load = function () {
     bindVersionSelectorToProduct(true);
   }
 
-  if (jQ('#id_check_all_plans').length) {
-    jQ('#id_check_all_plans').on('click', function () {
-      clickedSelectAll(this, jQ('#plans_form')[0], 'plan');
-      if (this.checked) {
-        jQ('#plan_advance_printable').prop('disabled', false);
-      } else {
-        jQ('#plan_advance_printable').prop('disabled', true);
-      }
-    });
-  }
+  jQ('#testplans_table :checkbox').on('change', function () {
+    let disable = jQ('#testplans_table tbody :checkbox:checked').length === 0;
+    jQ('.js-printable-plans').prop('disabled', disable);
+    jQ('.js-clone-plans').prop('disabled', disable);
+    jQ('.js-export-plans').prop('disabled', disable);
+  });
+
+  jQ('#testplans_table tbody tr td:nth-child(1)').shiftcheckbox({
+    checkboxSelector: ':checkbox',
+    selectAll: '#testplans_table .js-select-all'
+  });
 
   if (jQ('#column_add').length) {
     jQ('#column_add').on('change', function () {
@@ -526,14 +527,6 @@ Nitrate.TestPlans.Advance_Search_List.on_load = function () {
       jQ(this).parent().parent().addClass('selection_row');
     } else {
       jQ(this).parent().parent().removeClass('selection_row');
-    }
-  });
-
-  jQ('input[type=checkbox][name=plan]').on('click', function (){
-    if(jQ('input[type=checkbox][name=plan]:checked').length) {
-      jQ('#plan_advance_printable').prop('disabled', false);
-    } else {
-      jQ('#plan_advance_printable').prop('disabled', true);
     }
   });
 
@@ -556,17 +549,6 @@ Nitrate.TestPlans.List.on_load = function () {
     bindVersionSelectorToProduct(true);
   }
 
-  if (jQ('#id_check_all_plans').length) {
-    jQ('#id_check_all_plans').on('click', function () {
-      clickedSelectAll(this, jQ('#plans_form')[0], 'plan');
-      if (this.checked) {
-        jQ('#plan_list_printable').prop('disabled', false);
-      } else {
-        jQ('#plan_list_printable').prop('disabled', true);
-      }
-    });
-  }
-
   if (jQ('#column_add').length) {
     jQ('#column_add').on('change', function () {
       switch(this.value) {
@@ -591,6 +573,16 @@ Nitrate.TestPlans.List.on_load = function () {
       jQ(this).parent().parent().removeClass('selection_row');
     }
   });
+
+  if (jQ('#id_check_all_plans').length) {
+    jQ('#id_check_all_plans').on('click', function () {
+      if (this.checked) {
+        jQ('#plan_list_printable').prop('disabled', false);
+      } else {
+        jQ('#plan_list_printable').prop('disabled', true);
+      }
+    });
+  }
 
   if (jQ('#testplans_table').length) {
     jQ('#testplans_table').dataTable({
@@ -615,16 +607,22 @@ Nitrate.TestPlans.List.on_load = function () {
         {'bSortable': false},
         {'bSortable': false},
         {'bSortable': false}
-      ]
+      ],
+      'fnDrawCallback': function () {
+        jQ('#testplans_table tbody tr td:nth-child(1)').shiftcheckbox({
+          checkboxSelector: ':checkbox',
+          selectAll: '#testplans_table .js-select-all'
+        });
+
+        jQ('#testplans_table :checkbox').on('change', function () {
+          let disable = jQ('#testplans_table tbody :checkbox:checked').length === 0;
+          jQ('.js-printable-plans').prop('disabled', disable);
+          jQ('.js-clone-plans').prop('disabled', disable);
+          jQ('.js-export-plans').prop('disabled', disable);
+        });
+      }
     });
   }
-  jQ('#testplans_table tbody tr input[type=checkbox][name=plan]').on('click', function () {
-    if (jQ('input[type=checkbox][name=plan]:checked').length) {
-      jQ('#plan_list_printable').prop('disabled', false);
-    } else {
-      jQ('#plan_list_printable').prop('disabled', true);
-    }
-  });
 
   jQ('.js-new-plan').on('click', function () {
     window.location = jQ(this).data('param');
@@ -816,13 +814,6 @@ Nitrate.TestPlans.Details = {
       }
     });
 
-    jQ('#id_check_all_runs').on('click', function () {
-      clickedSelectAll(this, jQ('#testruns_table')[0], 'run');
-    });
-
-    Nitrate.Utils.enableShiftSelectOnCheckbox('case_selector');
-    Nitrate.Utils.enableShiftSelectOnCheckbox('run_selector');
-
     Nitrate.TestPlans.Runs.initializeRunTab();
     Nitrate.TestPlans.Runs.bind();
 
@@ -911,13 +902,18 @@ Nitrate.TestPlans.SearchCase.on_load = function () {
       'bFilter': false,
       'aLengthMenu': [[10, 20, 50, -1], [10, 20, 50, 'All']],
       'iDisplayLength': 20,
-      'bProcessing': true
-    });
-  }
+      'bProcessing': true,
+      'fnDrawCallback': function () {
+        jQ('#id_table_cases tbody tr td:nth-child(1)').shiftcheckbox({
+          checkboxSelector: ':checkbox',
+          selectAll: '#id_table_cases .js-select-all'
+        });
 
-  if (jQ('#id_checkbox_all_cases').length) {
-    jQ('#id_checkbox_all_cases').on('click', function () {
-      clickedSelectAll(this, jQ('#id_form_cases')[0], 'case');
+        jQ('#id_table_cases :checkbox').on('change', function () {
+          let disable = jQ('#id_table_cases tbody :checkbox:checked').length === 0;
+          jQ('#add-selected-cases').prop('disabled', disable);
+        });
+      }
     });
   }
 };
@@ -1941,14 +1937,6 @@ function constructPlanDetailsCasesZoneCallback(options) {
       }
     });
 
-    // Observe the check all selectbox
-    if (jQ(form).parent().find('input[value="all"]').length) {
-      let element = jQ(form).parent().find('input[value="all"]')[0];
-      jQ(element).on('click', function () {
-        clickedSelectAll(this, jQ(this).closest('.tab_list')[0], 'case');
-      });
-    }
-
     if (jQ(form).parent().find('.btn_filter').length) {
       let element = jQ(form).parent().find('.btn_filter')[0];
       jQ(element).on('click', function () {
@@ -2110,6 +2098,11 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
       let casesTable = jQ(casesSection).find('.js-cases-list')[0];
       let navForm = jQ('#js' + type + 'cases-nav-form')[0];
 
+      jQ(casesTable).find('tbody .selector_cell').shiftcheckbox({
+        checkboxSelector: ':checkbox',
+        selectAll: jQ(casesTable).find('.js-select-all')
+      });
+
       jQ('#js' + type + 'case-menu, #js' + type + 'new-case').on('click', function () {
         let params = jQ(this).data('params');
         window.location.href = params[0] + '?from_plan=' + params[1];
@@ -2212,8 +2205,9 @@ function constructPlanComponentsZone(container, parameters, callback) {
         constructPlanComponentsZone(container, p, callback);
       });
 
-      jQ('#id_checkbox_all_component').on('click', function () {
-        clickedSelectAll(this, jQ(this).closest('form')[0], 'component');
+      jQ('#components_table tbody tr td:nth-child(1)').shiftcheckbox({
+        checkboxSelector: ':checkbox',
+        selectAll: '#components_table .js-select-all',
       });
 
       jQ('.js-update-components').click(function () {
@@ -2433,6 +2427,12 @@ Nitrate.TestPlans.Runs = {
             let params = jQ('#run_filter').serializeArray();
             params.forEach(function (param) {
               aoData.push(param);
+            });
+          },
+          'fnDrawCallback': function () {
+            jQ('#testruns_table tbody tr').shiftcheckbox({
+              checkboxSelector: ':checkbox',
+              selectAll: '#testruns_table .js-select-all'
             });
           }
         });

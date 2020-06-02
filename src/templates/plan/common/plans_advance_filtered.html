@@ -4,20 +4,20 @@
 		<span>
 			{% if perms.testplans.add_testplan %}
 			<input type="button" title="Create new test plan" value="New Test Plan" class="js-new-plan" data-param="{% url "plans-new" %}" />
-			<input type="button" value="Clone" title="clone selected test plans." class="js-clone-plan" data-param="{% url "plans-clone" %}" />
+			<input type="button" value="Clone" title="clone selected test plans." class="js-clone-plans" data-param="{% url "plans-clone" %}" disabled />
 			{% endif %}
-			<input type="button" value="Printable copy" id="plan_advance_printable" disabled="disabled"
-        title="Create the printable copy for selected plans."
-        data-param="{% url "plans-printable" %}" />
-			<input type="button" value="Export" title="Export the cases for selected plans."
-        class="js-export-cases"
-        data-param="{% url "plans-export" %}" />
+			<input type="button" value="Printable copy" id="plan_advance_printable" class="js-printable-plans" disabled
+				title="Create the printable copy for selected plans." data-param="{% url "plans-printable" %}" />
+			<input type="button" value="Export" title="Export the cases for selected plans." class="js-export-plans"
+				data-param="{% url "plans-export" %}" disabled />
 		</span>
 	</div>
 	<table id="testplans_table" class="list border-bottom" cellpadding="0" cellspacing="0" border="0" style="table-layout:fixed;">
 		<thead>
 			<tr>
-				<th width="20" class="nosort"><input id="id_check_all_plans" type="checkbox" title="Select all/Select none" /></th>
+				<th width="20" class="nosort">
+					<input id="id_check_all_plans" type="checkbox" class="js-select-all" title="Select all/Select none" />
+				</th>
 				<th class="number nosort widthID" title="Sort by plan ID"><a href="{{query_url}}&order_by=plan_id">ID</a></th>
 				<th class="text nosort" title="Sort by plan name"><a href="{{query_url}}&order_by=name">Name</a></th>
 				<th width="100" class="text nosort" title="Sort by author"><a href="{{query_url}}&order_by=author__username">Author</a></th>
