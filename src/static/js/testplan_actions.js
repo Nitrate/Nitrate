@@ -2316,10 +2316,10 @@ function resortCasesDragAndDrop(container, button, form, table, parameters, call
       jQ(this).replaceWith((jQ('<span>')).html(this.options[w].text));
     });
 
-    // init the tableDnD object
-    new TableDnD().init(table);
     button.innerHTML = 'Done Sorting';
     jQ(table).parent().find('tr').addClass('cursor_move');
+
+    jQ(table).tableDnD();
   } else {
     jQ(button).replaceWith((jQ('<span>')).html('...Submitting changes'));
 

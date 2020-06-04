@@ -852,11 +852,9 @@ function taggleSortCaseRun(event) {
     jQ('#id_table_cases .case_content').remove();
     jQ('#id_table_cases .expandable').unbind();
 
-    // init the tableDnD object
-    let table = document.getElementById('id_table_cases');
-    let tableDnD = new TableDnD();
-    tableDnD.init(table);
     jQ('#id_sort').html('Done Sorting');
+
+    jQ('#id_table_cases').tableDnD();
   } else {
     jQ('#id_table_cases input[type=checkbox]').prop({'checked': true, 'disabled': false});
     postToURL('ordercaserun/', getSelectedCaseRunIDs());
