@@ -6,7 +6,7 @@ from django import forms
 from django.db.models import Q
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from tcms.core.utils import string_to_list, timedelta2int
 
