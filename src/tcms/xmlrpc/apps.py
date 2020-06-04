@@ -3,7 +3,7 @@
 import os
 
 from django.apps import AppConfig as DjangoAppConfig
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from tcms.xmlrpc.filters import autowrap_xmlrpc_apis
 

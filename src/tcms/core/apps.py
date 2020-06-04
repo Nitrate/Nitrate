@@ -6,7 +6,7 @@ from django.apps import AppConfig as DjangoAppConfig
 from django.conf import settings
 from django.db import connections
 from django.db.models.signals import post_migrate
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 logger = logging.getLogger(__name__)
 
