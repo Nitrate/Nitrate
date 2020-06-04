@@ -5,6 +5,7 @@ Advance search implementations
 """
 
 import time
+from typing import List
 
 from django.db.models.query import QuerySet
 from django.http import HttpRequest
@@ -143,16 +144,16 @@ def render_results(request, results, start_time, queries,
     paginator = Paginator(results, 20)
     page = request.GET.get('page')
     try:
-        # Evaluate queryset in order to calculate query time cost later.
-        this_page = list(paginator.page(page))
+        this_page = paginator.page(page)
     except PageNotAnInteger:
         this_page = paginator.page(1)
 
     page_start = paginator.per_page * (this_page.number - 1) + 1
-    page_end = page_start + min(len(this_page.object_list),
-                                paginator.per_page) - 1
+    page_end = (
+        page_start + min(len(this_page.object_list), paginator.per_page) - 1
+    )
 
-    calculate_associated_data(this_page, queries['Target'])
+    calculate_associated_data(list(this_page), queries['Target'])
 
     end_time = time.time()
     time_cost = round(end_time - start_time, 3)
@@ -234,7 +235,7 @@ def fmt_queries(*queries):
     return results
 
 
-def calculate_associated_data(queryset, query_target):
+def calculate_associated_data(queryset: List, query_target):
     """Calculate associated data and attach to objects in queryset"""
 
     # FIXME: Maybe plan and case associated data could be calculated here as well.
