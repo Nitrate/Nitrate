@@ -5,7 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 
 from .models import TCMSLogModel
 
-from django.utils.encoding import smart_text as smart_unicode
+from django.utils.encoding import smart_str
 
 
 class TCMSLog:
@@ -62,7 +62,7 @@ class TCMSLog:
         model = self.get_log_model()
 
         qs = model.objects.filter(content_type=ctype,
-                                  object_pk=smart_unicode(self.model.pk),
+                                  object_pk=smart_str(self.model.pk),
                                   site=settings.SITE_ID)
         qs = qs.select_related('who')
         return qs
