@@ -588,6 +588,9 @@ Nitrate.TestRuns.Details.on_load = function () {
 };
 
 Nitrate.TestRuns.New.on_load = function () {
+  bindBuildSelectorToProduct(false);
+  bindVersionSelectorToProduct(false);
+
   if (jQ('#testcases').length) {
     jQ('#testcases').dataTable({'bPaginate': false, 'bFilter': false, 'bProcessing': true});
   }
