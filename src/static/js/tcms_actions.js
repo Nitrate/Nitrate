@@ -548,17 +548,8 @@ function getVersionsByProductId(allowBlank, productField, versionField) {
   });
 }
 
-function getComponentsByProductId(allowBlank, productField, componentField, callback, parameters) {
-  parameters = parameters || {};
-  parameters.info_type = 'components';
-
-  // Initial the product get from
-  if (! parameters.product_id) {
-    if (!productField) {
-      productField = jQ('#id_product')[0];
-    }
-    parameters.product_id = jQ(productField).val();
-  }
+function getComponentsByProductId(allowBlank, productField, componentField, callback) {
+  productField = productField || jQ('#id_product')[0];
 
   if (!componentField) {
     if (jQ('#id_component').length) {
@@ -569,14 +560,12 @@ function getComponentsByProductId(allowBlank, productField, componentField, call
     }
   }
 
-  if (parameters.product_id === '') {
-    jQ(componentField).html('<option value="">---------</option>');
-    return true;
-  }
-
   getRequest({
     url: '/management/getinfo/',
-    data: parameters,
+    data: {
+      info_type: 'components',
+      product_id: jQ(productField).val()
+    },
     errorMessage: 'Update components failed.',
     success: function (data) {
       setUpChoices(
