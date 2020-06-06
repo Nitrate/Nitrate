@@ -1477,20 +1477,6 @@ function onTestCaseTagFormSubmitClick(options) {
   };
 }
 
-// FIXME: merge into onTestCaseTagAddClick
-function addBatchTag(parameters, callback, format) {
-  parameters.a = 'add';
-  parameters.t = 'json';
-  parameters.f = format;
-
-  sendHTMLRequest({
-    url: '/management/tags/',
-    data: parameters,
-    traditional: true,
-    success: function (data, textStatus, xhr) { callback(xhr); },
-  });
-}
-
 function onTestCaseTagAddClick(options) {
   return function () {
     let selectedCaseIDs = getSelectedCaseIDs(options.table);
@@ -1510,13 +1496,17 @@ function onTestCaseTagAddClick(options) {
       if (!tagData.tags) {
         return false;
       }
-      let params = serializeFormData({
-        'form': options.form,
-        'zoneContainer': options.container,
-        'selectedCaseIDs': selectedCaseIDs,
-        'hashable': true
-      });
-      params.tags = tagData.tags;
+      let params = Object.assign(
+        serializeFormData({
+          'form': options.form,
+          'zoneContainer': options.container,
+          'selectedCaseIDs': selectedCaseIDs,
+          'hashable': true
+        }),
+        {
+          tags: tagData.tags, a: 'add', t: 'json', f: 'serialized'
+        }
+      );
 
       /*
        * Two reasons to force to remove plan from parameters here.
@@ -1545,7 +1535,13 @@ function onTestCaseTagAddClick(options) {
         'planId': options.planId,
         'table': options.table
       });
-      addBatchTag(params, callback, 'serialized');
+
+      sendHTMLRequest({
+        url: '/management/tags/',
+        data: params,
+        traditional: true,
+        success: function (data, textStatus, xhr) { callback(xhr); },
+      });
     });
   };
 }
