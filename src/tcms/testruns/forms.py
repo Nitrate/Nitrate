@@ -51,6 +51,7 @@ class BaseRunForm(forms.Form):
     build = forms.ModelChoiceField(
         label='Build',
         queryset=TestBuild.objects.none(),
+        empty_label=None,
     )
     notes = forms.CharField(
         label='Notes',

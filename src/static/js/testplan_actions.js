@@ -449,7 +449,13 @@ Nitrate.TestPlans.TreeView = {
 };
 
 Nitrate.TestPlans.Create.on_load = function () {
-  bindVersionSelectorToProduct(true);
+  bindVersionSelectorToProduct(
+    document.getElementById('id_product'),
+    document.getElementById('id_product_version'),
+    false
+  );
+
+  jQ('#id_product').trigger('change');
 
   jQ('#env_group_help_link').on('click', function () {
     jQ('#env_group_help').toggle();
@@ -466,12 +472,6 @@ Nitrate.TestPlans.Create.on_load = function () {
   jQ('.js-cancel-button').on('click', function () {
     window.history.back();
   });
-
-  // Ensure product versions are loaded for the default product shown in
-  // Product list.
-  if (jQ('#id_product').length && !jQ('#id_product_version').val()) {
-    jQ('#id_product').trigger('change');
-  }
 };
 
 Nitrate.TestPlans.Edit.on_load = function () {
@@ -481,7 +481,12 @@ Nitrate.TestPlans.Edit.on_load = function () {
   jQ('#env_group_help_close').on('click', function () {
     jQ('#env_group_help').hide();
   });
-  bindVersionSelectorToProduct(false);
+
+  bindVersionSelectorToProduct(
+    document.getElementById('id_product'),
+    document.getElementById('id_product_version'),
+    false
+  );
 
   jQ('.js-back-button').on('click', function () {
     window.location.href = jQ(this).data('param');
@@ -489,10 +494,6 @@ Nitrate.TestPlans.Edit.on_load = function () {
 };
 
 Nitrate.TestPlans.Advance_Search_List.on_load = function () {
-  if (jQ('#id_product').length) {
-    bindVersionSelectorToProduct(true);
-  }
-
   jQ('#testplans_table :checkbox').on('change', function () {
     let disable = jQ('#testplans_table tbody :checkbox:checked').length === 0;
     jQ('.js-printable-plans').prop('disabled', disable);
@@ -545,9 +546,11 @@ Nitrate.TestPlans.Advance_Search_List.on_load = function () {
 };
 
 Nitrate.TestPlans.List.on_load = function () {
-  if (jQ('#id_product').length) {
-    bindVersionSelectorToProduct(true);
-  }
+  bindVersionSelectorToProduct(
+    document.getElementById('id_product'),
+    document.getElementById('id_product_version'),
+    true
+  );
 
   if (jQ('#column_add').length) {
     jQ('#column_add').on('change', function () {
@@ -849,12 +852,16 @@ Nitrate.TestPlans.Details = {
 };
 
 Nitrate.TestPlans.SearchCase.on_load = function () {
-  if (jQ('#id_product').length) {
-    if (jQ('#id_product').val() !== '') {
-      bindCategorySelectorToProduct(true, true, jQ('#id_product')[0], jQ('#id_category')[0]);
-      bindComponentSelectorToProduct(true, true, jQ('#id_product')[0], jQ('#id_component')[0]);
-    }
-  }
+  bindCategorySelectorToProduct(
+    document.getElementById('id_product'), document.getElementById('id_category'), true
+  );
+
+  bindComponentSelectorToProduct(
+    document.getElementById('id_product'), document.getElementById('id_component'), true
+  );
+
+  jQ('#id_product').trigger('change');
+
   // new feature for searching by case id.
   let quickSearch = jQ('#tp_quick_search_cases_form');
   let normalSearch = jQ('#tp_advanced_search_case_form');
@@ -919,7 +926,11 @@ Nitrate.TestPlans.SearchCase.on_load = function () {
 };
 
 Nitrate.TestPlans.Clone.on_load = function () {
-  bindVersionSelectorToProduct(false);
+  bindVersionSelectorToProduct(
+    document.getElementById('id_product'),
+    document.getElementById('id_product_version'),
+    false
+  );
 
   jQ('#id_link_testcases').on('change', function () {
     if (this.checked) {
@@ -940,10 +951,6 @@ Nitrate.TestPlans.Clone.on_load = function () {
       jQ('#id_keep_case_default_tester')[0].disabled = true;
     }
   });
-  // Populate product version field.
-  if (jQ('#id_product').length && !jQ('#id_product_version').val()) {
-    jQ('#id_product').trigger('change');
-  }
 
   jQ('.js-cancel-button').on('click', function () {
     window.history.back();
@@ -1572,7 +1579,9 @@ function renderTagForm(container, parameters, formObserve) {
         )
       );
       bindComponentSelectorToProduct(
-        false, false, jQ('#id_product')[0], jQ('#id_o_component')[0]
+        document.getElementById('id_product'),
+        document.getElementById('#id_o_component'),
+        false
       );
     }
   });
@@ -1701,7 +1710,9 @@ function renderCategoryForm(container, parameters, formObserve) {
         )
       );
       bindCategorySelectorToProduct(
-        false, false, jQ('#id_product')[0], jQ('#id_o_category')[0]
+        document.getElementById('id_product'),
+        document.getElementById('id_o_category'),
+        false
       );
     }
   });

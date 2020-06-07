@@ -141,8 +141,12 @@ Nitrate.TestRuns.AdvancedSearch.on_load = function () {
 }
 
 Nitrate.TestRuns.List.on_load = function () {
-  bindVersionSelectorToProduct(true, jQ('#id_product')[0]);
-  bindBuildSelectorToProduct(true, jQ('#id_product')[0]);
+  let productSelect = document.getElementById('id_product');
+
+  bindVersionSelectorToProduct(
+    productSelect, document.getElementById('id_product_version'), true
+  );
+  bindBuildSelectorToProduct(productSelect, document.getElementById('id_build'), true);
 
   //Nitrate.Utils.enableShiftSelectOnCheckbox('run_selector');
 
@@ -588,8 +592,14 @@ Nitrate.TestRuns.Details.on_load = function () {
 };
 
 Nitrate.TestRuns.New.on_load = function () {
-  bindBuildSelectorToProduct(false);
-  bindVersionSelectorToProduct(false);
+  let productSelect = document.getElementById('id_product');
+
+  bindBuildSelectorToProduct(
+    productSelect, document.getElementById('id_build'), false
+  );
+  bindVersionSelectorToProduct(
+    productSelect, document.getElementById('id_product_version'), false
+  );
 
   if (jQ('#testcases').length) {
     jQ('#testcases').dataTable({'bPaginate': false, 'bFilter': false, 'bProcessing': true});
@@ -611,8 +621,15 @@ Nitrate.TestRuns.New.on_load = function () {
 };
 
 Nitrate.TestRuns.Edit.on_load = function () {
-  bindVersionSelectorToProduct(false);
-  bindBuildSelectorToProduct(false);
+  let productSelect = document.getElementById('id_product');
+
+  bindVersionSelectorToProduct(
+    productSelect, document.getElementById('id_product_version'), false
+  );
+  bindBuildSelectorToProduct(
+    productSelect, document.getElementById('id_build'), false
+  );
+
   if (jQ('#id_auto_update_run_status').prop('checked')) {
     jQ('#id_finished').prop({'checked': false, 'disabled': true});
   }
@@ -631,8 +648,15 @@ Nitrate.TestRuns.Edit.on_load = function () {
 };
 
 Nitrate.TestRuns.Clone.on_load = function () {
-  bindVersionSelectorToProduct(false);
-  bindBuildSelectorToProduct(false);
+  let productSelect = document.getElementById('id_product');
+
+  bindVersionSelectorToProduct(
+    productSelect, document.getElementById('id_product_version'), false
+  );
+  bindBuildSelectorToProduct(
+    productSelect, document.getElementById('id_build'), false
+  );
+
   jQ('input[type=checkbox][name^=select_property_id_]').each(function () {
     jQ(this).on('click', function (){
       let parent = jQ(this).parent();

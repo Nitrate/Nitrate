@@ -19,23 +19,22 @@ Nitrate.Report.Builds.on_load = function () {
 };
 
 Nitrate.Report.CustomSearch.on_load = function () {
-  if (jQ('#id_pk__in').length) {
-    bindBuildSelectorToProduct(false, jQ('#id_product')[0], jQ('#id_pk__in')[0]);
-  }
+  let productSelect = document.getElementById('id_product');
 
-  if (jQ('#id_build_run__product_version').length) {
-    bindVersionSelectorToProduct(
-      true, false, jQ('#id_product')[0], jQ('#id_build_run__product_version')[0]
-    );
-  }
+  bindBuildSelectorToProduct(
+    productSelect, document.getElementById('id_pk__in'), false
+  );
+  bindVersionSelectorToProduct(
+    productSelect, document.getElementById('id_build_run__product_version'), true
+  );
+  bindCategorySelectorToProduct(
+    productSelect, document.getElementById('id_testcaserun__case__category'), true
+  );
+  bindComponentSelectorToProduct(
+    productSelect, document.getElementById('id_testcaserun__case__component'), true
+  );
 
-  if (jQ('#id_testcaserun__case__category').length) {
-    bindCategorySelectorToProduct(true, false, jQ('#id_product')[0], jQ('#id_testcaserun__case__category')[0]);
-  }
-
-  if (jQ('#id_testcaserun__case__component').length) {
-    bindComponentSelectorToProduct(true, false, jQ('#id_product')[0], jQ('#id_testcaserun__case__component')[0]);
-  }
+  jQ('#id_product').trigger('change');
 
   if (jQ('#id_table_report').length) {
     jQ('#id_table_report').dataTable({
@@ -58,13 +57,9 @@ Nitrate.Report.CustomSearch.on_load = function () {
 };
 
 Nitrate.Report.CustomDetails.on_load = function () {
-  if (jQ('#id_pk__in').length) {
-    bindBuildSelectorToProduct(false, jQ('#id_product')[0], jQ('#id_pk__in')[0]);
-  }
-
-  if (jQ('#id_build_run__product_version').length) {
-    bindVersionSelectorToProduct(
-      true, false, jQ('#id_product')[0], jQ('#id_build_run__product_version')[0]
-    );
-  }
+  bindBuildSelectorToProduct(
+    document.getElementById('id_product'),
+    document.getElementById('id_pk__in'),
+    false
+  );
 };

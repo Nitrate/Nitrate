@@ -419,55 +419,33 @@ function setUpChoices(elemSelect, values, addBlankOption) {
   });
 }
 
-function getBuildsByProductId(allowBlank, productField, buildField) {
-  if (!productField) {
-    productField = jQ('#id_product')[0];
-  }
-
-  if (!buildField) {
-    if (jQ('#id_build').length) {
-      buildField = jQ('#id_build')[0];
-    } else {
-      window.alert('Build field does not exist');
-      return false;
-    }
-  }
-
-  let productId = jQ(productField).val();
-  let noProductIsSelected = productId === '' || productId === null;
-  if (noProductIsSelected) {
-    jQ(buildField).html('<option value="">---------</option>');
-    return false;
-  }
-
-  let isActive = '';
-  if (jQ('#value_sub_module').length) {
-    if (jQ('#value_sub_module').val() === 'new_run') {
-      isActive = true;
-    }
-  }
-
-  if (isActive) {
-    isActive = true;
+/**
+ * Request builds associated with product and update the build select list
+ * @param {HTMLSelectElement} productId
+ * @param {HTMLSelectElement} buildSelect
+ * @param {boolean} addBlankOption
+ */
+function getBuildsByProductId(productId, buildSelect, addBlankOption) {
+  let data = {'info_type': 'builds', 'product_id': productId}
+  if (jQ('#value_sub_module').val() === 'new_run') {
+    // The backend only checks if is_active appears in the request and whatever
+    // the value it has.
+    data.is_active = '1'
   }
 
   getRequest({
     url: '/management/getinfo/',
-    data: {
-      'info_type': 'builds',
-      'product_id': productId,
-      'is_active': isActive
-    },
+    data: data,
     errorMessage: 'Update builds failed.',
     success: function (data) {
       setUpChoices(
-        buildField,
+        buildSelect,
         data.map(function (o) { return [o.pk, o.fields.name]; }),
-        allowBlank
+        addBlankOption
       );
 
       if (jQ('#value_sub_module').length && jQ('#value_sub_module').val() === 'new_run') {
-        if(jQ(buildField).html() === '') {
+        if(jQ(buildSelect).html() === '') {
           window.alert('You should create new build first before create new run');
         }
       }
@@ -475,103 +453,44 @@ function getBuildsByProductId(allowBlank, productField, buildField) {
   });
 }
 
-// TODO: remove this function. It is not used.
-function getEnvsByProductId(allowBlank, productField) {
-  if (!productField) {
-    productField = jQ('#id_product')[0];
-  }
-
-  let productId = jQ(productField).val();
-  let args = false;
-  if (jQ('#value_sub_module').length) {
-    if (jQ('#value_sub_module').val() === 'new_run') {
-      args = 'is_active';
-    }
-  }
-
-  if(productId === '') {
-    jQ('#id_env_id').html('<option value="">---------</option>');
-    return true;
-  }
-
-  getRequest({
-    url: '/management/getinfo/',
-    data: {info_type: 'envs', product_id: productId, args: args},
-    errorMessage: 'Update builds and envs failed',
-    success: function (data) {
-      setUpChoices(
-        jQ('#id_env_id')[0],
-        data.map(function (o) {return [o.pk, o.fields.name];}),
-        allowBlank
-      );
-
-      if (document.title === 'Create new test run') {
-        if (jQ('#id_env_id').html() === '') {
-          window.alert('You should create new enviroment first before create new run');
-        }
-      }
-    }
-  });
-}
-
-function getVersionsByProductId(allowBlank, productField, versionField) {
-  // FIXME: why not use the passed-in value?
-  productField = jQ('#id_product')[0];
-
-  if (!versionField) {
-    if (jQ('#id_product_version').length) {
-      versionField = jQ('#id_product_version')[0];
-    } else {
-      window.alert('Version field does not exist');
-      return false;
-    }
-  }
-
-  let productId = jQ(productField).val();
-
-  if (!productId && allowBlank) {
-    jQ(versionField).html('<option value="">---------</option>');
-    return true;
-  }
-
+/**
+ * Update product version select list according to a specific product
+ * @param {number} productId
+ * @param {HTMLSelectElement} versionSelect
+ * @param {boolean} addBlankOption
+ */
+function getVersionsByProductId(productId, versionSelect, addBlankOption) {
   getRequest({
     url: '/management/getinfo/',
     data: {'info_type': 'versions', 'product_id': productId},
     success: function (data) {
       setUpChoices(
-        versionField,
+        versionSelect,
         data.map(function (o) { return [o.pk, o.fields.value]; }),
-        allowBlank
+        addBlankOption
       );
     },
     errorMessage: 'Update versions failed.',
   });
 }
 
-function getComponentsByProductId(allowBlank, productField, componentField, callback) {
-  productField = productField || jQ('#id_product')[0];
-
-  if (!componentField) {
-    if (jQ('#id_component').length) {
-      componentField = jQ('#id_component')[0];
-    } else {
-      window.alert('Component field does not exist');
-      return false;
-    }
-  }
-
+/**
+ * Update associated components of a specific product
+ * @param {String} productId - the product Id to update the associated components.
+ * @param {HTMLSelectElement} componentSelect
+ * @param {boolean} addBlankOption
+ * @param [callback]
+ */
+function getComponentsByProductId(productId, componentSelect, addBlankOption, callback) {
   getRequest({
     url: '/management/getinfo/',
-    data: {
-      info_type: 'components',
-      product_id: jQ(productField).val()
-    },
+    data: {info_type: 'components', product_id: productId},
     errorMessage: 'Update components failed.',
     success: function (data) {
       setUpChoices(
-        componentField,
+        componentSelect,
         data.map(function (o) { return [o.pk, o.fields.name]; }),
-        allowBlank
+        addBlankOption
       );
 
       if (callback) { callback(); }
@@ -581,108 +500,92 @@ function getComponentsByProductId(allowBlank, productField, componentField, call
 
 /**
  * Refresh categories related to a product and fill in a SELECT element.
- * @param {boolean} allowBlank - whether to add a special option item to SELECT as a blank selected option.
- * @param productField - the SELECT element.
- * @param categoryField - the category element to fill in.
+ * @param {String} productId - the product Id used to update associated categoies.
+ * @param {HTMLSelectElement} categorySelect - the category element to fill in.
+ * @param {boolean} addBlankOption - whether to add a special option item to SELECT as a blank
+ *                                   selected option.
  */
-function getCategoriesByProductId(allowBlank, productField, categoryField) {
-  if (!productField) {
-    productField = jQ('#id_product')[0];
-  }
-
-  if (!categoryField) {
-    if (jQ('#id_category').length) {
-      categoryField = jQ('#id_category')[0];
-    } else {
-      window.alert('Category field does not exist');
-      return false;
-    }
-  }
-
-  if (jQ(productField).val() === '') {
-    jQ(categoryField).html('<option value="">---------</option>');
-    return true;
-  }
-
+function getCategoriesByProductId(productId, categorySelect, addBlankOption) {
   getRequest({
     url: '/management/getinfo/',
-    data: {
-      info_type: 'categories',
-      product_id: productField.selectedOptions[0].value
-    },
+    data: {info_type: 'categories', product_id: productId},
     errorMessage: 'Update category failed.',
     success: function (data) {
       setUpChoices(
-        categoryField,
+        categorySelect,
         data.map(function (o) {return [o.pk, o.fields.name];}),
-        allowBlank
+        addBlankOption
       );
     },
   });
 }
 
-function checkProductField(productField) {
-  if (productField) {
-    return productField;
-  }
-
-  if (jQ('#id_product').length) {
-    return jQ('#id_product')[0];
-  }
-
-  return false;
-}
-
-function bindBuildSelectorToProduct(allowBlank, productField, buildField) {
-  productField = checkProductField(productField);
-
-  if (productField) {
-    jQ(productField).on('change', function () {
-      getBuildsByProductId(allowBlank, productField, buildField);
-    });
-
-    getBuildsByProductId(allowBlank, productField, buildField);
-  }
-}
-
-function bindVersionSelectorToProduct(allowBlank, load, productField, versionField) {
-  productField = checkProductField(productField);
-
-  if (productField) {
-    jQ(productField).on('change', function () {
-      getVersionsByProductId(allowBlank, productField, versionField);
-    });
-    if (load) {
-      getVersionsByProductId(allowBlank, productField, versionField);
+/**
+ * Bind product select change event to update associated builds
+ * @param {HTMLSelectElement} productSelect
+ * @param {HTMLSelectElement} buildSelect
+ * @param {boolean} addBlankOption
+ */
+function bindBuildSelectorToProduct(productSelect, buildSelect, addBlankOption) {
+  jQ(productSelect).on('change', function () {
+    let selectedProductId = this.selectedOptions[0].value;
+    if (selectedProductId === '') {
+      setUpChoices(buildSelect, [], true);
+    } else {
+      getBuildsByProductId(selectedProductId, buildSelect, addBlankOption);
     }
-  }
+  })
 }
 
-function bindCategorySelectorToProduct(allowBlank, load, productField, categoryField) {
-  productField = checkProductField(productField);
-
-  if (productField) {
-    jQ(productField).on('change', function () {
-      getCategoriesByProductId(allowBlank, productField, categoryField);
-    });
-    if (load) {
-      getCategoriesByProductId(allowBlank);
+/**
+ * Bind product select change event to update associated product versions
+ * @param {HTMLSelectElement} productSelect
+ * @param {HTMLSelectElement} versionSelect
+ * @param {boolean} addBlankOption
+ */
+function bindVersionSelectorToProduct(productSelect, versionSelect, addBlankOption) {
+  jQ(productSelect).on('change', function () {
+    let selectedProductId = this.selectedOptions[0].value;
+    if (selectedProductId === '') {
+      setUpChoices(versionSelect, [], true);
+    } else {
+      getVersionsByProductId(selectedProductId, versionSelect, addBlankOption);
     }
-  }
+  });
 }
 
-function bindComponentSelectorToProduct(allowBlank, load, productField, componentField) {
-  productField = checkProductField(productField);
-
-  if (productField) {
-    jQ(productField).on('change', function () {
-      getComponentsByProductId(allowBlank, productField, componentField);
-    });
-
-    if (load) {
-      getComponentsByProductId(allowBlank);
+/**
+ * Bind product select change event to update associated categories
+ * @param {HTMLSelectElement} productSelect
+ * @param {HTMLSelectElement} categorySelect
+ * @param {boolean} addBlankOption
+ */
+function bindCategorySelectorToProduct(productSelect, categorySelect, addBlankOption) {
+  jQ(productSelect).on('change', function () {
+    let productId = this.selectedOptions[0].value;
+    if (productId === '') {
+      setUpChoices(categorySelect, [], true);
+    } else {
+      getCategoriesByProductId(productId, categorySelect, addBlankOption);
     }
-  }
+  });
+}
+
+/**
+ * Bind product select change event to update associated components
+ * @param {HTMLSelectElement} productSelect
+ * @param {HTMLSelectElement} componentSelect
+ * @param {boolean} addBlankOption
+ */
+function bindComponentSelectorToProduct(productSelect, componentSelect, addBlankOption) {
+  jQ(productSelect).on('change', function () {
+    let selectedProductId = this.selectedOptions[0].value;
+    if (selectedProductId === '') {
+      setUpChoices(componentSelect, [], true);
+    } else {
+      getComponentsByProductId(selectedProductId, componentSelect, addBlankOption);
+    }
+  });
 }
 
 // Stolen from http://stackoverflow.com/questions/133925/javascript-post-request-like-a-form-submit
@@ -1042,10 +945,10 @@ function renderComponentForm(container, parameters, formObserve) {
         )
       );
       bindComponentSelectorToProduct(
-        false, false, jQ('#id_product')[0], jQ('#id_o_component')[0]
+        document.getElementById('id_product'),
+        document.getElementById('id_o_component'),
+        false
       );
     }
   });
 }
-
-
