@@ -53,7 +53,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestCases.Clone.on_load);
 				{% endif %}
 				</div>
 			</div>
-			<form id="id_clone_form" action="{% url "cases-clone" %}" method="post">
+			<form id="id_clone_form" action="{% url "cases-clone" %}" method="post">{% csrf_token %}
 				{{ form.case_id }}
 				<div class="listinfo">
 					<label class="strong title"></label>

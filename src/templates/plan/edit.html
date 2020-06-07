@@ -47,7 +47,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestPlans.Edit.on_load);
 			</a>
 		</span>
 	</div>
-	<form action="{% url "plan-edit" test_plan.plan_id %}" method="post" enctype="multipart/form-data">
+	<form action="{% url "plan-edit" test_plan.plan_id %}" method="post" enctype="multipart/form-data">{% csrf_token %}
 		<div id="" class="Detailform border-1">
 			<table class="editor" cellspacing="0">
 				<tr>
