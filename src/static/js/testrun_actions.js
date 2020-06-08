@@ -660,13 +660,8 @@ Nitrate.TestRuns.Clone.on_load = function () {
   jQ('input[type=checkbox][name^=select_property_id_]').each(function () {
     jQ(this).on('click', function (){
       let parent = jQ(this).parent();
-      if (this.checked) {
-        jQ('select', parent).prop('disabled', false);
-        jQ('input[type=hidden]', parent).prop('disabled', false);
-      } else {
-        jQ('select', parent).prop('disabled', true);
-        jQ('input[type=hidden]', parent).prop('disabled', true);
-      }
+      jQ('select', parent).prop('disabled', !this.checked);
+      jQ('input[type=hidden]', parent).prop('disabled', !this.checked);
     });
   });
 

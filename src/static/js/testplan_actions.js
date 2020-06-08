@@ -579,11 +579,7 @@ Nitrate.TestPlans.List.on_load = function () {
 
   if (jQ('#id_check_all_plans').length) {
     jQ('#id_check_all_plans').on('click', function () {
-      if (this.checked) {
-        jQ('#plan_list_printable').prop('disabled', false);
-      } else {
-        jQ('#plan_list_printable').prop('disabled', true);
-      }
+      jQ('#plan_list_printable').prop('disabled', !this.checked);
     });
   }
 

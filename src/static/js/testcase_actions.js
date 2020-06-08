@@ -162,11 +162,7 @@ Nitrate.TestCases.List.on_load = function () {
 
   if (jQ('#id_checkbox_all_case')[0]) {
     jQ('#id_checkbox_all_case').on('click', function () {
-      if (this.checked) {
-        jQ('#case_list_printable').prop('disabled', false);
-      } else {
-        jQ('#case_list_printable').prop('disabled', true);
-      }
+      jQ('#case_list_printable').prop('disabled', !this.checked);
     });
   }
 
