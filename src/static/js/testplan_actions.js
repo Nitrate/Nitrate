@@ -1014,26 +1014,6 @@ function unlinkCasesFromPlan(container, form, table) {
   });
 }
 
-// TODO: merge this function with above
-function toggleTestCaseReviewPane(options) {
-  let casePaneContainer = options.casePaneContainer;
-
-  // If any of these is invalid, just keep quiet and don't display anything.
-  if (options.case_id === undefined || casePaneContainer === undefined) {
-    return;
-  }
-
-  casePaneContainer.toggle();
-
-  if (casePaneContainer.find('.ajax_loading').length) {
-    sendHTMLRequest({
-      url: '/case/' + options.case_id + '/review-pane/',
-      container: casePaneContainer,
-      callbackAfterFillIn: options.callback
-    });
-  }
-}
-
 // Deprecated. Remove when it's unusable any more.
 function changeCaseOrder(parameters, callback) {
   let nsk = '';
@@ -1206,11 +1186,14 @@ function bindEventsOnLoadedCases(options) {
           caseContentCallback = function () {};
       }
 
-      toggleTestCaseReviewPane({
-        'case_id': caseId,
-        'casePaneContainer': jQ(content),
-        'callback': caseContentCallback
-      });
+      toggleTestCasePane(
+        {
+          'case_id': caseId,
+          'casePaneContainer': jQ(content),
+          'reviewing': true
+        },
+        caseContentCallback
+      );
       toggleExpandArrow({
         'caseRowContainer': jQ(title),
         'expandPaneContainer': jQ(content)

@@ -903,6 +903,14 @@ function blindupAllCases(element) {
   }
 }
 
+/**
+ * Toggle a test case detail pane.
+ * @param {Object} options
+ * @param {String|number} options.case_id
+ * @param {Object} options.casePaneContainer
+ * @param {boolean} options.reviewing
+ * @param {Function} [callback]
+ */
 function toggleTestCasePane(options, callback) {
   let casePaneContainer = options.casePaneContainer;
 
@@ -914,13 +922,13 @@ function toggleTestCasePane(options, callback) {
   casePaneContainer.toggle();
 
   if (casePaneContainer.find('.ajax_loading').length) {
+    let endpoint = options.reviewing ? '/review-pane/' : '/readonly-pane/'
     sendHTMLRequest({
-      url: '/case/' + options.case_id + '/readonly-pane/',
+      url: '/case/' + options.case_id + endpoint,
       container: casePaneContainer,
       callbackAfterFillIn: callback
     });
   }
-
 }
 
 function renderComponentForm(container, parameters, formObserve) {
