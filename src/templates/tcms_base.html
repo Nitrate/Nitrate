@@ -88,8 +88,8 @@
 	{% endcache %}
 
 	<script type="text/javascript">
-		jQ(window).bind('load', function() {
-			jQ('#js-execute-search').bind('click', function() {
+		jQ(window).on('load', function() {
+			jQ('#js-execute-search').on('click', function() {
 			  jQ('#search_content').val() === '' || this.form.submit();
 			});
 		});

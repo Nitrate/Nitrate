@@ -56,13 +56,13 @@
 	</table>
 </form>
 <script type="text/javascript">
-	jQ('.js-remove-tag').bind('click', function() {
+	jQ('.js-remove-tag').on('click', function() {
 		removeTag(jQ('#tag')[0], jQ(this).parents('.js-one-tag').attr('data-param'));
 	});
-	jQ('.js-edit-tag').bind('click', function() {
+	jQ('.js-edit-tag').on('click', function() {
 		editTag(jQ('#tag')[0], jQ(this).parents('.js-one-tag').attr('data-param'));
 	});
-	jQ('#js-add-tag').bind('click', function() {
+	jQ('#js-add-tag').on('click', function() {
 		addTag(jQ('#tag')[0]);
 	});
 </script>
