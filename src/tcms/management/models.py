@@ -250,12 +250,15 @@ class TestBuild(TCMSActionModel):
             q = q.filter(name=query['name'])
         if query.get('product'):
             q = q.filter(product=query['product'])
-        if query.get('product_id'):
-            q = q.filter(product__id=query['product_id'])
         if query.get('milestone'):
             q = q.filter(milestone=query['milestone'])
         if query.get('is_active'):
             q = q.filter(is_active=query['is_active'])
+
+        product_ids = query.get('product_ids')
+        if product_ids is not None:
+            assert isinstance(product_ids, list)
+            q = q.filter(product__in=product_ids)
 
         return q.all()
 

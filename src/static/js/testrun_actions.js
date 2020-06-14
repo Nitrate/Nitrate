@@ -141,12 +141,22 @@ Nitrate.TestRuns.AdvancedSearch.on_load = function () {
 }
 
 Nitrate.TestRuns.List.on_load = function () {
-  let productSelect = document.getElementById('id_product');
-
-  bindVersionSelectorToProduct(
-    productSelect, document.getElementById('id_product_version'), true
+  registerProductAssociatedObjectUpdaters(
+    document.getElementById('id_product'),
+    false,
+    [
+      {
+        func: getBuildsByProductId,
+        targetElement: document.getElementById('id_build'),
+        addBlankOption: true,
+      },
+      {
+        func: getVersionsByProductId,
+        targetElement: document.getElementById('id_product_version'),
+        addBlankOption: true,
+      }
+    ]
   );
-  bindBuildSelectorToProduct(productSelect, document.getElementById('id_build'), true);
 
   //Nitrate.Utils.enableShiftSelectOnCheckbox('run_selector');
 
@@ -592,13 +602,21 @@ Nitrate.TestRuns.Details.on_load = function () {
 };
 
 Nitrate.TestRuns.New.on_load = function () {
-  let productSelect = document.getElementById('id_product');
-
-  bindBuildSelectorToProduct(
-    productSelect, document.getElementById('id_build'), false
-  );
-  bindVersionSelectorToProduct(
-    productSelect, document.getElementById('id_product_version'), false
+  registerProductAssociatedObjectUpdaters(
+    document.getElementById('id_product'),
+    false,
+    [
+      {
+        func: getBuildsByProductId,
+        targetElement: document.getElementById('id_build'),
+        addBlankOption: false,
+      },
+      {
+        func: getVersionsByProductId,
+        targetElement: document.getElementById('id_product_version'),
+        addBlankOption: false,
+      }
+    ]
   );
 
   if (jQ('#testcases').length) {
@@ -621,13 +639,21 @@ Nitrate.TestRuns.New.on_load = function () {
 };
 
 Nitrate.TestRuns.Edit.on_load = function () {
-  let productSelect = document.getElementById('id_product');
-
-  bindVersionSelectorToProduct(
-    productSelect, document.getElementById('id_product_version'), false
-  );
-  bindBuildSelectorToProduct(
-    productSelect, document.getElementById('id_build'), false
+  registerProductAssociatedObjectUpdaters(
+    document.getElementById('id_product'),
+    false,
+    [
+      {
+        func: getBuildsByProductId,
+        targetElement: document.getElementById('id_build'),
+        addBlankOption: false,
+      },
+      {
+        func: getVersionsByProductId,
+        targetElement: document.getElementById('id_product_version'),
+        addBlankOption: false,
+      }
+    ]
   );
 
   if (jQ('#id_auto_update_run_status').prop('checked')) {
@@ -648,13 +674,21 @@ Nitrate.TestRuns.Edit.on_load = function () {
 };
 
 Nitrate.TestRuns.Clone.on_load = function () {
-  let productSelect = document.getElementById('id_product');
-
-  bindVersionSelectorToProduct(
-    productSelect, document.getElementById('id_product_version'), false
-  );
-  bindBuildSelectorToProduct(
-    productSelect, document.getElementById('id_build'), false
+  registerProductAssociatedObjectUpdaters(
+    document.getElementById('id_product'),
+    false,
+    [
+      {
+        func: getBuildsByProductId,
+        targetElement: document.getElementById('id_build'),
+        addBlankOption: false,
+      },
+      {
+        func: getVersionsByProductId,
+        targetElement: document.getElementById('id_product_version'),
+        addBlankOption: false,
+      }
+    ]
   );
 
   jQ('input[type=checkbox][name^=select_property_id_]').each(function () {

@@ -19,22 +19,32 @@ Nitrate.Report.Builds.on_load = function () {
 };
 
 Nitrate.Report.CustomSearch.on_load = function () {
-  let productSelect = document.getElementById('id_product');
-
-  bindBuildSelectorToProduct(
-    productSelect, document.getElementById('id_pk__in'), false
+  registerProductAssociatedObjectUpdaters(
+    document.getElementById('id_product'),
+    true,
+    [
+      {
+        func: getBuildsByProductId,
+        targetElement: document.getElementById('id_pk__in'),
+        addBlankOption: false,
+      },
+      {
+        func: getVersionsByProductId,
+        targetElement: document.getElementById('id_build_run__product_version'),
+        addBlankOption: true
+      },
+      {
+        func: getCategoriesByProductId,
+        targetElement: document.getElementById('id_testcaserun__case__category'),
+        addBlankOption: true
+      },
+      {
+        func: getComponentsByProductId,
+        targetElement: document.getElementById('id_testcaserun__case__component'),
+        addBlankOption: true
+      },
+    ]
   );
-  bindVersionSelectorToProduct(
-    productSelect, document.getElementById('id_build_run__product_version'), true
-  );
-  bindCategorySelectorToProduct(
-    productSelect, document.getElementById('id_testcaserun__case__category'), true
-  );
-  bindComponentSelectorToProduct(
-    productSelect, document.getElementById('id_testcaserun__case__component'), true
-  );
-
-  jQ('#id_product').trigger('change');
 
   if (jQ('#id_table_report').length) {
     jQ('#id_table_report').dataTable({
@@ -57,9 +67,15 @@ Nitrate.Report.CustomSearch.on_load = function () {
 };
 
 Nitrate.Report.CustomDetails.on_load = function () {
-  bindBuildSelectorToProduct(
+  registerProductAssociatedObjectUpdaters(
     document.getElementById('id_product'),
-    document.getElementById('id_pk__in'),
-    false
+    false,
+    [
+      {
+        func: getBuildsByProductId,
+        targetElement: document.getElementById('id_pk__in'),
+        addBlankOption: false
+      }
+    ]
   );
 };

@@ -421,12 +421,13 @@ function setUpChoices(elemSelect, values, addBlankOption) {
 
 /**
  * Request builds associated with product and update the build select list
- * @param {HTMLSelectElement} productId
+ * @param {string[]} productIds
  * @param {HTMLSelectElement} buildSelect
  * @param {boolean} addBlankOption
  */
-function getBuildsByProductId(productId, buildSelect, addBlankOption) {
-  let data = {'info_type': 'builds', 'product_id': productId}
+function getBuildsByProductId(productIds, buildSelect, addBlankOption) {
+  let data = {info_type: 'builds', product_id: productIds}
+
   if (jQ('#value_sub_module').val() === 'new_run') {
     // The backend only checks if is_active appears in the request and whatever
     // the value it has.
@@ -436,6 +437,7 @@ function getBuildsByProductId(productId, buildSelect, addBlankOption) {
   getRequest({
     url: '/management/getinfo/',
     data: data,
+    traditional: true,
     errorMessage: 'Update builds failed.',
     success: function (data) {
       setUpChoices(
@@ -455,14 +457,15 @@ function getBuildsByProductId(productId, buildSelect, addBlankOption) {
 
 /**
  * Update product version select list according to a specific product
- * @param {number} productId
+ * @param {string[]} productIds
  * @param {HTMLSelectElement} versionSelect
  * @param {boolean} addBlankOption
  */
-function getVersionsByProductId(productId, versionSelect, addBlankOption) {
+function getVersionsByProductId(productIds, versionSelect, addBlankOption) {
   getRequest({
     url: '/management/getinfo/',
-    data: {'info_type': 'versions', 'product_id': productId},
+    data: {info_type: 'versions', product_id: productIds},
+    traditional: true,
     success: function (data) {
       setUpChoices(
         versionSelect,
@@ -476,15 +479,16 @@ function getVersionsByProductId(productId, versionSelect, addBlankOption) {
 
 /**
  * Update associated components of a specific product
- * @param {String} productId - the product Id to update the associated components.
+ * @param {string[]} productIds - the product Id to update the associated components.
  * @param {HTMLSelectElement} componentSelect
  * @param {boolean} addBlankOption
  * @param [callback]
  */
-function getComponentsByProductId(productId, componentSelect, addBlankOption, callback) {
+function getComponentsByProductId(productIds, componentSelect, addBlankOption, callback) {
   getRequest({
     url: '/management/getinfo/',
-    data: {info_type: 'components', product_id: productId},
+    data: {info_type: 'components', product_id: productIds},
+    traditional: true,
     errorMessage: 'Update components failed.',
     success: function (data) {
       setUpChoices(
@@ -500,15 +504,16 @@ function getComponentsByProductId(productId, componentSelect, addBlankOption, ca
 
 /**
  * Refresh categories related to a product and fill in a SELECT element.
- * @param {String} productId - the product Id used to update associated categoies.
+ * @param {string[]} productIds - the product Id used to update associated categories.
  * @param {HTMLSelectElement} categorySelect - the category element to fill in.
  * @param {boolean} addBlankOption - whether to add a special option item to SELECT as a blank
  *                                   selected option.
  */
-function getCategoriesByProductId(productId, categorySelect, addBlankOption) {
+function getCategoriesByProductId(productIds, categorySelect, addBlankOption) {
   getRequest({
     url: '/management/getinfo/',
-    data: {info_type: 'categories', product_id: productId},
+    data: {info_type: 'categories', product_id: productIds},
+    traditional: true,
     errorMessage: 'Update category failed.',
     success: function (data) {
       setUpChoices(
@@ -521,71 +526,43 @@ function getCategoriesByProductId(productId, categorySelect, addBlankOption) {
 }
 
 /**
- * Bind product select change event to update associated builds
- * @param {HTMLSelectElement} productSelect
- * @param {HTMLSelectElement} buildSelect
- * @param {boolean} addBlankOption
+ * Register updaters to update associated objects when select specific product options.
+ * @param {HTMLElement} productSelect - the product SELECT element. Associated objects are changed
+ *                                      accordingly when select one or more options.
+ * @param {boolean} triggerProductSelect - whether to trigger the product SELECT element change
+ *                                         event immediately just after binding the change event handler.
+ * @param {Object[]} updaters
+ * @param {Function} updaters.func - the function to be called to get associated objects from server side, and then
+ *                                   fill in the target element. This function must have three arguments, the first one
+ *                                   accepts selected product IDs from the product element, the second one accepts
+ *                                   the target element, and the last one indicates whether to add a blank option.
+ * @param {HTMLElement} updaters.targetElement - the target element to fill in with the associated objects.
+ * @param {boolean} updaters.addBlankOption - whether to add a blank option as the first option. This will be passed to
  */
-function bindBuildSelectorToProduct(productSelect, buildSelect, addBlankOption) {
+function registerProductAssociatedObjectUpdaters(productSelect, triggerProductSelect, updaters) {
   jQ(productSelect).on('change', function () {
-    let selectedProductId = this.selectedOptions[0].value;
-    if (selectedProductId === '') {
-      setUpChoices(buildSelect, [], true);
-    } else {
-      getBuildsByProductId(selectedProductId, buildSelect, addBlankOption);
+    let selectedOptions = [];
+    for (let i = 0; i < this.selectedOptions.length; i++) {
+      selectedOptions.push(this.selectedOptions.item(i));
     }
+    let hasEmptySelection = selectedOptions.filter(function (option) {return option.value === '';}).length > 0;
+
+    if (selectedOptions.length === 0 || hasEmptySelection) {
+      updaters.forEach(function (updaterInfo) {
+        setUpChoices(updaterInfo.targetElement, [], true);
+      });
+      return;
+    }
+
+    let selectedProductIds = selectedOptions.map(function (option) {return option.value;});
+    updaters.forEach(function (updaterInfo) {
+      updaterInfo.func(selectedProductIds, updaterInfo.targetElement, updaterInfo.addBlankOption);
+    });
   })
-}
 
-/**
- * Bind product select change event to update associated product versions
- * @param {HTMLSelectElement} productSelect
- * @param {HTMLSelectElement} versionSelect
- * @param {boolean} addBlankOption
- */
-function bindVersionSelectorToProduct(productSelect, versionSelect, addBlankOption) {
-  jQ(productSelect).on('change', function () {
-    let selectedProductId = this.selectedOptions[0].value;
-    if (selectedProductId === '') {
-      setUpChoices(versionSelect, [], true);
-    } else {
-      getVersionsByProductId(selectedProductId, versionSelect, addBlankOption);
-    }
-  });
-}
-
-/**
- * Bind product select change event to update associated categories
- * @param {HTMLSelectElement} productSelect
- * @param {HTMLSelectElement} categorySelect
- * @param {boolean} addBlankOption
- */
-function bindCategorySelectorToProduct(productSelect, categorySelect, addBlankOption) {
-  jQ(productSelect).on('change', function () {
-    let productId = this.selectedOptions[0].value;
-    if (productId === '') {
-      setUpChoices(categorySelect, [], true);
-    } else {
-      getCategoriesByProductId(productId, categorySelect, addBlankOption);
-    }
-  });
-}
-
-/**
- * Bind product select change event to update associated components
- * @param {HTMLSelectElement} productSelect
- * @param {HTMLSelectElement} componentSelect
- * @param {boolean} addBlankOption
- */
-function bindComponentSelectorToProduct(productSelect, componentSelect, addBlankOption) {
-  jQ(productSelect).on('change', function () {
-    let selectedProductId = this.selectedOptions[0].value;
-    if (selectedProductId === '') {
-      setUpChoices(componentSelect, [], true);
-    } else {
-      getComponentsByProductId(selectedProductId, componentSelect, addBlankOption);
-    }
-  });
+  if (triggerProductSelect) {
+    jQ('#id_product').trigger('change');
+  }
 }
 
 // Stolen from http://stackoverflow.com/questions/133925/javascript-post-request-like-a-form-submit
@@ -952,10 +929,16 @@ function renderComponentForm(container, parameters, formObserve) {
           'Press "Ctrl" to select multiple default component', c[0]
         )
       );
-      bindComponentSelectorToProduct(
+      registerProductAssociatedObjectUpdaters(
         document.getElementById('id_product'),
-        document.getElementById('id_o_component'),
-        false
+        false,
+        [
+          {
+            func: getComponentsByProductId,
+            targetElement: document.getElementById('id_o_component'),
+            addBlankOption: false
+          }
+        ]
       );
     }
   });

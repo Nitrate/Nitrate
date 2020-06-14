@@ -67,12 +67,21 @@ Nitrate.TestCases.AdvanceList.on_load = function () {
 };
 
 Nitrate.TestCases.List.on_load = function () {
-  bindCategorySelectorToProduct(
-    document.getElementById('id_product'), document.getElementById('id_category'), true
-  );
-
-  bindComponentSelectorToProduct(
-    document.getElementById('id_product'), document.getElementById('id_component'), true
+  registerProductAssociatedObjectUpdaters(
+    document.getElementById('id_product'),
+    false,
+    [
+      {
+        func: getCategoriesByProductId,
+        targetElement: document.getElementById('id_category'),
+        addBlankOption: true
+      },
+      {
+        func: getComponentsByProductId,
+        targetElement: document.getElementById('id_component'),
+        addBlankOption: true
+      }
+    ]
   );
 
   /* Event handlers of case expansion/collapse */
@@ -347,8 +356,16 @@ Nitrate.TestCases.Create.on_load = function () {
 };
 
 Nitrate.TestCases.Edit.on_load = function () {
-  bindCategorySelectorToProduct(
-    document.getElementById('id_product'), document.getElementById('id_category'), false
+  registerProductAssociatedObjectUpdaters(
+    document.getElementById('id_product'),
+    false,
+    [
+      {
+        func: getCategoriesByProductId,
+        targetElement: document.getElementById('id_category'),
+        addBlankOption: false
+      }
+    ]
   );
 
   resizeTinymceEditors();
@@ -359,10 +376,16 @@ Nitrate.TestCases.Edit.on_load = function () {
 };
 
 Nitrate.TestCases.Clone.on_load = function () {
-  bindVersionSelectorToProduct(
+  registerProductAssociatedObjectUpdaters(
     document.getElementById('id_product'),
-    document.getElementById('id_product_version'),
-    true
+    false,
+    [
+      {
+        func: getVersionsByProductId,
+        targetElement: document.getElementById('id_product_version'),
+        addBlankOption: true
+      }
+    ]
   );
 
   jQ('#id_form_search_plan').on('submit', function (e) {

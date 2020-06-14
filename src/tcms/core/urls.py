@@ -21,7 +21,6 @@ urlpatterns = [
     path('ajax/update/cases-reviewer/', ajax.update_cases_reviewer),
     path('ajax/update/cases-sortkey/', ajax.update_cases_sortkey),
     path('ajax/form/', ajax.form, name='ajax-form'),
-    path('ajax/get-prod-relate-obj/', ajax.get_prod_related_obj_json),
     path('management/getinfo/', ajax.info, name='ajax-getinfo'),
     path('management/tags/', ajax.tag),
 

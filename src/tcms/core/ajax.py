@@ -26,11 +26,9 @@ import tcms.comments.models
 
 from tcms.core import utils
 from tcms.core.responses import JsonResponseForbidden, JsonResponseBadRequest, JsonResponseNotFound
-from tcms.management.models import Component, TestBuild, Version
 from tcms.management.models import Priority
 from tcms.management.models import TestTag
 from tcms.testcases.models import TestCase
-from tcms.testcases.models import TestCaseCategory
 from tcms.testcases.models import TestCaseStatus
 from tcms.testcases.views import get_selected_testcases
 from tcms.testcases.views import plan_from_request_or_none
@@ -73,34 +71,31 @@ def info(request):
             'env_properties', 'env_values', 'tags', 'users', 'versions'
         ]
 
-        def __init__(self, request, product_id=None):
+        def __init__(self, request, product_ids=None):
             self.request = request
-            self.product_id = product_id
+            self.product_ids = product_ids
             self.internal_parameters = ('info_type', 'field', 'format')
 
         def builds(self):
             from tcms.management.models import TestBuild
 
             query = {
-                'product_id': self.product_id,
+                'product_ids': self.product_ids,
                 'is_active': self.request.GET.get('is_active')
             }
             return TestBuild.list(query)
 
         def categories(self):
             from tcms.testcases.models import TestCaseCategory
-
-            return TestCaseCategory.objects.filter(product__id=self.product_id)
+            return TestCaseCategory.objects.filter(product__in=self.product_ids)
 
         def components(self):
             from tcms.management.models import Component
-
-            return Component.objects.filter(product__id=self.product_id)
+            return Component.objects.filter(product__in=self.product_ids)
 
         def envs(self):
             from tcms.management.models import TestEnvironment
-
-            return TestEnvironment.objects.filter(product__id=self.product_id)
+            return TestEnvironment.objects.filter(product__in=self.product_ids)
 
         def env_groups(self):
             from tcms.management.models import TCMSEnvGroup
@@ -150,10 +145,18 @@ def info(request):
 
         def versions(self):
             from tcms.management.models import Version
+            return Version.objects.filter(product__in=self.product_ids)
 
-            return Version.objects.filter(product__id=self.product_id)
+    product_ids = []
+    for s in request.GET.getlist('product_id'):
+        if s.isdigit():
+            product_ids.append(int(s))
+        else:
+            return JsonResponseBadRequest({
+                'message': f'Invalid product id {s}. It must be a positive integer.'
+            })
 
-    objects = Objects(request=request, product_id=request.GET.get('product_id'))
+    objects = Objects(request=request, product_ids=product_ids)
     obj = getattr(objects, request.GET['info_type'], None)
 
     if obj:
@@ -778,37 +781,6 @@ def comment_case_runs(request):
         request.META.get('REMOTE_ADDR')
     )
     return JsonResponse({})
-
-
-def get_prod_related_objs(p_pks, target):
-    """
-    Get Component, Version, Category, and Build Return [(id, name), (id, name)]
-    """
-    ctypes = {
-        'component': (Component, 'name'),
-        'version': (Version, 'value'),
-        'build': (TestBuild, 'name'),
-        'category': (TestCaseCategory, 'name'),
-    }
-    results = ctypes[target][0]._default_manager.filter(product__in=p_pks)
-    attr = ctypes[target][1]
-    results = [(r.pk, getattr(r, attr)) for r in results]
-    return results
-
-
-def get_prod_related_obj_json(request):
-    """View for updating product drop-down in a Ajax way"""
-    data = request.GET.copy()
-    target = data.get('target', None)
-    p_pks = data.get('p_ids', None)
-    sep = data.get('sep', None)
-    # py2.6: all(*values) => boolean ANDs
-    if target and p_pks and sep:
-        p_pks = [k for k in p_pks.split(sep) if k]
-        res = get_prod_related_objs(p_pks, target)
-    else:
-        res = []
-    return JsonResponse(res, safe=False)
 
 
 def objects_update(objects, **kwargs):

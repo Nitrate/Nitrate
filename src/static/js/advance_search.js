@@ -1,44 +1,3 @@
-function getProdRelatedObj(prodIDs, target, targetID) {
-  prodIDs = Array.isArray(prodIDs) ? prodIDs : [prodIDs];
-  // Separator , used to join/split values
-  getRequest({
-    url: '/ajax/get-prod-relate-obj/',
-    data: {'p_ids': prodIDs.join(','), 'target': target, 'sep': ','},
-    success: function (data){
-      buildOptions(data, targetID);
-    }
-  });
-}
-
-function buildOptions(data, target) {
-  // target should be the ID of a select tag
-  let options = [];
-  for(let i = 0;i < data.length;i++){
-    let pair = data[i];
-    options.push('<option value="' + pair[0] + '">' + pair[1] + '</option>');
-  }
-  options = options.join();
-  jQ('#' + target).html(options);
-}
-
-/*
- * @ target: component, version, category, build
- * @ productID: select tag
- * @ target select tag
- */
-function updateOptionOnProdChange(target, productID, targetID) {
-  jQ('#' + productID).change(function () {
-    getProdRelatedObj(jQ('#' + productID).val(), target, targetID);
-  });
-
-  // whether get related objects immediately
-  let isTargetEmpty = jQ('#' + targetID + ' option').length === 0;
-  let prodIDs = jQ('#' + productID).val();
-  if (prodIDs && isTargetEmpty) {
-    getProdRelatedObj(prodIDs, target, targetID);
-  }
-}
-
 jQ(function () {
   // event listening for form submission
   jQ('#btnSearchPlan').click(function () {
@@ -53,14 +12,55 @@ jQ(function () {
     jQ('#inpTarget').val('run');
     jQ('#frmSearch').submit();
   });
-});
 
-jQ(function () {
-  // product select on change event binding
-  updateOptionOnProdChange('version', 'pl_product', 'pl_version');
-  updateOptionOnProdChange('version', 'r_product', 'r_version');
-  updateOptionOnProdChange('build', 'r_product', 'r_build');
-  updateOptionOnProdChange('component', 'pl_product', 'pl_component');
-  updateOptionOnProdChange('component', 'cs_product', 'cs_component');
-  updateOptionOnProdChange('category', 'cs_product', 'cs_category');
+  registerProductAssociatedObjectUpdaters(
+    document.getElementById('pl_product'),
+    false,
+    [
+      {
+        func: getVersionsByProductId,
+        targetElement: document.getElementById('pl_version'),
+        addBlankOption: false
+      },
+      {
+        func: getComponentsByProductId,
+        targetElement: document.getElementById('pl_component'),
+        addBlankOption: false
+      }
+    ]
+  );
+
+  registerProductAssociatedObjectUpdaters(
+    document.getElementById('r_product'),
+    false,
+    [
+      {
+        func: getVersionsByProductId,
+        targetElement: document.getElementById('r_version'),
+        addBlankOption: false
+      },
+      {
+        func: getBuildsByProductId,
+        targetElement: document.getElementById('r_build'),
+        addBlankOption: false
+      }
+    ]
+  );
+
+  registerProductAssociatedObjectUpdaters(
+    document.getElementById('cs_product'),
+    false,
+    [
+      {
+        func: getComponentsByProductId,
+        targetElement: document.getElementById('cs_component'),
+        addBlankOption: false
+      },
+      {
+        func: getCategoriesByProductId,
+        targetElement: document.getElementById('cs_category'),
+        addBlankOption: false
+      }
+    ]
+  );
 });

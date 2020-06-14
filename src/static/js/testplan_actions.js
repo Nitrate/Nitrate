@@ -449,13 +449,17 @@ Nitrate.TestPlans.TreeView = {
 };
 
 Nitrate.TestPlans.Create.on_load = function () {
-  bindVersionSelectorToProduct(
+  registerProductAssociatedObjectUpdaters(
     document.getElementById('id_product'),
-    document.getElementById('id_product_version'),
-    false
+    true,
+    [
+      {
+        func: getVersionsByProductId,
+        targetElement: document.getElementById('id_product_version'),
+        addBlankOption: false
+      }
+    ]
   );
-
-  jQ('#id_product').trigger('change');
 
   jQ('#env_group_help_link').on('click', function () {
     jQ('#env_group_help').toggle();
@@ -475,18 +479,25 @@ Nitrate.TestPlans.Create.on_load = function () {
 };
 
 Nitrate.TestPlans.Edit.on_load = function () {
+  registerProductAssociatedObjectUpdaters(
+    document.getElementById('id_product'),
+    true,
+    [
+      {
+        func: getVersionsByProductId,
+        targetElement: document.getElementById('id_product_version'),
+        addBlankOption: false
+      }
+    ]
+  );
+
   jQ('#env_group_help_link').on('click', function () {
     jQ('#env_group_help').toggle();
   });
+
   jQ('#env_group_help_close').on('click', function () {
     jQ('#env_group_help').hide();
   });
-
-  bindVersionSelectorToProduct(
-    document.getElementById('id_product'),
-    document.getElementById('id_product_version'),
-    false
-  );
 
   jQ('.js-back-button').on('click', function () {
     window.location.href = jQ(this).data('param');
@@ -546,10 +557,16 @@ Nitrate.TestPlans.Advance_Search_List.on_load = function () {
 };
 
 Nitrate.TestPlans.List.on_load = function () {
-  bindVersionSelectorToProduct(
+  registerProductAssociatedObjectUpdaters(
     document.getElementById('id_product'),
-    document.getElementById('id_product_version'),
-    true
+    true,
+    [
+      {
+        func: getVersionsByProductId,
+        targetElement: document.getElementById('id_product_version'),
+        addBlankOption: true
+      }
+    ]
   );
 
   if (jQ('#column_add').length) {
@@ -848,15 +865,17 @@ Nitrate.TestPlans.Details = {
 };
 
 Nitrate.TestPlans.SearchCase.on_load = function () {
-  bindCategorySelectorToProduct(
-    document.getElementById('id_product'), document.getElementById('id_category'), true
+  registerProductAssociatedObjectUpdaters(
+    document.getElementById('id_product'),
+    true,
+    [
+      {
+        func: getCategoriesByProductId,
+        targetElement: document.getElementById('id_category'),
+        addBlankOption: true
+      }
+    ]
   );
-
-  bindComponentSelectorToProduct(
-    document.getElementById('id_product'), document.getElementById('id_component'), true
-  );
-
-  jQ('#id_product').trigger('change');
 
   // new feature for searching by case id.
   let quickSearch = jQ('#tp_quick_search_cases_form');
@@ -922,10 +941,16 @@ Nitrate.TestPlans.SearchCase.on_load = function () {
 };
 
 Nitrate.TestPlans.Clone.on_load = function () {
-  bindVersionSelectorToProduct(
+  registerProductAssociatedObjectUpdaters(
     document.getElementById('id_product'),
-    document.getElementById('id_product_version'),
-    false
+    true,
+    [
+      {
+        func: getVersionsByProductId,
+        targetElement: document.getElementById('id_product_version'),
+        addBlankOption: false
+      }
+    ]
   );
 
   jQ('#id_link_testcases').on('change', function () {
@@ -1557,11 +1582,6 @@ function renderTagForm(container, parameters, formObserve) {
           'Press "Ctrl" to select multiple default component', c[0]
         )
       );
-      bindComponentSelectorToProduct(
-        document.getElementById('id_product'),
-        document.getElementById('#id_o_component'),
-        false
-      );
     }
   });
 }
@@ -1688,10 +1708,16 @@ function renderCategoryForm(container, parameters, formObserve) {
           d.html(), '/cases/category/', formObserve, 'Select Category', c[0]
         )
       );
-      bindCategorySelectorToProduct(
+      registerProductAssociatedObjectUpdaters(
         document.getElementById('id_product'),
-        document.getElementById('id_o_category'),
-        false
+        false,
+        [
+          {
+            func: getCategoriesByProductId,
+            targetElement: document.getElementById('id_o_category'),
+            addBlankOption: false
+          }
+        ]
       );
     }
   });

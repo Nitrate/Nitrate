@@ -79,7 +79,7 @@ class BaseRunForm(forms.Form):
         # Seen at: http://my.opera.com/jacob7908/blog/2009/06/19/
         #          django-choicefield-queryset (Chinese)
         # Is this documented elsewhere?
-        query = {'product_id': product_id}
+        query = {'product_ids': [product_id]}
         self.fields['product_version'].queryset = Version.objects.filter(
             product__id=product_id)
         self.fields['build'].queryset = TestBuild.list_active(query)
