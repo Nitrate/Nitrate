@@ -32,7 +32,8 @@ function toggleDiv(link, divId) {
   }
 }
 
-function toggleTestCaseContents(templateType, container, contentContainer, objectPk, caseTextVersion, caseRunId, callback) {
+function toggleTestCaseContents(
+  templateType, container, contentContainer, objectPk, caseTextVersion, caseRunId, callback) {
   // TODO: should container and contentContainer be in string type?
 
   container =

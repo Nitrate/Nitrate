@@ -256,9 +256,10 @@ Nitrate.TestPlans.TreeView = {
           '<a href="#treeview" onclick="expandCurrentPlan(jQ(this).parent()[0])">' + '1 child</a>' :
           '<a href="' + obj.get_url_path + '#treeview">' + '1 child</a>';
       } else {
+        let numChildren = obj.num_children;
         s = obj.is_current ?
-          '<a href="#treeview" onclick="expandCurrentPlan(jQ(this).parent()[0])">' + obj.num_children + ' children</a>' :
-          '<a href="' + obj.get_url_path + '#treeview">' + obj.num_children + ' children</a>';
+          '<a href="#treeview" onclick="expandCurrentPlan(jQ(this).parent()[0])">' + numChildren + ' children</a>' :
+          '<a href="' + obj.get_url_path + '#treeview">' + numChildren + ' children</a>';
       }
 
       title.push(s);
@@ -985,7 +986,9 @@ Nitrate.TestPlans.Attachment.on_load = function () {
       let limit = parseInt(jQ('#upload_file').prop('limit'));
 
       if (iSize > limit) {
-        window.alert('Your attachment\'s size is beyond limit, please limit your attachments to under 5 megabytes (MB).');
+        window.alert(
+          'Your attachment\'s size is beyond limit, please limit your attachments to under 5 megabytes (MB).'
+        );
       }
     });
 
