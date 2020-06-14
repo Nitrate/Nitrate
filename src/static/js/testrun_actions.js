@@ -10,14 +10,6 @@ Nitrate.TestRuns.AssignCase = {};
 Nitrate.TestRuns.AdvancedSearch = {};
 
 
-function toggleAllCheckBoxes(element, container, name) {
-  if (element.checked) {
-    jQ('#' + container).parent().find('input[name="' + name + '"]').not(':disabled').prop('checked', true);
-  } else {
-    jQ('#' + container).parent().find('input[name="' + name + '"]').not(':disabled').prop('checked', false);
-  }
-}
-
 function toggleDiv(link, divId) {
   link = jQ(link);
   let div = jQ('#' + divId);
@@ -711,11 +703,11 @@ Nitrate.TestRuns.Clone.on_load = function () {
 };
 
 Nitrate.TestRuns.ChooseRuns.on_load = function () {
-  if (jQ('#id_check_all_button').length) {
-    jQ('#id_check_all_button').on('click', function () {
-      toggleAllCheckBoxes(this, 'id_table_runs', 'run');
-    });
-  }
+  jQ('#id_table_runs tbody tr td:nth-child(1)').shiftcheckbox({
+    checkboxSelector: ':checkbox',
+    selectAll: '#id_check_all_button'
+  });
+
   jQ('.js-update-button').on('click', function () {
     insertCasesIntoTestRun();
   });
@@ -740,21 +732,14 @@ Nitrate.TestRuns.ChooseRuns.on_load = function () {
 };
 
 Nitrate.TestRuns.AssignCase.on_load = function () {
-  if (jQ('#id_check_all_button').length) {
-    jQ('#id_check_all_button').on('click', function () {
-      toggleAllCheckBoxes(this, 'id_table_cases', 'case');
-    });
-  }
-
-  jQ('input[name="case"]').on('click', function () {
-    if (this.checked) {
-      jQ(this).closest('tr').addClass('selection_row');
-      jQ(this).parent().siblings().eq(7).html('<div class="apply_icon"></div>');
-    } else {
-      jQ(this).closest('tr').removeClass('selection_row');
-      jQ(this).parent().siblings().eq(7).html('');
-    }
+  jQ('#id_table_cases tbody tr td:nth-child(1)').shiftcheckbox({
+    checkboxSelector: ':checkbox:enabled',
+    selectAll: '#id_check_all_button'
   });
+
+  jQ('#id_check_all_button').prop(
+    'disabled', jQ('id_table_cases tbody :checkbox:enabled').length === 0
+  );
 
   jQ('.js-how-assign-case').on('click', function () {
     jQ('#help_assign').show();

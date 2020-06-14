@@ -80,8 +80,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.AssignCase.on_load);
 						<th class="sortcol" width="130">Author</th>
 						<th class="sortcol" width="150">Created Date</th>
 						<th class="sortcol" width="150">Category</th>
-						<th class="sortcol"  width="70">Priority</th>
-						<th class="sortcol"  width="70">Selected</th>
+						<th class="sortcol" width="70">Priority</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -108,7 +107,6 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.AssignCase.on_load);
 						<td>{{ test_case.create_date }}</td>
 						<td>{{ test_case.category__name }}</td>
 						<td>{{ test_case.priority__value }}</td>
-						<td></td>
 					</tr>
 					<tr class="hide"  id="hidenRow_{{ forloop.counter }}" class="Detailform border-1" style="display: none;">
 						<td colspan="9" id="id_case_text_{{ forloop.counter }}">
