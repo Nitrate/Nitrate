@@ -48,7 +48,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.AssignCase.on_load);
 			<td>{{ test_case_runs_count }}</td>
 		</tr>
 	</table>
-	<form action="{% url "add-cases-to-run" test_run.run_id %}" method="post">
+	<form action="{% url "add-cases-to-run" test_run.run_id %}" method="post">{% csrf_token %}
 		<div class="Detailform border-1" id="testcases_selected">
 			<div class="mixbar">
 				<span class="tit"><b>Cases in this Run: {{ test_case_runs_count }}</b></span>
