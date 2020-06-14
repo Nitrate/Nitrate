@@ -281,7 +281,7 @@ Nitrate.TestPlans.TreeView = {
 
   'render_page': function (container) {
     let _container = container || this.default_container;
-    jQ('#' + _container).html(getAjaxLoading());
+    jQ('#' + _container).html(constructAjaxLoading());
     jQ('#' + _container).html(this.render());
   },
 
@@ -1176,7 +1176,7 @@ function bindEventsOnLoadedCases(options) {
           let params = Nitrate.Utils.formSerialize(this);
           submitComment(commentContainerT, params, function () {
             let td = jQ('<td>', {colspan: 12});
-            td.append(getAjaxLoading('id_loading_' + params.object_pk));
+            td.append(constructAjaxLoading('id_loading_' + params.object_pk));
             jQ(content).html(td);
             // FIXME: refresh the content only once
             jQ(btn).trigger('click');
@@ -1196,7 +1196,7 @@ function bindEventsOnLoadedCases(options) {
           let caseId = Nitrate.Utils.formSerialize(this).object_pk;
           removeComment(this, function () {
             let td = jQ('<td>', {colspan: 12});
-            td.append(getAjaxLoading('id_loading_' + caseId));
+            td.append(constructAjaxLoading('id_loading_' + caseId));
             jQ(content).html(td);
             // FIXME: refresh the content only once.
             jQ(btn).trigger('click');
@@ -1398,7 +1398,7 @@ function getForm(container, appForm, parameters, callback, format) {
 
 
 function constructCaseAutomatedForm(container, options, callback) {
-  jQ(container).html(getAjaxLoading());
+  jQ(container).html(constructAjaxLoading());
   jQ(container).show();
   let d = jQ('<div>', {'class': 'automated_form'})[0];
 
@@ -2094,7 +2094,7 @@ function toggleAllCases(element) {
 
 function constructPlanDetailsCasesZone(container, planId, parameters) {
   container = typeof container === 'string' ? jQ('#' + container)[0] : container;
-  jQ(container).html('<div class="ajax_loading"></div>');
+  jQ(container).html(constructAjaxLoading());
   let postData = parameters || {a: 'initial', from_plan: planId};
   postHTMLRequest({
     url: '/cases/',

@@ -414,7 +414,7 @@ Nitrate.TestCases.Clone.on_load = function () {
       jQ('#id_form_search_plan :input').prop('disabled', true);
       jQ('#id_plan_id').val(jQ('#value_plan_id').val());
       jQ('#id_plan_id').prop('name', 'plan');
-      jQ('#id_plan_container').html('<div class="ajax_loading"></div>').hide();
+      jQ('#id_plan_container').html(constructAjaxLoading()).hide();
       jQ('#id_copy_case').prop('checked', false);
     });
   }

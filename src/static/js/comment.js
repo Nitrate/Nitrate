@@ -17,7 +17,7 @@ function removeComment(form, callback) {
 
 function submitComment(container, parameters, callback) {
   // FIXME: Remove parameter container, it is not useless here.
-  jQ(container).html('<div class="ajax_loading"></div>');
+  jQ(container).html(constructAjaxLoading());
 
   postRequest({
     url: '/comments/post/',

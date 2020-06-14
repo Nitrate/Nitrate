@@ -610,7 +610,7 @@ function postToURL(path, params, method) {
 }
 
 function constructTagZone(container, parameters) {
-  jQ(container).html('<div class="ajax_loading"></div>');
+  jQ(container).html(constructAjaxLoading());
 
   sendHTMLRequest({
     url: '/management/tags/',
@@ -760,17 +760,16 @@ function showDialog(element) {
 function clearDialog(element) {
   let dialog = getDialog(element);
 
-  jQ(dialog).html(getAjaxLoading());
+  jQ(dialog).html(constructAjaxLoading());
   return jQ(dialog).hide()[0];
 }
 
-function getAjaxLoading(id) {
-  let e = jQ('<div>', {'class': 'ajax_loading'})[0];
-  if (id) {
-    e.id = id;
+function constructAjaxLoading(id) {
+  let props = {'class': 'ajax_loading'};
+  if (id !== undefined) {
+    props.id = id;
   }
-
-  return e;
+  return jQ('<div>', props)[0];
 }
 
 /**

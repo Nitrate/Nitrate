@@ -819,9 +819,7 @@ function updateCaseRunStatus(e) {
   // Add comment
   if (formData.comment !== '') {
     // Reset the content to loading
-    let ajaxLoading = getAjaxLoading();
-    ajaxLoading.id = 'id_loading_' + formData.case_id;
-    caseRunDetailCell.html(ajaxLoading);
+    caseRunDetailCell.html(constructAjaxLoading('id_loading_' + formData.case_id));
     if (caseRunStatusId !== '') {
       submitComment(jQ('<div>')[0], formData);
     } else {
@@ -834,9 +832,7 @@ function updateCaseRunStatus(e) {
   // Update the object when changing the status
   if (caseRunStatusId !== '') {
     // Reset the content to loading
-    let ajaxLoading = getAjaxLoading();
-    ajaxLoading.id = 'id_loading_' + formData.case_id;
-    caseRunDetailCell.html(ajaxLoading);
+    caseRunDetailCell.html(constructAjaxLoading('id_loading_' + formData.case_id));
 
     updateRunStatus(
       formData.content_type, formData.object_pk, formData.field, caseRunStatusId, 'int',
@@ -906,7 +902,7 @@ function taggleSortCaseRun(event) {
 function constructCaseRunZone(container, titleContainer, caseId) {
   if (container) {
     let td = jQ('<td>', {'id': 'id_loading_' + caseId, 'colspan': 12});
-    td.html(getAjaxLoading());
+    td.html(constructAjaxLoading());
     jQ(container).html(td);
   }
 
