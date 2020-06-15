@@ -31,6 +31,10 @@ module.exports = {
     "postToURL": "readonly",
     "sendHTMLRequest": "readonly",
 
+    "removeComment": "readonly",
+    "submitComment": "readonly",
+    "updateCommentsCount": "readonly",
+
     "blinddownAllCases": "readonly",
     "blindupAllCases": "readonly",
     "clearDialog": "readonly",
@@ -45,12 +49,10 @@ module.exports = {
     "id_to_windowname": "readonly",
     "popupAddAnotherWindow": "readonly",
     "previewPlan": "readonly",
-    "removeComment": "readonly",
     "renderComponentForm": "readonly",
     "setUpChoices": "readonly",
     "SHORT_STRING_LENGTH": "readonly",
     "splitString": "readonly",
-    "submitComment": "readonly",
     "toggleExpandArrow": "readonly",
     "toggleTestCasePane": "readonly",
     "updateObject": "readonly",

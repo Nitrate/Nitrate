@@ -8,7 +8,6 @@ function removeComment(form, callback) {
     url: form.action,
     data: parameters,
     success: function (data) {
-      updateCommentsCount(parameters.object_pk, false);
       callback(data);
     },
   });
@@ -23,15 +22,16 @@ function submitComment(container, parameters, callback) {
     url: '/comments/post/',
     data: parameters,
     success: function () {
-      updateCommentsCount(parameters.object_pk, true);
-      if (callback) {
-        callback();
-      }
+      callback();
     }
   });
 }
 
-
+/**
+ * Update comments count by increasing or decreasing the number.
+ * @param {string} caseId - the case id used to select specific elements to be updated.
+ * @param {boolean} increase - increase or decrease the number.
+ */
 function updateCommentsCount(caseId, increase) {
   let commentDiv = jQ('#' + caseId + '_case_comment_count');
   let countText = jQ('#' + caseId + '_comments_count');

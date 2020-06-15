@@ -415,6 +415,7 @@ Nitrate.TestRuns.Details.on_load = function () {
           return false;
         }
         removeComment(this, function () {
+          updateCommentsCount(c.find(':hidden[name=case]').val(), false);
           constructCaseRunZone(cContainer[0], c[0], caseId);
         });
       });
@@ -820,13 +821,13 @@ function updateCaseRunStatus(e) {
   if (formData.comment !== '') {
     // Reset the content to loading
     caseRunDetailCell.html(constructAjaxLoading('id_loading_' + formData.case_id));
-    if (caseRunStatusId !== '') {
-      submitComment(jQ('<div>')[0], formData);
-    } else {
-      submitComment(jQ('<div>')[0], formData, function () {
+
+    submitComment(jQ('<div>')[0], formData, function () {
+      updateCommentsCount(caseRunRow.find(':hidden[name=case]').val(), true);
+      if (caseRunStatusId === '') {
         updateCaseRunDetailAfterCommentIsAdded(caseRunRow, expandedCaseRunDetailRow, caseRunStatusId);
-      });
-    }
+      }
+    });
   }
 
   // Update the object when changing the status
