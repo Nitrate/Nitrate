@@ -353,10 +353,97 @@ AddIssueDialog.prototype.open = function (addIssueInfo, reloadInfo) {
   dialog.dialog('open');
 };
 
+function AddEnvPropertyDialog(runId, envGroupId) {
+  let that = this
+    , valuesSelect = document.getElementById('propertyValuesSelect')
+    , propertiesSelect = document.getElementById('propertiesSelect')
+  ;
+
+  this.runId = runId;
+  this.envGroupId = envGroupId;
+
+  jQ('#propertiesSelect').on('change', function () {
+    let thisSelect = this;
+
+    // Prevent from selecting another property before server side responses
+    // current request to fill in the values SELECT.
+    thisSelect.disabled = true;
+
+    getRequest({
+      url: '/management/getinfo/',
+      data: {
+        info_type: 'env_values',
+        env_property_id: this.selectedOptions[0].value
+      },
+      errorMessage: 'Update values failed',
+      success: function (data) {
+        emptySelect(valuesSelect);
+
+        if (data.length > 0) {
+          setUpChoices(
+            valuesSelect,
+            data.map(function (o) {return [o.pk, o.fields.value];}),
+            false,
+          );
+        }
+
+        thisSelect.disabled = false;
+      },
+    });
+  });
+
+  this.dialog = jQ('#addEnvPropertyDialog').dialog({
+    autoOpen: false,
+    height: 260,
+    width: 300,
+    modal: true,
+    buttons: {
+      Add: function () {
+        let valueId = valuesSelect.selectedOptions[0].value;
+        addPropertyToEnv(that.runId, valueId);
+
+        that.dialog.dialog('close');
+        that.dialog.dialog('destroy');
+      },
+      Cancel: function () {
+        that.dialog.dialog('close');
+      }
+    },
+    open: function () {
+      emptySelect(valuesSelect);
+      emptySelect(propertiesSelect);
+
+      // Fill in the properties SELECT
+
+      getRequest({
+        url: '/management/getinfo/',
+        data: {info_type: 'env_properties', env_group_id: that.envGroupId},
+        errorMessage: 'Update properties failed',
+        success: function (data) {
+          setUpChoices(
+            propertiesSelect,
+            data.map(function (o) {return [o.pk, o.fields.name];}),
+            false
+          );
+
+          jQ(propertiesSelect).trigger('change');
+        },
+      });
+    }
+  });
+}
+
+AddEnvPropertyDialog.prototype.open = function () {
+  this.dialog.dialog('open');
+}
 
 Nitrate.TestRuns.Details.on_load = function () {
-
   let addIssueDialog = new AddIssueDialog();
+
+  jQ('.js-add-property').on('click', function () {
+    let params = jQ(this).data('params');
+    new AddEnvPropertyDialog(params[0], params[1]).open();
+  });
 
   // Observe the interface buttons
   if (jQ('#id_sort').length) {
@@ -567,10 +654,6 @@ Nitrate.TestRuns.Details.on_load = function () {
   jQ('.js-remove-cc').on('click', function () {
     let params = jQ(this).data('params');
     removeRunCC(params[0], params[1], jQ('.js-cc-ul')[0]);
-  });
-  jQ('.js-add-property').on('click', function () {
-    let params = jQ(this).data('params');
-    addProperty(params[0], params[1]);
   });
   jQ('.js-edit-property').on('click', function () {
     let params = jQ(this).data('params');
@@ -1039,55 +1122,6 @@ function removeProperty(runId, element) {
     },
     errorMessage: 'Edit value failed',
     success: function () { emptySelf.remove(); },
-  });
-}
-
-/**
- * Add a property and one of its values to a test run.
- * @param {number} run_id
- * @param {number} env_group_id
- */
-function addProperty(runId, envGroupId) {
-  let template = Handlebars.compile(jQ('#add_property_template').html());
-  jQ('#dialog').html(template())
-    .find('.js-close-button, .js-cancel-button').on('click', function () {
-      jQ('#dialog').hide();
-    })
-    .end().show();
-
-
-  getRequest({
-    url: '/management/getinfo/',
-    data: {info_type: 'env_properties', env_group_id: envGroupId},
-    errorMessage: 'Update properties failed',
-    success: function (data) {
-      setUpChoices(
-        jQ('#id_add_env_property')[0],
-        data.map(function (o) {return [o.pk, o.fields.name];}),
-        false);
-    },
-  });
-
-  jQ('#id_add_env_property').on('change', function () {
-    changeValue(jQ('#id_add_env_property').val(), 'id_add_env_value');
-  });
-
-  jQ('#id_env_add').on('click', function () {
-    addPropertyToEnv(runId, jQ('#id_add_env_value').val());
-  });
-}
-
-function changeValue(envPropertyId, selectid) {
-  getRequest({
-    url: '/management/getinfo/',
-    data: {info_type: 'env_values', env_property_id: envPropertyId},
-    errorMessage: 'Update values failed',
-    success: function (data) {
-      setUpChoices(
-        jQ('#' + selectid)[0],
-        data.map(function (o) {return [o.pk, o.fields.value];}),
-        0);
-    },
   });
 }
 

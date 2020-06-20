@@ -40,24 +40,6 @@
 {% for env_group in testplan.env_group.all %}
 <input type="hidden" name="env_group_id" value="{{ env_group.id }}"/>
 {% endfor%}
-{% verbatim %}
-	<script id="add_property_template" type="text/x-handlebars-template">
-		<div class="add_env_content">
-			<div class="add_env_close js-close-button" ></div>
-			<div class="env_title" id="id_title_group"></div>
-			<div class="add_env_box">Property<br/><br/>
-				<select id="id_add_env_property"></select>
-			</div>
-			<div class="add_env_box">Value<br/><br/>
-				<select id="id_add_env_value"></select>
-			</div>
-			<div class="add_env_button">
-				<input type="button" value="Add" id="id_env_add"/>
-				<input type="button" value="Cancel" class="js-cancel-button" />
-			</div>
-		</div>
-	</script>
-{% endverbatim %}
 {% else %}
 {% for run_env_value in test_run.env_value.select_related.all %}
 <li>
@@ -90,3 +72,13 @@
 </li>
 {% endfor %}
 {% endif %}
+
+<div id="addEnvPropertyDialog" title="Add Environment Property" style="display: none">
+	<table style="width: 100%">
+		<tr><td><label for="propertiesSelect">Property</label></td></tr>
+		<tr><td><select id="propertiesSelect" style="width: 100%"></select></td></tr>
+		<tr><td>&nbsp;</td></tr>
+		<tr><td><label for="propertyValuesSelect">Value</label></td></tr>
+		<tr><td><select id="propertyValuesSelect" style="width: 100%"></select></td></tr>
+	</table>
+</div>

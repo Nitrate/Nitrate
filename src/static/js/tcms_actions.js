@@ -372,6 +372,17 @@ function splitString(str, num) {
 }
 
 /**
+ * Clear all options from a give SELECT element.
+ * @param {HTMLSelectElement} selectElement - the SELECT element from which to remove all options.
+ */
+function emptySelect(selectElement) {
+  let i = selectElement.options.length;
+  while (--i >= 0) {
+    selectElement.options[i].remove();
+  }
+}
+
+/**
  * Setup option of a given select element in place. The original selection is preserved.
  * @param {HTMLSelectElement} elemSelect - the select element to update the options.
  * @param {Array} values - A list of 2-tuple of options, the first is value and the other is the text.
@@ -387,10 +398,7 @@ function setUpChoices(elemSelect, values, addBlankOption) {
     }
   }
 
-  // Remove all options
-  for (let i = elemSelect.options.length - 1; i >= 0; i--) {
-    elemSelect.options[i].remove();
-  }
+  emptySelect(elemSelect);
 
   let newOption = null;
 
