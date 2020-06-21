@@ -276,7 +276,7 @@ Nitrate.Management.Environment.PropertyValue = {
     }
 
     if (!valueName.replace(/\040/g, '').replace(/%20/g, '').length) {
-      window.alert('Value name could not be blank or space.');
+      showModal('Value name could not be blank or space.');
       return;
     }
 
@@ -327,7 +327,7 @@ Nitrate.Management.Environment.PropertyValue = {
     }).get();
 
     if (selectedPropertyValues.length === 0) {
-      window.alert('Please click the checkbox to choose values.');
+      showModal('Please click the checkbox to choose values.');
       return;
     }
 

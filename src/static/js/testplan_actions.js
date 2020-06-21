@@ -40,7 +40,7 @@ function getSelectedCaseIDs(container) {
 function submitSelectedCaseIDs(url, container) {
   let selectedCaseIDs = getSelectedCaseIDs(container);
   if (selectedCaseIDs.length === 0) {
-    window.alert(defaultMessages.alert.no_case_selected);
+    showModal(defaultMessages.alert.no_case_selected, 'Missig something?');
     return;
   }
   postToURL(url, {case: selectedCaseIDs});
@@ -78,7 +78,7 @@ Nitrate.TestPlans.TreeView = {
       }
     });
     if (!curPlan) {
-      window.alert('Plan ' + planId + ' can not found in database');
+      showModal('Plan ' + planId + ' can not found in database');
       return false;
     }
 
@@ -334,13 +334,15 @@ Nitrate.TestPlans.TreeView = {
       let s = inputChildPlanIds[i].trim();
       if (s === '') { continue; }
       if (!/^\d+$/.test(s)) {
-        window.alert('Plan Id should be a numeric. ' + s + ' is not valid.');
+        showModal(
+          'Plan Id should be a numeric. ' + s + ' is not valid.', 'Add child plan'
+        );
         return;
       }
       let childPlanId = parseInt(s);
       let isParentOrThisPlan = childPlanId === parseInt(tree.data[0].pk) || childPlanId === currentPlanId;
       if (isParentOrThisPlan) {
-        window.alert('Cannot add parent or self.');
+        showModal('Cannot add parent or self.', 'Add child plan');
         return;
       }
       cleanedChildPlanIds.push(childPlanId);
@@ -378,15 +380,18 @@ Nitrate.TestPlans.TreeView = {
       let s = inputChildPlanIds[j].trim();
       if (s === '') { continue; }
       if (!/^\d+$/.test(s)) {
-        alert('Plan ID must be a number. ' + inputChildPlanIds[j] + ' is not valid.')
+        showModal(
+          'Plan ID must be a number. ' + inputChildPlanIds[j] + ' is not valid.',
+          'Remove child plan'
+        )
         return;
       }
       if (s === currentPlanId.toString()) {
-        alert('Cannot remove current plan.');
+        showModal('Cannot remove current plan.', 'Remove child plan');
         return;
       }
       if (childrenPks.indexOf(parseInt(s)) === -1) {
-        alert('Plan ' + s + ' is not the child node of current plan');
+        showModal('Plan ' + s + ' is not the child node of current plan', 'Remove child plan');
         return;
       }
       cleanedChildPlanIds.push(s);
@@ -413,11 +418,11 @@ Nitrate.TestPlans.TreeView = {
     }
     let planId = window.parseInt(p);
     if (isNaN(planId)) {
-      window.alert('Plan Id should be a numeric. ' + p + ' is invalid.');
+      showModal('Plan Id should be a numeric. ' + p + ' is invalid.', 'Change parent plan');
       return false;
     }
     if (planId === currentPlanId) {
-      window.alert('Parent plan should not be the current plan itself.');
+      showModal('Parent plan should not be the current plan itself.', 'Change parent plan');
       return false;
     }
 
@@ -827,7 +832,7 @@ Nitrate.TestPlans.Details = {
       if (!Nitrate.Utils.formSerialize(this).run) {
         e.stopPropagation();
         e.preventDefault();
-        window.alert(defaultMessages.alert.no_run_selected);
+        showModal(defaultMessages.alert.no_run_selected, 'Missing something?');
       }
     });
 
@@ -986,8 +991,10 @@ Nitrate.TestPlans.Attachment.on_load = function () {
       let limit = parseInt(jQ('#upload_file').prop('limit'));
 
       if (iSize > limit) {
-        window.alert(
-          'Your attachment\'s size is beyond limit, please limit your attachments to under 5 megabytes (MB).'
+        showModal(
+          'Your attachment\'s size is beyond limit, ' +
+          'please limit your attachments to under 5 megabytes (MB).',
+          'Upload attachment'
         );
       }
     });
@@ -1048,7 +1055,7 @@ function changeCaseOrder(parameters, callback) {
   if (Object.prototype.hasOwnProperty.call(parameters, 'sortkey')) {
     nsk = window.prompt('Enter your new order number', parameters.sortkey);   // New sort key
     if (parseInt(nsk) === parseInt(parameters.sortkey)) {
-      window.alert('Nothing changed');
+      showModal('Nothing changed', 'Change case order');
       return false;
     }
   } else {
@@ -1060,14 +1067,20 @@ function changeCaseOrder(parameters, callback) {
   }
 
   if (isNaN(nsk)) {
-    window.alert('The value must be an integer number and limit between 0 to 32300.');
+    showModal(
+      'The value must be an integer number and limit between 0 to 32300.',
+      'Change case order'
+    );
     return false;
   }
 
   nsk = parseInt(nsk);
 
   if (nsk > 32300 || nsk < 0) {
-    window.alert('The value must be a number and limit between 0 to 32300.');
+    showModal(
+      'The value must be a number and limit between 0 to 32300.',
+      'Change case order'
+    );
     return false;
   }
 
@@ -1294,7 +1307,7 @@ function onTestCaseStatusChange(options) {
   return function () {
     let selectedCaseIDs = getSelectedCaseIDs(options.table);
     if (selectedCaseIDs.length === 0) {
-      window.alert(defaultMessages.alert.no_case_selected);
+      showModal(defaultMessages.alert.no_case_selected, 'Missing something?');
       return false;
     }
     let statusPk = this.value;
@@ -1345,7 +1358,7 @@ function onTestCasePriorityChange(options) {
   return function () {
     let selectedCaseIDs = getSelectedCaseIDs(options.table);
     if (selectedCaseIDs.length === 0) {
-      window.alert(defaultMessages.alert.no_case_selected);
+      showModal(defaultMessages.alert.no_case_selected, 'Missing something?');
       return false;
     }
     // FIXME: how about show a message to user to let user know what is happening?
@@ -1411,7 +1424,7 @@ function constructCaseAutomatedForm(container, options, callback) {
         e.preventDefault();
 
         if (!jQ(this).find('input[type="checkbox"]:checked').length) {
-          window.alert('Nothing selected');
+          showModal('Nothing selected', 'Make case automated');
           return false;
         }
 
@@ -1442,7 +1455,7 @@ function onTestCaseAutomatedClick(options) {
   return function () {
     let selectedCaseIDs = getSelectedCaseIDs(options.table);
     if (selectedCaseIDs.length === 0) {
-      window.alert(defaultMessages.alert.no_case_selected);
+      showModal(defaultMessages.alert.no_case_selected, 'Missing something?');
       return false;
     }
 
@@ -1495,7 +1508,7 @@ function onTestCaseTagAddClick(options) {
   return function () {
     let selectedCaseIDs = getSelectedCaseIDs(options.table);
     if (selectedCaseIDs.length === 0) {
-      window.alert(defaultMessages.alert.no_case_selected);
+      showModal(defaultMessages.alert.no_case_selected, 'Missing something?');
       return false;
     }
 
@@ -1596,7 +1609,7 @@ function onTestCaseTagDeleteClick(options) {
     let c = getDialog();
     let selectedCaseIDs = getSelectedCaseIDs(options.table);
     if (selectedCaseIDs.length === 0) {
-      window.alert(defaultMessages.alert.no_case_selected);
+      showModal(defaultMessages.alert.no_case_selected, 'Missing something?');
       return false;
     }
 
@@ -1628,7 +1641,7 @@ function changeCaseOrder2(parameters, callback) {
   if (Object.prototype.hasOwnProperty.call(parameters, 'sortkey')) {
     nsk = window.prompt('Enter your new order number', parameters.sortkey);   // New sort key
     if (parseInt(nsk) === parseInt(parameters.sortkey)) {
-      window.alert('Nothing changed');
+      showModal('Nothing changed', 'Change case order');
       return false;
     }
   } else {
@@ -1640,14 +1653,20 @@ function changeCaseOrder2(parameters, callback) {
   }
 
   if (isNaN(nsk)) {
-    window.alert('The value must be a number and limit between 0 to 32300.');
+    showModal(
+      'The value must be a number and limit between 0 to 32300.',
+      'Change case order'
+    );
     return false;
   }
 
   nsk = parseInt(nsk);
 
   if (nsk > 32300 || nsk < 0) {
-    window.alert('The value must be an integer number and limit between 0 to 32300.');
+    showModal(
+      'The value must be an integer number and limit between 0 to 32300.',
+      'Change case order'
+    );
     return false;
   }
 
@@ -1670,7 +1689,7 @@ function onTestCaseSortNumberClick(options) {
     // NOTE: new implementation does not use testcaseplan.pk
     let selectedCaseIDs = getSelectedCaseIDs(options.table);
     if (selectedCaseIDs.length === 0) {
-      window.alert(defaultMessages.alert.no_case_selected);
+      showModal(defaultMessages.alert.no_case_selected, 'Missing something?');
       return false;
     }
 
@@ -1747,7 +1766,7 @@ function onTestCaseCategoryClick(options) {
       'product': Nitrate.TestPlans.Instance.fields.product_id
     };
     if (params['case'] && params['case'].length === 0) {
-      window.alert(defaultMessages.alert.no_case_selected);
+      showModal(defaultMessages.alert.no_case_selected, 'Missing something?');
       return false;
     }
 
@@ -1757,7 +1776,7 @@ function onTestCaseCategoryClick(options) {
 
       let selectedCaseIDs = getSelectedCaseIDs(options.table);
       if (selectedCaseIDs.length === 0) {
-        window.alert(defaultMessages.alert.no_case_selected);
+        showModal(defaultMessages.alert.no_case_selected, 'Missing something?');
         return false;
       }
 
@@ -1767,7 +1786,7 @@ function onTestCaseCategoryClick(options) {
         'selectedCaseIDs': selectedCaseIDs
       });
       if (params.indexOf('o_category') < 0) {
-        window.alert(defaultMessages.alert.no_category_selected);
+        showModal(defaultMessages.alert.no_category_selected, 'Missing something?');
         return false;
       }
 
@@ -1788,7 +1807,7 @@ function onTestCaseDefaultTesterClick(options) {
   return function () {
     let selectedCaseIDs = getSelectedCaseIDs(options.table);
     if (selectedCaseIDs.length === 0) {
-      window.alert(defaultMessages.alert.no_case_selected);
+      showModal(defaultMessages.alert.no_case_selected, 'Missing something?');
       return false;
     }
 
@@ -1840,7 +1859,7 @@ function onTestCaseComponentClick(options) {
       'product': Nitrate.TestPlans.Instance.fields.product_id
     };
     if (params['case'] && params['case'].length === 0) {
-      window.alert(defaultMessages.alert.no_case_selected);
+      showModal(defaultMessages.alert.no_case_selected, 'Missing something?');
       return false;
     }
 
@@ -1850,7 +1869,7 @@ function onTestCaseComponentClick(options) {
 
       let selectedCaseIDs = getSelectedCaseIDs(options.table);
       if (selectedCaseIDs.length === 0) {
-        window.alert(defaultMessages.alert.no_case_selected);
+        showModal(defaultMessages.alert.no_case_selected, 'Missing something?');
         return false;
       }
 
@@ -1883,7 +1902,7 @@ function onTestCaseReviewerClick(options) {
   return function () {
     let selectedCaseIDs = getSelectedCaseIDs(options.table);
     if (selectedCaseIDs.length === 0) {
-      window.alert(defaultMessages.alert.no_case_selected);
+      showModal(defaultMessages.alert.no_case_selected, 'Missing something?');
       return false;
     }
 
@@ -1930,7 +1949,7 @@ function constructPlanDetailsCasesZoneCallback(options) {
 
     // Presume the first form element is the form
     if (form.tagName !== 'FORM') {
-      window.alert('form element of container is not a form');
+      showModal('form element of container is not a form', 'Programming Error');
       return false;
     }
 

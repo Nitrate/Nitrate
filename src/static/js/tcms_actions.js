@@ -95,10 +95,11 @@ function sendAjaxRequest(options) {
     statusCode: {
       500: function () {
         if (options.errorMessage !== undefined) {
-          window.alert(options.errorMessage);
+          showModal(options.errorMessage);
           return;
         }
-        window.alert(
+
+        showModal(
           'Something wrong in the server. ' +
           'Please contact administrator to deal with this issue.'
         );
@@ -107,11 +108,11 @@ function sendAjaxRequest(options) {
       //
       400: function (xhr) {
         if (options.errorMessage !== undefined) {
-          window.alert(options.errorMessage);
+          showModal(options.errorMessage);
           return;
         }
         if (options.badRequestMessage !== undefined) {
-          window.alert(options.badRequestMessage);
+          showModal(options.badRequestMessage);
           return;
         }
 
@@ -120,13 +121,13 @@ function sendAjaxRequest(options) {
         // TODO: after the AJAX response is unified, just use the responseJSON.message.
         let msg = data.message || data.response || data.messages || data;
         if (Array.isArray(msg)) {
-          window.alert(msg.join('\n'));
+          showModal(msg.join('\n'));
         } else {
-          window.alert(msg);
+          showModal(msg);
         }
       },
       403: function () {
-        window.alert(
+        showModal(
           options.forbiddenMessage || 'You are not allowed to perform this operation.'
         );
       }
@@ -187,21 +188,21 @@ function sendHTMLRequest(options) {
     },
     statusCode: {
       404: function (xhr) {
-        window.alert(
+        showModal(
           options.notFoundMessage ||
           xhr.responseText ||
           'Requested resource is not found.'
         );
       },
       400: function (xhr) {
-        window.alert(
+        showModal(
           options.badRequestMessage ||
           xhr.responseText ||
           'The request is invalid to be processed by the server.'
         );
       },
       403: function (xhr) {
-        window.alert(
+        showModal(
           options.forbiddenMessage ||
           xhr.responseText ||
           'You are not allowed to do this operation.'
@@ -249,7 +250,7 @@ jQ(window).on('load', function () {
 
             addBookmark(this.action, this.method, Nitrate.Utils.formSerialize(this), function (responseData) {
               clearDialog();
-              window.alert(defaultMessages.alert.bookmark_added);
+              showModal(defaultMessages.alert.bookmark_added);
               return responseData;
             });
           }));
@@ -358,6 +359,29 @@ const defaultMessages = {
 }());
 
 
+/**
+ * Show a modal dialog.
+ * @param {string} showMessage - show this message in the modal dialog.
+ * @param {string} [title] - the dialog title.
+ */
+function showModal(showMessage, title) {
+  let pDialogShowMessage = document.getElementById('dialogShowMessage');
+  pDialogShowMessage.appendChild(document.createTextNode(showMessage));
+  jQ('#messageDialog')
+    .prop('title', title || '')
+    .dialog({
+      modal: true,
+      dialogClass: 'hide-titlebar-close',
+      buttons: {
+        Ok: function() {
+          pDialogShowMessage.removeChild(pDialogShowMessage.firstChild);
+          jQ(this).dialog('close');
+          jQ(this).dialog('destroy');
+        }
+      }
+    });
+}
+
 function addBookmark(url, method, parameters, callback) {
   parameters.a = 'add';
   // FIXME: use POST
@@ -456,7 +480,7 @@ function getBuildsByProductId(productIds, buildSelect, addBlankOption) {
 
       if (jQ('#value_sub_module').length && jQ('#value_sub_module').val() === 'new_run') {
         if(jQ(buildSelect).html() === '') {
-          window.alert('You should create new build first before create new run');
+          showModal('You should create new build first before create new run');
         }
       }
     },

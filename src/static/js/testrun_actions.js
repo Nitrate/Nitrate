@@ -270,7 +270,7 @@ function AddIssueDialog() {
         let addIssueInfo = dialog.dialog('option', 'addIssueInfo');
 
         if (! new RegExp(validateRegex).test(issueKey)) {
-          window.alert('Issue key is malformated.');
+          showModal('Issue key is malformated.');
           return;
         }
 
@@ -934,17 +934,20 @@ function changeCaseRunOrder(runId, caseRunId, sortKey) {
   }
 
   if (isNaN(nsk)) {
-    window.alert('The value must be a integer number and limit between 0 to 32300.');
+    showModal(
+      'The value must be a integer number and limit between 0 to 32300.',
+      'Input Error'
+    );
     return false;
   }
 
   if (nsk > 32300 || nsk < 0) {
-    window.alert('The value must be a integer number and limit between 0 to 32300.');
+    showModal('The value must be a integer number and limit between 0 to 32300.');
     return false;
   }
 
   if (nsk === sortKey) {
-    window.alert('Nothing changed');
+    showModal('Nothing changed');
     return false;
   }
 
@@ -1082,7 +1085,7 @@ function submitValue(runId, value, hidebox, selectField, submitid) {
     return true;
   });
   if (jQ.inArray(selectField.value, dupValues) >= 0) {
-    window.alert('The value is exist for this run');
+    showModal('The value is exist for this run');
     return false;
   }
 
@@ -1198,7 +1201,7 @@ function constructRunCC(container, runId, parameters) {
         removeRunCC(params[0], params[1], jQ('.js-cc-ul')[0]);
       });
       if (jQ('#message').length) {
-        window.alert(jQ('#message').html());
+        showModal(jQ('#message').html());
         return false;
       }
     }
@@ -1223,7 +1226,7 @@ function removeRunCC(runId, user, container) {
 function changeCaseRunAssignee() {
   let selectedCaseRunIDs = getSelectedCaseRunIDs().case_run;
   if (!selectedCaseRunIDs.length) {
-    window.alert(defaultMessages.alert.no_case_selected);
+    showModal(defaultMessages.alert.no_case_selected, 'Missing something?');
     return false;
   }
 
@@ -1241,12 +1244,12 @@ function changeCaseRunAssignee() {
     success: function (data) {
       // FIXME: Display multiple items and let user to select one
       if (data.length === 0) {
-        window.alert('Nothing found in database');
+        showModal('Nothing found in database');
         return false;
       }
 
       if (data.length > 1) {
-        window.alert('Multiple instances reached, please define the condition more clear.');
+        showModal('Multiple instances reached, please define the condition more clear.');
         return false;
       }
 
@@ -1313,7 +1316,7 @@ function addIssueToBatchCaseRunsHandler() {
     getSelectedCaseRunIDs()
       .case_run.map(function (item) {return parseInt(item);});
   if (caseRunIds.length === 0) {
-    window.alert(defaultMessages.alert.no_case_selected);
+    showModal(defaultMessages.alert.no_case_selected, 'Missing something?');
   } else {
     let addIssueInfo = jQ(this).data('addIssueInfo');
     addIssueInfo.caseRunIds = caseRunIds;
@@ -1333,7 +1336,7 @@ function removeIssueFromBatchCaseRunsHandler() {
       .case_run.map(function (item) {return parseInt(item);});
 
   if (caseRunIds.length === 0) {
-    window.alert(defaultMessages.alert.no_case_selected);
+    showModal(defaultMessages.alert.no_case_selected, 'Missing something?');
   } else {
     let reloadInfo = jQ(this).data('reloadInfo');
     let removeIssueInfo = jQ(this).data('removeIssueInfo');
@@ -1365,8 +1368,9 @@ function removeIssueFromBatchCaseRunsHandler() {
 
 function showCommentForm() {
   let caseRunIds = getSelectedCaseRunIDs().case_run;
+
   if (caseRunIds.length === 0) {
-    window.alert(defaultMessages.alert.no_case_selected);
+    showModal(defaultMessages.alert.no_case_selected, 'Missing something?');
     return;
   }
 
@@ -1418,7 +1422,7 @@ jQ(document).ready(function (){
     }
     let objectPks = getSelectedCaseRunIDs().case_run;
     if (!objectPks.length) {
-      window.alert(defaultMessages.alert.no_case_selected);
+      showModal(defaultMessages.alert.no_case_selected, 'Missing something?');
       return false;
     }
     if (!window.confirm(defaultMessages.confirm.change_case_status)) {

@@ -30,7 +30,7 @@ Nitrate.Profiles.Bookmarks.on_load = function () {
 
     let parameters = Nitrate.Utils.formSerialize(this);
     if (parameters.pk === undefined) {
-      window.alert('No bookmark selected.');
+      showModal('No bookmark selected.');
       return false;
     }
 

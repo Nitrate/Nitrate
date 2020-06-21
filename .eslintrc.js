@@ -52,6 +52,7 @@ module.exports = {
     "previewPlan": "readonly",
     "renderComponentForm": "readonly",
     "setUpChoices": "readonly",
+    "showModal": "readonly",
     "SHORT_STRING_LENGTH": "readonly",
     "splitString": "readonly",
     "toggleExpandArrow": "readonly",

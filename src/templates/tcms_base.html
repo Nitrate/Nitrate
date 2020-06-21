@@ -87,6 +87,11 @@
 	</div>
 	{% endcache %}
 
+	{# global message dialog #}
+	<div id="messageDialog" style="display:none">
+		<p id="dialogShowMessage"></p>
+	</div>
+
 	<script type="text/javascript">
 		jQ(window).on('load', function() {
 			jQ('#js-execute-search').on('click', function() {

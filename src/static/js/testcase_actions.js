@@ -474,7 +474,7 @@ function addCaseIssue(form) {
   let selectedIssueTrackerOption = addIssueForm.find('option:selected');
   let issueKeyRegex = selectedIssueTrackerOption.data('issue-key-regex');
   if (! RegExp(issueKeyRegex).test(issueKey)) {
-    alert('Issue key is malformat.');
+    showModal('Issue key is malformat.', 'Input Error');
     return;
   }
 
@@ -540,7 +540,7 @@ function addCaseToPlansHandler(caseId, form) {
   let planIds = form.elements['pk__in'].value.trim();
 
   if (planIds.length === 0) {
-    window.alert(defaultMessages.alert.no_plan_specified);
+    showModal(defaultMessages.alert.no_plan_specified, 'Missing something?');
     return;
   }
 
@@ -552,7 +552,7 @@ function addCaseToPlansHandler(caseId, form) {
 
     let planIds = Nitrate.Utils.formSerialize(this).plan_id;
     if (!planIds) {
-      window.alert(defaultMessages.alert.no_plan_specified);
+      showModal(defaultMessages.alert.no_plan_specified, 'Missing something?');
       return false;
     }
 

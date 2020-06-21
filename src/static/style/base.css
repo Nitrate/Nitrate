@@ -1118,3 +1118,5 @@ ul.data_content_title li{ display:inline-block; margin-left:3px;}
 }
 
 .social_auth_login {margin-bottom: 16px; width: 48%; padding: 8px;}
+
+.hide-titlebar-close .ui-dialog-titlebar-close {display: none;}
