@@ -1363,39 +1363,46 @@ function removeIssueFromBatchCaseRunsHandler() {
   }
 }
 
-
 function showCommentForm() {
-  let dialog = getDialog();
-  let runs = getSelectedCaseRunIDs().case_run;
-  if (!runs.length) {
-    return window.alert(defaultMessages.alert.no_case_selected);
+  let caseRunIds = getSelectedCaseRunIDs().case_run;
+  if (caseRunIds.length === 0) {
+    window.alert(defaultMessages.alert.no_case_selected);
+    return;
   }
-  let template = Handlebars.compile(jQ('#batch_add_comment_to_caseruns_template').html());
-  jQ(dialog).html(template());
 
-  let commentText = jQ('#commentText');
-  let commentsErr = jQ('#commentsErr');
-  jQ('#btnComment').on('click', function () {
-    let error;
-    let comments = jQ.trim(commentText.val());
-    if (!comments) {
-      error = 'No comments given.';
+  let commentTextbox = document.getElementById('newCommentText');
+
+  let dialog = jQ('#addCommentDialog').dialog({
+    autoOpen: false,
+    height: 260,
+    width: 380,
+    modal: true,
+    buttons: {
+      OK: function () {
+        let comment = commentTextbox.value.trim().slice(0, -1);
+        if (comment.length === 0) {
+          return;
+        }
+
+        // Clear the text for the input next time.
+        commentTextbox.value = '';
+
+        postRequest({
+          url: '/caserun/comment-many/',
+          data: {comment: comment, run: caseRunIds},
+          traditional: true,
+        });
+
+        dialog.dialog('close');
+        dialog.dialog('destroy');
+      },
+      Cancel: function () {
+        dialog.dialog('close');
+      }
     }
-    if (error) {
-      commentsErr.html(error);
-      return false;
-    }
-    postRequest({
-      url: '/caserun/comment-many/',
-      data: {comment: comments, run: runs},
-      traditional: true,
-    });
   });
-  jQ('#btnCancelComment').on('click', function (){
-    jQ(dialog).hide();
-    commentText.val('');
-  });
-  jQ(dialog).show();
+
+  dialog.dialog('open');
 }
 
 jQ(document).ready(function (){

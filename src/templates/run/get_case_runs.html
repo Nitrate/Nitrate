@@ -175,9 +175,12 @@
 	</form>
 </div>
 
+<div id="addCommentDialog" title="Add Comment" style="display:none">
+	<textarea name="newCommnentText" id="newCommentText" style="width:100%;height:100%;"></textarea>
+</div>
+
+{% comment %}
 {% verbatim %}
-	<script id="add_issue_form_template" type="text/x-handlebars-template">
-	</script>
 	<script id="batch_add_comment_to_caseruns_template" type="text/x-handlebars-template">
 		<ul>
 			<li><b>Comments: </b></li>
@@ -190,3 +193,4 @@
 		</ul>
 	</script>
 {% endverbatim %}
+{% endcomment %}
