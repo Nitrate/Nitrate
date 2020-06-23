@@ -968,7 +968,7 @@ function showModal(showMessage, title) {
       modal: true,
       dialogClass: 'hide-titlebar-close',
       buttons: {
-        Ok: function() {
+        Ok: function () {
           pDialogShowMessage.removeChild(pDialogShowMessage.firstChild);
           jQ(this).dialog('close');
           jQ(this).dialog('destroy');
