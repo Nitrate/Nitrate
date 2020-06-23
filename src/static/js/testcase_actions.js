@@ -221,36 +221,43 @@ Nitrate.TestCases.Details.on_load = function () {
   });
 
   jQ('#id_remove_component').on('click', function () {
-    if (! window.confirm(defaultMessages.confirm.remove_case_component)) {
-      return false;
-    }
-
     let params = Nitrate.Utils.formSerialize(this.form);
-    if (!params.component) {
-      return false;
+    if (params.component.length === 0) {
+      return;
     }
-
-    postRequest({url: '/cases/remove-component/', traditional: true, data: {
-      'case': Nitrate.TestCases.Instance.pk,
-      'o_component': params.component
-    }});
+    confirmDialog({
+      message: defaultMessages.confirm.remove_case_component,
+      title: 'Manage Components',
+      yesFunc: function () {
+        postRequest({
+          url: '/cases/remove-component/',
+          traditional: true,
+          data: {
+            'case': Nitrate.TestCases.Instance.pk,
+            'o_component': params.component
+          }
+        });
+      }
+    });
   });
 
   jQ('.link_remove_component').on('click', function () {
-    if (! window.confirm(defaultMessages.confirm.remove_case_component)) {
-      return false;
-    }
-
-    postRequest({
-      url: '/cases/remove-component/',
-      traditional: true,
-      forbiddenMessage: 'You are not allowed to add issue to case.',
-      data: {
-        'case': Nitrate.TestCases.Instance.pk,
-        'o_component': jQ('input[name="component"]')[
-          jQ('.link_remove_component').index(this)
-        ].value
-      },
+    confirmDialog({
+      message: defaultMessages.confirm.remove_case_component,
+      title: 'Manage Components',
+      yesFunc: function () {
+        postRequest({
+          url: '/cases/remove-component/',
+          traditional: true,
+          forbiddenMessage: 'You are not allowed to add issue to case.',
+          data: {
+            'case': Nitrate.TestCases.Instance.pk,
+            'o_component': jQ('input[name="component"]')[
+              jQ('.link_remove_component').index(this)
+            ].value
+          },
+        });
+      }
     });
   });
 
@@ -496,15 +503,17 @@ function addCaseIssue(form) {
 }
 
 function removeCaseIssue(issueKey, caseId, caseRunId) {
-  if(!window.confirm('Are you sure to remove issue ' + issueKey + '?')) {
-    return;
-  }
-
-  getRequest({
-    url: '/case/' + caseId + '/issue/',
-    data: {handle: 'remove', issue_key: issueKey, case_run: caseRunId},
-    success: issueOperationSuccessCallback,
-    forbiddenMessage: 'You are not allowed to remove issue from case.',
+  confirmDialog({
+    message: 'Are you sure to remove issue ' + issueKey + '?',
+    title: 'Manage Issues',
+    yesFunc: function () {
+      getRequest({
+        url: '/case/' + caseId + '/issue/',
+        data: {handle: 'remove', issue_key: issueKey, case_run: caseRunId},
+        success: issueOperationSuccessCallback,
+        forbiddenMessage: 'You are not allowed to remove issue from case.',
+      });
+    }
   });
 }
 
@@ -517,16 +526,18 @@ function removeCaseIssue(issueKey, caseId, caseRunId) {
  * @param {HTMLButtonElement} button - the element this handler is bound to.
  */
 function removePlanFromPlansTableHandler(caseId, button) {
-  if (! window.confirm('Are you sure to remove the case from this plan?')) {
-    return;
-  }
-  postRequest({
-    url: '/case/' + caseId + '/plans/remove/',
-    data: {plan: parseInt(jQ(button).data('planid'))},
-    success: function (data) {
-      jQ('#plan').html(data.html);
-      jQ('#plan_count').text(jQ('table#testplans_table').prop('count'));
-    },
+  confirmDialog({
+    message: 'Are you sure to remove the case from this plan?',
+    yesFunc: function () {
+      postRequest({
+        url: '/case/' + caseId + '/plans/remove/',
+        data: {plan: parseInt(jQ(button).data('planid'))},
+        success: function (data) {
+          jQ('#plan').html(data.html);
+          jQ('#plan_count').text(jQ('table#testplans_table').prop('count'));
+        },
+      });
+    }
   });
 }
 

@@ -358,30 +358,6 @@ const defaultMessages = {
   Nitrate.http = http;
 }());
 
-
-/**
- * Show a modal dialog.
- * @param {string} showMessage - show this message in the modal dialog.
- * @param {string} [title] - the dialog title.
- */
-function showModal(showMessage, title) {
-  let pDialogShowMessage = document.getElementById('dialogShowMessage');
-  pDialogShowMessage.appendChild(document.createTextNode(showMessage));
-  jQ('#messageDialog')
-    .prop('title', title || '')
-    .dialog({
-      modal: true,
-      dialogClass: 'hide-titlebar-close',
-      buttons: {
-        Ok: function() {
-          pDialogShowMessage.removeChild(pDialogShowMessage.firstChild);
-          jQ(this).dialog('close');
-          jQ(this).dialog('destroy');
-        }
-      }
-    });
-}
-
 function addBookmark(url, method, parameters, callback) {
   parameters.a = 'add';
   // FIXME: use POST
@@ -778,24 +754,6 @@ function updateObject(contentType, objectPk, field, value, valueType, callback) 
   });
 }
 
-function getDialog(element) {
-  if (!element) {
-    return jQ('#dialog')[0];
-  }
-  return element;
-}
-
-function showDialog(element) {
-  return jQ(getDialog(element)).show()[0];
-}
-
-function clearDialog(element) {
-  let dialog = getDialog(element);
-
-  jQ(dialog).html(constructAjaxLoading());
-  return jQ(dialog).hide()[0];
-}
-
 function constructAjaxLoading(id) {
   let props = {'class': 'ajax_loading'};
   if (id !== undefined) {
@@ -974,3 +932,84 @@ function renderComponentForm(container, parameters, formObserve) {
     }
   });
 }
+
+
+/************ Dialog operations *****************/
+
+function getDialog(element) {
+  if (!element) {
+    return jQ('#dialog')[0];
+  }
+  return element;
+}
+
+function showDialog(element) {
+  return jQ(getDialog(element)).show()[0];
+}
+
+function clearDialog(element) {
+  let dialog = getDialog(element);
+
+  jQ(dialog).html(constructAjaxLoading());
+  return jQ(dialog).hide()[0];
+}
+
+/**
+ * Show a modal dialog.
+ * @param {string} showMessage - show this message in the modal dialog.
+ * @param {string} [title] - the dialog title.
+ */
+function showModal(showMessage, title) {
+  let pDialogShowMessage = document.getElementById('dialogShowMessage');
+  pDialogShowMessage.appendChild(document.createTextNode(showMessage));
+  jQ('#messageDialog')
+    .prop('title', title || '')
+    .dialog({
+      modal: true,
+      dialogClass: 'hide-titlebar-close',
+      buttons: {
+        Ok: function() {
+          pDialogShowMessage.removeChild(pDialogShowMessage.firstChild);
+          jQ(this).dialog('close');
+          jQ(this).dialog('destroy');
+        }
+      }
+    });
+}
+
+/**
+ * Show confirmation dialog with a specific message.
+ * @param {object} options
+ * @param {string} options.message - the message to be shown in the dialog.
+ * @param {string} [options.title] - dialog title.
+ * @param {function} [options.yesFunc] - the function to be called when click Yes button.
+ */
+function confirmDialog(options) {
+  let messageElem = document.getElementById('confirmMessage');
+  let textNode = messageElem.firstChild;
+  if (textNode) {
+    messageElem.removeChild(messageElem.firstChild);
+  }
+  messageElem.appendChild(document.createTextNode(options.message));
+
+  jQ('#confirmDialog').dialog({
+    resizable: false,
+    height: 'auto',
+    width: 400,
+    modal: true,
+    dialogClass: 'hide-titlebar-close',
+    title: options.title || '',
+    buttons: {
+      Yes: function () {
+        if (options.yesFunc) {
+          options.yesFunc();
+        }
+        jQ(this).dialog('destroy');
+      },
+      No: function () {
+        jQ(this).dialog('destroy');
+      }
+    }
+  });
+}
+

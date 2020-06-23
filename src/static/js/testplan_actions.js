@@ -1314,36 +1314,39 @@ function onTestCaseStatusChange(options) {
     if (!statusPk) {
       return false;
     }
-    if (! window.confirm(defaultMessages.confirm.change_case_status)) {
-      return false;
-    }
 
-    let postdata = serializeFormData({
-      'form': options.form,
-      'zoneContainer': container,
-      'selectedCaseIDs': selectedCaseIDs,
-      'hashable': true
-    });
-    postdata.a = 'update';
+    confirmDialog({
+      message: defaultMessages.confirm.change_case_status,
+      title: 'Manage Test Case Status',
+      yesFunc: function () {
+        let postdata = serializeFormData({
+          'form': options.form,
+          'zoneContainer': container,
+          'selectedCaseIDs': selectedCaseIDs,
+          'hashable': true
+        });
+        postdata.a = 'update';
 
-    postRequest({
-      url: '/ajax/update/case-status/',
-      data: {
-        'from_plan': postdata.from_plan,
-        'case': postdata.case,
-        'target_field': 'case_status',
-        'new_value': statusPk
-      },
-      traditional: true,
-      success: function (data) {
-        constructPlanDetailsCasesZone(container, options.planId, postdata);
+        postRequest({
+          url: '/ajax/update/case-status/',
+          data: {
+            'from_plan': postdata.from_plan,
+            'case': postdata.case,
+            'target_field': 'case_status',
+            'new_value': statusPk
+          },
+          traditional: true,
+          success: function (data) {
+            constructPlanDetailsCasesZone(container, options.planId, postdata);
 
-        jQ('#run_case_count').text(data.run_case_count);
-        jQ('#case_count').text(data.case_count);
-        jQ('#review_case_count').text(data.review_case_count);
+            jQ('#run_case_count').text(data.run_case_count);
+            jQ('#case_count').text(data.case_count);
+            jQ('#review_case_count').text(data.review_case_count);
 
-        Nitrate.TestPlans.Details.reopenTabHelper(jQ(container));
-      },
+            Nitrate.TestPlans.Details.reopenTabHelper(jQ(container));
+          },
+        });
+      }
     });
   };
 }
@@ -1361,34 +1364,40 @@ function onTestCasePriorityChange(options) {
       showModal(defaultMessages.alert.no_case_selected, 'Missing something?');
       return false;
     }
+
     // FIXME: how about show a message to user to let user know what is happening?
-    if (!this.value) {
-      return false;
-    }
-    if (! window.confirm(defaultMessages.confirm.change_case_priority)) {
+    let newPriority = this.value;
+
+    if (! newPriority) {
       return false;
     }
 
-    let postdata = serializeFormData({
-      'form': options.form,
-      'zoneContainer': container,
-      'selectedCaseIDs': selectedCaseIDs,
-      'hashable': true
-    });
-    postdata.a = 'update';
+    confirmDialog({
+      message: defaultMessages.confirm.change_case_priority,
+      title: 'Manage Test Case Priority',
+      yesFunc: function () {
+        let postdata = serializeFormData({
+          'form': options.form,
+          'zoneContainer': container,
+          'selectedCaseIDs': selectedCaseIDs,
+          'hashable': true
+        });
+        postdata.a = 'update';
 
-    postRequest({
-      url: '/ajax/update/cases-priority/',
-      data: {
-        from_plan: postdata.from_plan,
-        case: postdata.case,
-        target_field: 'priority',
-        new_value: this.value
-      },
-      traditional: true,
-      success: function () {
-        constructPlanDetailsCasesZone(container, options.planId, postdata);
-      },
+        postRequest({
+          url: '/ajax/update/cases-priority/',
+          data: {
+            from_plan: postdata.from_plan,
+            case: postdata.case,
+            target_field: 'priority',
+            new_value: newPriority
+          },
+          traditional: true,
+          success: function () {
+            constructPlanDetailsCasesZone(container, options.planId, postdata);
+          },
+        });
+      }
     });
   };
 }

@@ -21,7 +21,7 @@
 				<li><a href="{% url "add-cases-to-run" test_run.run_id %}" class="addBlue9">Add</a></li>
 				{% endif %}
 				{% if perms.testruns.delete_testcaserun %}
-				<li><a href="#" title="Remove selected cases form this test run" data-param="{{ test_run.run_id }}" class="removeBlue9 js-del-case">Remove</a></li>
+				<li><a href="javascript:void(0)" title="Remove selected cases form this test run" data-param="{{ test_run.run_id }}" class="removeBlue9 js-del-case">Remove</a></li>
 				{% endif %}
 				{% if perms.testruns.change_testcaserun %}
 				<li><a id="id_sort" title="Click me,then Drag and drop the rows to adjust the order,and click 'Done Sorting' link to submit your changes" href="#" class="reorderBlue9">Re-order</a></li>
@@ -36,7 +36,7 @@
 			<span>Status</span>
 			<ul class="statusOptions">
 				{% for tcrs in test_case_run_status %}
-				<li><a value="{{ tcrs.pk }}" href="#" class="{{ tcrs|lower }}Blue9">{{ tcrs }}</a></li>
+				<li><a href="#" class="{{ tcrs|lower }}Blue9" data-statusid="{{ tcrs.pk }}">{{ tcrs }}</a></li>
 				{% endfor %}
 			</ul>
 		</div>

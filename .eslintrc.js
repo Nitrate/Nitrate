@@ -38,6 +38,7 @@ module.exports = {
     "blinddownAllCases": "readonly",
     "blindupAllCases": "readonly",
     "clearDialog": "readonly",
+    "confirmDialog": "readonly",
     "constructAjaxLoading": "readonly",
     "constructForm": "readonly",
     "constructTagZone": "readonly",

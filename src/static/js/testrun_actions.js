@@ -1028,13 +1028,20 @@ function removeIssueFromCaseRuns(removeIssueInfo, reloadInfo) {
   });
 }
 
-
 function delCaseRun() {
   let caseruns = getSelectedCaseRunIDs();
   let numCaseRuns = caseruns.case_run.length;
-  if (window.confirm('You are about to delete ' + numCaseRuns + ' case run(s). Are you sure?')) {
-    postToURL('removecaserun/', caseruns);
+
+  if (numCaseRuns === 0) {
+    return;
   }
+
+  confirmDialog({
+    message: 'You are about to delete ' + numCaseRuns + ' case run(s). Are you sure?',
+    yesFunc: function () {
+      postToURL('removecaserun/', caseruns);
+    }
+  });
 }
 
 function editValue(form, hidebox, selectid, submitid) {
@@ -1107,24 +1114,26 @@ function submitValue(runId, value, hidebox, selectField, submitid) {
 }
 
 function removeProperty(runId, element) {
-  if (!window.confirm('Are you sure to remove this porperty?')) {
-    return false;
-  }
+  confirmDialog({
+    message: 'Are you sure to remove this porperty?',
+    title: 'Manage Test Run\'s Environment',
+    yesFunc: function () {
+      let parent = jQ(element).closest('form');
+      let emptySelf = jQ(element).closest('li');
+      let envValueId = jQ('input[type=hidden][name=current_run_env]', parent).get(0).value;
 
-  let parent = jQ(element).closest('form');
-  let emptySelf = jQ(element).closest('li');
-  let envValueId = jQ('input[type=hidden][name=current_run_env]', parent).get(0).value;
-
-  getRequest({
-    url: '/runs/env_value/',
-    data: {
-      a: 'remove',
-      info_type: 'env_values',
-      env_value_id: envValueId,
-      run_id: runId
-    },
-    errorMessage: 'Edit value failed',
-    success: function () { emptySelf.remove(); },
+      getRequest({
+        url: '/runs/env_value/',
+        data: {
+          a: 'remove',
+          info_type: 'env_values',
+          env_value_id: envValueId,
+          run_id: runId
+        },
+        errorMessage: 'Edit value failed',
+        success: function () { emptySelf.remove(); },
+      });
+    }
   });
 }
 
@@ -1217,10 +1226,12 @@ function addRunCC(runId, container) {
 }
 
 function removeRunCC(runId, user, container) {
-  if (! window.confirm('Are you sure to delete this user from CC?')) {
-    return false;
-  }
-  constructRunCC(container, runId, {'do': 'remove', 'user': user});
+  confirmDialog({
+    message: 'Are you sure to delete this user from CC?',
+    yesFunc: function () {
+      constructRunCC(container, runId, {'do': 'remove', 'user': user});
+    }
+  });
 }
 
 function changeCaseRunAssignee() {
@@ -1289,22 +1300,20 @@ function serializeRunsFromInputList(table) {
 }
 
 function insertCasesIntoTestRun() {
-  if (! window.confirm('Are you sure to add cases to the run?')) {
-    return false;
-  }
-
-  let caseIds = [];
-  jQ('[name="case"]').each(function () {
-    caseIds.push(this.value);
+  confirmDialog({
+    message: 'Are you sure to add cases to the run?',
+    yesFunc: function () {
+      let caseIds = [];
+      jQ('[name="case"]').each(function () {
+        caseIds.push(this.value);
+      });
+      let params = {
+        testrun_ids: serializeRunsFromInputList('id_table_runs'),
+        case_ids: caseIds
+      };
+      postToURL('../chooseruns/', params, 'POST');
+    }
   });
-
-  postToURL(
-    '../chooseruns/',
-    {
-      testrun_ids: serializeRunsFromInputList('id_table_runs'),
-      case_ids: caseIds
-    },
-    'POST');
 }
 
 
@@ -1416,7 +1425,7 @@ jQ(document).ready(function (){
     jQ(this).find('ul').hide();
   });
   jQ('ul.statusOptions a').click(function () {
-    let option = jQ(this).prop('value');
+    let option = jQ(this).data('statusid');
     if (option === '') {
       return false;
     }
@@ -1425,10 +1434,13 @@ jQ(document).ready(function (){
       showModal(defaultMessages.alert.no_case_selected, 'Missing something?');
       return false;
     }
-    if (!window.confirm(defaultMessages.confirm.change_case_status)) {
-      return false;
-    }
-    updateObject('testruns.testcaserun', objectPks, 'case_run_status', option, 'int');
+
+    confirmDialog({
+      message: defaultMessages.confirm.change_case_status,
+      yesFunc: function () {
+        updateObject('testruns.testcaserun', objectPks, 'case_run_status', option, 'int');
+      }
+    });
   });
 });
 

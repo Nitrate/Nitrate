@@ -83,18 +83,18 @@ Nitrate.Management.Environment.Groups = {
    * @param {string} envGroupName
    */
   deleteEnvGroup: function (envGroupId, envGroupName) {
-    let answer = window.confirm('Are you sure you wish to remove environment group - ' + envGroupName);
-    if (!answer) {
-      return;
-    }
-
-    let url = Nitrate.Management.Environment.Groups.URLs.delete_group.replace('$id', envGroupId);
-    postRequest({
-      url: url,
-      forbiddenMessage: 'You are not allowed to delete an environment group.',
-      success: function () {
-        jQ('#' + envGroupId).remove();
-      },
+    confirmDialog({
+      message: 'Are you sure you wish to remove environment group - ' + envGroupName,
+      title: 'Manage Environment Group',
+      yesFunc: function () {
+        postRequest({
+          url: Nitrate.Management.Environment.Groups.URLs.delete_group.replace('$id', envGroupId),
+          forbiddenMessage: 'You are not allowed to delete an environment group.',
+          success: function () {
+            jQ('#' + envGroupId).remove();
+          },
+        });
+      }
     });
   },
 
