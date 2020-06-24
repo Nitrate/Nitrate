@@ -52,7 +52,7 @@ class Classification(TCMSActionModel):
 
 
 class Product(TCMSActionModel):
-    id = models.AutoField(max_length=5, primary_key=True)
+    id = models.AutoField(primary_key=True)
     name = models.CharField(unique=True, max_length=64)
     classification = models.ForeignKey(Classification, on_delete=models.CASCADE)
     description = models.TextField(blank=True)
@@ -115,7 +115,7 @@ class Product(TCMSActionModel):
 
 
 class Priority(TCMSActionModel):
-    id = models.AutoField(max_length=5, primary_key=True)
+    id = models.AutoField(primary_key=True)
     value = models.CharField(unique=True, max_length=64)
     sortkey = models.IntegerField(default=0)
     is_active = models.BooleanField(db_column='isactive', default=True)
@@ -157,7 +157,7 @@ class Milestone(models.Model):
 
 
 class Component(TCMSActionModel):
-    id = models.AutoField(max_length=5, primary_key=True)
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=64)
     product = models.ForeignKey(
         Product, related_name='component', on_delete=models.CASCADE)
@@ -215,7 +215,7 @@ class TestBuildManager(models.Manager):
 
 
 class TestBuild(TCMSActionModel):
-    build_id = models.AutoField(max_length=10, unique=True, primary_key=True)
+    build_id = models.AutoField(unique=True, primary_key=True)
     name = models.CharField(max_length=255)
     milestone = models.CharField(max_length=20, default='---')
     description = models.TextField(blank=True)
@@ -292,10 +292,7 @@ class TestBuild(TCMSActionModel):
 
 
 class TestEnvironment(TCMSActionModel):
-    environment_id = models.AutoField(
-        max_length=10,
-        primary_key=True
-    )
+    environment_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255, blank=True)
     is_active = models.BooleanField(db_column="isactive", default=True)
 
@@ -330,7 +327,7 @@ class TestEnvironmentCategory(models.Model):
 
 
 class TestEnvironmentElement(models.Model):
-    element_id = models.AutoField(max_length=10, primary_key=True)
+    element_id = models.AutoField(primary_key=True)
     name = models.CharField(unique=True, max_length=255, blank=True)
     is_private = models.BooleanField(db_column='isprivate', default=False)
 
@@ -385,7 +382,7 @@ class TestEnvironmentMap(models.Model):
 
 
 class TestTag(TCMSActionModel):
-    id = models.AutoField(db_column='tag_id', max_length=10, primary_key=True)
+    id = models.AutoField(db_column='tag_id', primary_key=True)
     name = models.CharField(db_column='tag_name', max_length=255)
 
     class Meta:
@@ -414,7 +411,7 @@ class TestTag(TCMSActionModel):
 
 
 class TestAttachment(models.Model):
-    attachment_id = models.AutoField(max_length=10, primary_key=True)
+    attachment_id = models.AutoField(primary_key=True)
     description = models.CharField(max_length=1024, blank=True, null=True)
     file_name = models.CharField(db_column='filename', max_length=255, unique=True, blank=True)
     stored_name = models.CharField(max_length=128, unique=True, blank=True, null=True)

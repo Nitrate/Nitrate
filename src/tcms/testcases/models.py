@@ -63,9 +63,7 @@ class PlainText:
 
 
 class TestCaseStatus(EnumLike, TCMSActionModel):
-    id = models.AutoField(
-        db_column='case_status_id', max_length=6, primary_key=True
-    )
+    id = models.AutoField(db_column='case_status_id', primary_key=True)
     # FIXME: if name has unique value for each status, give unique constraint
     # to this field. Otherwise, all SQL queries filtering upon this
     #        field will cost much time in the database side.
@@ -101,7 +99,7 @@ class TestCaseCategory(TCMSActionModel):
 
 
 class TestCase(TCMSActionModel):
-    case_id = models.AutoField(max_length=10, primary_key=True)
+    case_id = models.AutoField(primary_key=True)
     create_date = models.DateTimeField(db_column='creation_date', auto_now_add=True)
     is_automated = models.IntegerField(db_column='isautomated', default=0)
     is_automated_proposed = models.BooleanField(default=False)

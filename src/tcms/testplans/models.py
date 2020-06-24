@@ -43,7 +43,7 @@ class TestPlanType(TCMSActionModel):
 class TestPlan(TCMSActionModel):
     """A plan within the TCMS"""
 
-    plan_id = models.AutoField(max_length=11, primary_key=True)
+    plan_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255, db_index=True)
     create_date = models.DateTimeField(db_column='creation_date', auto_now_add=True)
     is_active = models.BooleanField(db_column='isactive', default=True, db_index=True)
