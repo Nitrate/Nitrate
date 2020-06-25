@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import os.path
+
 from django.core.cache import cache
 from django.db import models
+from django.conf import settings
 
 from tcms.core.models import TCMSActionModel
 from tcms.core.utils import calc_percent
@@ -417,6 +420,7 @@ class TestAttachment(models.Model):
     stored_name = models.CharField(max_length=128, unique=True, blank=True, null=True)
     create_date = models.DateTimeField(db_column='creation_ts')
     mime_type = models.CharField(max_length=100)
+    # checksum = models.CharField(max_length=128, unique=True)
 
     submitter = models.ForeignKey('auth.User',
                                   blank=True, null=True,
@@ -428,6 +432,18 @@ class TestAttachment(models.Model):
 
     class Meta:
         db_table = 'test_attachments'
+
+    @property
+    def stored_filename(self):
+        return (
+            os.path
+            .join(settings.FILE_UPLOAD_DIR, self.stored_name)
+            .replace('\\', '/')
+        )
+
+    @property
+    def exists(self):
+        return os.path.exists(self.stored_filename)
 
 
 class TestAttachmentData(models.Model):

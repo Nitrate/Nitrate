@@ -46,8 +46,12 @@ class UploadFileView(PermissionRequiredMixin, generic.View):
 
         if to_plan_id is not None:
             redirect_url = reverse('plan-attachment', args=[to_plan_id])
-        if to_case_id is not None:
+            create_rel = TestPlanAttachment.objects.create
+            rel_kwargs = {'plan_id': int(to_plan_id)}
+        else:
             redirect_url = reverse('case-attachment', args=[to_case_id])
+            create_rel = TestCaseAttachment.objects.create
+            rel_kwargs = {'case_id': int(to_case_id)}
 
         upload_file = request.FILES.get('upload_file')
 
@@ -68,50 +72,36 @@ class UploadFileView(PermissionRequiredMixin, generic.View):
         except UnicodeEncodeError:
             return prompt.alert(request, 'Upload File name is not legal.')
 
-        now = datetime.now()  # FIXME: use utcnow()?
-        stored_name = f'{request.user.username}-{now}-{upload_file.name}'
-        stored_file_name = os.path.join(
-            settings.FILE_UPLOAD_DIR, stored_name).replace('\\', '/')
-        stored_file_name = smart_str(stored_file_name)
-
         # Create the upload directory when it's not exist
         if not os.path.exists(settings.FILE_UPLOAD_DIR):
             os.mkdir(settings.FILE_UPLOAD_DIR)
 
-        if os.path.exists(stored_file_name):
+        now = datetime.now()  # FIXME: use utcnow()?
+
+        attachment = TestAttachment(
+            submitter_id=request.user.id,
+            description=request.POST.get('description', None),
+            file_name=upload_file.name,
+            stored_name=f'{request.user.username}-{now}-{upload_file.name}',
+            create_date=now,
+            mime_type=upload_file.content_type
+        )
+
+        if attachment.exists:
             return prompt.alert(
                 request,
                 f"File named '{upload_file.name}' already exists in upload"
                 f" folder, please rename to another name for solve conflict.",
             )
 
-        with open(stored_file_name, 'wb+') as f:
+        with open(attachment.stored_filename, 'wb+') as f:
             for chunk in upload_file.chunks():
                 f.write(chunk)
 
-        # Write the file to database
-        # store_file = open(upload_file_name, 'ro')
-        ta = TestAttachment.objects.create(
-            submitter_id=request.user.id,
-            description=request.POST.get('description', None),
-            file_name=upload_file.name,
-            stored_name=stored_name,
-            create_date=now,
-            mime_type=upload_file.content_type
-        )
+        attachment.save()
 
-        if to_plan_id is not None:
-            TestPlanAttachment.objects.create(
-                plan_id=int(to_plan_id),
-                attachment_id=ta.attachment_id,
-            )
-
-        if to_case_id is not None:
-            TestCaseAttachment.objects.create(
-                case_id=int(to_case_id),
-                attachment_id=ta.attachment_id,
-            )
-
+        rel_kwargs['attachment'] = attachment
+        create_rel(**rel_kwargs)
         return HttpResponseRedirect(redirect_url)
 
 
