@@ -44,76 +44,75 @@ class UploadFileView(PermissionRequiredMixin, generic.View):
                 'proceed without plan or case ID.',
             )
 
-        if request.FILES.get('upload_file'):
-            upload_file = request.FILES['upload_file']
+        if to_plan_id is not None:
+            redirect_url = reverse('plan-attachment', args=[to_plan_id])
+        if to_case_id is not None:
+            redirect_url = reverse('case-attachment', args=[to_case_id])
 
-            try:
-                upload_file.name.encode('utf8')
-            except UnicodeEncodeError:
-                return prompt.alert(request, 'Upload File name is not legal.')
+        upload_file = request.FILES.get('upload_file')
 
-            now = datetime.now()
+        if not upload_file:
+            return HttpResponseRedirect(redirect_url)
 
-            stored_name = f'{request.user.username}-{now}-{upload_file.name}'
+        upload_file = request.FILES['upload_file']
 
-            stored_file_name = os.path.join(
-                settings.FILE_UPLOAD_DIR, stored_name).replace('\\', '/')
-            stored_file_name = smart_str(stored_file_name)
-
-            if upload_file.size > settings.MAX_UPLOAD_SIZE:
-                return prompt.alert(
-                    request,
-                    f'You upload entity is too large. Please ensure the file '
-                    f'is less than {settings.MAX_UPLOAD_SIZE} bytes.'
-                )
-
-            # Create the upload directory when it's not exist
-            if not os.path.exists(settings.FILE_UPLOAD_DIR):
-                os.mkdir(settings.FILE_UPLOAD_DIR)
-
-            if os.path.exists(stored_file_name):
-                return prompt.alert(
-                    request,
-                    f"File named '{upload_file.name}' already exists in upload"
-                    f" folder, please rename to another name for solve conflict.",
-                )
-
-            with open(stored_file_name, 'wb+') as f:
-                for chunk in upload_file.chunks():
-                    f.write(chunk)
-
-            # Write the file to database
-            # store_file = open(upload_file_name, 'ro')
-            ta = TestAttachment.objects.create(
-                submitter_id=request.user.id,
-                description=request.POST.get('description', None),
-                file_name=upload_file.name,
-                stored_name=stored_name,
-                create_date=now,
-                mime_type=upload_file.content_type
+        if upload_file.size > settings.MAX_UPLOAD_SIZE:
+            return prompt.alert(
+                request,
+                f'You upload entity is too large. Please ensure the file '
+                f'is less than {settings.MAX_UPLOAD_SIZE} bytes.'
             )
 
-            if request.POST.get('to_plan_id'):
-                TestPlanAttachment.objects.create(
-                    plan_id=int(to_plan_id),
-                    attachment_id=ta.attachment_id,
-                )
-                return HttpResponseRedirect(
-                    reverse('plan-attachment', args=[to_plan_id]))
+        try:
+            upload_file.name.encode('utf8')
+        except UnicodeEncodeError:
+            return prompt.alert(request, 'Upload File name is not legal.')
 
-            if request.POST.get('to_case_id'):
-                TestCaseAttachment.objects.create(
-                    attachment_id=ta.attachment_id,
-                    case_id=int(to_case_id))
-                return HttpResponseRedirect(
-                    reverse('case-attachment', args=[to_case_id]))
-        else:
-            if 'to_plan_id' in request.POST:
-                return HttpResponseRedirect(
-                    reverse('plan-attachment', args=[to_plan_id]))
-            if 'to_case_id' in request.POST:
-                return HttpResponseRedirect(
-                    reverse('case-attachment', args=[to_case_id]))
+        now = datetime.now()  # FIXME: use utcnow()?
+        stored_name = f'{request.user.username}-{now}-{upload_file.name}'
+        stored_file_name = os.path.join(
+            settings.FILE_UPLOAD_DIR, stored_name).replace('\\', '/')
+        stored_file_name = smart_str(stored_file_name)
+
+        # Create the upload directory when it's not exist
+        if not os.path.exists(settings.FILE_UPLOAD_DIR):
+            os.mkdir(settings.FILE_UPLOAD_DIR)
+
+        if os.path.exists(stored_file_name):
+            return prompt.alert(
+                request,
+                f"File named '{upload_file.name}' already exists in upload"
+                f" folder, please rename to another name for solve conflict.",
+            )
+
+        with open(stored_file_name, 'wb+') as f:
+            for chunk in upload_file.chunks():
+                f.write(chunk)
+
+        # Write the file to database
+        # store_file = open(upload_file_name, 'ro')
+        ta = TestAttachment.objects.create(
+            submitter_id=request.user.id,
+            description=request.POST.get('description', None),
+            file_name=upload_file.name,
+            stored_name=stored_name,
+            create_date=now,
+            mime_type=upload_file.content_type
+        )
+
+        if to_plan_id is not None:
+            TestPlanAttachment.objects.create(
+                plan_id=int(to_plan_id),
+                attachment_id=ta.attachment_id,
+            )
+
+        if to_case_id is not None:
+            TestCaseAttachment.objects.create(
+                case_id=int(to_case_id),
+                attachment_id=ta.attachment_id,
+            )
+
+        return HttpResponseRedirect(redirect_url)
 
 
 @require_GET
