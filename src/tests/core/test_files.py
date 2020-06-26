@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import shutil
 import tempfile
 
 from datetime import datetime
@@ -37,19 +36,6 @@ class TestUploadFile(BasePlanCase):
         cls.user = create_request_user(username='uploader', password=cls.password)
         user_should_have_perm(cls.user, 'management.add_testattachment')
         user_should_have_perm(cls.user, 'testcases.add_testcaseattachment')
-
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-
-        cls.file_upload_dir = tempfile.mkdtemp(
-            prefix=f'{cls.__name__}-upload-dir')
-
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.file_upload_dir)
-
-        super().tearDownClass()
 
     def setUp(self):
         super().setUp()
@@ -92,12 +78,13 @@ class TestUploadFile(BasePlanCase):
     def test_upload_file_to_plan(self):
         self.client.login(username=self.user.username, password=self.password)
 
-        with patch('tcms.core.files.settings.FILE_UPLOAD_DIR',
-                   new=self.file_upload_dir):
-            with open(self.upload_filename, 'r') as upload_file:
-                response = self.client.post(self.upload_file_url,
-                                            {'to_plan_id': self.plan.pk,
-                                             'upload_file': upload_file})
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with patch('tcms.core.files.settings.FILE_UPLOAD_DIR', new=tmpdir):
+                with open(self.upload_filename, 'r') as upload_file:
+                    response = self.client.post(self.upload_file_url, {
+                        'to_plan_id': self.plan.pk,
+                        'upload_file': upload_file
+                    })
 
         self.assertRedirects(
             response,
@@ -117,12 +104,13 @@ class TestUploadFile(BasePlanCase):
     def test_upload_file_to_case(self):
         self.client.login(username=self.user.username, password=self.password)
 
-        with patch('tcms.core.files.settings.FILE_UPLOAD_DIR',
-                   new=self.file_upload_dir):
-            with open(self.upload_filename, 'r') as upload_file:
-                response = self.client.post(self.upload_file_url,
-                                            {'to_case_id': self.case_1.pk,
-                                             'upload_file': upload_file})
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with patch('tcms.core.files.settings.FILE_UPLOAD_DIR', new=tmpdir):
+                with open(self.upload_filename, 'r') as upload_file:
+                    response = self.client.post(self.upload_file_url, {
+                        'to_case_id': self.case_1.pk,
+                        'upload_file': upload_file
+                    })
 
         self.assertRedirects(
             response,
