@@ -193,8 +193,7 @@ def delete_file(request):
     if 'from_plan' in request.POST:
         plan_id = int(request.POST['from_plan'])
         try:
-            rel = TestPlanAttachment.objects.get(
-                attachment=file_id, plan_id=plan_id)
+            rel = TestPlanAttachment.objects.get(attachment=file_id, plan_id=plan_id)
         except TestPlanAttachment.DoesNotExist:
             return JsonResponse(
                 {'message': f'Attachment {file_id} does not belong to plan {plan_id}.'},
@@ -203,17 +202,18 @@ def delete_file(request):
         else:
             rel.delete()
 
-        return JsonResponse({
-            'message': f'Attachment {rel.attachment.file_name} is removed from plan'
-                       f' {plan_id} successfully.'
-        })
+        attachment = rel.attachment
+        msg = f'Attachment {attachment.file_name} is removed from plan {plan_id} successfully.'
+        attachment.delete()
+        os.unlink(attachment.stored_filename)
+
+        return JsonResponse({'message': msg})
 
     # Delete cases' attachment
     elif 'from_case' in request.POST:
         case_id = int(request.POST['from_case'])
         try:
-            rel = TestCaseAttachment.objects.get(
-                attachment=file_id, case_id=case_id)
+            rel = TestCaseAttachment.objects.get(attachment=file_id, case_id=case_id)
         except TestCaseAttachment.DoesNotExist:
             return JsonResponse(
                 {'message': f'Attachment {file_id} does not belong to case {case_id}.'},
@@ -222,10 +222,12 @@ def delete_file(request):
         else:
             rel.delete()
 
-        return JsonResponse({
-            'message': f'Attachment {rel.attachment.file_name} is removed from case'
-                       f' {case_id} successfully.'
-        })
+        attachment = rel.attachment
+        msg = f'Attachment {attachment.file_name} is removed from case {case_id} successfully.'
+        attachment.delete()
+        os.unlink(attachment.stored_filename)
+
+        return JsonResponse({'message': msg})
 
     else:
         return JsonResponse(

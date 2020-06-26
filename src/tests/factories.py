@@ -174,6 +174,7 @@ class TestAttachmentFactory(DjangoModelFactory):
     class Meta:
         model = 'management.TestAttachment'
 
+    stored_name = factory.sequence(lambda n: f'attachment-file-{n}')
     file_name = factory.LazyFunction(lambda: '%s.png' % str(datetime.now()))
     submitter = factory.SubFactory(UserFactory)
     create_date = factory.LazyFunction(datetime.now)
