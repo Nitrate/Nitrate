@@ -4,29 +4,21 @@ Nitrate - Test Case Management System
 .. image:: https://img.shields.io/pypi/v/nitrate-tcms
    :alt: PyPI
    :target: https://pypi.python.org/pypi/nitrate-tcms
-
 .. image:: https://img.shields.io/pypi/dm/nitrate-tcms
    :alt: PyPI - Downloads
-
 .. image:: https://quay.io/repository/nitrate/nitrate/status
    :target: https://quay.io/repository/nitrate/nitrate/
-
 .. image::  https://readthedocs.org/projects/nitrate/badge/?version=latest
    :target: http://nitrate.readthedocs.io/en/latest/
-
 .. image:: https://img.shields.io/pypi/l/nitrate-tcms
    :alt: PyPI - License
-
 .. image:: https://img.shields.io/github/issues-raw/Nitrate/Nitrate
    :alt: GitHub issues
    :target: https://github.com/Nitrate/Nitrate/issues/
-
 .. image:: https://travis-ci.org/Nitrate/Nitrate.svg?branch=develop
    :target: https://travis-ci.org/Nitrate/Nitrate
-
 .. image:: https://coveralls.io/repos/github/Nitrate/Nitrate/badge.svg?branch=develop
    :target: https://coveralls.io/github/Nitrate/Nitrate?branch=develop
-
 .. image:: https://badges.gitter.im/Nitrate/Nitrate.svg
    :alt: Gitter
    :target: https://gitter.im/Nitrate/Nitrate?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge

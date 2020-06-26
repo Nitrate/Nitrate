@@ -1,0 +1,114 @@
+.. _4.7:
+
+4.7
+===
+
+*Jun 27, 2020*
+
+Release 4.7 includes many cleanup and code refactors of JavaScript codebase.
+
+Django 3.0 is added to testenv and tests pass with this version. If you find
+out any issue while running Nitrate with Django 3.0, please file issue.
+
+``requirements.txt`` is removed as it is useless for installing dependent
+packages. ``setup.py`` is organized well and it should be the place from where
+to install requirements.
+
+``jquery.shiftcheckbox`` and ``TableDnD`` are upgraded latest version.
+
+Get and install
+---------------
+
+From PyPI::
+
+    pip install nitrate-tcms
+
+From image registry::
+
+    docker pull quay.io/nitrate/nitrate:4.7
+
+Refer to :ref:`how_to_run` for details of installation.
+
+Database Migration
+------------------
+
+There is database migrations. Run command to do the migration::
+
+	django-admin --settings=tcms.settings.produce migrate
+
+Change Log
+----------
+
+* Use tempfile context in test TestUploadFile (Chenxiong Qi)
+* Remove associated TestAttachment object and the uploaded file (Chenxiong Qi)
+* Make UploadFileView shorter (Chenxiong Qi)
+* Refactor files.py to reduce indentations (Chenxiong Qi)
+* Remove max_length from AutoField constructor (Chenxiong Qi)
+* Remove commented out lines of templates (Chenxiong Qi)
+* JS: fix eslint error (Chenxiong Qi)
+* JS: replace window.confirm with jQuery dialog (Chenxiong Qi)
+* JS: replace window.alert with jQuery dialog (Chenxiong Qi)
+* JS: use jQuery dialog for adding comment to case runs (Chenxiong Qi)
+* JS: replace add property template with jQuery dialog - `#583`_ (Chenxiong Qi)
+* JS: fix comments submittion and removal (Chenxiong Qi)
+* JS: avoid hardcoding ajax loading div (Chenxiong Qi)
+* Add missing csrf_token in assgin_case template (Chenxiong Qi)
+* JS: replace toggleAllCheckBoxes with shiftcheckbox (Chenxiong Qi)
+* JS: add eslint rule max-len (Chenxiong Qi)
+* JS: cleanup global variables in eslintrc (Chenxiong Qi)
+* Ensure celery is installed in tox testenv (Chenxiong Qi)
+* JS: rewrite product associated objects updater - `#600`_ (Chenxiong Qi)
+* JS: use jQuery on to listen events in templates (Chenxiong Qi)
+* JS: merge toggleTestCasePane and toggleTestCaseReviewPane - `#618`_ (Chenxiong Qi)
+* JS: use one line to set disabled property (Chenxiong Qi)
+* Add missing csrf_token (Chenxiong Qi)
+* JS: cleanup product associated objects updater functions (Chenxiong Qi)
+* JS: remove argument parameters - `#605`_ (Chenxiong Qi)
+* JS: move comment functions to a separate js file - `#596`_ (Chenxiong Qi)
+* JS: remove createrun.js from eslint check list (Chenxiong Qi)
+* JS: expand addBatchTag to the function where it is called (Chenxiong Qi)
+* JS: cleanup createrun.js (Chenxiong Qi)
+* Replace smart_text with smart_str - `#668`_ (Chenxiong Qi)
+* Use gettext_lazy - `#637`_ (Chenxiong Qi)
+* Fix pagination of advanced search result (Chenxiong Qi)
+* JS: upgrade TableDnD to version 1.0.3 (Chenxiong Qi)
+* Add missing csrf_token to templates (Chenxiong Qi)
+* JS: Upgrade jquery.shiftcheckbox and enable it - `#660`_ (Chenxiong Qi)
+* Add missing csrf_token (Chenxiong Qi)
+* JS: lint js code with more rules (Chenxiong Qi)
+* JS: upgrade jQuery and jQuery-UI - `#634`_ (Chenxiong Qi)
+* Replace fireEvent with jQuery trigger - `#642`_ (Chenxiong Qi)
+* Use new package name psycopg2-binary (Chenxiong Qi)
+* Remove requirements.txt - `#651`_ (Chenxiong Qi)
+* Exclude some jobs from Travis-CI (Chenxiong Qi)
+* Upgrade django-tinymce to 3.0.2 - `#632`_ (Chenxiong Qi)
+* Allow to specify alternative PyPI index to build testbox (Chenxiong Qi)
+* Upgrade testbox base image to fedora:32 - `#640`_ (Chenxiong Qi)
+* Upgrade test database images - `#639`_ (Chenxiong Qi)
+* Wait for database container to launch (Chenxiong Qi)
+* JS: fix lint errors - `#641`_ (Chenxiong Qi)
+* Install libxcrypt-compat to testbox (Chenxiong Qi)
+* Reliable testbox (Chenxiong Qi)
+* JS: lint JavaScript code - `#573`_ (Chenxiong Qi)
+* Refactor Travis yaml config file (Chenxiong Qi)
+* Fix errors detected by flake8 (Chenxiong Qi)
+* Work with Django 3.0 - `#631`_ (Chenxiong Qi)
+* Add release notes of 4.6.1 to TOC (Chenxiong Qi)
+
+.. _#573: https://github.com/Nitrate/Nitrate/issues/573
+.. _#583: https://github.com/Nitrate/Nitrate/issues/583
+.. _#596: https://github.com/Nitrate/Nitrate/issues/596
+.. _#600: https://github.com/Nitrate/Nitrate/issues/600
+.. _#605: https://github.com/Nitrate/Nitrate/issues/605
+.. _#618: https://github.com/Nitrate/Nitrate/issues/618
+.. _#631: https://github.com/Nitrate/Nitrate/issues/631
+.. _#632: https://github.com/Nitrate/Nitrate/issues/632
+.. _#634: https://github.com/Nitrate/Nitrate/issues/634
+.. _#637: https://github.com/Nitrate/Nitrate/issues/637
+.. _#639: https://github.com/Nitrate/Nitrate/issues/639
+.. _#640: https://github.com/Nitrate/Nitrate/issues/640
+.. _#641: https://github.com/Nitrate/Nitrate/issues/641
+.. _#642: https://github.com/Nitrate/Nitrate/issues/642
+.. _#651: https://github.com/Nitrate/Nitrate/issues/651
+.. _#660: https://github.com/Nitrate/Nitrate/issues/660
+.. _#668: https://github.com/Nitrate/Nitrate/issues/668
