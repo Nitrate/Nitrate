@@ -1,4 +1,4 @@
-FROM fedora:31
+FROM registry.fedoraproject.org/fedora:31
 ARG version
 ARG vcs_url="https://github.com/Nitrate/Nitrate"
 LABEL version="${version}" \
@@ -23,34 +23,11 @@ RUN dnf update -y && \
       --setopt=deltarpm=0 \
       --setopt=install_weak_deps=false \
       --setopt=tsflags=nodocs \
-      httpd \
-      python3-beautifulsoup4 \
-      python3-bugzilla \
-      python3-celery \
-      python3-django \
-      python3-django-contrib-comments \
-      python3-django-tinymce \
-      python3-django-uuslug \
-      python3-html2text \
-      python3-kerberos \
-      python3-kobo-django \
-      python3-mod_wsgi \
-      python3-odfpy \
-      python3-PyMySQL \
-      python3-xmltodict && \
+      httpd python3-nitrate-tcms \
     dnf clean all
-
-WORKDIR /code
-COPY . .
 
 # Hack: easier to set database password via environment variable
 COPY ./docker/released/product.py src/tcms/settings/product.py
-
-# Create a virtualenv for the application dependencies
-# Using --system-site-packages b/c Apache configuration
-# expects the tcms directory to be there!
-RUN python3 -m venv --system-site-packages /prodenv && \
-    /prodenv/bin/pip install --no-deps .
 
 COPY ./contrib/conf/nitrate-httpd.conf /etc/httpd/conf.d/
 
@@ -69,16 +46,8 @@ RUN sed -i -e 's/^#\(LoadModule mpm_prefork_module .\+\.so\)$/\1/' \
 # Create and configure directory to hold uploaded files
 RUN mkdir -p /var/nitrate/uploads && chown apache:apache /var/nitrate/uploads
 
-# Install static files
-RUN mkdir -p /usr/share/nitrate/static && \
-    NITRATE_DB_ENGINE=sqlite /prodenv/bin/python src/manage.py collectstatic --settings=tcms.settings.product --noinput
-
-# Install templates
-RUN mkdir -p /usr/share/nitrate/templates && cp -r src/templates/* /usr/share/nitrate/templates/
-
-# All the things are installed already. No need to keep source code inside.
-# Don't worry, /code was set above as current working directory
-RUN rm -rf *
 EXPOSE 80
+
 VOLUME ["/var/log/httpd", "/var/nitrate/uploads"]
+
 CMD ["httpd", "-D", "FOREGROUND"]
