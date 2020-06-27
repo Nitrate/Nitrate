@@ -1,0 +1,32 @@
+.. _4.7.2:
+
+4.7.2
+=====
+
+*Jun 27, 2020*
+
+This is a quick fix of the artifacts to make Nitrate run well in release container.
+
+Get and install
+---------------
+
+From PyPI::
+
+    pip install nitrate-tcms
+
+From image registry::
+
+    docker pull quay.io/nitrate/nitrate:4.7.2
+
+Refer to :ref:`how_to_run` for details of installation.
+
+Database Migration
+------------------
+
+No database migration.
+
+Change Log
+----------
+
+* Fix to make Nitrate run well in release container (Chenxiong Qi)
+
