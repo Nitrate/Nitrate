@@ -15,14 +15,14 @@ def get_long_description():
 install_requires = [
     'beautifulsoup4 >= 4.1.1',
     'django >= 2.1,<3.1',
-    'django-contrib-comments == 1.9.2',
-    'django-tinymce == 3.0.2',
-    'django-uuslug == 1.2.0',
+    'django-contrib-comments',
+    'django-tinymce',
+    'django-uuslug',
     'html2text',
     'odfpy >= 0.9.6',
     'python-bugzilla',
     'xmltodict',
-    'kobo == 0.9.0'
+    'kobo'
 ]
 
 extras_require = {
