@@ -35,7 +35,7 @@ BuildRequires:  python3dist(django-uuslug)
 BuildRequires:  python3dist(html2text)
 BuildRequires:  python3dist(kerberos)
 BuildRequires:  python3dist(odfpy)
-BuildRequires:  python3dist(pymysql)
+BuildRequires:  python3dist(mysqlclient)
 BuildRequires:  python3dist(python-bugzilla)
 BuildRequires:  python3dist(xmltodict)
 
@@ -48,8 +48,6 @@ BuildRequires:  python3dist(sphinx-rtd-theme)
 # Required by the Django SQL backend during tests run
 BuildRequires:  python3dist(sqlparse)
 
-Requires:       mod_auth_gssapi
-Requires:       mod_wsgi
 Requires:       python3-kobo-django
 Requires:       python3dist(beautifulsoup4)
 Requires:       python3dist(celery)
@@ -60,7 +58,7 @@ Requires:       python3dist(django-uuslug)
 Requires:       python3dist(html2text)
 Requires:       python3dist(kerberos)
 Requires:       python3dist(odfpy)
-Requires:       python3dist(pymysql)
+Requires:       python3dist(mysqlclient)
 Requires:       python3dist(python-bugzilla)
 Requires:       python3dist(xmltodict)
 

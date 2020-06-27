@@ -24,11 +24,6 @@ import os
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tcms.settings.product")
 os.environ['PYTHON_EGG_CACHE'] = '/tmp/.python-eggs/'
 
-# add tcms's core lib path
-import tcms, sys
-# tcms should exist in only one path.
-sys.path.append(os.path.join(tcms.__path__[0], 'core', 'lib'))
-
 # This application object is used by any WSGI server configured to use this
 # file. This includes Django's development server, if the WSGI_APPLICATION
 # setting points here.
@@ -42,7 +37,3 @@ def application(environ, start_response):
         environ['HTTPS'] = 'on'
     
     return _application(environ, start_response)
-
-# Apply WSGI middleware here.
-# from helloworld.wsgi import HelloWorldApplication
-# application = HelloWorldApplication(application)

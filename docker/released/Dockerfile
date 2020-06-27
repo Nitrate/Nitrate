@@ -23,19 +23,15 @@ RUN dnf update -y && \
       --setopt=deltarpm=0 \
       --setopt=install_weak_deps=false \
       --setopt=tsflags=nodocs \
-      httpd python3-nitrate-tcms \
+      httpd \
+      python3-mod_wsgi \
+      python3-nitrate-tcms && \
     dnf clean all
 
 # Hack: easier to set database password via environment variable
-COPY ./docker/released/product.py src/tcms/settings/product.py
+COPY ./docker/released/product.py /usr/lib/python3.7/site-packages/tcms/settings/product.py
 
 COPY ./contrib/conf/nitrate-httpd.conf /etc/httpd/conf.d/
-
-# Just copying without renaming will cause error :
-# AH00526: Syntax error on line 3 of /etc/httpd/conf.d/wsgi-venv.conf:
-# Name duplicates previous WSGI daemon definition.
-# However, if rename it with prefix "00-", it works well.
-COPY ./contrib/conf/wsgi-venv.conf /etc/httpd/conf.d/00-wsgi-venv.conf
 
 # Disable event module and enable prefork module
 RUN sed -i -e 's/^#\(LoadModule mpm_prefork_module .\+\.so\)$/\1/' \
