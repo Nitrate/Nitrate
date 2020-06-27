@@ -1,0 +1,33 @@
+.. _4.7.1:
+
+4.7.1
+=====
+
+*Jun 27, 2020*
+
+A minor release including a few changes to make distribution easily.
+
+Get and install
+---------------
+
+From PyPI::
+
+    pip install nitrate-tcms
+
+From image registry::
+
+    docker pull quay.io/nitrate/nitrate:4.7.1
+
+Refer to :ref:`how_to_run` for details of installation.
+
+Database Migration
+------------------
+
+No database migration.
+
+Change Log
+----------
+
+* Simplify release image Dockerfile (Chenxiong Qi)
+* Do not limit some requirements on specific version (Chenxiong Qi)
+
