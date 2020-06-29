@@ -24,11 +24,11 @@
 				<li><a href="javascript:void(0)" title="Remove selected cases form this test run" data-param="{{ test_run.run_id }}" class="removeBlue9 js-del-case">Remove</a></li>
 				{% endif %}
 				{% if perms.testruns.change_testcaserun %}
-				<li><a id="id_sort" title="Click me,then Drag and drop the rows to adjust the order,and click 'Done Sorting' link to submit your changes" href="#" class="reorderBlue9">Re-order</a></li>
-				<li><a href="#" title="Update the IDLE case runs to newest case text" href="javascript:void(0)" data-param="{% url 'run-update' test_run.pk %}" class="updateBlue9 js-update-case">Update</a></li>
+				<li><a id="id_sort" title="Click me,then Drag and drop the rows to adjust the order,and click 'Done Sorting' link to submit your changes" href="javascript:void(0)" class="reorderBlue9">Re-order</a></li>
+				<li><a href="javascript:void(0)" title="Update the IDLE case runs to newest case text" href="javascript:void(0)" data-param="{% url 'run-update' test_run.pk %}" class="updateBlue9 js-update-case">Update</a></li>
 				{% endif %}
 				{% if perms.testruns.change_testcaserun %}
-				<li><a href="#" title="Assignee this case(s) to other people" class="assigneeBlue9 js-change-assignee">Assignee</a></li>
+				<li><a href="javascript:void(0)" title="Assignee this case(s) to other people" class="assigneeBlue9 js-change-assignee">Assignee</a></li>
 				{% endif %}
 			</ul>
 		</div>
@@ -36,7 +36,7 @@
 			<span>Status</span>
 			<ul class="statusOptions">
 				{% for tcrs in test_case_run_status %}
-				<li><a href="#" class="{{ tcrs|lower }}Blue9" data-statusid="{{ tcrs.pk }}">{{ tcrs }}</a></li>
+				<li><a href="javascript:void(0)" class="{{ tcrs|lower }}Blue9" data-statusid="{{ tcrs.pk }}">{{ tcrs }}</a></li>
 				{% endfor %}
 			</ul>
 		</div>
@@ -50,7 +50,7 @@
 		<div class="btnBlueCaserun">
 			<span>Comment</span>
 			<ul>
-				<li><a href="#" class="addBlue9 js-show-commentdialog">Add</a></li>
+				<li><a href="javascript:void(0)" class="addBlue9 js-show-commentdialog">Add</a></li>
 			</ul>
 		</div>
 	</div>
