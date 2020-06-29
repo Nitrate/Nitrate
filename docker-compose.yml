@@ -10,7 +10,7 @@ version: "3"
 
 services:
   db:
-    image: "mariadb"
+    image: "mariadb:10.4.12"
     volumes:
     - "nitrate_db_data:/var/lib/mysql"
     restart: always
