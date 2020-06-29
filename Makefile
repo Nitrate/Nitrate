@@ -54,20 +54,21 @@ etags:
 	@ctags -R -e --languages=Python,Javascript --python-kinds=-im \
 		--exclude=build --exclude=tcms/static/js/lib --exclude=dist --exclude=.tox -f TAGS
 
+CONTAINER ?= podman
 RELEASE_VERSION ?= latest
 DOCKER_ORG ?= quay.io/nitrate
 IMAGE_TAG = $(DOCKER_ORG)/nitrate:$(RELEASE_VERSION)
 
 release-image:
-	@docker build -t $(IMAGE_TAG) -f ./docker/released/Dockerfile --build-arg version=$(RELEASE_VERSION) .
+	@$(CONTAINER) build -t $(IMAGE_TAG) -f ./docker/released/Dockerfile --build-arg version=$(RELEASE_VERSION) .
 
 .PHONY: publish-release-image
 publish-release-image:
-	@docker login quay.io
-	@docker push $(IMAGE_TAG)
+	@$(CONTAINER) login quay.io
+	@$(CONTAINER) push $(IMAGE_TAG)
 
 dev-image:
-	@docker build -t $(IMAGE_TAG:$(RELEASE_VERSION)=dev) -f ./docker/dev/Dockerfile .
+	@$(CONTAINER) build -t $(IMAGE_TAG:$(RELEASE_VERSION)=dev) -f ./docker/dev/Dockerfile .
 
 # By default, released image is pulled from remote registry.
 # For the purpose of testing released image locally, execute target
@@ -89,13 +90,13 @@ clear-dev-container:
 web-container-initconfig:
 	# Make sure web is up from docker-compose.yml already
 	# Database migrations
-	@docker exec -i -t --env DJANGO_SETTINGS_MODULE=tcms.settings.product nitrate_web_1 \
+	@$(CONTAINER) exec -i -t --env DJANGO_SETTINGS_MODULE=tcms.settings.product nitrate_web_1 \
 		/prodenv/bin/django-admin migrate
 	# Create superuser admin
-	@docker exec -i -t --env DJANGO_SETTINGS_MODULE=tcms.settings.product nitrate_web_1 \
+	@$(CONTAINER) exec -i -t --env DJANGO_SETTINGS_MODULE=tcms.settings.product nitrate_web_1 \
 		/prodenv/bin/django-admin createsuperuser --username admin --email admin@example.com
 	# Set permissions to default groups
-	@docker exec -i -t --env DJANGO_SETTINGS_MODULE=tcms.settings.product nitrate_web_1 \
+	@$(CONTAINER) exec -i -t --env DJANGO_SETTINGS_MODULE=tcms.settings.product nitrate_web_1 \
 		/prodenv/bin/django-admin setdefaultperms
 
 # ./manage.py runserver with default SQLite database
@@ -115,18 +116,18 @@ testbox_image_tag = $(DOCKER_ORG)/testbox
 
 .PHONY: remove-testbox-image
 remove-testbox-image:
-	@if [ -n "$(docker images -q $(testbox_image_tag))" ]; then docker rmi $(testbox_image_tag); fi
+	@if [ -n "$($(CONTAINER) images -q $(testbox_image_tag))" ]; then $(CONTAINER) rmi $(testbox_image_tag); fi
 
 .PHONY: testbox-image
 testbox-image: remove-testbox-image
-	@docker build -t $(testbox_image_tag) \
+	@$(CONTAINER) build -t $(testbox_image_tag) \
 		$(if $(index_url),--build-arg pypi_index=$(index_url),) \
 		-f contrib/travis-ci/Dockerfile .
 
 .PHONY: push-testbox-image
 push-testbox-image: $(if $(skip_build),,testbox-image)
-	@docker login quay.io
-	@docker push $(testbox_image_tag)
+	@$(CONTAINER) login quay.io
+	@$(CONTAINER) push $(testbox_image_tag)
 
 
 .PHONY: publish-to-pypi
