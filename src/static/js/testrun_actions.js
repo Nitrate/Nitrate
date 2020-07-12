@@ -610,7 +610,9 @@ Nitrate.TestRuns.Details.on_load = function () {
     window.location.href = params[0] + '?from_plan=' + params[1];
   });
   jQ('#btn_clone').on('click', function () {
-    postToURL(jQ(this).data('param'), getSelectedCaseRunIDs());
+    postToURL(jQ(this).data('param'), {
+      case_run: getSelectedCaseRunIDs()
+    });
   });
   jQ('#btn_delete').on('click', function () {
     window.location.href = jQ(this).data('param');
@@ -638,7 +640,9 @@ Nitrate.TestRuns.Details.on_load = function () {
     delCaseRun();
   });
   jQ('.js-update-case').on('click', function () {
-    postToURL(jQ(this).data('param'), getSelectedCaseRunIDs());
+    postToURL(jQ(this).data('param'), {
+      case_run: getSelectedCaseRunIDs()
+    });
   });
   jQ('.js-change-assignee').on('click', function () {
     changeCaseRunAssignee();
@@ -982,7 +986,9 @@ function taggleSortCaseRun(event) {
     jQ('#id_table_cases').tableDnD();
   } else {
     jQ('#id_table_cases input[type=checkbox]').prop({'checked': true, 'disabled': false});
-    postToURL('ordercaserun/', getSelectedCaseRunIDs());
+    postToURL('ordercaserun/', {
+      case_run: getSelectedCaseRunIDs()
+    });
   }
 }
 
@@ -1029,17 +1035,16 @@ function removeIssueFromCaseRuns(removeIssueInfo, reloadInfo) {
 }
 
 function delCaseRun() {
-  let caseruns = getSelectedCaseRunIDs();
-  let numCaseRuns = caseruns.case_run.length;
+  let caseRunIDs = getSelectedCaseRunIDs();
 
-  if (numCaseRuns === 0) {
+  if (caseRunIDs.length === 0) {
     return;
   }
 
   confirmDialog({
-    message: 'You are about to delete ' + numCaseRuns + ' case run(s). Are you sure?',
+    message: 'You are about to delete ' + caseRunIDs.length + ' case run(s). Are you sure?',
     yesFunc: function () {
-      postToURL('removecaserun/', caseruns);
+      postToURL('removecaserun/', {'case_run': caseRunIDs});
     }
   });
 }
@@ -1235,7 +1240,7 @@ function removeRunCC(runId, user, container) {
 }
 
 function changeCaseRunAssignee() {
-  let selectedCaseRunIDs = getSelectedCaseRunIDs().case_run;
+  let selectedCaseRunIDs = getSelectedCaseRunIDs();
   if (!selectedCaseRunIDs.length) {
     showModal(defaultMessages.alert.no_case_selected, 'Missing something?');
     return false;
@@ -1271,15 +1276,16 @@ function changeCaseRunAssignee() {
 
 /**
  * Retrieve and return selected case run IDs from the container table whose id is id_table_cases.
- * @returns {{case_run: *}}
+ *
+ * @returns {string[]} the selected test case IDs.
  */
 function getSelectedCaseRunIDs() {
-  return {
-    case_run:
-      jQ('#id_table_cases input[name="case_run"]:checked')
-        .map(function () {return this.value;})
-        .get()
+  let result = []
+    , checkedCaseRuns = jQ('#id_table_cases input[name="case_run"]:checked');
+  for (let i = 0; i < checkedCaseRuns.length; i++) {
+    result.push(checkedCaseRuns[i].value);
   }
+  return result;
 }
 
 function showCaseRunsWithSelectedStatus(form, statusId) {
@@ -1321,9 +1327,9 @@ function insertCasesIntoTestRun() {
  * Click event handler for A .js-add-issues
  */
 function addIssueToBatchCaseRunsHandler() {
-  let caseRunIds =
-    getSelectedCaseRunIDs()
-      .case_run.map(function (item) {return parseInt(item);});
+  let caseRunIds = getSelectedCaseRunIDs().map(function (item) {
+    return parseInt(item);
+  });
   if (caseRunIds.length === 0) {
     showModal(defaultMessages.alert.no_case_selected, 'Missing something?');
   } else {
@@ -1340,9 +1346,9 @@ function addIssueToBatchCaseRunsHandler() {
  * Click event handler for A .js-remove-issues
  */
 function removeIssueFromBatchCaseRunsHandler() {
-  let caseRunIds =
-    getSelectedCaseRunIDs()
-      .case_run.map(function (item) {return parseInt(item);});
+  let caseRunIds = getSelectedCaseRunIDs().map(function (item) {
+    return parseInt(item);
+  });
 
   if (caseRunIds.length === 0) {
     showModal(defaultMessages.alert.no_case_selected, 'Missing something?');
@@ -1376,7 +1382,7 @@ function removeIssueFromBatchCaseRunsHandler() {
 }
 
 function showCommentForm() {
-  let caseRunIds = getSelectedCaseRunIDs().case_run;
+  let caseRunIds = getSelectedCaseRunIDs();
 
   if (caseRunIds.length === 0) {
     showModal(defaultMessages.alert.no_case_selected, 'Missing something?');
@@ -1429,7 +1435,7 @@ jQ(document).ready(function (){
     if (option === '') {
       return false;
     }
-    let objectPks = getSelectedCaseRunIDs().case_run;
+    let objectPks = getSelectedCaseRunIDs();
     if (!objectPks.length) {
       showModal(defaultMessages.alert.no_case_selected, 'Missing something?');
       return false;
