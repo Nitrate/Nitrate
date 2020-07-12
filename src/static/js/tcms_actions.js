@@ -730,7 +730,7 @@ function previewPlan(parameters, action, callback, notice, s, c) {
 /**
  * Update one object property at a time.
  * @param {string} contentType
- * @param {number} objectPk
+ * @param {number|number[]|string|string[]} objectPk - the id(s) of the object being updated.
  * @param {string} field
  * @param {string} value
  * @param {string} valueType
@@ -741,12 +741,23 @@ function previewPlan(parameters, action, callback, notice, s, c) {
  *                                reloading current page will be triggered as a result.
  */
 function updateObject(contentType, objectPk, field, value, valueType, callback) {
+  let objectPks;
+  if (Array.isArray(objectPk)) {
+    let tmp = []
+    for (let i = 0; i < objectPk.length; i++) {
+      tmp.push(objectPk[i].toString());
+    }
+    objectPks = tmp.join(',');
+  } else {
+    objectPks = objectPk.toString();
+  }
+
   postRequest({
     url: '/ajax/update/',
     success: callback,
     data: {
       content_type: contentType,
-      object_pk: Array.isArray(objectPk) ? objectPk.join(',') : objectPk,
+      object_pk: objectPks,
       field: field,
       value: value,
       value_type: valueType || 'str'
