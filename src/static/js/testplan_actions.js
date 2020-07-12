@@ -353,11 +353,18 @@ Nitrate.TestPlans.TreeView = {
       e.preventDefault();
 
       let planId = Nitrate.Utils.formSerialize(this).plan_id;
-      updateObject('testplans.testplan', planId, 'parent', currentPlanId, 'int', function () {
-        clearDialog();
-        Nitrate.TestPlans.Details.loadPlansTreeView(currentPlanId);
-        self.toggleRemoveChildPlanButton();
-      });
+      updateObject({
+        contentType: 'testplans.testplan',
+        objectPk: planId,
+        field: 'parent',
+        value: currentPlanId,
+        valueType: 'int',
+        callback: function () {
+          clearDialog();
+          Nitrate.TestPlans.Details.loadPlansTreeView(currentPlanId);
+          self.toggleRemoveChildPlanButton();
+        }
+      })
     },
     'This operation will overwrite existing data');
   },
@@ -402,10 +409,17 @@ Nitrate.TestPlans.TreeView = {
       e.preventDefault();
 
       let planId = Nitrate.Utils.formSerialize(this).plan_id;
-      updateObject('testplans.testplan', planId, 'parent', 0, 'None', function () {
-        clearDialog();
-        Nitrate.TestPlans.Details.loadPlansTreeView(currentPlanId);
-        self.toggleRemoveChildPlanButton();
+      updateObject({
+        contentType: 'testplans.testplan',
+        objectPk: planId,
+        field: 'parent',
+        value: '0',
+        valueType: 'None',
+        callback: function () {
+          clearDialog();
+          Nitrate.TestPlans.Details.loadPlansTreeView(currentPlanId);
+          self.toggleRemoveChildPlanButton();
+        }
       });
     },
     'This operation will overwrite existing data');
@@ -431,23 +445,30 @@ Nitrate.TestPlans.TreeView = {
       e.preventDefault();
 
       let planId = Nitrate.Utils.formSerialize(this).plan_id;
-      updateObject('testplans.testplan', currentPlanId, 'parent', planId, 'int', function () {
-        let tree = Nitrate.TestPlans.TreeView;
-        tree.filter({plan_id: p}, function (responseData) {
-          let plan = Nitrate.Utils.convert('obj_to_list', responseData);
+      updateObject({
+        contentType: 'testplans.testplan',
+        objectPk: currentPlanId,
+        field: 'parent',
+        value: planId,
+        valueType: 'int',
+        callback: function () {
+          let tree = Nitrate.TestPlans.TreeView;
+          tree.filter({plan_id: p}, function (responseData) {
+            let plan = Nitrate.Utils.convert('obj_to_list', responseData);
 
-          if (tree.data[0].pk === currentPlanId) {
-            plan[0].children = jQ.extend({}, tree.data);
-            tree.data = plan;
-            tree.render_page();
-          } else {
-            plan[0].children = jQ.extend({}, tree.data[0].children);
-            tree.data = plan;
-            tree.render_page();
-          }
+            if (tree.data[0].pk === currentPlanId) {
+              plan[0].children = jQ.extend({}, tree.data);
+              tree.data = plan;
+              tree.render_page();
+            } else {
+              plan[0].children = jQ.extend({}, tree.data[0].children);
+              tree.data = plan;
+              tree.render_page();
+            }
 
-          clearDialog();
-        });
+            clearDialog();
+          });
+        }
       });
     },
     'This operation will overwrite existing data');
@@ -780,13 +801,25 @@ Nitrate.TestPlans.Details = {
     // Initial the enable/disble btns
     if (jQ('#btn_disable').length) {
       jQ('#btn_disable').on('click', function (){
-        updateObject('testplans.testplan', planId, 'is_active', 'False', 'bool');
+        updateObject({
+          contentType: 'testplans.testplan',
+          objectPk: planId,
+          field: 'is_active',
+          value: 'False',
+          valueType: 'bool'
+        });
       });
     }
 
     if (jQ('#btn_enable').length) {
       jQ('#btn_enable').on('click', function () {
-        updateObject('testplans.testplan', planId, 'is_active', 'True', 'bool');
+        updateObject({
+          contentType: 'testplans.testplan',
+          objectPk: planId,
+          field: 'is_active',
+          value: 'True',
+          valueType: 'bool'
+        });
       });
     }
   },
@@ -1084,7 +1117,14 @@ function changeCaseOrder(parameters, callback) {
     return false;
   }
 
-  updateObject('testcases.testcaseplan', parameters.testcaseplan, 'sortkey', 'nsk', 'int', callback);
+  updateObject({
+    contentType: 'testcases.testcaseplan',
+    objectPk: parameters.testcaseplan,
+    field: 'sortkey',
+    value: nsk,
+    valueType: 'int',
+    callback: callback
+  });
 }
 
 function changeTestCaseStatus(planId, selector, caseId, beConfirmed, wasConfirmed) {

@@ -729,38 +729,38 @@ function previewPlan(parameters, action, callback, notice, s, c) {
 
 /**
  * Update one object property at a time.
- * @param {string} contentType
- * @param {number|number[]|string|string[]} objectPk - the id(s) of the object being updated.
- * @param {string} field
- * @param {string} value
- * @param {string} valueType
- * @param {function} [callback] - a function will be called when AJAX request succeeds. This
- *                                function should accept only one argument, that is the parsed JSON
- *                                data returned from server side. If omitted, it will cause
- *                                undefined is passed to postRequest, and default behavior of
- *                                reloading current page will be triggered as a result.
+ *
+ * @param {object} options - object containing properties to update object(s).
+ * @param {string} [options.url=/ajax/update/] - the endpoint to update the object.
+ * @param {string} options.contentType - a Django content type representation string, e.g. testplans.testplan.
+ * @param {number|number[]|string|string[]} options.objectPk - the id(s) of the object being updated.
+ * @param {string} [options.valueType=str] - the value type. It could be int or str generally.
+ * @param {string} options.value - the new value to be updated to the specific object(s).
+ * @param {string} options.field - name of the field to be updated on the object(s).
+ * @param {Function} options.callback - a function bound to the jQuery Ajax success property.
  */
-function updateObject(contentType, objectPk, field, value, valueType, callback) {
+function updateObject(options) {
   let objectPks;
-  if (Array.isArray(objectPk)) {
+
+  if (Array.isArray(options.objectPk)) {
     let tmp = []
-    for (let i = 0; i < objectPk.length; i++) {
-      tmp.push(objectPk[i].toString());
+    for (let i = 0; i < options.objectPk.length; i++) {
+      tmp.push(options.objectPk[i].toString());
     }
     objectPks = tmp.join(',');
   } else {
-    objectPks = objectPk.toString();
+    objectPks = options.objectPk.toString();
   }
 
   postRequest({
-    url: '/ajax/update/',
-    success: callback,
+    url: options.url || '/ajax/update/',
+    success: options.callback,
     data: {
-      content_type: contentType,
+      content_type: options.contentType,
       object_pk: objectPks,
-      field: field,
-      value: value,
-      value_type: valueType || 'str'
+      field: options.field,
+      value: options.value,
+      value_type: options.valueType || 'str'
     }
   });
 }

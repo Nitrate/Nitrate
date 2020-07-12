@@ -23,7 +23,7 @@ QUnit.module('testrun_action.js', function () {
     });
 
     QUnit.test('Return an empty array if no case run is checked', function (assert) {
-      let result = getSelectedCaseRunIDs();
+      let result = getSelectedCaseRunIDs();  /* eslint no-undef:off */
       assert.ok(result.length === 0);
     });
 

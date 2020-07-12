@@ -60,31 +60,6 @@ function toggleTestCaseContents(
 }
 
 /**
- * Update run status.
- * @param contentType
- * @param objectPk
- * @param field
- * @param value
- * @param valueType
- * @param {function} callback - a function will be called when AJAX request succeeds. This function
- *                              accepts only one argument of the parsed JSON data returned from
- *                              server side.
- */
-function updateRunStatus(contentType, objectPk, field, value, valueType, callback) {
-  postRequest({
-    url: '/ajax/update/case-run-status',
-    success: callback,
-    data: {
-      content_type: contentType,
-      object_pk: Array.isArray(objectPk) ? objectPk.join(',') : objectPk,
-      field: field,
-      value: value,
-      value_type: valueType || 'str'
-    }
-  });
-}
-
-/**
  * Remove a case from test run new page.
  * @param {string} item - the HTML id of a container element containing the case to be removed.
  * @param {number} caseEstimatedTime - the case' estimated time.
@@ -922,11 +897,17 @@ function updateCaseRunStatus(e) {
     // Reset the content to loading
     caseRunDetailCell.html(constructAjaxLoading('id_loading_' + formData.case_id));
 
-    updateRunStatus(
-      formData.content_type, formData.object_pk, formData.field, caseRunStatusId, 'int',
-      function () {
+    updateObject({
+      url: '/ajax/update/case-run-status',
+      contentType: formData.content_type,
+      objectPk: formData.object_pk,
+      field: formData.field,
+      value: caseRunStatusId,
+      valueType: 'int',
+      callback: function () {
         updateCaseRunDetailAfterCommentIsAdded(caseRunRow, expandedCaseRunDetailRow, caseRunStatusId);
-      });
+      }
+    });
   }
 }
 
@@ -955,7 +936,13 @@ function changeCaseRunOrder(runId, caseRunId, sortKey) {
     return false;
   }
 
-  updateObject('testruns.testcaserun', caseRunId, 'sortkey', nsk, 'int');
+  updateObject({
+    contentType: 'testruns.testcaserun',
+    objectPk: caseRunId,
+    field: 'sortkey',
+    value: nsk,
+    valueType: 'int'
+  });
 }
 
 function taggleSortCaseRun(event) {
@@ -1269,7 +1256,13 @@ function changeCaseRunAssignee() {
         return false;
       }
 
-      updateObject('testruns.testcaserun', selectedCaseRunIDs, 'assignee', data[0].pk, 'str');
+      updateObject({
+        contentType: 'testruns.testcaserun',
+        objectPk: selectedCaseRunIDs,
+        field: 'assignee',
+        value: data[0].pk,
+        valueType: 'int'
+      });
     },
   });
 }
@@ -1444,7 +1437,13 @@ jQ(document).ready(function (){
     confirmDialog({
       message: defaultMessages.confirm.change_case_status,
       yesFunc: function () {
-        updateObject('testruns.testcaserun', objectPks, 'case_run_status', option, 'int');
+        updateObject({
+          contentType: 'testruns.testcaserun',
+          objectPk: objectPks,
+          field: 'case_run_status',
+          value: option,
+          valueType: 'int'
+        });
       }
     });
   });

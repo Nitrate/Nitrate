@@ -1,3 +1,7 @@
+/* eslint no-redeclare:off */
+/* eslint no-unused-vars:off */
+const globalCsrfToken = '1234';
+
 QUnit.module('tcms_actions.js', function () {
 
   QUnit.module('Test setUpChoices', function () {
@@ -106,4 +110,92 @@ QUnit.module('tcms_actions.js', function () {
     });
   });
 
+  QUnit.module('Test updateObject', function () {
+
+    QUnit.testDone(function () {
+      jQ.mockjax.clear();
+    });
+
+    QUnit.test('use default url', function (assert) {
+      jQ.mockjax({
+        url: '/ajax/update/',
+        type: 'POST',
+        data: function (data) {
+          let expected = {
+            content_type: 'testplans.testplan', object_pk: '1', field: 'type',
+            value: '2', value_type: 'int'
+          };
+          assert.deepEqual(data, expected);
+          return true;
+        }
+      });
+
+      updateObject({
+        contentType: 'testplans.testplan', field: 'type', objectPk: '1',
+        value: '2', valueType: 'int',
+      });
+    });
+
+    QUnit.test('update multiple objects', function (assert) {
+      jQ.mockjax({
+        url: '/ajax/update/',
+        type: 'POST',
+        data: function (data) {
+          let expected = {
+            content_type: 'testplans.testplan', object_pk: '1,2,3', field: 'type',
+            value: '2', value_type: 'int'
+          };
+          assert.deepEqual(data, expected);
+          return true;
+        }
+      });
+
+      updateObject({
+        contentType: 'testplans.testplan', field: 'type', objectPk: ['1', '2', '3'],
+        value: '2', valueType: 'int',
+      });
+    });
+
+    QUnit.test('update a string property', function (assert) {
+      jQ.mockjax({
+        url: '/ajax/update/',
+        type: 'POST',
+        data: function (data) {
+          let expected = {
+            content_type: 'testplans.testplan', object_pk: '1', field: 'summary',
+            value: 'new summary', value_type: 'str'
+          };
+          assert.deepEqual(data, expected);
+          return true;
+        }
+      });
+
+      updateObject({
+        contentType: 'testplans.testplan', field: 'summary', objectPk: '1',
+        value: 'new summary',
+      });
+    });
+
+    QUnit.test('specify the update endpoint explicitly', function (assert) {
+      jQ.mockjax({
+        url: '/test/update-object/',
+        type: 'POST',
+        data: function (data) {
+          let expected = {
+            content_type: 'testplans.testplan', object_pk: '1', field: 'type',
+            value: '1', value_type: 'int'
+          };
+          assert.deepEqual(data, expected);
+          return true;
+        }
+      });
+
+      updateObject({
+        url: '/test/update-object/',
+        contentType: 'testplans.testplan', field: 'type', objectPk: '1',
+        value: '1', valueType: 'int'
+      });
+    });
+
+  });
 });
