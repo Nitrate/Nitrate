@@ -1993,150 +1993,106 @@ function constructPlanDetailsCasesZoneCallback(options) {
   let parameters = options.parameters;
 
   return function () {
-    let form = jQ(container).children()[0];
-    let table = jQ(container).children()[1];
-
-    // Presume the first form element is the form
-    if (form.tagName !== 'FORM') {
-      showModal('form element of container is not a form', 'Programming Error');
-      return false;
-    }
-
-    let filter = jQ(form).parent().find('.list_filter')[0];
+    let form = jQ(container).find('form')
+      , formElem = form[0]
+      , table = jQ(container).find('table')
+      , tableElem = table[0]
+      , filterContainer = jQ(formElem).find('.list_filter')
+      ;
 
     // Filter cases
-    jQ(form).on('submit', function (e) {
+    form.on('submit', function (e) {
       e.stopPropagation();
       e.preventDefault();
-      constructPlanDetailsCasesZone(container, planId, Nitrate.Utils.formSerialize(form));
+      constructPlanDetailsCasesZone(container, planId, Nitrate.Utils.formSerialize(formElem));
     });
 
-    // Change the case backgroud after selected
-    jQ(form).parent().find('input[name="case"]').on('click', function () {
-      if (this.checked) {
-        jQ(this).parent().parent().addClass('selection_row');
+    // Change the case background after selected
+    table.find('tbody :checkbox').on('click', function () {
+      let tr = jQ(this).parents('tr')
+        , action = this.checked ? tr.addClass : tr.removeClass;
+      action('selection_row');
+    });
+
+    form.find('.btn_filter').on('click', function () {
+      if (filterContainer.is(':visible')) {
+        filterContainer.hide();
+        jQ(this).html(defaultMessages.link.show_filter);
       } else {
-        jQ(this).parent().parent().removeClass('selection_row');
+        filterContainer.show();
+        jQ(this).html(defaultMessages.link.hide_filter);
       }
     });
 
-    if (jQ(form).parent().find('.btn_filter').length) {
-      let element = jQ(form).parent().find('.btn_filter')[0];
-      jQ(element).on('click', function () {
-        if (filter.style.display === 'none') {
-          jQ(filter).show();
-          jQ(this).html(defaultMessages.link.hide_filter);
-        } else {
-          jQ(filter).hide();
-          jQ(this).html(defaultMessages.link.show_filter);
-        }
-      });
-    }
-
     // Bind click the tags in tags list to tags field in filter
-    if (jQ(form).parent().find('.taglist a[href="#testcases"]').length) {
-      jQ(form).parent().find('.taglist a').on('click', function () {
-        if (filter.style.display === 'none') {
-          jQ(form).parent().find('.filtercase').trigger('click');
-        }
-        if (form.tag__name__in.value) {
-          form.tag__name__in.value = form.tag__name__in.value + ',' + this.textContent;
-        } else {
-          form.tag__name__in.value = this.textContent;
-        }
-      });
-    }
+    form.find('.taglist a').on('click', function () {
+      if (! filterContainer.is(':visible')) {
+        form.find('.btn_filter').trigger('click');
+      }
+      formElem.tag__name__in.value =
+        [formElem.tag__name__in.value.trim(), this.textContent].join(',');
+    });
 
     // Bind the sort link
-    if (jQ(form).parent().find('.btn_sort').length) {
-      let element = jQ(form).parent().find('.btn_sort')[0];
-      jQ(element).on('click', function () {
-        let params = Nitrate.Utils.formSerialize(form);
-        params.case = getSelectedCaseIDs(table);
-        resortCasesDragAndDrop(container, this, form, table, params, function () {
-          params.a = 'initial';
-          constructPlanDetailsCasesZone(container, planId, params);
-        });
+    form.find('.btn_sort').on('click', function () {
+      let params = Nitrate.Utils.formSerialize(formElem);
+      params.case = getSelectedCaseIDs(tableElem);
+      resortCasesDragAndDrop(container, this, formElem, tableElem, params, function () {
+        params.a = 'initial';
+        constructPlanDetailsCasesZone(container, planId, params);
       });
-    }
+    });
+
+    let eventHandlerCreationInfo = {
+      container: container,
+      form: formElem,
+      planId: planId,
+      table: tableElem
+    };
 
     // Bind batch change case status selector
-    let element = jQ(form).parent().find('input[name="new_case_status_id"]')[0];
-    if (element !== undefined) {
-      jQ(element).on('change', onTestCaseStatusChange({
-        'form': form, 'table': table, 'container': container, 'planId': planId
-      }));
-    }
+    form.find('input[name="new_case_status_id"]')
+      .on('change', onTestCaseStatusChange(eventHandlerCreationInfo));
 
-    element = jQ(form).parent().find('input[name="new_priority_id"]')[0];
-    if (element !== undefined) {
-      jQ(element).on('change', onTestCasePriorityChange({
-        'form': form, 'table': table, 'container': container, 'planId': planId
-      }));
-    }
+    form.find('input[name="new_priority_id"]')
+      .on('change', onTestCasePriorityChange(eventHandlerCreationInfo));
 
     // Observe the batch case automated status button
-    element = jQ(form).parent().find('input.btn_automated')[0];
-    if (element !== undefined) {
-      jQ(element).on('click', onTestCaseAutomatedClick({
-        'form': form, 'table': table, 'container': container, 'planId': planId
-      }));
-    }
+    form.find('input.btn_automated')
+      .on('click', onTestCaseAutomatedClick(eventHandlerCreationInfo));
 
-    element = jQ(form).parent().find('input.btn_component')[0];
-    if (element !== undefined) {
-      jQ(element).on('click', onTestCaseComponentClick({
-        'container': container, 'form': form, 'planId': planId, 'table': table, 'parameters': parameters
-      }));
-    }
+    form.find('input.btn_default_tester')
+      .on('click', onTestCaseDefaultTesterClick(eventHandlerCreationInfo));
 
-    element = jQ(form).parent().find('input.btn_category')[0];
-    if (element !== undefined) {
-      jQ(element).on('click', onTestCaseCategoryClick({
-        'container': container, 'form': form, 'planId': planId, 'table': table, 'parameters': parameters
-      }));
-    }
-
-    element = jQ(form).parent().find('input.btn_default_tester')[0];
-    if (element !== undefined) {
-      jQ(element).on('click', onTestCaseDefaultTesterClick({
-        'container': container, 'form': form, 'planId': planId, 'table': table
-      }));
-    }
-
-    element = jQ(form).parent().find('input.sort_list')[0];
-    if (element !== undefined) {
-      jQ(element).on('click', onTestCaseSortNumberClick({
-        'container': container, 'form': form, 'planId': planId, 'table': table
-      }));
-    }
-
-    element = jQ(form).parent().find('input.btn_reviewer')[0];
-    if (element !== undefined) {
-      jQ(element).on('click', onTestCaseReviewerClick({
-        'container': container, 'form': form, 'planId': planId, 'table': table, 'parameters': parameters
-      }));
-    }
+    form.find('input.sort_list')
+      .on('click', onTestCaseSortNumberClick(eventHandlerCreationInfo));
 
     // Observe the batch add case button
-    element = jQ(form).parent().find('input.tag_add')[0];
-    if (element !== undefined) {
-      jQ(element).on('click', onTestCaseTagAddClick({
-        'container': container, 'form': form, 'planId': planId, 'table': table
-      }));
-    }
+    form.find('input.tag_add')
+      .on('click', onTestCaseTagAddClick(eventHandlerCreationInfo));
+
+    // Following click event handlers creation require the above 'parameters'.
+    eventHandlerCreationInfo.parameters = parameters;
+
+    form.find('input.btn_component')
+      .on('click', onTestCaseComponentClick(eventHandlerCreationInfo));
+
+    form.parent().find('input.btn_category')
+      .on('click', onTestCaseCategoryClick(eventHandlerCreationInfo));
+
+    form.find('input.btn_reviewer')
+      .on('click', onTestCaseReviewerClick(eventHandlerCreationInfo));
 
     // Observe the batch remove tag function
-    element = jQ(form).parent().find('input.tag_delete')[0];
-    if (element !== undefined) {
-      jQ(element).on('click', onTestCaseTagDeleteClick({
-        'container': container, 'form': form, 'planId': planId, 'table': table, 'parameters': parameters
-      }));
-    }
+    form.find('input.tag_delete')
+      .on('click', onTestCaseTagDeleteClick(eventHandlerCreationInfo));
 
-    bindEventsOnLoadedCases(
-      {'cases_container': container, 'plan_id': planId, 'parameters': parameters}
-    )(table, form);
+    let func = bindEventsOnLoadedCases({
+      cases_container: container,
+      plan_id: planId,
+      parameters: parameters
+    });
+    func(tableElem, formElem);
   };
 }
 
