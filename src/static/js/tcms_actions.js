@@ -944,7 +944,6 @@ function renderComponentForm(container, parameters, formObserve) {
   });
 }
 
-
 /************ Dialog operations *****************/
 
 function getDialog(element) {
