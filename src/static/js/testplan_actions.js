@@ -521,6 +521,25 @@ Nitrate.TestPlans.Edit.on_load = function () {
   });
 };
 
+/**
+ * Bind the common actions event handlers on search result, both the advanced
+ * search result and the test plans search result.
+ */
+function bindSearchResultActionEventHandlers() {
+  jQ('.js-new-plan').on('click', function () {
+    window.location = jQ(this).data('param');
+  });
+  jQ('.js-clone-plan').on('click', function () {
+    postToURL(jQ(this).data('param'), Nitrate.Utils.formSerialize(this.form), 'get');
+  });
+  jQ('.js-export-cases').on('click', function () {
+    postToURL(jQ(this).data('param'), Nitrate.Utils.formSerialize(this.form), 'get');
+  });
+  jQ('.js-printable-plans').on('click', function () {
+    postToURL(jQ(this).data('param'), Nitrate.Utils.formSerialize(this.form), 'get');
+  });
+}
+
 Nitrate.TestPlans.Advance_Search_List.on_load = function () {
   jQ('#testplans_table :checkbox').on('change', function () {
     let disable = jQ('#testplans_table tbody :checkbox:checked').length === 0;
@@ -534,43 +553,7 @@ Nitrate.TestPlans.Advance_Search_List.on_load = function () {
     selectAll: '#testplans_table .js-select-all'
   });
 
-  if (jQ('#column_add').length) {
-    jQ('#column_add').on('change', function () {
-      switch(this.value) {
-        case 'col_product':
-          jQ('#col_product_head').show();
-          jQ('.col_product_content').show();
-          jQ('#col_product_option').hide();
-          break;
-        case('col_product_version'):
-          jQ('#col_product_version_head').show();
-          jQ('.col_product_version_content').show();
-          jQ('#col_product_veresion_option').hide();
-          break;
-      }
-    });
-  }
-
-  jQ('input[name="plan_id"]').on('click', function () {
-    if (this.checked) {
-      jQ(this).parent().parent().addClass('selection_row');
-    } else {
-      jQ(this).parent().parent().removeClass('selection_row');
-    }
-  });
-
-  jQ('.js-new-plan').on('click', function () {
-    window.location = jQ(this).data('param');
-  });
-  jQ('.js-clone-plan').on('click', function () {
-    postToURL(jQ(this).data('param'), Nitrate.Utils.formSerialize(this.form), 'get');
-  });
-  jQ('#plan_advance_printable').on('click', function () {
-    postToURL(jQ(this).data('param'), Nitrate.Utils.formSerialize(this.form), 'get');
-  });
-  jQ('.js-export-cases').on('click', function () {
-    postToURL(jQ(this).data('param'), Nitrate.Utils.formSerialize(this.form), 'get');
-  });
+  bindSearchResultActionEventHandlers();
 };
 
 Nitrate.TestPlans.List.on_load = function () {
@@ -585,31 +568,6 @@ Nitrate.TestPlans.List.on_load = function () {
       }
     ]
   );
-
-  if (jQ('#column_add').length) {
-    jQ('#column_add').on('change', function () {
-      switch(this.value) {
-        case 'col_product':
-          jQ('#col_product_head').show();
-          jQ('.col_product_content').show();
-          jQ('#col_product_option').hide();
-          break;
-        case('col_product_version'):
-          jQ('#col_product_version_head').show();
-          jQ('.col_product_version_content').show();
-          jQ('#col_product_veresion_option').hide();
-          break;
-      }
-    });
-  }
-
-  jQ('input[name="plan_id"]').on('click', function () {
-    if (this.checked) {
-      jQ(this).parent().parent().addClass('selection_row');
-    } else {
-      jQ(this).parent().parent().removeClass('selection_row');
-    }
-  });
 
   if (jQ('#id_check_all_plans').length) {
     jQ('#id_check_all_plans').on('click', function () {
@@ -657,18 +615,7 @@ Nitrate.TestPlans.List.on_load = function () {
     });
   }
 
-  jQ('.js-new-plan').on('click', function () {
-    window.location = jQ(this).data('param');
-  });
-  jQ('.js-clone-plan').on('click', function () {
-    postToURL(jQ(this).data('param'), Nitrate.Utils.formSerialize(this.form), 'get');
-  });
-  jQ('#plan_list_printable').on('click', function () {
-    postToURL(jQ(this).data('param'), Nitrate.Utils.formSerialize(this.form), 'get');
-  });
-  jQ('.js-export-cases').on('click', function () {
-    postToURL(jQ(this).data('param'), Nitrate.Utils.formSerialize(this.form), 'get');
-  });
+  bindSearchResultActionEventHandlers();
 };
 
 Nitrate.TestPlans.Details = {
