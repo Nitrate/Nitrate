@@ -115,7 +115,7 @@
 			<div class="tit" style="width: 50px; float: left; height: 100%; margin: 0px; text-align: center;">Tags:</div>
 			<div style="margin-left: 50px; line-height:22px;" class="taglist">
 				{% for tag in case_own_tags %}
-				<a href="#testcases">{{ tag.tag_name }}</a>&nbsp;&nbsp;<span class="grey">-</span>&nbsp;&nbsp;
+				<a href="javascript:void(0)">{{ tag.tag_name }}</a>&nbsp;&nbsp;<span class="grey">-</span>&nbsp;&nbsp;
 				{% empty %}
 				<span class="grey">No tags in cases</span>
 				{% endfor %}
@@ -146,48 +146,48 @@
 				<input type="checkbox" class="js-select-all" value="all" checked />
 			</th>
 			<th align="left" class="widthID">
-				<a title="Sort by case ID" href="#testcases" class="js-case-field" data-param="case_id">
+				<a title="Sort by case ID" href="javascript:void(0)" class="js-case-field" data-param="case_id">
 					ID
 				</a>
 			</th>
 			<th align="left">
-				<a title="Sort by Summary" href="#testcases" class="js-case-field" data-param="summary">
+				<a title="Sort by Summary" href="javascript:void(0)" class="js-case-field" data-param="summary">
 					Test Case Summary
 				</a>
 			</th>
 			<th align="left" width="90px">
-				<a title="Sort by Author" href="#testcases" class="js-case-field" data-param="author">
+				<a title="Sort by Author" href="javascript:void(0)" class="js-case-field" data-param="author">
 					Author
 				</a>
 			</th>
 			<th align="left" width="110px">
-				<a title="Sort by Default Tester" href="#testcases" class="js-case-field" data-param="default_tester">
+				<a title="Sort by Default Tester" href="javascript:void(0)" class="js-case-field" data-param="default_tester">
 					Default Tester
 				</a>
 			</th>
 			<th align="left" width="160px">
-				<a title="Sort by automated" href="#testcases" class="js-case-field" data-param="is_automated">
+				<a title="Sort by automated" href="javascript:void(0)" class="js-case-field" data-param="is_automated">
 					Automated
 				</a>
 			</th>
 			<th align="left" width="130px">
-				<a title="Sort by status" href="#testcases" class="js-case-field" data-param="case_status">
+				<a title="Sort by status" href="javascript:void(0)" class="js-case-field" data-param="case_status">
 					Status
 				</a>
 			</th>
 			<th align="left" width="100px">
-				<a title="Sort by categoty" href="#testcases" class="js-case-field" data-param="category__name">
+				<a title="Sort by categoty" href="javascript:void(0)" class="js-case-field" data-param="category__name">
 					Category
 				</a>
 			</th>
 			<th align="left" width="60px">
-				<a title="Sort by prority" href="#testcases" class="js-case-field" data-param="priority">
+				<a title="Sort by prority" href="javascript:void(0)" class="js-case-field" data-param="priority">
 					Priority
 				</a>
 			</th>
 			<th align="left" width="80px" style="display:none">Text version</th>
 			<th align="left" width="40px">
-				<a class="sort_by_sortkey js-case-field" title="Sort by sortkey" href="#testcases" data-param="sortkey">
+				<a class="sort_by_sortkey js-case-field" title="Sort by sortkey" href="javascript:void(0)" data-param="sortkey">
 					Sort
 				</a>
 			</th>
