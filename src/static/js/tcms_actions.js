@@ -835,22 +835,20 @@ function popupAddAnotherWindow(triggeringLink, parameters) {
   return false;
 }
 
-/*
+/**
  * Used for expanding test case in test plan page specifically
  *
- * Arguments:
- * options.caseRowContainer: a jQuery object referring to the container of the
- *                           test case that is being expanded to show more
- *                           information.
- * options.expandPaneContainer: a jQuery object referring to the container of
- *                              the expanded pane showing test case detail
- *                              information.
+ * @param {object} options - options to update the icon of expand/collapse.
+ * @param {jQuery} options.caseRowContainer
+ *  a jQuery object referring to the container of the test case that is being
+ *  expanded to show more information.
+ * @param {jQuery} options.expandPaneContainer
+ *  a jQuery object referring to the container of the expanded pane showing
+ *  test case detail information.
  */
 function toggleExpandArrow(options) {
-  let container = options.caseRowContainer;
-  let contentContainer = options.expandPaneContainer;
-  let blindIcon = container.find('img.blind_icon');
-  if (contentContainer.css('display') === 'none') {
+  let blindIcon = options.caseRowContainer.find('img.blind_icon');
+  if (options.expandPaneContainer.is(':hidden')) {
     blindIcon.removeClass('collapse').addClass('expand').prop('src', '/static/images/t1.gif');
   } else {
     blindIcon.removeClass('expand').addClass('collapse').prop('src', '/static/images/t2.gif');

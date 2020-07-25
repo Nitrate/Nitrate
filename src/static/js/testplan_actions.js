@@ -1075,6 +1075,71 @@ function changeTestCaseStatus(planId, selector, caseId, beConfirmed, wasConfirme
   });
 }
 
+/**
+ * Handle events inside expanded reviewing case details pane
+ *
+ * @param {jQuery} expandableEventTarget
+ *  a jQuery object whose click event is triggered to expand the case.
+ * @param {jQuery} expandedCaseDetailsPane
+ *  a jQuery object representing the container containing expanded case details.
+ */
+function reviewCaseContentCallback(expandableEventTarget, expandedCaseDetailsPane) {
+  return function () {
+    let commentContainerT = jQ('<div>')[0];
+
+    // Change status/comment callback
+    expandedCaseDetailsPane.find('.update_form').unbind('submit').on('submit', function (e) {
+      e.stopPropagation();
+      e.preventDefault();
+
+      let params = Nitrate.Utils.formSerialize(this);
+      submitComment(commentContainerT, params, function () {
+        let td = jQ('<td>', {colspan: 12});
+        td.append(constructAjaxLoading('id_loading_' + params.object_pk));
+        expandedCaseDetailsPane.html(td);
+        // FIXME: refresh the content only once
+        expandableEventTarget.trigger('click');
+        expandableEventTarget.trigger('click');
+      });
+    });
+
+    // Observe the delete comment form
+    expandedCaseDetailsPane.find('.form_comment').off('submit').on('submit', function (e) {
+      e.stopPropagation();
+      e.preventDefault();
+
+      if (!window.confirm(defaultMessages.confirm.remove_comment)) {
+        return false;
+      }
+      // Every comment form has a hidden input with name object_pk to associate with the case.
+      let caseId = Nitrate.Utils.formSerialize(this).object_pk;
+      removeComment(this, function () {
+        let td = jQ('<td>', {colspan: 12});
+        td.append(constructAjaxLoading('id_loading_' + caseId));
+        expandedCaseDetailsPane.html(td);
+        // FIXME: refresh the content only once.
+        expandableEventTarget.trigger('click');
+        expandableEventTarget.trigger('click');
+      });
+    });
+  };
+}
+
+/**
+ * Check whether all cases within confirmed or reviewing cases tab are collapsed.
+ *
+ * @param {boolean} inReviewingCasesTab
+ *  indicate to get the number of reviewing cases, otherwise get the number of confirmed cases.
+ * @return {boolean}
+ *  return true if all expanded case details pane is collapsed, otherwise false is returned.
+ */
+function areAllCasesCollapsed(inReviewingCasesTab, casesTable) {
+  let numberContainerId = inReviewingCasesTab ? 'review_case_count' : 'run_case_count'
+    , casesCount = parseInt(document.getElementById(numberContainerId).textContent)
+    , collapsedCasesCount = jQ(casesTable).find('tr.case_content:hidden').length;
+  return casesCount === collapsedCasesCount;
+}
+
 /*
  * Bind events on loaded cases.
  *
@@ -1105,88 +1170,26 @@ function bindEventsOnLoadedCases(options) {
       changeTestCaseStatus(planId, this, caseId, beConfirmed, wasConfirmed);
     });
 
-    // Display/Hide the case content
+    // Expand/collapse case details pane
     jQ(container).parent().find('.expandable.js-just-loaded').on('click', function () {
-      let btn = this;
-      let title = jQ(this).parent()[0]; // Container
-      let content = jQ(this).parent().next()[0]; // Content Containers
-      let caseId = title.id;
-      let templateType = jQ(form).parent().find('input[name="template_type"]')[0].value;
-
-      if (templateType === 'case') {
-        toggleTestCasePane({
-          'case_id': caseId,
-          'casePaneContainer': jQ(content)
-        });
-        toggleExpandArrow({
-          'caseRowContainer': jQ(title),
-          'expandPaneContainer': jQ(content)
-        });
-        return;
-      }
-
-      // Review case content call back;
-      let reviewCaseContentCallback = function () {
-        let commentContainerT = jQ('<div>')[0];
-
-        // Change status/comment callback
-        jQ(content).parent().find('.update_form').unbind('submit').on('submit', function (e) {
-          e.stopPropagation();
-          e.preventDefault();
-
-          let params = Nitrate.Utils.formSerialize(this);
-          submitComment(commentContainerT, params, function () {
-            let td = jQ('<td>', {colspan: 12});
-            td.append(constructAjaxLoading('id_loading_' + params.object_pk));
-            jQ(content).html(td);
-            // FIXME: refresh the content only once
-            jQ(btn).trigger('click');
-            jQ(btn).trigger('click');
-          });
-        });
-
-        // Observe the delete comment form
-        jQ(content).parent().find('.form_comment').off('submit').on('submit', function (e) {
-          e.stopPropagation();
-          e.preventDefault();
-
-          if (!window.confirm(defaultMessages.confirm.remove_comment)) {
-            return false;
-          }
-          // Every comment form has a hidden input with name object_pk to associate with the case.
-          let caseId = Nitrate.Utils.formSerialize(this).object_pk;
-          removeComment(this, function () {
-            let td = jQ('<td>', {colspan: 12});
-            td.append(constructAjaxLoading('id_loading_' + caseId));
-            jQ(content).html(td);
-            // FIXME: refresh the content only once.
-            jQ(btn).trigger('click');
-            jQ(btn).trigger('click');
-          });
-        });
-      };
-
-      let caseContentCallback = null;
-      switch(templateType) {
-        case 'review_case':
-          caseContentCallback = reviewCaseContentCallback;
-          break;
-        default:
-          caseContentCallback = function () {};
-      }
+      let btn = this
+        , title = jQ(this).parent() // Container
+        , content = jQ(this).parent().next() // Content Containers
+        , inReviewingCasesTab = form.type.value === 'review_case';
 
       toggleTestCasePane(
         {
-          'case_id': caseId,
-          'casePaneContainer': jQ(content),
-          'reviewing': true
+          case_id: title.prop('id'),
+          casePaneContainer: content,
+          reviewing: inReviewingCasesTab
         },
-        caseContentCallback
+        inReviewingCasesTab ? reviewCaseContentCallback(jQ(btn), content) : function () {}
       );
-      toggleExpandArrow({
-        'caseRowContainer': jQ(title),
-        'expandPaneContainer': jQ(content)
-      });
+
+      toggleExpandArrow({caseRowContainer: title, expandPaneContainer: content});
+
+      let iconFile = areAllCasesCollapsed(inReviewingCasesTab, container) ? 't1.gif' : 't2.gif';
+      jQ(container).find('img.js-expand-collapse-cases').prop('src', '/static/images/' + iconFile);
     });
 
     /*
@@ -1290,7 +1293,9 @@ function changeCaseOrder2(parameters, callback) {
   });
 }
 
+// TODO: here
 function toggleAllCases(element) {
+  // FIXME: what does this if do?
   //If and only if both case length is 0, remove the lock.
   if (jQ('div[id^="id_loading_"].normal_cases').length === 0 && jQ('div[id^="id_loading_"].review_cases').length === 0){
     jQ(element).removeClass('locked');
@@ -1335,12 +1340,8 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
         jQ(this).hide().next().show();
       });
 
-      let type = typeof parameters.template_type === 'string' ?
-        (parameters.template_type === 'case') ? '-' : '-review-' :
-        (parameters.template_type[0] === 'case') ? '-' : '-review-';
-
       let casesTable = jQ(container).find('.js-cases-list')[0]
-        , navForm = jQ('#js' + type + 'cases-nav-form')
+        , navForm = jQ(container).find('form.js-cases-actions')
         ;
 
       /**
@@ -1384,33 +1385,33 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
         selectAll: jQ(casesTable).find('.js-select-all')
       });
 
-      jQ('#js' + type + 'case-menu, #js' + type + 'new-case').on('click', function () {
+      navForm.find('.js-new-case').on('click', function () {
         let params = jQ(this).data('params');
         window.location.href = params[0] + '?from_plan=' + params[1];
       });
 
-      jQ('#js' + type + 'import-case').on('click', function () {
+      navForm.find('.js-import-cases').on('click', function () {
         jQ('#id_import_case_zone').toggle();
       });
 
-      jQ('#js' + type + 'add-case-to-plan').on('click', function () {
+      navForm.find('.js-add-case-to-plan').on('click', function () {
         window.location.href = jQ(this).data('param');
       });
 
-      jQ('#js' + type + 'export-case').on('click', function () {
+      navForm.find('.js-export-cases').on('click', function () {
         submitSelectedCaseIDs(jQ(this).data('param'), casesTable);
       });
 
-      jQ('#js' + type + 'print-case').on('click', function () {
+      navForm.find('.js-print-cases').on('click', function () {
         submitSelectedCaseIDs(jQ(this).data('param'), casesTable);
       });
 
-      jQ('#js' + type + 'clone-case').on('click', function () {
+      navForm.find('.js-clone-cases').on('click', function () {
         let params = {from_plan: planId, case: getSelectedCaseIDs(casesTable)};
         postToURL(jQ(this).data('param'), params, 'get');
       });
 
-      jQ('#js' + type + 'remove-case').on('click', function () {
+      navForm.find('.js-remove-cases').on('click', function () {
         let selectedCaseIDs = getSelectedCaseIDs(casesTable);
         if (selectedCaseIDs.length === 0) {
           return;
@@ -1422,25 +1423,26 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
         postRequestAndReloadCases('delete-cases/', {case: selectedCaseIDs});
       });
 
-      jQ('#js' + type + 'new-run').on('click', function () {
+      navForm.find('.js-new-run').on('click', function () {
         postToURL(jQ(this).data('param'), {
           from_plan: planId,
           case: getSelectedCaseIDs(casesTable)
         });
       });
 
-      jQ('#js' + type + 'add-case-to-run').on('click', function () {
+      navForm.find('.js-add-case-to-run').on('click', function () {
         let params = {case: getSelectedCaseIDs(casesTable)};
         postToURL(jQ(this).data('param'), params, 'get');
       });
 
-      jQ('.js' + type + 'status-item').on('click', function () {
+      navForm.find('.js-status-item').on('click', function () {
         let selectedCaseIDs = getSelectedCaseIDs(casesTable);
         if (selectedCaseIDs.length === 0) {
           showModal(defaultMessages.alert.no_case_selected, 'Missing something?');
           return false;
         }
 
+        let newStatusId = parseInt(jQ(this).data('param'));
         confirmDialog({
           message: defaultMessages.confirm.change_case_status,
           title: 'Manage Test Case Status',
@@ -1451,7 +1453,7 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
                 'from_plan': planId,
                 'case': selectedCaseIDs,
                 'target_field': 'case_status',
-                'new_value': jQ(this).data('param')
+                'new_value': newStatusId
               },
               traditional: true,
               success: function (data) {
@@ -1468,12 +1470,14 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
         });
       });
 
-      jQ('.js' + type + 'priority-item').on('click', function () {
+      navForm.find('.js-priority-item').on('click', function () {
         let selectedCaseIDs = getSelectedCaseIDs(casesTable);
         if (selectedCaseIDs.length === 0) {
           showModal(defaultMessages.alert.no_case_selected, 'Missing something?');
           return false;
         }
+
+        let newValue = jQ(this).data('param');
 
         confirmDialog({
           message: defaultMessages.confirm.change_case_priority,
@@ -1483,20 +1487,40 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
               from_plan: planId,
               case: selectedCaseIDs,
               target_field: 'priority',
-              new_value: jQ(this).data('param')
+              new_value: newValue
             });
           }
         });
       });
 
-      let $toggleAllCasesButton = (type === '-') ? jQ('#id_blind_all_link') : jQ('#review_id_blind_all_link');
-      $toggleAllCasesButton.find('.collapse-all').on('click', function () {
-        toggleAllCases(this);
+      let allCasesExpanded = false;
+
+      jQ(casesTable).find('img.js-expand-collapse-cases').on('click', function () {
+        // let iconFile = allCasesExpanded ? 't1.gif' : 't2.gif';
+        // jQ(this).prop('src', '/static/images/' + iconFile);
+
+        jQ(casesTable).find('img.js-expand-collapse-case').each(function () {
+          let caseTr = jQ(this).parents('tr')
+            , caseDetailsTr = caseTr.next();
+
+          if (caseDetailsTr.is(allCasesExpanded ? ':visible' : ':hidden')) {
+            jQ(this).trigger('click');
+            toggleExpandArrow({
+              caseRowContainer: caseTr,
+              expandPaneContainer: caseDetailsTr
+            });
+          }
+        });
+
+        allCasesExpanded = ! allCasesExpanded;
       });
 
-      jQ(casesTable).find('.js' + type + 'case-field').on('click', function () {
-        sortCase(container, jQ(this).parents('thead').data('param'), jQ(this).data('param'));
-      });
+      if (jQ(casesTable).find('tbody tr:visible').length > 1) {
+        // Only make sense to sort rows when there are more than one cases
+        jQ(casesTable).find('.js-table-header-sortable').on('click', function () {
+          sortCase(container, jQ(this).parents('thead').data('param'), jQ(this).data('param'));
+        });
+      }
 
       // Event handlers common to both cases and reviewing cases tabs
 

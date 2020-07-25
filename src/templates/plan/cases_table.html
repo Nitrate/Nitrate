@@ -1,0 +1,143 @@
+{% load comments %}
+{% load static %}
+<table class="list js-cases-list" cellpadding="1" cellspacing="0" border="0">
+	<thead data-param="{{ test_plan.plan_id }}">
+		<tr>
+			<th class="nosort" align="left" width="18px">
+				<a class="js-expand-or-collapse-cases">
+					<!--here add function toggleallcases to t1.gif-->
+					<img src="{% static "images/t1.gif" %}" alt="Expand/Collapse all cases"
+						class="js-expand-collapse-cases blind_icon" title='Expand all cases' data-expanded="0" />
+				</a>
+			</th>
+			<th class="nosort" align="left" width="20px">
+				<input type="checkbox" class="js-select-all" value="all" checked />
+			</th>
+			<th align="left" class="widthID">
+				<a title="Sort by case ID" href="javascript:void(0)" class="js-table-header-sortable" data-param="case_id">
+					ID
+				</a>
+			</th>
+			<th align="left">
+				<a title="Sort by Summary" href="javascript:void(0)" class="js-table-header-sortable" data-param="summary">
+					Test Case Summary
+				</a>
+			</th>
+			<th align="left" width="90px">
+				<a title="Sort by Author" href="javascript:void(0)" class="js-table-header-sortable" data-param="author">
+					Author
+				</a>
+			</th>
+			<th align="left" width="110px">
+				{% if show_confirmed_cases %}
+				<a title="Sort by default tester" href="javascript:void(0)" class="js-table-header-sortable" data-param="default_tester">
+					Default Tester
+				</a>
+				{% else %}
+				<a title="Sort by Reviewer" href="javascript:void(0)" class="js-table-header-sortable" data-param="reviewer">
+					Reviewer
+				</a>
+				{% endif %}
+			</th>
+			<th align="left" width="160px">
+				<a title="Sort by automated" href="javascript:void(0)" class="js-table-header-sortable" data-param="is_automated">
+					Automated
+				</a>
+			</th>
+			<th align="left" width="130px">
+				<a title="Sort by status" href="javascript:void(0)" class="js-table-header-sortable" data-param="case_status">
+					Status
+				</a>
+			</th>
+			<th align="left" width="100px">
+				<a title="Sort by categoty" href="javascript:void(0)" class="js-table-header-sortable" data-param="category__name">
+					Category
+				</a>
+			</th>
+			<th align="left" width="60px">
+				<a title="Sort by prority" href="javascript:void(0)" class="js-table-header-sortable" data-param="priority">
+					Priority
+				</a>
+			</th>
+			<th align="left" width="80px" style="display:none">Text version</th>
+			<th align="left" width="40px">
+				<a title="Sort by sortkey" href="javascript:void(0)" class="js-table-header-sortable" data-param="sortkey">
+					Sort
+				</a>
+			</th>
+			<th align="left" width="80px">Actions</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for test_case in test_cases %}
+		<tr class="case_title {% cycle 'odd' 'even' %}" id='{{ test_case.pk }}' >
+			<td class="expandable js-just-loaded">
+				<img class="js-expand-collapse-case blind_icon" src="{% static "images/t1.gif" %}"
+					alt="Expand/Collapse" data-expanded="0" />
+			</td>
+			<td class="selector_cell">
+				{# FIXME: replacing selected_case_ids with selected_cases_ids is proper  #}
+				<input type="checkbox" name="case" value="{{ test_case.pk }}"
+					class="checkbox case_selector"
+					{% if not selected_case_ids or test_case.pk in selected_case_ids %}checked{% endif %} />
+			</td>
+			<td>
+				<a href="{% url "case-get" test_case.case_id %}?from_plan={{ test_plan.plan_id }}">{{ test_case.pk }}</a>
+			</td>
+			<td class="subject expandable">
+				<a class="blind_down_link">{{ test_case.summary }}</a>
+			</td>
+			<td class="col_author_content">
+				<a href="{% url "user-profile" test_case.author.username %}">{{ test_case.author }}</a>
+			</td>
+			<td class="col_author_content">
+				{% if test_case.case_status.name == 'CONFIRMED' %} {# Show default tester when confirmed. #}
+					{% if test_case.default_tester_id %}<a href="{% url "user-profile" test_case.default_tester.username %}">{% endif %}{{ test_case.default_tester }}{% if test_case.default_tester_id %}</a>{% endif %}
+				{% else %} {# Show reviewer when not confirmed. #}
+					{% if test_case.reviewer_id %}<a href="{% url "user-profile" test_case.reviewer.username %}">{% endif %}{{ test_case.reviewer }}{% if test_case.reviewer_id %}</a>{% endif %}</td>
+				{% endif %}
+			</td>
+			<td class="col_tester_content expandable">{{ test_case.get_is_automated_status }}</td>
+			<td status='{{ test_case.case_status }}'>
+				{% if perms.testcases.change_testcase %}
+				<a class="show_change_status_link" href="javascript:void(0);" style="display: none;">
+					{{ test_case.case_status }}
+				</a>
+				<select class="change_status_selector js-just-loaded">
+					{% for case_stat in case_status %}
+					<option {% ifequal case_stat.pk test_case.case_status_id %} selected="1" {% endifequal %} value="{{ case_stat.id }}">{{ case_stat.name }}</option>
+					{% endfor %}
+				</select>
+				{% else %}
+				{{ test_case.case_status }}
+				{% endif %}
+			</td>
+			<td class="col_priority_category expandable">{{ test_case.category }}</td>
+			<td class="col_priority_content expandable" align="center">{{ test_case.priority }}</td>
+			<td valign="top" width="8%" class="col_category_content expandable" style="display:none">{{ test_case.category }}</td>
+			<td class="col_sortkey_content" align="center">
+				<a href="javascript:void(0);" class="mark case_sortkey js-just-loaded">{{ test_case.cal_sortkey }}</a>
+				<span style="display:none">{{ test_case.cal_testcaseplan_pk }}</span>
+			</td>
+			<td align="center" >
+				{% if perms.testcases.change_testcase %}
+				<a class="editlink" href="{% url "case-edit" test_case.case_id %}?from_plan={{ test_plan.plan_id }}">Edit</a>
+				{% else %}
+				<span class="editlink grey">Edit</span>
+				{% endif %}
+			</td>
+		</tr>
+		<tr class="case_content hide" style="display: none;">
+			<td colspan="12">
+				<div id="id_loading_{{ test_case.pk }}" class="ajax_loading normal_cases"></div>
+			</td>
+		</tr>
+		{% empty %}
+		<tr>
+			<td colspan="12">
+				<center class="prompt-message prompt">No test case was found in this plan.</center>
+			</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
