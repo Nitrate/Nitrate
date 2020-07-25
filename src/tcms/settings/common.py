@@ -93,9 +93,6 @@ MEDIA_ROOT = ''
 # Examples: "http://example.com/media/", "http://media.example.com/"
 MEDIA_URL = ''
 
-# URL prefix for admin absolute URL
-ADMIN_PREFIX = '/admin'
-
 LOGIN_URL = 'nitrate-login'
 LOGIN_REDIRECT_URL = 'user-profile-redirect'
 LOGOUT_REDIRECT_URL = 'nitrate-login'
@@ -148,7 +145,6 @@ TEMPLATES = [
 
                 # Added for Nitrate
                 'django.template.context_processors.request',
-                'tcms.core.context_processors.admin_prefix_processor',
                 'tcms.core.context_processors.request_contents_processor',
                 'tcms.core.context_processors.settings_processor',
             ],

@@ -75,26 +75,26 @@
 		<li class="sprites menuline"></li>
 		{% if user.is_staff %}
 		<li	 class="nav_li{% if not module %} current{% endif %}" >
-			<a href="{{ SETTINGS.ADMIN_PREFIX }}">{% trans "ADMIN" %}</a>
+			<a href="{% url "admin:index" %}">{% trans "ADMIN" %}</a>
 			<ul id="submenu_admin" class="nav_sub"	style="display:none;">
 				{% if perms.auth.change_user %}
 				<li {% ifequal sub_module 'products' %} class="subcurrent"{% endifequal %} >
-					<a href="{{ SETTINGS.ADMIN_PREFIX }}/auth/">Auth</a>
+					<a href="{% url "admin:app_list" "auth" %}">Auth</a>
 				</li>
 				{% endif %}
 				{% if perms.management %}
 				<li {% ifequal sub_module 'environments' %} class="subcurrent"{% endifequal %} >
-					<a href="{{ SETTINGS.ADMIN_PREFIX }}/management/">Management</a>
+					<a href="{% url "admin:app_list" "management" %}">Management</a>
 				</li>
 				{% endif %}
 				{% if perms.testplans.change_testplantype %}
 				<li {% ifequal sub_module 'testplans' %} class="subcurrent"{% endifequal %} >
-					<a href="{{ SETTINGS.ADMIN_PREFIX }}/testplans/">Test plans</a>
+					<a href="{% url "admin:app_list" "testplans" %}">Test plans</a>
 				</li>
 				{% endif %}
 				{% if perms.testcases %}
 				<li {% ifequal sub_module 'testcases' %} class="subcurrent"{% endifequal %} >
-					<a href="{{ SETTINGS.ADMIN_PREFIX }}/testcases/">Test cases</a>
+					<a href="{% url "admin:app_list" "testcases" %}">Test cases</a>
 				</li>
 				{% endif %}
 			</ul>
