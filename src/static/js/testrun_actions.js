@@ -1088,13 +1088,12 @@ function submitValue(runId, value, hidebox, selectField, submitid) {
     return false;
   }
 
-  getRequest({
-    url: '/runs/env_value/',
+  postRequest({
+    url: '/runs/env_value/change/',
     data: {
-      a: 'change',
-      old_env_value_id: oldValue,
-      new_env_value_id: selectField.value,
-      run_id: runId
+      old_env_value: oldValue,
+      new_env_value: selectField.value,
+      runs: runId
     },
     success: function () {
       jQ('#' + hidebox).html(newValue).show();
@@ -1114,15 +1113,10 @@ function removeProperty(runId, element) {
       let emptySelf = jQ(element).closest('li');
       let envValueId = jQ('input[type=hidden][name=current_run_env]', parent).get(0).value;
 
-      getRequest({
-        url: '/runs/env_value/',
-        data: {
-          a: 'remove',
-          info_type: 'env_values',
-          env_value_id: envValueId,
-          run_id: runId
-        },
-        errorMessage: 'Edit value failed',
+      postRequest({
+        url: '/runs/env_value/delete/',
+        data: {env_value: envValueId, runs: runId},
+        errorMessage: 'Deleting value failed',
         success: function () { emptySelf.remove(); },
       });
     }
@@ -1130,14 +1124,9 @@ function removeProperty(runId, element) {
 }
 
 function addPropertyToEnv(runId, envValueId) {
-  getRequest({
-    url: '/runs/env_value/',
-    data: {
-      a: 'add',
-      info_type: 'env_values',
-      env_value_id: envValueId,
-      run_id: runId
-    },
+  postRequest({
+    url: '/runs/env_value/add/',
+    data: {env_value: envValueId, runs: runId},
     success: function (data) {
       jQ('#dialog').hide();
       jQ('#env_area').html(data.fragment);

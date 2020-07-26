@@ -27,26 +27,26 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
 from django.template.loader import get_template
+from django.utils.encoding import smart_str
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
 from django.views.decorators.http import require_http_methods
-from django.views.generic import RedirectView
-from django.views.generic.base import TemplateView
-from django.views.generic.base import View
+from django.views.generic import RedirectView, FormView
+from django.views.generic.base import TemplateView, View
 
 from django_comments.models import Comment
-from tcms.core.responses import JsonResponseBadRequest, JsonResponseForbidden
+from tcms.core.responses import JsonResponseBadRequest
 
 from tcms.issuetracker.models import Issue
 from tcms.issuetracker.models import IssueTracker
 from tcms.issuetracker.services import find_service
 from tcms.core.tcms_router import connection
-from tcms.core.utils import clean_request
+from tcms.core.utils import clean_request, form_error_messags_to_list
 from tcms.core.utils import DataTableResult
 from tcms.core.utils import format_timedelta
 from tcms.core.views import prompt
-from tcms.management.models import Priority, TCMSEnvValue, TestTag, TCMSEnvGroup
+from tcms.management.models import Priority, TestTag, TCMSEnvGroup
 from tcms.search.forms import RunForm
 from tcms.search.query import SmartDjangoQuery
 from tcms.testcases.models import TestCase
@@ -55,7 +55,7 @@ from tcms.testcases.views import get_selected_testcases
 from tcms.testplans.models import TestPlan
 from tcms.testruns.data import stats_caseruns_status
 from tcms.testruns.data import TestCaseRunDataMixin
-from tcms.testruns.forms import MulitpleRunsCloneForm, PlanFilterRunForm
+from tcms.testruns.forms import MulitpleRunsCloneForm, PlanFilterRunForm, RunAndEnvValueForm, ChangeRunEnvValueForm
 from tcms.testruns.forms import NewRunForm, SearchRunForm, EditRunForm, RunCloneForm
 from tcms.testruns.helpers.serializer import TCR2File
 from tcms.testruns.models import TestRun, TestCaseRun, TestCaseRunStatus, TCMSEnvRunValueMap
@@ -1282,93 +1282,64 @@ def export(request, run_id):
     return response
 
 
-@require_GET
-def env_value(request):
-    """Run environment property edit function"""
-    trs = TestRun.objects.filter(run_id__in=request.GET.getlist('run_id'))
+class AddEnvValueToRunView(PermissionRequiredMixin, FormView):
+    """Add env value to test runs"""
 
-    class RunEnvActions:
-        def __init__(self, requet, trs):
-            self.__all__ = ['add', 'remove', 'change']
-            self.request = request
-            self.trs = trs
+    form_class = RunAndEnvValueForm
+    permission_required = 'testruns.add_tcmsenvrunvaluemap'
+    raise_exception = True
 
-        def has_no_perm(self, perm):
-            if not self.request.user.has_perm('testruns.' + perm + '_tcmsenvrunvaluemap'):
-                return {'message': 'Permission denied - %s' % perm}
+    def form_valid(self, form):
+        for run in form.cleaned_data['runs']:
+            run.add_env_value(form.cleaned_data['env_value'])
 
-            return False
+        fragment = render(self.request, 'run/get_environment.html', context={
+            'test_run': form.cleaned_data['runs'][0],
+            'is_ajax': True
+        })
+        return JsonResponse({'fragment': smart_str(fragment.content)})
 
-        def get_env_value(self, env_value_id):
-            return TCMSEnvValue.objects.get(id=env_value_id)
+    def form_invalid(self, form):
+        return JsonResponseBadRequest({
+            'message': form_error_messags_to_list(form.errors)
+        })
 
-        def add(self):
-            chk_perm = self.has_no_perm('add')
 
-            if chk_perm:
-                return JsonResponseForbidden(chk_perm)
+class DeleteRunEnvValueView(PermissionRequiredMixin, FormView):
+    """Delete a test run's env value"""
 
-            env_value_id = int(request.GET.get('env_value_id'))
-            try:
-                value = self.get_env_value(env_value_id)
-            except ObjectDoesNotExist:
-                return JsonResponseBadRequest({
-                    'message': f'Environment value id {env_value_id} does not exist.'
-                })
+    form_class = RunAndEnvValueForm
+    permission_required = 'testruns.delete_tcmsenvrunvaluemap'
+    raise_exception = True
 
-            for tr in self.trs:
-                tr.add_env_value(env_value=value)
+    def form_valid(self, form):
+        for run in form.cleaned_data['runs']:
+            run.remove_env_value(form.cleaned_data['env_value'])
+        return JsonResponse({})
 
-            fragment = render(request, 'run/get_environment.html', context={
-                'test_run': self.trs[0],
-                'is_ajax': True
-            })
+    def form_invalid(self, form):
+        return JsonResponseBadRequest({
+            'message': form_error_messags_to_list(form.errors)
+        })
 
-            if isinstance(fragment.content, bytes):
-                s = fragment.content.decode('utf-8')
-            else:
-                s = fragment.content
 
-            return JsonResponse({'fragment': s})
+class ChangeRunEnvValueView(PermissionRequiredMixin, FormView):
+    """Change a test run's env value"""
 
-        def remove(self):
-            chk_perm = self.has_no_perm('delete')
-            if chk_perm:
-                return JsonResponseForbidden(chk_perm)
+    form_class = ChangeRunEnvValueForm
+    permission_required = 'testruns.change_tcmsenvrunvaluemap'
+    raise_exception = True
 
-            try:
-                for tr in self.trs:
-                    tr.remove_env_value(env_value=self.get_env_value(
-                        request.GET.get('env_value_id')
-                    ))
-            except Exception:
-                pass
+    def form_valid(self, form):
+        for run in form.cleaned_data['runs']:
+            run.remove_env_value(form.cleaned_data['old_env_value'])
+            run.add_env_value(form.cleaned_data['new_env_value'])
+        return JsonResponse({})
 
-            return JsonResponse({})
-
-        def change(self):
-            chk_perm = self.has_no_perm('change')
-            if chk_perm:
-                return JsonResponseForbidden(chk_perm)
-
-            for tr in self.trs:
-                tr.remove_env_value(env_value=self.get_env_value(
-                    request.GET.get('old_env_value_id')
-                ))
-
-                tr.add_env_value(env_value=self.get_env_value(
-                    request.GET.get('new_env_value_id')
-                ))
-
-            return JsonResponse({})
-
-    run_env_actions = RunEnvActions(request, trs)
-
-    if request.GET.get('a') not in run_env_actions.__all__:
-        return JsonResponseBadRequest({'message': 'Unrecognizable actions'})
-
-    func = getattr(run_env_actions, request.GET['a'])
-    return func()
+    def form_invalid(self, form):
+        return JsonResponseBadRequest({
+            'message': form_error_messags_to_list(form.errors)
+        })
 
 
 def caseruns(request, templ='report/caseruns.html'):

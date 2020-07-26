@@ -4,7 +4,7 @@ from django import forms
 from django.contrib.auth.models import User
 
 from tcms.core.forms import UserField, DurationField
-from tcms.management.models import Product, Version, TestBuild, TCMSEnvGroup, TestTag
+from tcms.management.models import Product, Version, TestBuild, TCMSEnvGroup, TestTag, TCMSEnvValue
 from tcms.testplans.models import TestPlan
 from tcms.testcases.models import TestCase
 from .models import TestRun, TestCaseRunStatus
@@ -305,6 +305,47 @@ class MulitpleRunsCloneForm(forms.Form):
             self.fields['build'].queryset = TestBuild.objects.filter(
                 product__pk=product_id
             )
+
+
+class RunAndEnvValueForm(forms.Form):
+    runs = forms.ModelMultipleChoiceField(
+        queryset=TestRun.objects.all(),
+        error_messages={
+            'required': 'Missing test run id to update the environment value',
+            'invalid_choice': 'Test run id %(value)s is not valid.'
+        }
+    )
+    env_value = forms.ModelChoiceField(
+        queryset=TCMSEnvValue.objects.all(),
+        error_messages={
+            'required': 'Missing environment value id.',
+            'invalid_choice': 'Invalid environment value id.'
+        }
+    )
+
+
+class ChangeRunEnvValueForm(forms.Form):
+    runs = forms.ModelMultipleChoiceField(
+        queryset=TestRun.objects.all(),
+        error_messages={
+            'required': 'Missing test run id to update the environment value',
+            'invalid_choice': 'Test run id %(value)s is not valid.'
+        }
+    )
+    old_env_value = forms.ModelChoiceField(
+        queryset=TCMSEnvValue.objects.all(),
+        error_messages={
+            'required': 'Missing old environment value id.',
+            'invalid_choice': 'Invalid old environment value id.'
+        }
+    )
+    new_env_value = forms.ModelChoiceField(
+        queryset=TCMSEnvValue.objects.all(),
+        error_messages={
+            'required': 'Missing new environment value id.',
+            'invalid_choice': 'Invalid new environment value id.'
+        }
+    )
 
 
 # ===========================================================================

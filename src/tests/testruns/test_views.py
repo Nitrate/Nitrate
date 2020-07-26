@@ -949,83 +949,83 @@ class TestEnvValue(BaseCaseRun):
         cls.test_run.add_env_value(cls.value_linux)
         cls.test_run_1.add_env_value(cls.value_linux)
 
-        cls.env_value_url = reverse('runs-env-value')
         user_should_have_perm(cls.tester, 'testruns.add_tcmsenvrunvaluemap')
         user_should_have_perm(cls.tester, 'testruns.delete_tcmsenvrunvaluemap')
-
-    def test_refuse_if_action_is_unknown(self):
-        self.login_tester()
-
-        response = self.client.get(self.env_value_url, {
-            'env_value_id': self.value_bsd,
-            'run_id': self.test_run.pk
-        })
-
-        self.assertJsonResponse(
-            response,
-            {'message': 'Unrecognizable actions'},
-            status_code=HTTPStatus.BAD_REQUEST
-        )
 
     def test_add_env_value(self):
         self.login_tester()
 
-        self.client.get(self.env_value_url, {
-            'a': 'add',
-            'env_value_id': self.value_bsd.pk,
-            'run_id': self.test_run.pk
+        self.client.post(reverse('runs-add-env-value'), {
+            'env_value': self.value_bsd.pk,
+            'runs': self.test_run.pk
         })
 
-        rel = TCMSEnvRunValueMap.objects.filter(run=self.test_run,
-                                                value=self.value_bsd)
-        self.assertTrue(rel.exists())
+        self.assertTrue(
+            TCMSEnvRunValueMap.objects.filter(
+                run=self.test_run, value=self.value_bsd
+            ).exists()
+        )
 
     def test_add_env_value_to_runs(self):
         self.login_tester()
 
-        self.client.get(self.env_value_url, {
-            'a': 'add',
-            'env_value_id': self.value_bsd.pk,
-            'run_id': [self.test_run.pk, self.test_run_1.pk]
+        self.client.post(reverse('runs-add-env-value'), {
+            'env_value': self.value_bsd.pk,
+            'runs': [self.test_run.pk, self.test_run_1.pk]
         })
 
-        rel = TCMSEnvRunValueMap.objects.filter(run=self.test_run,
-                                                value=self.value_bsd)
-        self.assertTrue(rel.exists())
+        self.assertTrue(
+            TCMSEnvRunValueMap.objects.filter(
+                run=self.test_run, value=self.value_bsd
+            ).exists()
+        )
 
-        rel = TCMSEnvRunValueMap.objects.filter(run=self.test_run_1,
-                                                value=self.value_bsd)
-        self.assertTrue(rel.exists())
+        self.assertTrue(
+            TCMSEnvRunValueMap.objects.filter(
+                run=self.test_run_1, value=self.value_bsd
+            ).exists()
+        )
+
+    def test_no_perm_to_delete(self):
+        resp = self.client.post(reverse('runs-add-env-value'), {
+            'env_value': self.value_linux.pk,
+            'runs': self.test_run.pk,
+        })
+        self.assert403(resp)
 
     def test_delete_env_value(self):
         self.login_tester()
 
-        self.client.get(self.env_value_url, {
-            'a': 'remove',
-            'env_value_id': self.value_linux.pk,
-            'run_id': self.test_run.pk,
+        self.client.post(reverse('runs-add-env-value'), {
+            'env_value': self.value_linux.pk,
+            'runs': self.test_run.pk,
         })
 
-        rel = TCMSEnvRunValueMap.objects.filter(run=self.test_run,
-                                                value=self.value_linux)
-        self.assertFalse(rel.exists())
+        self.assertTrue(
+            TCMSEnvRunValueMap.objects.filter(
+                run=self.test_run, value=self.value_linux
+            ).exists()
+        )
 
     def test_delete_env_value_from_runs(self):
         self.login_tester()
 
-        self.client.get(self.env_value_url, {
-            'a': 'remove',
-            'env_value_id': self.value_linux.pk,
-            'run_id': [self.test_run.pk, self.test_run_1.pk],
+        self.client.post(reverse('runs-add-env-value'), {
+            'env_value': self.value_linux.pk,
+            'runs': [self.test_run.pk, self.test_run_1.pk],
         })
 
-        rel = TCMSEnvRunValueMap.objects.filter(run=self.test_run,
-                                                value=self.value_linux)
-        self.assertFalse(rel.exists())
+        self.assertTrue(
+            TCMSEnvRunValueMap.objects.filter(
+                run=self.test_run, value=self.value_linux
+            ).exists()
+        )
 
-        rel = TCMSEnvRunValueMap.objects.filter(run=self.test_run_1,
-                                                value=self.value_linux)
-        self.assertFalse(rel.exists())
+        self.assertTrue(
+            TCMSEnvRunValueMap.objects.filter(
+                run=self.test_run_1, value=self.value_linux
+            ).exists()
+        )
 
 
 class TestExportTestRunCases(BaseCaseRun):
