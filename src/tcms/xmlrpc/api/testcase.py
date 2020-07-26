@@ -19,7 +19,7 @@ from tcms.xmlrpc.utils import distinct_count
 from tcms.xmlrpc.utils import pre_process_estimated_time
 from tcms.xmlrpc.utils import pre_process_ids
 from tcms.testcases.forms import CaseIssueForm
-from tcms.core.utils import form_error_messags_to_list, timedelta2int
+from tcms.core.utils import form_error_messages_to_list, timedelta2int
 
 
 __all__ = (
@@ -265,7 +265,7 @@ def attach_issue(request, values):
                 description=form.cleaned_data['description']
             )
         else:
-            raise ValueError(form_error_messags_to_list(form))
+            raise ValueError(form_error_messages_to_list(form))
 
 
 @log_call(namespace=__xmlrpc_namespace__)

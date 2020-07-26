@@ -42,7 +42,7 @@ from tcms.issuetracker.models import Issue
 from tcms.issuetracker.models import IssueTracker
 from tcms.issuetracker.services import find_service
 from tcms.core.tcms_router import connection
-from tcms.core.utils import clean_request, form_error_messags_to_list
+from tcms.core.utils import clean_request, form_error_messages_to_list
 from tcms.core.utils import DataTableResult
 from tcms.core.utils import format_timedelta
 from tcms.core.views import prompt
@@ -1301,7 +1301,7 @@ class AddEnvValueToRunView(PermissionRequiredMixin, FormView):
 
     def form_invalid(self, form):
         return JsonResponseBadRequest({
-            'message': form_error_messags_to_list(form.errors)
+            'message': form_error_messages_to_list(form.errors)
         })
 
 
@@ -1319,7 +1319,7 @@ class DeleteRunEnvValueView(PermissionRequiredMixin, FormView):
 
     def form_invalid(self, form):
         return JsonResponseBadRequest({
-            'message': form_error_messags_to_list(form.errors)
+            'message': form_error_messages_to_list(form.errors)
         })
 
 
@@ -1338,7 +1338,7 @@ class ChangeRunEnvValueView(PermissionRequiredMixin, FormView):
 
     def form_invalid(self, form):
         return JsonResponseBadRequest({
-            'message': form_error_messags_to_list(form.errors)
+            'message': form_error_messages_to_list(form.errors)
         })
 
 

@@ -20,7 +20,7 @@ from tcms.issuetracker.services import find_service
 from tcms.testcases.forms import CaseRunIssueForm
 from tcms.testruns.models import TestCaseRun
 from tcms.testruns.models import TestRun
-from tcms.core.utils import form_error_messags_to_list
+from tcms.core.utils import form_error_messages_to_list
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +49,7 @@ def manage_case_run_issues(request, run_id):
 
             if not form.is_valid():
                 return JsonResponseBadRequest(
-                    {'message': form_error_messags_to_list(form)})
+                    {'message': form_error_messages_to_list(form)})
 
             service = find_service(form.cleaned_data['tracker'])
             issue_key = form.cleaned_data['issue_key']
@@ -93,7 +93,7 @@ def manage_case_run_issues(request, run_id):
             form = RemoveIssueForm(request.GET)
             if not form.is_valid():
                 return JsonResponseBadRequest({
-                    'message': form_error_messags_to_list(form)
+                    'message': form_error_messages_to_list(form)
                 })
 
             issue_key = form.cleaned_data['issue_key']

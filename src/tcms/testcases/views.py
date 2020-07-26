@@ -31,7 +31,7 @@ from tcms.core.db import SQLExecution
 from tcms.core.raw_sql import RawSQL
 from tcms.core.responses import JsonResponseBadRequest
 from tcms.core.utils import DataTableResult
-from tcms.core.utils import form_error_messags_to_list
+from tcms.core.utils import form_error_messages_to_list
 from tcms.core.views import prompt
 from tcms.issuetracker.models import IssueTracker
 from tcms.logs.models import TCMSLogModel
@@ -154,7 +154,7 @@ class ChangeCaseAutomatedPropertyView(PermissionRequiredMixin, FormView):
 
     def form_invalid(self, form):
         return JsonResponseBadRequest({
-            'messages': form_error_messags_to_list(form)
+            'messages': form_error_messages_to_list(form)
         }, safe=True)
 
 
@@ -1392,7 +1392,7 @@ class AddComponentView(PermissionRequiredMixin, View):
         form.populate(product_id=request.POST['product'])
         if not form.is_valid():
             return JsonResponseBadRequest({
-                'message': form_error_messags_to_list(form),
+                'message': form_error_messages_to_list(form),
             }, safe=True)
 
         case_ids = [int(case_id) for case_id in request.POST.getlist('case')]
@@ -1436,7 +1436,7 @@ class RemoveComponentView(PermissionRequiredMixin, View):
 
         if not form.is_valid():
             return JsonResponseBadRequest({
-                'message': form_error_messags_to_list(form),
+                'message': form_error_messages_to_list(form),
             })
 
         errors = []
@@ -1559,7 +1559,7 @@ class CasesIssueActionBaseView(PermissionRequiredMixin, FormView):
 
     def form_invalid(self, form):
         return JsonResponseBadRequest({
-            'message': form_error_messags_to_list(form)
+            'message': form_error_messages_to_list(form)
         })
 
 
@@ -1614,7 +1614,7 @@ class CasePlansOperationView(PermissionRequiredMixin, View):
 
         if not form.is_valid():
             return JsonResponseBadRequest({
-                'message': form_error_messags_to_list(form)
+                'message': form_error_messages_to_list(form)
             })
 
         self.operate(form)

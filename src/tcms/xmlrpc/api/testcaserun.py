@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import permission_required
 
 import tcms.comments.models
 
-from tcms.core.utils import form_error_messags_to_list
+from tcms.core.utils import form_error_messages_to_list
 from tcms.issuetracker.models import Issue
 from tcms.issuetracker.services import find_service
 from tcms.linkreference.models import create_link, LinkReference
@@ -147,7 +147,7 @@ def attach_issue(request, values):
                     summary=summary,
                     description=description)
         else:
-            raise ValueError(form_error_messags_to_list(form))
+            raise ValueError(form_error_messages_to_list(form))
 
 
 @log_call(namespace=__xmlrpc_namespace__)

@@ -33,7 +33,7 @@ def form_errors_to_list(form):
     return [(k, v[0]) for k, v in form.errors.items()]
 
 
-def form_error_messags_to_list(form):
+def form_error_messages_to_list(form):
     return list(functools.reduce(operator.add, form.errors.values()))
 
 
