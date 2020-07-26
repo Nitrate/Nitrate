@@ -415,7 +415,7 @@ class TestStartCloneRunFromRunsSearchPage(CloneRunBaseTest):
         runs_li = [
             '<li>'
             '<label for="id_run_{}">'
-            '<input checked="checked" id="id_run_{}" name="run" value="{}" '
+            '<input checked id="id_run_{}" name="run" value="{}" '
             'type="checkbox">'
             '{}'
             '</label>'
@@ -428,11 +428,11 @@ class TestStartCloneRunFromRunsSearchPage(CloneRunBaseTest):
 
         # Assert clone settings
         clone_settings_controls = [
-            '<li><input checked="checked" id="id_update_case_text" name="update_case_text" '
+            '<li><input checked id="id_update_case_text" name="update_case_text" '
             'type="checkbox">Use newest case text(setup/actions/effects/breakdown)</li>',
-            '<li><input checked="checked" id="id_clone_cc" name="clone_cc" type="checkbox">'
+            '<li><input checked id="id_clone_cc" name="clone_cc" type="checkbox">'
             'Clone cc</li>',
-            '<li><input checked="checked" id="id_clone_tag" name="clone_tag" type="checkbox">'
+            '<li><input checked id="id_clone_tag" name="clone_tag" type="checkbox">'
             'Clone tag</li>',
         ]
         for html_control in clone_settings_controls:
@@ -1348,7 +1348,7 @@ class TestAddCasesToRun(BaseCaseRun):
                 response,
                 '<td align="left">'
                 '<input type="checkbox" name="case" value="{}" '
-                'disabled="true" checked="true">'
+                'disabled checked>'
                 '</td>'.format(case.pk),
                 html=True)
 

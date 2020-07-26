@@ -32,7 +32,7 @@
 								<input type="hidden" name="value" value="" />
 								{% if perms.testruns.change_testcaserun %}
 								{% for status in test_case_run_status %}
-								<input type="submit" class="btn btn_{{ status.name.lower }} btn_status js-status-button" title="{{ status.name }}" value="" crs_id="{{ status.pk }}" {% if status.pk == test_case_run.case_run_status_id %}disabled="True"{% endif %} data-formvalue="{{ status.pk }}" />
+								<input type="submit" class="btn btn_{{ status.name.lower }} btn_status js-status-button" title="{{ status.name }}" value="" crs_id="{{ status.pk }}"{% if status.pk == test_case_run.case_run_status_id %} disabled{% endif %} data-formvalue="{{ status.pk }}" />
 								{% endfor %}
 								{% endif %}
 								<input type="submit" class="submit-post" value="Submit">

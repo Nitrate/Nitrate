@@ -1239,7 +1239,7 @@ class TestCloneCase(BasePlanCase):
         self.assertContains(
             response,
             '<label for="id_case_0">'
-            '<input checked="checked" id="id_case_0" name="case" '
+            '<input checked id="id_case_0" name="case" '
             'type="checkbox" value="{}"> {}</label>'.format(
                 self.case_1.pk, self.case_1.summary),
             html=True)

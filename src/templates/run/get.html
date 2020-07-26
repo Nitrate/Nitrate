@@ -51,12 +51,12 @@ jQ(function() {
 		{% if perms.testruns.change_testcaserun %}
 		<input id="btn_edit" type="button" value="Edit" title="Edit this test run" data-params='["{% url "run-edit" test_run.run_id %}", "{{ request.GET.from_plan }}"]'>
 		{% else %}
-		<input id="btn_edit" type="button" value="Edit" disabled="true">
+		<input id="btn_edit" type="button" value="Edit" disabled />
 		{% endif %}
 		{% if perms.testruns.add_testrun %}
 		<input id="btn_clone" type="button" value="Clone" title="Clone test run to other test build" data-param="{% url 'run-clone' test_run.pk %}" />
 		{% else %}
-		<input type="button" value="Clone" disabled="true"/>
+		<input type="button" value="Clone" disabled />
 		{% endif %}
 		{% if perms.testruns.delete_testrun %}
 		{% if test_run.manager == user %}

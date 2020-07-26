@@ -11,7 +11,7 @@
 
 				<span id="id_env_value_{{ run_env_value.pk }}" style="display:">{{ run_env_value.value }}</span>
 				<select style="display:none" name="env_value_id" id="id_select_value_{{ run_env_value.pk }}">
-					<option value="{{ run_env_value.pk }}" selected="True"></option>
+					<option value="{{ run_env_value.pk }}" selected></option>
 				</select>
 				<input type="button" value="Submit" name="submit" id="id_submit_value_{{ run_env_value.pk }}" class="js-env-submit" style="display:none" data-params='["{{ test_run.run_id }}", "{{ run_env_value.pk }}", "id_env_value_{{ run_env_value.pk }}", "id_submit_value_{{ run_env_value.pk }}"]'/>
 			</span>
@@ -51,7 +51,7 @@
 
 			<span id="id_env_value_{{ run_env_value.pk }}" style="display:">{{ run_env_value.value }}</span>
 			<select style="display:none" name="env_value_id" id="id_select_value_{{ run_env_value.pk }}">
-				<option value="{{ run_env_value.pk }}" selected="True"></option>
+				<option value="{{ run_env_value.pk }}" selected></option>
 			</select>
 			<input type="button" value="Submit" name="submit" id="id_submit_value_{{ run_env_value.pk }}" class="js-env-submit" style="display:none" data-params='["{{ test_run.run_id }}", "{{ run_env_value.pk }}", "id_env_value_{{ run_env_value.pk }}", "id_submit_value_{{ run_env_value.pk }}"]'/>
 		</span>

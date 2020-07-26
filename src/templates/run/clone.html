@@ -107,7 +107,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.Clone.on_load);
                                 <input type="hidden" name="env_property_id" value="{{ env_value.property_id }}">
 								<select name="select_property_value_{{ env_value.property_id }}">
 									{% for value in env_value.property.value.all %}
-									<option value="{{ value.id }}" {% if value.id == env_value.id %}selected="true"{% endif %}>{{ value.value }}</option>
+									<option value="{{ value.id }}"{% if value.id == env_value.id %} selected{% endif %}>{{ value.value }}</option>
 									{% endfor %}
 								</select>
 							</li>
