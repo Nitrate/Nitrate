@@ -42,9 +42,9 @@
 		</tr>
 		{% for build, priority, status_subtotal in report_data.reports %}
 		<tr>
-			{% ifnotequal build.2 None %}
+			{% if build.2 is not None %}
 			<td rowspan="{{ build.2 }}" class="bgRowspan"><span>{{ build.1 }}</span></td>
-			{% endifnotequal %}
+			{% endif %}
 			<td><span>{{ priority.value }}</span></td>
 			<td><a href="{{ report_url }}{{path_without_build}}&r_build={{build.0}}&priority={{priority.pk}}&status=idle">{{ status_subtotal.IDLE|default:0 }}</a></td>
 			<td><a href="{{ report_url }}{{path_without_build}}&r_build={{build.0}}&priority={{priority.pk}}&status=running">{{ status_subtotal.RUNNING|default:0 }}</a></td>

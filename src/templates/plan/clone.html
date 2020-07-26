@@ -20,12 +20,12 @@ Nitrate.Utils.after_page_load(Nitrate.TestPlans.Clone.on_load);
 	<div class="sprites crumble">
 		<a href="{% url "nitrate-index" %}">Home</a>
 		>> <a href="{% url "plans-all" %}">Planning</a>
-		{% ifequal testplans|length 1 %}
+		{% if testplans|length == 1 %}
 		>> <a href="{{ testplans.0.get_absolute_url }}">{{ testplans.0.plan_id }}: {{ testplans.0.name }}</a>
 		>> Clone Plan
 		{% else %}
 		>> Clone plans
-		{% endifequal %}
+		{% endif %}
 	</div>
 	<h2>Clone Test Plan</h2>
 	<p class="help">
@@ -38,7 +38,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestPlans.Clone.on_load);
 			{% endfor %}
 			<table	class="editor" cellspacing="0" cellspan="0">
 				<tr>
-					{% ifequal testplans|length 1 %}
+					{% if testplans|length == 1 %}
 					<td width="20%" ><label class="strong" for="id_name">New Plan Name</label> </td>
 					<td class="name" >{{ clone_form.name }}</td>
 					{% else %}
@@ -61,7 +61,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestPlans.Clone.on_load);
 							{% endfor %}
 						</ul>
 					</td>
-					{% endifequal %}
+					{% endif %}
 				</tr>
 				<tr >
 					<td><label class="strong" for="id_product_id">Copy to Product</label></td>

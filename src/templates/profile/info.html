@@ -16,15 +16,15 @@
 	<div class="sprites crumble profile_tab">
 		<ul>
 			<li class="profile_tab_active"><a href="{% url "user-profile" user.username %}">Basic Information</a></li>
-			{% ifequal user_profile.user user %}
+			{% if user_profile.user == user %}
 			<li><a href="{% url "user-bookmark" user.username %}">Bookmarks</a></li>
 			<li><a href="{% url "user-recent" user.username %}">Recent</a></li>
-			{% endifequal %}
+			{% endif %}
 		</ul>
 	</div>
 
 
-		{% ifequal user_profile.user user %}
+		{% if user_profile.user == user %}
 		<form action="." method="post">
 			{% csrf_token %}
 			{% if message %}
@@ -121,7 +121,7 @@
 				<td class="left_title sprites">Notes</td>
 				<td>{{ user_profile.notes|urlize|linebreaksbr|default:'<span class="grey">None</span>' }}</td>
 		</table>
-		{% endifequal %}
+		{% endif %}
 	</div>
 
 {% endblock %}

@@ -42,7 +42,7 @@
 				{{ plan_text.plan_text|striptags|truncatewords:"10" }}
 			</td>
 		</tr>
-		{% ifequal plan_text.plan_text_version select_plan_text_version %}
+		{% if plan_text.plan_text_version == select_plan_text_version %}
 		<tr class="hide">
 			<td>
 			<td colspan="3">
@@ -51,7 +51,7 @@
 					</div>
 			</td>
 		</tr>
-		{% endifequal %}
+		{% endif %}
 		{% endfor %}
 	</table>
 	</div>

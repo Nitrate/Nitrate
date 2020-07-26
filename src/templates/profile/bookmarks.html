@@ -22,10 +22,10 @@ Nitrate.Utils.after_page_load(Nitrate.Profiles.Bookmarks.on_load);
 	<div class="sprites crumble profile_tab">
 		<ul>
 			<li><a href="{% url "user-profile" user.username %}">Basic Information</a></li>
-			{% ifequal user_profile.user user %}
-			<li  class="profile_tab_active"><a href="{% url "user-bookmark" user.username %}">Bookmarks</a></li>
+			{% if user_profile.user == user %}
+			<li class="profile_tab_active"><a href="{% url "user-bookmark" user.username %}">Bookmarks</a></li>
 			<li><a href="{% url "user-recent" user.username %}">Recent</a></li>
-			{% endifequal %}
+			{% endif %}
 		</ul>
 	</div>
 	<form id="id_form_bookmark" action="{% url "user-bookmark" user.username %}" method="post">

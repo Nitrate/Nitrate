@@ -105,7 +105,7 @@
 				</a>
 				<select class="change_status_selector js-just-loaded">
 					{% for case_stat in case_status %}
-					<option {% ifequal case_stat.pk test_case.case_status_id %} selected="1" {% endifequal %} value="{{ case_stat.id }}">{{ case_stat.name }}</option>
+					<option {% if case_stat.pk == test_case.case_status_id %} selected="1" {% endif %} value="{{ case_stat.id }}">{{ case_stat.name }}</option>
 					{% endfor %}
 				</select>
 				{% else %}

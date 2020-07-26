@@ -78,9 +78,9 @@
 		{% for method in method_list %}
 		{% if method.name != 'system.multicall' %}
 		<h3><a name="{{ method.name|lower }}">{{ method.name|escape }}</a></h3>
-		{% ifnotequal method.signature "signatures not supported" %}
+		{% if method.signature != "signatures not supported" %}
 		<strong>Signature: </strong>{{ method.signature|escape }}<br />
-		{% endifnotequal %}
+		{% endif %}
 		<pre>{% for line in method.help %}{{ line|escape }}<br />{% endfor %}</pre>
 		{% endif %}
 		{% endfor %}

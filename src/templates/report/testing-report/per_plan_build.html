@@ -52,9 +52,9 @@
 		<tbody>
 			{% for build, run, status_subtotal in status_matrix %}
 			<tr>
-				{% ifnotequal build.1 None %}
+				{% if build.1 is not None %}
 				<td rowspan="{{ build.1 }}" class="bgRowspan"><span>{{ build.0 }}</span></td>
-				{% endifnotequal %}
+				{% endif %}
 				<td><a href="{{ run.get_absolute_url }}">{{ run.summary }}</a></td>
 				<td><a href="{{ report_url }}{{path_without_build}}&r_build={{build.0.pk}}&run={{ run.pk }}&status=idle">{{ status_subtotal.IDLE|default:0 }}</a></td>
 				<td><a href="{{ report_url }}{{path_without_build}}&r_build={{build.0.pk}}&run={{ run.pk }}&status=running">{{ status_subtotal.RUNNING|default:0 }}</a></td>

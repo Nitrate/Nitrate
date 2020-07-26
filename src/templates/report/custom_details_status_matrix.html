@@ -18,11 +18,11 @@
 	{% for plan, run, status_count in status_matrix %}
 		{% if plan or run %}
 		<tr>
-			{% ifnotequal plan None %}
+			{% if plan is not None %}
 			<td class="group_by" valign="middle" rowspan="{{ plan.1 }}" data-plan-id="{{ plan.0.plan_id }}">
 			  <a href="{{ plan.0.get_absolute_url }}">[{{ plan.0.plan_id }}] {{ plan.0.name }}</a>
 			</td>
-			{% endifnotequal %}
+			{% endif %}
 			<td valign="top"><a href="{{ run.get_absolute_url }}">[{{ run.run_id }}] {{ run.summary }}</a></td>
 			<td valign="top">{{ status_count.IDLE|default:'' }}</td>
 			<td valign="top">{{ status_count.RUNNING|default:'' }}</td>

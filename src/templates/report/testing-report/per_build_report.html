@@ -50,9 +50,9 @@
 		{% if report_data.builds_selected %}
 			{% for build, tested_by, runs_count, status_subtotal in report_data.reports %}
 			<tr>
-					{% ifnotequal build.1 None %}
+					{% if build.1 is not None %}
 					<td rowspan="{{ build.1 }}" class="bgRowspan"><span>{{ build.0 }}</span></td>
-					{% endifnotequal %}
+					{% endif %}
 					<td><span>{{ tested_by }}</span></td>
 					<td><span>{{ runs_count }}</span></td>
 					<td><a href="{{ report_url }}{{ path_without_build }}&r_build={{ build.0.pk }}&tester={{ tested_by.pk|default:0 }}">{{ status_subtotal.total }}</a></td>

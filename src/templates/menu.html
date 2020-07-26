@@ -1,40 +1,40 @@
 {% load i18n %}
 <div class="sprites menu">
 	<ul id="nav">
-		<li class="nav_li {% ifequal module 'index' %} current {% endifequal %}">
+		<li class="nav_li {% if module == 'index' %} current {% endif %}">
 			<a href="{% url "nitrate-index" %}">{% trans "HOME" %}</a>
 		</li>
 		<li class="sprites menuline"></li>
-		<li class="nav_li{% ifequal module 'testplans' %} current{% endifequal %}">
+		<li class="nav_li{% if module == 'testplans' %} current{% endif %}">
 			<a href="{% url "plans-all" %}">{% trans "PLANNING" %}</a>
 			<ul class="nav_sub sub_plan" style="display: none;">
-				<li {% ifequal sub_module 'plans' %} class="subcurrent"{% endifequal %} >
+				<li {% if sub_module == 'plans' %} class="subcurrent"{% endif %} >
 					<a href="{% url "plans-all" %}">Search Plans</a>
 				</li>
 				{% if user.is_authenticated %}
-				<li {% ifequal sub_module 'my_plans' %} class="subcurrent"{% endifequal %} >
+				<li {% if sub_module == 'my_plans' %} class="subcurrent"{% endif %} >
 					<a href="{% url "plans-all" %}?author__email__startswith={{ user.email }}">My Plans</a>
 				</li>
 				{% endif %}
 				{% if perms.testplans.add_testplan %}
-				<li {% ifequal sub_module 'new_plan' %} class="subcurrent"{% endifequal %} >
+				<li {% if sub_module == 'new_plan' %} class="subcurrent"{% endif %} >
 					<a href="{% url "plans-new" %}">New Plan</a>
 				</li>
 				{% endif %}
 			</ul>
 		</li>
 		<li class="sprites menuline"></li>
-		<li class="nav_li{% ifequal module 'testruns' %} current{% endifequal %}">
+		<li class="nav_li{% if module == 'testruns' %} current{% endif %}">
 			<a href="{% url "runs-all" %}">{% trans "TESTING" %}</a>
 			<ul id="submenu_test" class="nav_sub" style="display:none;">
-				<li {% ifequal sub_module 'runs' %} class="subcurrent"{% endifequal %} >
+				<li {% if sub_module == 'runs' %} class="subcurrent"{% endif %} >
 					<a href="{% url "runs-all" %}">Search Runs</a>
 				</li>
-				<li {% ifequal sub_module 'cases' %} class="subcurrent"{% endifequal %} >
+				<li {% if sub_module == 'cases' %} class="subcurrent"{% endif %} >
 					<a href="{% url "cases-search" %}">Search Cases</a>
 				</li>
 				{% if user.is_authenticated %}
-				<li {% ifequal sub_module 'my_runs' %} class="subcurrent"{% endifequal %} >
+				<li {% if sub_module == 'my_runs' %} class="subcurrent"{% endif %} >
 					<a href="{% url "runs-all" %}?people={{ user.email }}">My Runs</a>
 				</li>
 				{% endif %}
@@ -46,7 +46,7 @@
 			</ul>
 		</li>
 		<li class="sprites menuline"></li>
-		<li class="nav_li{% ifequal module 'env' %} current{% endifequal %} ">
+		<li class="nav_li{% if module == 'env' %} current{% endif %}">
 			<a href="{% url "management-env-groups" %}">{% trans "ENVIRONMENT" %}</a>
 			<ul	 id="submenu_environment" class="nav_sub"  style="display:none;">
 				<li>
@@ -58,7 +58,7 @@
 			</ul>
 		</li>
 		<li class="sprites menuline"></li>
-		<li class="nav_li {% ifequal module 'report' %} current{% endifequal %}">
+		<li class="nav_li {% if module == 'report' %} current{% endif %}">
 		<a href="{% url "report-overall" %}">{% trans "REPORTING" %}</a>
 			<ul	 id="submenu_report" class="nav_sub"  style="display:none;">
 				<li>
@@ -78,22 +78,22 @@
 			<a href="{% url "admin:index" %}">{% trans "ADMIN" %}</a>
 			<ul id="submenu_admin" class="nav_sub"	style="display:none;">
 				{% if perms.auth.change_user %}
-				<li {% ifequal sub_module 'products' %} class="subcurrent"{% endifequal %} >
+				<li {% if sub_module == 'products' %}class="subcurrent"{% endif %}>
 					<a href="{% url "admin:app_list" "auth" %}">Auth</a>
 				</li>
 				{% endif %}
 				{% if perms.management %}
-				<li {% ifequal sub_module 'environments' %} class="subcurrent"{% endifequal %} >
+				<li {% if sub_module == 'environments' %}class="subcurrent"{% endif %}>
 					<a href="{% url "admin:app_list" "management" %}">Management</a>
 				</li>
 				{% endif %}
 				{% if perms.testplans.change_testplantype %}
-				<li {% ifequal sub_module 'testplans' %} class="subcurrent"{% endifequal %} >
+				<li {% if sub_module == 'testplans' %}class="subcurrent"{% endif %}>
 					<a href="{% url "admin:app_list" "testplans" %}">Test plans</a>
 				</li>
 				{% endif %}
 				{% if perms.testcases %}
-				<li {% ifequal sub_module 'testcases' %} class="subcurrent"{% endifequal %} >
+				<li {% if sub_module == 'testcases' %}class="subcurrent"{% endif %}>
 					<a href="{% url "admin:app_list" "testcases" %}">Test cases</a>
 				</li>
 				{% endif %}
@@ -106,9 +106,9 @@
 		<form action="{% url "nitrate-search" %}" method="get">
 			<span>
 				<select id="search_type" name="search_type">
-					<option value="plans"{% ifequal module 'testplans' %} selected{% endifequal %}>Test Plan</option>
-					<option value="runs"{% ifequal module 'testruns' %} selected{% endifequal %}>Test Run</option>
-					<option value="cases"{% ifequal module 'testcases' %} selected{% endifequal %}>Test Case</option>
+					<option value="plans"{% if module == 'testplans' %} selected{% endif %}>Test Plan</option>
+					<option value="runs"{% if module == 'testruns' %} selected{% endif %}>Test Run</option>
+					<option value="cases"{% if module == 'testcases' %} selected{% endif %}>Test Case</option>
 				</select>
 				<input id="search_content" name="search_content" type="text" value="{{ REQUEST_CONTENTS.search }}" size="15" />
 				<input type="button" value="Go" id="js-execute-search" />

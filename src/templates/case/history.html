@@ -41,7 +41,7 @@
 			<td>{{ text.create_date }}</td>
 			<td>{{ text.author__email }}</td>
 		</tr>
-		{% ifequal text.case_text_version select_case_text_version %}
+		{% if text.case_text_version == select_case_text_version %}
 		<tr class="hide">
 			<td colspan="3">
 				<div class="content-wrap">
@@ -66,7 +66,7 @@
 				</div>
 			</td>
 		</tr>
-		{% endifequal %}
+		{% endif %}
 		{% endfor %}
 	</table>
 	</div>

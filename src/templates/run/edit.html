@@ -74,11 +74,11 @@
 			</tr>
 			<tr>
 				<td><label>Manager</label></td>
-				{% ifequal test_run.manager user %}
+				{% if test_run.manager == user %}
 				<td>{{ form.manager }}</td>
 				<td class="errors">{{ form.manager.errors }}</td>
 				{% else %}
-				{% ifequal test_run.plan.author user %}
+				{% if test_run.plan.author == user %}
 				<td>{{ form.manager }}</td>
 				<td class="errors">{{ form.manager.errors }}</td>
 				{% else %}
@@ -86,8 +86,8 @@
 					{{ test_run.manager }}
 					<input type="hidden" name="manager" value="{{ test_run.manager }}" />
 				</td>
-				{% endifequal %}
-				{% endifequal %}
+				{% endif %}
+				{% endif %}
 			 </tr>
 			<tr>
 				<td><label>Default Tester</label></td>

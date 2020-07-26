@@ -26,7 +26,7 @@
 	</thead>
 	<tbody>
 		{% for test_case_run, tester, assignee, priority_value, status_name, comments_count, issues_count in test_case_runs %}
-		<tr class="{% cycle 'odd' 'even' %} {% ifequal test_case_run.assignee_id user.pk %} mine {% endifequal %}">
+		<tr class="{% cycle 'odd' 'even' %} {% if test_case_run.assignee_id == user.pk %}mine{% endif %}">
 			<td class="selector_cell">
 				<input type="checkbox" name="case_run" value="{{ test_case_run.pk }}" title="Select/Unselect" />
 				<input type="hidden" name="case" value="{{ test_case_run.case.pk }}" />

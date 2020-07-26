@@ -82,7 +82,7 @@ Nitrate.TestPlans.Instance = {
             {% endcomment %}
 		</span>
 	</div>
-	<h2 id="display_title" class="{% ifequal test_plan.is_active 0 %}line-through{% endifequal %}">
+	<h2 id="display_title" class="{% if test_plan.is_active == 0 %}line-through{% endif %}">
 		{{ test_plan.name }}
 	</h2>
 	<div class="listinfo_content">

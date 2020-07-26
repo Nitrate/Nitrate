@@ -32,7 +32,7 @@
 								<input type="hidden" name="value" value="" />
 								{% if perms.testruns.change_testcaserun %}
 								{% for status in test_case_run_status %}
-								<input type="submit" class="btn btn_{{ status.name.lower }} btn_status js-status-button" title="{{ status.name }}" value="" crs_id="{{ status.pk }}" {% ifequal status.pk test_case_run.case_run_status_id %}disabled="True"{% endifequal %} data-formvalue="{{ status.pk }}" />
+								<input type="submit" class="btn btn_{{ status.name.lower }} btn_status js-status-button" title="{{ status.name }}" value="" crs_id="{{ status.pk }}" {% if status.pk == test_case_run.case_run_status_id %}disabled="True"{% endif %} data-formvalue="{{ status.pk }}" />
 								{% endfor %}
 								{% endif %}
 								<input type="submit" class="submit-post" value="Submit">
@@ -42,11 +42,11 @@
 				</form>
 				{% endif %}
 				<h4 class="borderB">Comments History ({{ comments_count }}):
-				{% ifequal comments_count 0 %}
+				{% if comments_count == 0 %}
 					<span>[ <a id="showText" href="javascript:void(0);">Show All</a> ]</span>
 				{% else %}
 					<span>[ <a id="showText" class="js-show-comments" data-param="comment{{ test_case_run.pk }}" href="javascript:void(0);">Show All</a> ]</span>
-				{% endifequal %}
+				{% endif %}
 				</h4>
 				<ul class="comment" id="comment{{ test_case_run.pk }}" style="display:none;">
 					{% for comment in caserun_comments %}
@@ -57,14 +57,12 @@
 						<div>
 						{{ comment.comment|urlize|linebreaksbr }}
 						<br>
-						{% if perms.comments.can_moderate %}
-						{% ifequal comment.user__pk request.user.pk %}
+						{% if perms.comments.can_moderate and comment.user__pk == request.user.pk %}
 						<form action="{% url "comments-delete" %}" method="post" class="form_comment" style="display:inline;">
 							<input type="hidden" name="comment_id" value="{{ comment.pk }}" />
 							<input type="hidden" name="object_pk" value="{{ test_case_run.case_id }}" />
 							<input class='commentdelete sprites' value='' type='submit' title="Remove Comment" />
 						</form>
-						{% endifequal %}
 						{% endif %}
 						</div>
 					</li>
@@ -99,12 +97,12 @@
 								{% for issue in issues %}
 								    {% if issue.case_run_id %}
 								        <span class="grey">From Run</span><a href="{% url "run-get" issue.case_run.run_id %}">{{ issue.case_run.run_id }}</a>
-								        {% ifequal issue.case_run_id test_case_run.pk %}
+								        {% if issue.case_run_id == test_case_run.pk %}
 								        <a href="javascript:void(0);" title="Remove This Bug" class="js-remove-caserun-issue"
 											data-params='{"runId": {{ test_case_run.run.pk }}, "issueKey": "{{ issue.issue_key }}", "caseId": {{ test_case_run.case_id }}, "caseRunIds": [{{ test_case_run.pk }}]}'>
 												<img width="9" height="9" title="Remove this issue" src="{% static "images/remove_small.png" %}" />
 										</a>
-								        {% endifequal %}
+								        {% endif %}
 								    {% else %}
 								        <span class="grey">From Case</span>
 								        <a href="{% url "case-get" issue.case_id %}">{{ issue.case_id }}</a>
