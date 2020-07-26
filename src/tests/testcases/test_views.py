@@ -431,44 +431,6 @@ class TestOperateCategoryView(BasePlanCase):
             self.assertEqual(self.case_cat_full_auto, case.category)
 
 
-class TestAddIssueToCase(BasePlanCase):
-    """Tests for adding issue to case"""
-
-    @classmethod
-    def setUpTestData(cls):
-        super().setUpTestData()
-
-        cls.plan_tester = User.objects.create_user(username='plantester',
-                                                   email='plantester@example.com',
-                                                   password='password')
-        user_should_have_perm(cls.plan_tester, 'issuetracker.change_issue')
-
-        cls.case_issue_url = reverse('case-issue', args=[cls.case_1.pk])
-        cls.issue_tracker = f.IssueTrackerFactory(name='TestBZ')
-
-    def test_add_and_remove_a_issue(self):
-        user_should_have_perm(self.plan_tester, 'issuetracker.add_issue')
-        user_should_have_perm(self.plan_tester, 'issuetracker.delete_issue')
-
-        self.client.login(username=self.plan_tester.username, password='password')
-        request_data = {
-            'handle': 'add',
-            'issue_key': '123456',
-            'tracker': self.issue_tracker.pk,
-        }
-        self.client.get(self.case_issue_url, request_data)
-        self.assertTrue(self.case_1.issues.filter(issue_key='123456').exists())
-
-        request_data = {
-            'handle': 'remove',
-            'issue_key': '123456',
-        }
-        response = self.client.get(self.case_issue_url, request_data)
-
-        self.assert200(response)
-        self.assertFalse(self.case_1.issues.filter(issue_key='123456').exists())
-
-
 class TestOperateCasePlans(BasePlanCase):
     """Test operation in case' plans tab"""
 
@@ -1829,8 +1791,16 @@ class TestIssueManagement(BaseCaseRun):
     def setUpTestData(cls):
         super().setUpTestData()
 
-        user_should_have_perm(cls.tester, 'issuetracker.change_issue')
-        cls.issue_manage_url = reverse('case-issue', args=[cls.case_1.pk])
+        cls.perm_add_issue = 'issuetracker.add_issue'
+        cls.perm_change_issue = 'issuetracker.change_issue'
+        cls.perm_delete_issue = 'issuetracker.delete_issue'
+
+        user_should_have_perm(cls.tester, cls.perm_change_issue)
+
+        cls.add_issue_url = reverse('cases-add-issue', args=[cls.case_1.pk])
+        cls.remove_issue_url = reverse('cases-delete-issue', args=[cls.case_1.pk])
+
+        cls.fake_issue_key = '123456'
 
         cls.tracker_product = f.IssueTrackerProductFactory(name='BZ')
         cls.issue_tracker = f.IssueTrackerFactory(
@@ -1841,7 +1811,7 @@ class TestIssueManagement(BaseCaseRun):
         )
 
         # Used for testing removing issue from test case.
-        cls.case_2_issue_manage_url = reverse('case-issue', args=[cls.case_2.pk])
+        cls.case_2_delete_issue_url = reverse('cases-delete-issue', args=[cls.case_2.pk])
         cls.case_2.add_issue('67890', cls.issue_tracker)
         cls.case_2.add_issue('78901', cls.issue_tracker)
 
@@ -1850,77 +1820,71 @@ class TestIssueManagement(BaseCaseRun):
 
     def tearDown(self):
         self.client.logout()
-        remove_perm_from_user(self.tester, 'issuetracker.add_issue')
-        remove_perm_from_user(self.tester, 'issuetracker.delete_issue')
+        remove_perm_from_user(self.tester, self.perm_add_issue)
+        remove_perm_from_user(self.tester, self.perm_delete_issue)
 
     def test_bad_issue_key_to_remove(self):
-        user_should_have_perm(self.tester, 'issuetracker.delete_issue')
+        user_should_have_perm(self.tester, self.perm_delete_issue)
 
-        resp = self.client.get(self.issue_manage_url, data={
-            'handle': 'remove',
+        resp = self.client.post(self.remove_issue_url, data={
             'issue_key': '',
             'case_run': self.case_run_1.pk,
         })
 
         self.assert400(resp)
-        self.assertIn('Missing issue key to delete.', resp.json()['messages'])
+        self.assertIn('Missing issue key to delete.', resp.json()['message'])
 
     def test_bad_case_run_to_remove(self):
-        user_should_have_perm(self.tester, 'issuetracker.delete_issue')
+        user_should_have_perm(self.tester, self.perm_delete_issue)
 
-        resp = self.client.get(self.issue_manage_url, data={
-            'handle': 'remove',
+        resp = self.client.post(self.remove_issue_url, data={
             # Whatever the issue key is, which does not impact this test.
-            'issue_key': '123456',
+            'issue_key': self.fake_issue_key,
             'case_run': 1000,
         })
 
         self.assert400(resp)
-        self.assertIn('Test case run does not exists.', resp.json()['messages'])
+        self.assertIn('Test case run does not exists.', resp.json()['message'])
 
     def test_bad_case_run_case_rel_to_remove(self):
-        user_should_have_perm(self.tester, 'issuetracker.delete_issue')
+        user_should_have_perm(self.tester, self.perm_delete_issue)
 
-        resp = self.client.get(self.issue_manage_url, data={
-            'handle': 'remove',
+        resp = self.client.post(self.remove_issue_url, data={
             # Whatever the issue key is, which does not impact this test.
-            'issue_key': '123456',
+            'issue_key': self.fake_issue_key,
             'case_run': self.case_run_2.pk,
         })
 
         self.assert400(resp)
         self.assertIn(
-            'Case run {} is not associated with case {}.'.format(
-                self.case_run_2.pk, self.case_1.pk),
-            resp.json()['messages'])
+            f'Case run {self.case_run_2.pk} is not associated with case {self.case_1.pk}.',
+            resp.json()['message']
+        )
 
     def test_no_permission_to_add(self):
         # Note that, required permission is not granted by default. Hence, the
         # request should be forbidden.
-        resp = self.client.get(self.issue_manage_url, data={
-            'handle': 'add',
+        resp = self.client.post(self.add_issue_url, data={
             # Whatever the issue key is, which does not impact this test.
-            'issue_key': '123456',
+            'issue_key': self.fake_issue_key,
             'tracker': self.issue_tracker.pk,
         })
         self.assert403(resp)
 
     def test_no_permission_to_remove(self):
         # Note that, no permission is set for self.tester.
-        resp = self.client.get(self.issue_manage_url, data={
-            'handle': 'remove',
+        resp = self.client.post(self.remove_issue_url, data={
             # Whatever the issue key is, which does not impact this test.
-            'issue_key': '123456',
+            'issue_key': self.fake_issue_key,
             'case_run': self.case_run_1.pk,
         })
         self.assert403(resp)
 
     def test_add_an_issue(self):
-        user_should_have_perm(self.tester, 'issuetracker.add_issue')
+        user_should_have_perm(self.tester, self.perm_add_issue)
 
-        resp = self.client.get(self.issue_manage_url, data={
-            'handle': 'add',
-            'issue_key': '123456',
+        resp = self.client.post(self.add_issue_url, data={
+            'issue_key': self.fake_issue_key,
             'case': self.case_1.pk,
             'tracker': self.issue_tracker.pk,
         })
@@ -1928,52 +1892,47 @@ class TestIssueManagement(BaseCaseRun):
         self.assert200(resp)
 
         added_issue = Issue.objects.filter(
-            issue_key='123456', case=self.case_1, case_run__isnull=True
+            issue_key=self.fake_issue_key, case=self.case_1, case_run__isnull=True
         ).first()
 
         self.assertIsNotNone(added_issue)
         self.assertIn(added_issue.get_absolute_url(), resp.json()['html'])
 
     def test_invalid_input_for_adding_an_issue(self):
-        user_should_have_perm(self.tester, 'issuetracker.add_issue')
+        user_should_have_perm(self.tester, self.perm_add_issue)
 
         result = IssueTracker.objects.aggregate(max_pk=Max('pk'))
-        resp = self.client.get(self.issue_manage_url, data={
-            'handle': 'add',
-            'issue_key': '123456',
+        resp = self.client.post(self.add_issue_url, data={
+            'issue_key': self.fake_issue_key,
             'tracker': result['max_pk'] + 1
         })
 
         self.assert400(resp)
 
-        data = json.loads(resp.content)
-        error_messages = sorted(data['messages'])
+        error_messages = sorted(resp.json()['message'])
         self.assertListEqual(
             ['Invalid issue tracker that does not exist.'],
-            error_messages)
+            error_messages
+        )
 
     @patch('tcms.testcases.models.TestCase.add_issue')
     def test_fail_if_case_add_issue_fails(self, add_issue):
         add_issue.side_effect = Exception('Something wrong')
 
-        user_should_have_perm(self.tester, 'issuetracker.add_issue')
+        user_should_have_perm(self.tester, self.perm_add_issue)
 
-        resp = self.client.get(self.issue_manage_url, data={
-            'handle': 'add',
-            'issue_key': '123456',
+        resp = self.client.post(self.add_issue_url, data={
+            'issue_key': self.fake_issue_key,
             'tracker': self.issue_tracker.pk,
         })
 
         self.assert400(resp)
-
-        data = json.loads(resp.content)
-        self.assertIn('Something wrong', data['messages'])
+        self.assertIn('Something wrong', resp.json()['message'])
 
     def test_fail_if_validation_error_occurs_while_adding_the_issue(self):
-        user_should_have_perm(self.tester, 'issuetracker.add_issue')
+        user_should_have_perm(self.tester, self.perm_add_issue)
 
-        resp = self.client.get(self.issue_manage_url, data={
-            'handle': 'add',
+        resp = self.client.post(self.add_issue_url, data={
             # invalid issue key that should cause the validation error
             'issue_key': 'abcdef1234',
             'tracker': self.issue_tracker.pk,
@@ -1981,21 +1940,20 @@ class TestIssueManagement(BaseCaseRun):
 
         self.assert400(resp)
 
-        data = json.loads(resp.content)
         self.assertIn(
             f'Issue key abcdef1234 is in wrong format for issue tracker "{self.issue_tracker.name}"',
-            data['messages'][0])
+            resp.json()['message'][0]
+        )
 
     def test_remove_an_issue(self):
-        user_should_have_perm(self.tester, 'issuetracker.delete_issue')
+        user_should_have_perm(self.tester, self.perm_delete_issue)
 
         # Assert later
         removed_issue_url = Issue.objects.filter(
             issue_key='67890', case=self.case_2, case_run__isnull=True
         ).first().get_absolute_url()
 
-        resp = self.client.get(self.case_2_issue_manage_url, data={
-            'handle': 'remove',
+        resp = self.client.post(self.case_2_delete_issue_url, data={
             'issue_key': '67890',
             'case': self.case_2.pk,
         })
@@ -2019,23 +1977,20 @@ class TestIssueManagement(BaseCaseRun):
         self.assertIsNotNone(remained_issue)
         self.assertIn(remained_issue.get_absolute_url(), resp.json()['html'])
 
-    def test_404_if_case_not_exist(self):
-        user_should_have_perm(self.tester, 'issuetracker.add_issue')
+    def test_bad_request_if_case_not_exist(self):
+        user_should_have_perm(self.tester, self.perm_add_issue)
 
         result = TestCase.objects.aggregate(max_pk=Max('pk'))
         case_id = result['max_pk'] + 1
-        url = reverse('case-issue', args=[case_id])
+        url = reverse('cases-add-issue', args=[case_id])
 
-        resp = self.client.get(url, data={
-            'handle': 'add',
-            'issue_key': '123456',
+        resp = self.client.post(url, data={
+            'issue_key': self.fake_issue_key,
             'tracker': self.issue_tracker.pk,
         })
 
-        self.assert404(resp)
-
-        data = json.loads(resp.content)
-        self.assertIn(f'Case {case_id} does not exist.', data['messages'])
+        self.assert400(resp)
+        self.assertIn(f'Test case {case_id} does not exist.', resp.json()['message'])
 
 
 class TestNewCase(BasePlanCase):

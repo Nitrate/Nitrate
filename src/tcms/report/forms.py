@@ -18,8 +18,8 @@ class CustomSearchForm(forms.Form):
         empty_label=None,
         error_messages={
             'required': 'Product is required to generate this report.',
-            'invalid_choice': '%(value)s is not a valid product ID for '
-                              'generating this report.',
+            'invalid_pk_value':
+                '%(pk)s is not a valid product ID for generating this report.',
         })
     build_run__product_version = forms.ModelChoiceField(
         label='Product version',
@@ -72,8 +72,8 @@ class CustomSearchDetailsForm(CustomSearchForm):
         queryset=TestBuild.objects.none(),
         error_messages={
             'required': 'A build is required to generate this report.',
-            'invalid_choice': '%(value)s is not a valid test build ID for '
-                              'generating this report.',
+            'invalid_pk_value':
+                '%(pk)s is not a valid test build ID for generating this report.',
         })
 
     def clean_build_run__product_version(self):
@@ -101,7 +101,7 @@ class BasicTestingReportFormFields(forms.Form):
         error_messages={
             'required': 'You have to select a product to generate this '
                         'testing report.',
-            'invalid_choice': '%(value)s is not a valid product.',
+            'invalid_pk_value': '%(pk)s is not a valid product.',
         },
         widget=forms.Select(attrs={
             'id': 'r_product',

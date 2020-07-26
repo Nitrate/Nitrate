@@ -5,7 +5,6 @@ import itertools
 import json
 import logging
 
-from http import HTTPStatus
 from operator import itemgetter, attrgetter
 from typing import Dict, List, Optional
 
@@ -19,7 +18,6 @@ from django.core.exceptions import ValidationError
 from django.db.models import Count
 from django.http import HttpResponseBadRequest, JsonResponse
 from django.http import HttpResponseRedirect, HttpResponse, Http404
-from django import forms as djforms
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import get_template
 from django.template.loader import render_to_string
@@ -31,7 +29,7 @@ from django.views.generic.edit import FormView
 
 from tcms.core.db import SQLExecution
 from tcms.core.raw_sql import RawSQL
-from tcms.core.responses import JsonResponseBadRequest, JsonResponseForbidden
+from tcms.core.responses import JsonResponseBadRequest
 from tcms.core.utils import DataTableResult
 from tcms.core.utils import form_error_messags_to_list
 from tcms.core.views import prompt
@@ -45,7 +43,7 @@ from tcms.testcases.fields import CC_LIST_DEFAULT_DELIMITER
 from tcms.testcases.forms import (
     CaseAutomatedForm, NewCaseForm, SearchCaseForm, CaseFilterForm,
     EditCaseForm, CaseNotifyForm, CloneCaseForm, CaseIssueForm, CaseTagForm,
-    CaseComponentForm, CasePlansForm
+    CaseComponentForm, CasePlansForm, CaseRemoveIssueForm
 )
 from tcms.testcases import actions
 from tcms.testcases import data
@@ -1524,117 +1522,85 @@ def get_log(request, case_id, template_name="management/get_log.html"):
     return render(template_name, context=context_data)
 
 
-@permission_required('issuetracker.change_issue')
-def manage_case_issues(request, case_id, template_name='case/get_issues.html'):
-    """Process the bugs for cases"""
+class CasesIssueActionBaseView(PermissionRequiredMixin, FormView):
+    """Base view class of actions on cases' issues"""
 
-    class CaseIssueActions:
-        __all__ = ['get_form', 'render', 'add', 'remove']
+    raise_exception = True
 
-        def __init__(self, request, case, template_name):
-            self.request = request
-            self.case = case
-            self.template_name = template_name
+    def get_form(self, form_class=None):
+        post_data = self.request.POST.copy()
+        post_data['case'] = self.kwargs['case_id']
+        return self.form_class(post_data)
 
-        def render_form(self):
-            form = CaseIssueForm(initial={'case': self.case})
-            if request.GET.get('type') == 'table':
-                return HttpResponse(form.as_table())
+    def do(self, form):
+        """Do the real action on the issues
 
-            return HttpResponse(form.as_p())
+        :param form: the form provided by FormView.
+        :type form: :class:`django.forms.Form`
+        :return: a Django response object if something is wrong, otherwise None is returned.
+        :rtype: :class:`JsonResponseBadRequest` or None
+        """
+        raise NotImplementedError('Must be implemented in subclass.')
 
-        def render(self, response=None):
-            context_data = {
-                'test_case': self.case,
-                'issue_trackers': IssueTracker.get_by_case(self.case),
-                'response': response
-            }
-            return render_to_string(template_name, context_data, request)
+    def form_valid(self, form):
+        response = self.do(form)
 
-        def add(self):
-            # FIXME: It's may use ModelForm.save() method here.
-            #        Maybe in future.
-            if not self.request.user.has_perm('issuetracker.add_issue'):
-                return JsonResponse({'messages': 'Permission denied.'},
-                                    status=HTTPStatus.FORBIDDEN)
+        if response is not None:
+            return response
 
-            request_data = request.GET.copy()
-            request_data.update({'case': self.case.pk})
-            form = CaseIssueForm(request_data)
-            if not form.is_valid():
-                return JsonResponseBadRequest({
-                    'messages': form_error_messags_to_list(form)
-                })
+        case = form.cleaned_data['case']
+        context = {
+            'test_case': case,
+            'issue_trackers': IssueTracker.get_by_case(case),
+        }
+        return JsonResponse({
+            'html': render_to_string('case/get_issues.html', context, self.request)
+        })
 
-            try:
-                self.case.add_issue(
-                    issue_key=form.cleaned_data['issue_key'],
-                    issue_tracker=form.cleaned_data['tracker'],
-                    summary=form.cleaned_data['summary'],
-                    description=form.cleaned_data['description'],
-                )
-            except ValidationError as e:
-                return JsonResponseBadRequest({'messages': e.messages})
-            except Exception as e:
-                msg = 'Failed to add issue {} to case {}. Error reported: {}'.format(
-                    form.cleaned_data['issue_key'], self.case.pk, str(e))
-                logger.exception(msg)
-                return JsonResponseBadRequest({'messages': msg})
+    def form_invalid(self, form):
+        return JsonResponseBadRequest({
+            'message': form_error_messags_to_list(form)
+        })
 
-            return JsonResponse({'html': self.render()})
 
-        def remove(self):
-            if not self.request.user.has_perm('issuetracker.delete_issue'):
-                return JsonResponseForbidden({'messages': 'Permission denied.'})
+class AddIssueToCases(CasesIssueActionBaseView):
+    """Add an issue to a test cases"""
 
-            class CaseRemoveIssueForm(djforms.Form):
-                handle = djforms.RegexField(r'^remove$')
-                issue_key = djforms.CharField(
-                    min_length=1, max_length=50,
-                    error_messages={
-                        'required': 'Missing issue key to delete.'
-                    }
-                )
-                case_run = djforms.ModelChoiceField(
-                    required=False,
-                    queryset=TestCaseRun.objects.all(),
-                    error_messages={
-                        'invalid_choice': 'Test case run does not exists.'
-                    }
-                )
+    form_class = CaseIssueForm
+    permission_required = 'issuetracker.add_issue'
 
-            form = CaseRemoveIssueForm(request.GET)
-            if form.is_valid():
-                try:
-                    self.case.remove_issue(form.cleaned_data['issue_key'],
-                                           form.cleaned_data['case_run'])
-                except (TypeError, ValueError) as e:
-                    return JsonResponseBadRequest({'messages': str(e)})
-                else:
-                    return JsonResponse({'html': self.render()})
-            else:
-                return JsonResponseBadRequest({
-                    'messages': form_error_messags_to_list(form)
-                })
+    def do(self, form):
+        case = form.cleaned_data['case']
+        try:
+            case.add_issue(
+                issue_key=form.cleaned_data['issue_key'],
+                issue_tracker=form.cleaned_data['tracker'],
+                summary=form.cleaned_data['summary'],
+                description=form.cleaned_data['description'],
+            )
+        except ValidationError as e:
+            return JsonResponseBadRequest({'message': e.messages})
+        except Exception as e:
+            msg = 'Failed to add issue {} to case {}. Error reported: {}'.format(
+                form.cleaned_data['issue_key'], case.pk, str(e)
+            )
+            logger.exception(msg)
+            return JsonResponseBadRequest({'message': msg})
 
-    # FIXME: Rewrite these codes for Ajax.Request
-    try:
-        tc = get_object_or_404(TestCase, case_id=case_id)
-    except Http404:
-        return JsonResponse(
-            {'messages': [f'Case {case_id} does not exist.']},
-            status=HTTPStatus.NOT_FOUND)
 
-    actions = CaseIssueActions(request=request,
-                               case=tc,
-                               template_name=template_name)
+class DeleteIssueFromCases(CasesIssueActionBaseView):
+    """Delete an issue from cases"""
 
-    if not request.GET.get('handle') in actions.__all__:
-        return JsonResponse({'messages': 'Unrecognizable actions'},
-                            status=HTTPStatus.BAD_REQUEST)
+    form_class = CaseRemoveIssueForm
+    permission_required = 'issuetracker.delete_issue'
 
-    func = getattr(actions, request.GET['handle'])
-    return func()
+    def do(self, form):
+        case = form.cleaned_data['case']
+        try:
+            case.remove_issue(form.cleaned_data['issue_key'],
+                              form.cleaned_data['case_run'])
+        except (TypeError, ValueError) as e:
+            return JsonResponseBadRequest({'message': str(e)})
 
 
 class CasePlansOperationView(PermissionRequiredMixin, View):

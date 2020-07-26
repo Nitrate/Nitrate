@@ -12,7 +12,11 @@ urlpatterns = [
     path('<int:case_id>/attachment/', views.ListCaseAttachmentsView.as_view(),
          name='case-attachment'),
     path('<int:case_id>/log/', views.get_log, name='case-get-log'),
-    path('<int:case_id>/issue/', views.manage_case_issues, name='case-issue'),
+
+    path('<int:case_id>/issues/add/', views.AddIssueToCases.as_view(),
+         name='cases-add-issue'),
+    path('<int:case_id>/issues/delete/', views.DeleteIssueFromCases.as_view(),
+         name='cases-delete-issue'),
 
     path('<int:case_id>/plan/', views.plan, name='case-plan'),
 

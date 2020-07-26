@@ -93,8 +93,16 @@ class StripURLField(forms.URLField):
 
 
 class ModelChoiceField(forms.ModelChoiceField):
+    """Custom field to include invalid choice in error message"""
+
     def to_python(self, value):
         try:
             return super().to_python(value)
-        except ValidationError as e:
-            raise ValidationError(e.messages[0] % {'value': value})
+        except ValidationError:
+            if not self.to_field_name:
+                # pk is used to query the model object
+                raise ValidationError(
+                    self.error_messages['invalid_pk_value'],
+                    code='invalid_pk_value', params={'pk': value}
+                )
+            raise

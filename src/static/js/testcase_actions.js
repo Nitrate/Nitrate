@@ -490,10 +490,9 @@ function addCaseIssue(form) {
     return false;
   }
 
-  getRequest({
+  postRequest({
     url: form.action,
     data: {
-      handle: 'add',
       issue_key: issueKey,
       tracker: parseInt(selectedIssueTrackerOption.val())
     },
@@ -507,9 +506,9 @@ function removeCaseIssue(issueKey, caseId, caseRunId) {
     message: 'Are you sure to remove issue ' + issueKey + '?',
     title: 'Manage Issues',
     yesFunc: function () {
-      getRequest({
-        url: '/case/' + caseId + '/issue/',
-        data: {handle: 'remove', issue_key: issueKey, case_run: caseRunId},
+      postRequest({
+        url: '/case/' + caseId + '/issues/delete/',
+        data: {issue_key: issueKey, case_run: caseRunId},
         success: issueOperationSuccessCallback,
         forbiddenMessage: 'You are not allowed to remove issue from case.',
       });

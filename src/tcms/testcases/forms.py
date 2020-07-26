@@ -10,7 +10,7 @@ from tinymce.widgets import TinyMCE
 from .fields import MultipleEmailField
 from .models import AUTOMATED_CHOICES as FULL_AUTOMATED_CHOICES
 from .models import TestCase, TestCaseCategory, TestCaseStatus
-from tcms.core.forms import UserField, DurationField, StripURLField
+from tcms.core.forms import UserField, DurationField, StripURLField, ModelChoiceField
 from tcms.core.utils import string_to_list
 from tcms.issuetracker.models import IssueTracker
 from tcms.management.models import Priority, Product, Component, TestTag
@@ -474,11 +474,11 @@ class CaseIssueForm(BaseAddIssueForm):
     When call XMLRPC API to add an issue to a case, case ID must be passed via
     argument.
     """
-    case = forms.ModelChoiceField(
+    case = ModelChoiceField(
         queryset=TestCase.objects.all(),
         error_messages={
             'required': 'Case ID is missed.',
-            'invalid_choice': 'Invalid test case that does not exist.'
+            'invalid_pk_value': 'Test case %(pk)s does not exist.'
         }
     )
 
@@ -493,6 +493,29 @@ class CaseRunIssueForm(BaseAddIssueForm):
         }
     )
     link_external_tracker = forms.BooleanField(required=False)
+
+
+class CaseRemoveIssueForm(forms.Form):
+    issue_key = forms.CharField(
+        min_length=1, max_length=50,
+        error_messages={
+            'required': 'Missing issue key to delete.'
+        }
+    )
+    case = ModelChoiceField(
+        queryset=TestCase.objects.all(),
+        error_messages={
+            'required': 'Case ID is missed.',
+            'invalid_pk_value': 'Test case %(pk)s does not exist.'
+        }
+    )
+    case_run = forms.ModelChoiceField(
+        required=False,
+        queryset=TestCaseRun.objects.all(),
+        error_messages={
+            'invalid_choice': 'Test case run does not exists.'
+        }
+    )
 
 
 class CaseComponentForm(forms.Form):
