@@ -26,17 +26,26 @@ ADD VERSION.txt README.rst setup.py /code/
 
 RUN mkdir /code/src && \
     python3.6 -m venv /testenv-py36 && \
-    /testenv-py36/bin/python -m pip install \
+    source /testenv-py36/bin/activate && \
+    python3 -m pip install \
         --index-url $pypi_index --no-cache-dir --upgrade pip && \
-    /testenv-py36/bin/python -m pip install \
+    python3 -m pip install \
         --index-url $pypi_index --no-cache-dir -e \
-        /code[tests,async,mysql,pgsql,docs,krbauth] && \
+        /code[tests,async,mysql,pgsql,docs,krbauth] && deactivate && \
     python3.7 -m venv /testenv-py37 && \
-    /testenv-py37/bin/python -m pip install \
+    source /testenv-py37/bin/activate && \
+    python3 -m pip install \
         --index-url $pypi_index --no-cache-dir --upgrade pip && \
-    /testenv-py37/bin/python -m pip install \
+    python3 -m pip install \
         --index-url $pypi_index --no-cache-dir -e \
-        /code[tests,async,mysql,pgsql,docs,krbauth] && \
+        /code[tests,async,mysql,pgsql,docs,krbauth] && deactivate && \
+    python3.8 -m venv /testenv-py38 && \
+    source /testenv-py38/bin/activate && \
+    python3 -m pip install \
+        --index-url $pypi_index --no-cache-dir --upgrade pip && \
+    python3 -m pip install \
+        --index-url $pypi_index --no-cache-dir -e \
+        /code[tests,async,mysql,pgsql,docs,krbauth] && deactivate && \
     rm -r /code
 
 COPY contrib/travis-ci/entrypoint.sh /opt/test-entrypoint.sh

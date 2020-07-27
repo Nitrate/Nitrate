@@ -5,6 +5,7 @@ services:
 python:
   - "3.6"
   - "3.7"
+  - "3.8"
 env:
   # jobs running with older Django versions and SQLite
   - DJANGO_REL="django>=2.1,<2.2"
