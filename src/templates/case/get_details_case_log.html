@@ -5,7 +5,14 @@
 
 <ul style='display:none'>
 	{% for log in logs %}
-	<li>[{{ log.date }}] - [{{ log.who__username }}] - {{ log.action }}</li>
+		<li>
+			[{{ log.date }}] - [{{ log.who__username }}] -
+			{% if log.original_value %}
+			Field {{ log.field }} is changed <strong>from</strong> "{{ log.original_value }}" <strong>to</strong> "{{ log.new_value }}"
+			{% else %}
+			Field {{ log.field }} is changed <strong>to</strong> "{{ log.new_value }}"
+			{% endif %}
+		</li>
 	{% endfor %}
 </ul>
 {% else %}
