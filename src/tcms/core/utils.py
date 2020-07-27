@@ -4,6 +4,7 @@ import functools
 import hashlib
 import operator
 import re
+from typing import List
 
 from django.apps import apps
 
@@ -150,7 +151,7 @@ class DataTableResult:
 
     DEFAULT_PAGE_SIZE = 20
 
-    def __init__(self, request_data, queryset, column_names):
+    def __init__(self, request_data, queryset, column_names: List[str]):
         self.queryset = queryset
         self.request_data = request_data
         self.column_names = column_names
