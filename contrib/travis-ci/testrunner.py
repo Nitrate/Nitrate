@@ -35,7 +35,7 @@ VALID_NITRATE_DB_NAMES = ['mysql', 'mariadb', 'postgres', 'sqlite']
 # Since this script was written originally to work inside Travis-CI, using
 # Python version 3.6 and 3.7 would be much easier to match the value of
 # environment variable TRAVIS_PYTHON_VERSION.
-VALID_PYTHON_VERSIONS = ['3.6', '3.7']
+VALID_PYTHON_VERSIONS = ['3.6', '3.7', '3.8']
 DB_CONTAINER_INFO = {
     'mysql': {
         'db_engine': 'mysql',
