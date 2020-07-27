@@ -27,10 +27,12 @@ class TestCaseViewDataMixin:
 
     def get_case_logs(self, testcase):
         ct = self.get_case_contenttype()
-        logs = TCMSLogModel.objects.filter(content_type=ct,
-                                           object_pk=testcase.pk,
-                                           site=settings.SITE_ID)
-        logs = logs.values('date', 'who__username', 'action')
+        logs = TCMSLogModel.objects.filter(
+            content_type=ct, object_pk=testcase.pk, site=settings.SITE_ID
+        )
+        logs = logs.values(
+            'date', 'who__username', 'field', 'original_value', 'new_value'
+        )
         return logs.order_by('date')
 
     def get_case_comments(self, case):
