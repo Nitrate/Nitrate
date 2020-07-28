@@ -7,6 +7,8 @@ current branch, generally it is the develop branch." \
       io.github.nitrate.url="https://nitrate.readthedocs.io/" \
       io.github.nitrate.vcs-url="https://github.com/Nitrate/Nitrate"
 
+ARG pypi_index=https://pypi.org/simple
+
 RUN dnf update -y && \
     dnf install -y gcc redhat-rpm-config mariadb mariadb-devel python3 python3-devel graphviz-devel && \
     dnf clean all
@@ -15,7 +17,9 @@ ADD . /code
 
 RUN rm -rf /code/.git && \
     python3 -m venv /devenv && \
-    /devenv/bin/pip install --no-cache-dir -e /code[mysql,devtools,async,multiauth]
+    source /devenv/bin/activate && \
+    python3 -m pip install -i $pypi_index --no-cache-dir -e /code[mysql,devtools,async,multiauth] && \
+    deactivate
 
 ADD docker/dev/entrypoint.sh /code/
 
