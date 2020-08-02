@@ -17,7 +17,7 @@ services:
     build:
       context: .
       dockerfile: docker/dev/Dockerfile
-    image: nitrate/nitrate:dev
+    image: quay.io/nitrate/nitrate:develop
     ports:
     - '8000:8000'
     volumes:
