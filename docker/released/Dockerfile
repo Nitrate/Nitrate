@@ -31,8 +31,6 @@ RUN dnf update -y && \
 # Hack: easier to set database password via environment variable
 COPY ./docker/released/product.py /usr/lib/python3.7/site-packages/tcms/settings/product.py
 
-COPY ./contrib/conf/nitrate-httpd.conf /etc/httpd/conf.d/
-
 # Disable event module and enable prefork module
 RUN sed -i -e 's/^#\(LoadModule mpm_prefork_module .\+\.so\)$/\1/' \
         /etc/httpd/conf.modules.d/00-mpm.conf && \
