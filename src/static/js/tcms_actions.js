@@ -574,6 +574,13 @@ function registerProductAssociatedObjectUpdaters(productSelect, triggerProductSe
 }
 
 // Stolen from http://stackoverflow.com/questions/133925/javascript-post-request-like-a-form-submit
+/**
+ * Make an HTTP request by simulating a form submission
+ *
+ * @param {string} path - this is the form action.
+ * @param {object} params
+ * @param {string} method - get or post. Defaults to post.
+ */
 function postToURL(path, params, method) {
   method = method || 'post'; // Set method to post by default, if not specified.
 
@@ -607,11 +614,13 @@ function postToURL(path, params, method) {
     }
   }
 
-  let csrfTokenHidden = document.createElement('input');
-  csrfTokenHidden.setAttribute('type', 'hidden');
-  csrfTokenHidden.setAttribute('name', 'csrfmiddlewaretoken');
-  csrfTokenHidden.setAttribute('value', globalCsrfToken);
-  form.appendChild(csrfTokenHidden);
+  if (method === 'post') {
+    let csrfTokenHidden = document.createElement('input');
+    csrfTokenHidden.setAttribute('type', 'hidden');
+    csrfTokenHidden.setAttribute('name', 'csrfmiddlewaretoken');
+    csrfTokenHidden.setAttribute('value', globalCsrfToken);
+    form.appendChild(csrfTokenHidden);
+  }
 
   document.body.appendChild(form);    // Not entirely sure if this is necessary
   form.submit();
