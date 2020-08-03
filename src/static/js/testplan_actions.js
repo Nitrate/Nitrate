@@ -529,10 +529,10 @@ function bindSearchResultActionEventHandlers() {
   jQ('.js-new-plan').on('click', function () {
     window.location = jQ(this).data('param');
   });
-  jQ('.js-clone-plan').on('click', function () {
+  jQ('.js-clone-plans').on('click', function () {
     postToURL(jQ(this).data('param'), Nitrate.Utils.formSerialize(this.form), 'get');
   });
-  jQ('.js-export-cases').on('click', function () {
+  jQ('.js-export-plans').on('click', function () {
     postToURL(jQ(this).data('param'), Nitrate.Utils.formSerialize(this.form), 'get');
   });
   jQ('.js-printable-plans').on('click', function () {
