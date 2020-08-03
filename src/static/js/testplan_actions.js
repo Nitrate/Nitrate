@@ -530,13 +530,22 @@ function bindSearchResultActionEventHandlers() {
     window.location = jQ(this).data('param');
   });
   jQ('.js-clone-plans').on('click', function () {
-    postToURL(jQ(this).data('param'), Nitrate.Utils.formSerialize(this.form), 'get');
+    let params = {
+      plan: Nitrate.Utils.formSerialize(this.form).plan
+    };
+    postToURL(jQ(this).data('param'), params, 'get');
   });
   jQ('.js-export-plans').on('click', function () {
-    postToURL(jQ(this).data('param'), Nitrate.Utils.formSerialize(this.form), 'get');
+    let params = {
+      plan: Nitrate.Utils.formSerialize(this.form).plan
+    };
+    postToURL(jQ(this).data('param'), params, 'get');
   });
   jQ('.js-printable-plans').on('click', function () {
-    postToURL(jQ(this).data('param'), Nitrate.Utils.formSerialize(this.form), 'get');
+    let params = {
+      plan: Nitrate.Utils.formSerialize(this.form).plan
+    };
+    postToURL(jQ(this).data('param'), params, 'get');
   });
 }
 
