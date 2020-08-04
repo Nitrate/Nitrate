@@ -6,6 +6,7 @@ Advance search implementations
 
 import time
 from typing import List
+from urllib.parse import urlparse, parse_qsl, urlencode
 
 from django.db.models.query import QuerySet
 from django.http import HttpRequest
@@ -171,23 +172,27 @@ def render_results(request, results, start_time, queries,
     return render(request, tmpl, context=context_data)
 
 
-def remove_from_request_path(request, name):
+def remove_from_request_path(request, names: List[str]):
     """
     Remove a parameter from request.get_full_path() and return the modified
     path afterwards.
     """
-    if isinstance(request, HttpRequest):
-        path = request.get_full_path()
-    else:
-        path = request
-    path = path.split('?')
-    if len(path) > 1:
-        path = path[1].split('&')
-    else:
-        return None
-    path = [p for p in path if not p.startswith(name)]
-    path = '&'.join(path)
-    return '?' + path
+    url_info = urlparse(
+        request.get_full_path() if isinstance(request, HttpRequest) else request
+    )
+    return '?' + urlencode({
+        name: value for name, value in parse_qsl(url_info.query)
+        if name in names
+    })
+
+    # path = path.split('?')
+    # if len(path) > 1:
+    #     path = path[1].split('&')
+    # else:
+    #     return None
+    # path = [p for p in path if not p.startswith(name)]
+    # path = '&'.join(path)
+    # return '?' + path
 
 
 def fmt_errors(form_errors):

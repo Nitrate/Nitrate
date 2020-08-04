@@ -250,58 +250,62 @@ def delete(request, plan_id):
 
 
 @require_GET
-def all(request, template_name='plan/all.html'):
-    """Display all testplans"""
-    # Define the default sub module
+def search_plans(request, template_name='plan/all.html'):
+    """Search test plans"""
+
     SUB_MODULE_NAME = 'plans'
+
     # TODO: this function now only performs a forward feature, no queries
     # need here. All of it will be removed in the future.
     # If it's not a search the page will be blank
     tps = TestPlan.objects.none()
     query_result = False
     order_by = request.GET.get('order_by', 'create_date')
-    asc = bool(request.GET.get('asc', None))
+    asc = 'asc' in request.GET
+    query_arg_t = request.GET.get('t')
+
     # if it's a search request the page will be fill
     if list(request.GET.items()):
         search_form = SearchPlanForm(request.GET)
-        if request.GET.get('product'):
-            search_form.populate(product_id=request.GET['product'])
-        else:
-            search_form.populate()
+
+        product_id = request.GET.get('product')
+        search_form.populate(int(product_id) if product_id else None)
 
         if search_form.is_valid():
-            # Detemine the query is the user's plans and change the sub
-            # module value
+            # Determine the query is the user's plans and change the sub module value
             author = request.GET.get('author')
             if author and request.user.is_authenticated:
                 if author == request.user.username or author == request.user.email:
                     SUB_MODULE_NAME = "my_plans"
 
             query_result = True
+
             # build a QuerySet:
-            tps = TestPlan.list(search_form.cleaned_data)
-            tps = tps.select_related('author', 'type', 'product')
+            tps = (
+                TestPlan
+                .list(search_form.cleaned_data)
+                .select_related('author', 'type', 'product')
+                # We want to get the number of cases and runs, without doing
+                # lots of per-test queries.
+                #
+                # Ideally we would get the case/run counts using m2m field tricks
+                # in the ORM
+                # Unfortunately, Django's select_related only works on ForeignKey
+                # relationships, not on ManyToManyField attributes
+                # See http://code.djangoproject.com/ticket/6432
 
-            # We want to get the number of cases and runs, without doing
-            # lots of per-test queries.
-            #
-            # Ideally we would get the case/run counts using m2m field tricks
-            # in the ORM
-            # Unfortunately, Django's select_related only works on ForeignKey
-            # relationships, not on ManyToManyField attributes
-            # See http://code.djangoproject.com/ticket/6432
+                # SQLAlchemy can handle this kind of thing in several ways.
+                # Unfortunately we're using Django
 
-            # SQLAlchemy can handle this kind of thing in several ways.
-            # Unfortunately we're using Django
+                # The cleanest way I can find to get it into one query is to
+                # use QuerySet.extra()
+                # See http://docs.djangoproject.com/en/dev/ref/models/querysets
+                .extra(select={
+                    'num_cases': RawSQL.num_cases,
+                    'num_runs': RawSQL.num_runs,
+                    'num_children': RawSQL.num_plans,
+                }))
 
-            # The cleanest way I can find to get it into one query is to
-            # use QuerySet.extra()
-            # See http://docs.djangoproject.com/en/dev/ref/models/querysets
-            tps = tps.extra(select={
-                'num_cases': RawSQL.num_cases,
-                'num_runs': RawSQL.num_runs,
-                'num_children': RawSQL.num_plans,
-            })
             tps = order_plan_queryset(tps, order_by, asc)
     else:
         # Set search active plans only by default
@@ -309,51 +313,48 @@ def all(request, template_name='plan/all.html'):
         # But it does not seem to work
         search_form = SearchPlanForm(initial={'is_active': True})
 
+    # Used for cloning cases
+    # That is to filter plans for selecting the ones to where cases are cloned
     if request.GET.get('action') == 'clone_case':
         template_name = 'case/clone_select_plan.html'
         tps = tps.order_by('name')
 
-    if request.GET.get('t') == 'ajax':
+    # Used to return plans for plan treeview
+    if query_arg_t == 'ajax':
         data = [
-            dict(
-                pk=plan.pk,
-                name=plan.name,
-                is_active=plan.is_active,
-                parent_id=plan.parent_id,
-                num_cases=plan.num_cases,
-                num_runs=plan.num_runs,
-                num_children=plan.num_children,
-                get_url_path=plan.get_absolute_url(),
-            )
+            {
+                'pk': plan.pk,
+                'name': plan.name,
+                'is_active': plan.is_active,
+                'parent_id': plan.parent_id,
+                'num_cases': plan.num_cases,
+                'num_runs': plan.num_runs,
+                'num_children': plan.num_children,
+                'get_url_path': plan.get_absolute_url(),
+            }
             for plan in tps
         ]
         return JsonResponse(data, safe=False)
 
-    if request.GET.get('t') == 'html':
-        if request.GET.get('f') == 'preview':
-            template_name = 'plan/preview.html'
+    # Use to render plans in preview page when adding a child plan in treeview
+    if query_arg_t == 'html' and request.GET.get('f') == 'preview':
+        template_name = 'plan/preview.html'
 
-    query_url = remove_from_request_path(request, 'order_by')
+    removing_query_args = ['order_by']
     if asc:
-        query_url = remove_from_request_path(query_url, 'asc')
-    else:
-        query_url = '%s&asc=True' % query_url
-    page_type = request.GET.get('page_type', 'pagination')
-    query_url_page_type = remove_from_request_path(request, 'page_type')
-    if query_url_page_type:
-        query_url_page_type = remove_from_request_path(query_url_page_type, 'page')
+        removing_query_args.append('asc')
+    remove_from_request_path(request, removing_query_args)
 
-    context_data = {
+    return render(request, template_name, context={
         'module': MODULE_NAME,
         'sub_module': SUB_MODULE_NAME,
         'test_plans': tps,
+
+        # TODO: remove this var after migrating to datatable
         'query_result': query_result,
+
         'search_plan_form': search_form,
-        'query_url': query_url,
-        'query_url_page_type': query_url_page_type,
-        'page_type': page_type
-    }
-    return render(request, template_name, context=context_data)
+    })
 
 
 def get_number_of_plans_cases(plan_ids):
@@ -429,22 +430,20 @@ def calculate_stats_for_testplans(plans):
 
 
 @require_GET
-def ajax_search(request, template_name='plan/common/json_plans.txt'):
+def ajax_search(request):
     """Display all testplans"""
-    # Define the default sub module
-
     # If it's not a search the page will be blank
     tps = TestPlan.objects.none()
     # if it's a search request the page will be fill
     if list(request.GET.items()):
         search_form = SearchPlanForm(request.GET)
-        if request.GET.get('product'):
-            search_form.populate(product_id=request.GET['product'])
+        product_id = request.GET.get('product')
+        if product_id:
+            search_form.populate(product_id=int(product_id))
         else:
             search_form.populate()
         if search_form.is_valid():
-            # Detemine the query is the user's plans and change the sub
-            # module value
+            # Determine the query is the user's plans and change the sub module value
             author = request.GET.get('author__email__startswith')
             if author and len(search_form.changed_data) == 1:
                 if request.user.is_authenticated:
@@ -454,26 +453,17 @@ def ajax_search(request, template_name='plan/common/json_plans.txt'):
                             Q(owner__email__startswith=author)
                         ).distinct()
             else:
-                tps = TestPlan.list(search_form.cleaned_data)
-                tps = tps.select_related('author', 'owner', 'type', 'product')
+                tps = TestPlan.list(search_form.cleaned_data).select_related(
+                    'author', 'owner', 'type', 'product'
+                )
 
     # columnIndexNameMap is required for correct sorting behavior, 5 should
     # be product, but we use run.build.product
     column_names = [
-        '',
-        'plan_id',
-        'name',
-        'author__username',
-        'owner__username',
-        'product',
-        'product_version',
-        'type',
-        'num_cases',
-        'num_runs',
-        ''
+        '', 'plan_id', 'name', 'author__username', 'owner__username',
+        'product', 'product_version', 'type', 'num_cases', 'num_runs', ''
     ]
-    return ajax_response(request, tps, column_names,
-                         'plan/common/json_plans.txt')
+    return ajax_response(request, tps, column_names, 'plan/common/json_plans.txt')
 
 
 def ajax_response(request, queryset, column_names, template_name):
@@ -485,8 +475,7 @@ def ajax_response(request, queryset, column_names, template_name):
 
     # prepare the JSON with the response, consider using :
     # from django.template.defaultfilters import escapejs
-    t = get_template(template_name)
-    resp_data = t.render(data, request)
+    resp_data = get_template(template_name).render(data, request)
     return JsonResponse(json.loads(resp_data))
 
 

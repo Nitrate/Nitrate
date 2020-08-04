@@ -584,45 +584,43 @@ Nitrate.TestPlans.List.on_load = function () {
     });
   }
 
-  if (jQ('#testplans_table').length) {
-    jQ('#testplans_table').dataTable({
-      'iDisplayLength': 20,
-      'sPaginationType': 'full_numbers',
-      'bFilter': false,
-      // 'bLengthChange': false,
-      'aLengthMenu': [[10, 20, 50, -1], [10, 20, 50, 'All']],
-      'aaSorting': [[ 1, 'desc' ]],
-      'bProcessing': true,
-      'bServerSide': true,
-      'sAjaxSource': '/plans/ajax/' + this.window.location.search,
-      'aoColumns': [
-        {'bSortable': false},
-        null,
-        {'sType': 'html'},
-        {'sType': 'html'},
-        {'sType': 'html'},
-        null,
-        {'bVisible': false},
-        null,
-        {'bSortable': false},
-        {'bSortable': false},
-        {'bSortable': false}
-      ],
-      'fnDrawCallback': function () {
-        jQ('#testplans_table tbody tr td:nth-child(1)').shiftcheckbox({
-          checkboxSelector: ':checkbox',
-          selectAll: '#testplans_table .js-select-all'
-        });
+  jQ('#testplans_table').dataTable({
+    'iDisplayLength': 20,
+    'sPaginationType': 'full_numbers',
+    'bFilter': false,
+    // 'bLengthChange': false,
+    'aLengthMenu': [[10, 20, 50, -1], [10, 20, 50, 'All']],
+    'aaSorting': [[ 1, 'desc' ]],
+    'bProcessing': true,
+    'bServerSide': true,
+    'sAjaxSource': '/plans/ajax/' + this.window.location.search,
+    'aoColumns': [
+      {'bSortable': false},
+      null,
+      {'sType': 'html'},
+      {'sType': 'html'},
+      {'sType': 'html'},
+      null,
+      {'bVisible': false},
+      null,
+      {'bSortable': false},
+      {'bSortable': false},
+      {'bSortable': false}
+    ],
+    'fnDrawCallback': function () {
+      jQ('#testplans_table tbody tr td:nth-child(1)').shiftcheckbox({
+        checkboxSelector: ':checkbox',
+        selectAll: '#testplans_table .js-select-all'
+      });
 
-        jQ('#testplans_table :checkbox').on('change', function () {
-          let disable = jQ('#testplans_table tbody :checkbox:checked').length === 0;
-          jQ('.js-printable-plans').prop('disabled', disable);
-          jQ('.js-clone-plans').prop('disabled', disable);
-          jQ('.js-export-plans').prop('disabled', disable);
-        });
-      }
-    });
-  }
+      jQ('#testplans_table :checkbox').on('change', function () {
+        let disable = jQ('#testplans_table tbody :checkbox:checked').length === 0;
+        jQ('.js-printable-plans').prop('disabled', disable);
+        jQ('.js-clone-plans').prop('disabled', disable);
+        jQ('.js-export-plans').prop('disabled', disable);
+      });
+    }
+  });
 
   bindSearchResultActionEventHandlers();
 };

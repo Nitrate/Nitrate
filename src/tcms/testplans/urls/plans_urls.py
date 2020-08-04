@@ -4,7 +4,7 @@ from django.urls import path
 from .. import views
 
 urlpatterns = [
-    path('', views.all, name='plans-all'),
+    path('', views.search_plans, name='plans-all'),
     path('new/', views.CreateNewPlanView.as_view(), name='plans-new'),
     path('ajax/', views.ajax_search, name='plans-ajax-search'),
     path('treeview/', views.tree_view, name='plans-treeview'),
