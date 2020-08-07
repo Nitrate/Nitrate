@@ -1,21 +1,21 @@
 FROM fedora:32
 LABEL maintainer="Chenxiong Qi <qcxhome@gmail.com>" \
       description="Test box for running Nitrate tests. This test box must work with a database image." \
-      version="0.3"
+      version="0.4"
 
 ARG pypi_index=https://pypi.org/simple
 
 # The image has Python 3.7 by default. So, python36 has to be installed explicitly.
 
-RUN dnf update -y && \
-    dnf install -y \
+RUN dnf update -y \
+ && dnf install -y \
         --nogpgcheck \
         --setopt=deltarpm=0 \
         --setopt=install_weak_deps=false \
         --setopt=tsflags=nodocs \
         gcc redhat-rpm-config make mariadb postgresql python36 python37 \
-        python3-devel mariadb-devel postgresql-devel krb5-devel libxcrypt-compat && \
-    dnf clean all
+        python3-devel mariadb-devel postgresql-devel krb5-devel libxcrypt-compat \
+ && dnf clean all
 
 # Container will have two virtual environments created with Python 3.6 and 3.7
 # separately.
@@ -24,29 +24,29 @@ RUN dnf update -y && \
 
 ADD VERSION.txt README.rst setup.py /code/
 
-RUN mkdir /code/src && \
-    python3.6 -m venv /testenv-py36 && \
-    source /testenv-py36/bin/activate && \
-    python3 -m pip install \
-        --index-url $pypi_index --no-cache-dir --upgrade pip && \
-    python3 -m pip install \
+RUN mkdir /code/src \
+ && python3.6 -m venv /testenv-py36 \
+ && source /testenv-py36/bin/activate \
+ && python3 -m pip install \
+        --index-url $pypi_index --no-cache-dir --upgrade pip \
+ && python3 -m pip install \
         --index-url $pypi_index --no-cache-dir -e \
-        /code[tests,async,mysql,pgsql,docs,krbauth] && deactivate && \
-    python3.7 -m venv /testenv-py37 && \
-    source /testenv-py37/bin/activate && \
-    python3 -m pip install \
-        --index-url $pypi_index --no-cache-dir --upgrade pip && \
-    python3 -m pip install \
+        /code[tests,async,mysql,pgsql,docs,krbauth] && deactivate \
+ && python3.7 -m venv /testenv-py37 \
+ && source /testenv-py37/bin/activate \
+ && python3 -m pip install \
+        --index-url $pypi_index --no-cache-dir --upgrade pip \
+ && python3 -m pip install \
         --index-url $pypi_index --no-cache-dir -e \
-        /code[tests,async,mysql,pgsql,docs,krbauth] && deactivate && \
-    python3.8 -m venv /testenv-py38 && \
-    source /testenv-py38/bin/activate && \
-    python3 -m pip install \
-        --index-url $pypi_index --no-cache-dir --upgrade pip && \
-    python3 -m pip install \
+        /code[tests,async,mysql,pgsql,docs,krbauth] && deactivate \
+ && python3.8 -m venv /testenv-py38 \
+ && source /testenv-py38/bin/activate \
+ && python3 -m pip install \
+        --index-url $pypi_index --no-cache-dir --upgrade pip \
+ && python3 -m pip install \
         --index-url $pypi_index --no-cache-dir -e \
-        /code[tests,async,mysql,pgsql,docs,krbauth] && deactivate && \
-    rm -r /code
+        /code[tests,async,mysql,pgsql,docs,krbauth] && deactivate \
+ && rm -r /code
 
 COPY contrib/travis-ci/entrypoint.sh /opt/test-entrypoint.sh
 ENTRYPOINT "/opt/test-entrypoint.sh"

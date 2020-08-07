@@ -9,17 +9,17 @@ current branch, generally it is the develop branch." \
 
 ARG pypi_index=https://pypi.org/simple
 
-RUN dnf update -y && \
-    dnf install -y gcc redhat-rpm-config mariadb mariadb-devel python3 python3-devel graphviz-devel && \
-    dnf clean all
+RUN dnf update -y \
+ && dnf install -y gcc redhat-rpm-config mariadb mariadb-devel python3 python3-devel graphviz-devel \
+ && dnf clean all
 
 ADD . /code
 
-RUN rm -rf /code/.git && \
-    python3 -m venv /devenv && \
-    source /devenv/bin/activate && \
-    python3 -m pip install -i $pypi_index --no-cache-dir -e /code[mysql,devtools,async,multiauth] && \
-    deactivate
+RUN rm -rf /code/.git \
+ && python3 -m venv /devenv \
+ && source /devenv/bin/activate \
+ && python3 -m pip install -i $pypi_index --no-cache-dir -e /code[mysql,devtools,async,multiauth] \
+ && deactivate
 
 ADD docker/dev/entrypoint.sh /code/
 
