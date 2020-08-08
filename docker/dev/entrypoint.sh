@@ -13,12 +13,14 @@ fi
 source /devenv/bin/activate
 cd /code
 
-if python src/manage.py showmigrations | grep "\[ \]" >/dev/null; then
-    python src/manage.py migrate
-    python src/manage.py setdefaultperms
+manage_py=(python3 src/manage.py)
+
+if ${manage_py[@]} showmigrations | grep "\[ \]" >/dev/null; then
+    ${manage_py[@]} migrate
+    ${manage_py[@]} setdefaultperms
 fi
 
-python src/manage.py shell -c "
+${manage_py[@]} shell -c "
 from django.contrib.auth.models import User
 username = 'admin'
 user = User.objects.filter(username=username).first()
@@ -26,4 +28,4 @@ if not user:
     User.objects.create_superuser(username, 'admin@example.com', 'admin')
 "
 
-python src/manage.py runserver 0.0.0.0:8000
+${manage_py[@]} runserver 0.0.0.0:8000
