@@ -2,8 +2,6 @@
 
 set -e
 
-db_name=nitrate
-
 if [ "$NITRATE_DB_ENGINE" == "mysql" ]; then
     while true; do
         echo "Waiting for database server to launch completely ..."
@@ -13,8 +11,8 @@ if [ "$NITRATE_DB_ENGINE" == "mysql" ]; then
             break
         fi
     done
-    if ! echo "show databases;" | mysql -u root -h db | grep $db_name >/dev/null; then
-        echo "create database ${db_name}" | mysql -u root -h db
+    if ! echo "show databases;" | mysql -u root -h db | grep $NITRATE_DB_NAME >/dev/null; then
+        echo "create database $NITRATE_DB_NAME " | mysql -u root -h db
     fi
 fi
 
