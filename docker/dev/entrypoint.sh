@@ -14,7 +14,7 @@ if [ "$NITRATE_DB_ENGINE" == "mysql" ]; then
         fi
     done
     if ! echo "show databases;" | mysql -u root -h db | grep $db_name >/dev/null; then
-        echo "create database ${db_name} character set utf8;" | mysql -u root -h db
+        echo "create database ${db_name}" | mysql -u root -h db
     fi
 fi
 
