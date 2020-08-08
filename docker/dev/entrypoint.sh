@@ -5,6 +5,14 @@ set -e
 db_name=nitrate
 
 if [ "$NITRATE_DB_ENGINE" == "mysql" ]; then
+    while true; do
+        echo "Waiting for database server to launch completely ..."
+        sleep 1
+        if echo "show databases" | mysql -u root -h $NITRATE_DB_HOST >/dev/null; then
+            echo "Database instance is launched."
+            break
+        fi
+    done
     if ! echo "show databases;" | mysql -u root -h db | grep $db_name >/dev/null; then
         echo "create database ${db_name} character set utf8;" | mysql -u root -h db
     fi
