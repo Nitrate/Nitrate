@@ -1,7 +1,7 @@
 FROM fedora:32
 LABEL maintainer="Chenxiong Qi <qcxhome@gmail.com>" \
       description="Test box for running Nitrate tests. This test box must work with a database image." \
-      version="0.4"
+      version="0.5"
 
 ARG pypi_index=https://pypi.org/simple
 
@@ -25,27 +25,17 @@ RUN dnf update -y \
 ADD VERSION.txt README.rst setup.py /code/
 
 RUN mkdir /code/src \
- && python3.6 -m venv /testenv-py36 \
- && source /testenv-py36/bin/activate \
- && python3 -m pip install \
-        --index-url $pypi_index --no-cache-dir --upgrade pip \
- && python3 -m pip install \
-        --index-url $pypi_index --no-cache-dir -e \
-        /code[tests,async,mysql,pgsql,docs,krbauth] && deactivate \
- && python3.7 -m venv /testenv-py37 \
- && source /testenv-py37/bin/activate \
- && python3 -m pip install \
-        --index-url $pypi_index --no-cache-dir --upgrade pip \
- && python3 -m pip install \
-        --index-url $pypi_index --no-cache-dir -e \
-        /code[tests,async,mysql,pgsql,docs,krbauth] && deactivate \
- && python3.8 -m venv /testenv-py38 \
- && source /testenv-py38/bin/activate \
- && python3 -m pip install \
-        --index-url $pypi_index --no-cache-dir --upgrade pip \
- && python3 -m pip install \
-        --index-url $pypi_index --no-cache-dir -e \
-        /code[tests,async,mysql,pgsql,docs,krbauth] && deactivate \
+ && PIP_INST=(python3 -m pip install --index-url $pypi_index --no-cache-dir) \
+ && function make_venv { \
+      python$1 -m venv /testenv-py$2; \
+      source /testenv-py${2}/bin/activate; \
+      ${PIP_INST[@]} --upgrade pip; \
+      ${PIP_INST[@]} -e /code[tests,async,mysql,pgsql,docs,krbauth]; \
+      deactivate; \
+    } \
+ && make_venv 3.6 36 \
+ && make_venv 3.7 37 \
+ && make_venv 3.8 38 \
  && rm -r /code
 
 COPY contrib/travis-ci/entrypoint.sh /opt/test-entrypoint.sh
