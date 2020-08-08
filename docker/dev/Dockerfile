@@ -1,4 +1,4 @@
-FROM fedora:31
+FROM registry.fedoraproject.org/fedora:32
 
 LABEL maintainer="Chenxiong Qi <qcxhome@gmail.com>" \
       version="dev" \

@@ -1,4 +1,4 @@
-FROM fedora:32
+FROM registry.fedoraproject.org/fedora:32
 LABEL maintainer="Chenxiong Qi <qcxhome@gmail.com>" \
       description="Test box for running Nitrate tests. This test box must work with a database image." \
       version="0.5"

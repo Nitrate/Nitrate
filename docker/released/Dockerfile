@@ -1,4 +1,4 @@
-FROM registry.fedoraproject.org/fedora:31
+FROM registry.fedoraproject.org/fedora:32
 ARG version
 ARG vcs_url="https://github.com/Nitrate/Nitrate"
 LABEL version="${version}" \
