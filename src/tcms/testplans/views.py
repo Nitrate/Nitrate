@@ -50,7 +50,6 @@ from tcms.testplans.forms import PlanComponentForm
 from tcms.testplans.forms import SearchPlanForm
 from tcms.testplans import sqls
 from tcms.testplans.models import TestPlan, TestPlanComponent
-from tcms.testplans.models import TestPlanEmailSettings
 from tcms.testruns.models import TestRun, TestCaseRun
 
 
@@ -128,8 +127,6 @@ class CreateNewPlanView(PermissionRequiredMixin, View):
             extra_link=form.cleaned_data['extra_link'],
             parent=form.cleaned_data['parent'],
         )
-
-        TestPlanEmailSettings.objects.create(plan=tp)
 
         tp.add_text(author=request.user, plan_text=form.cleaned_data['text'])
 

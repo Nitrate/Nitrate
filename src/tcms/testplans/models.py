@@ -7,6 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import Max
 from django.db.models.signals import post_save, post_delete, pre_delete, pre_save
+from django.dispatch import receiver
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from uuslug import slugify
@@ -512,6 +513,12 @@ class TCMSEnvPlanMap(models.Model):
 
     class Meta:
         db_table = 'tcms_env_plan_map'
+
+
+@receiver(post_save, sender=TestPlan)
+def set_email_settings_to_new_plan(sender, **kwargs):
+    if kwargs['created']:
+        TestPlanEmailSettings.objects.create(plan=kwargs['instance'])
 
 
 if register_model:
