@@ -57,7 +57,6 @@ class PlanTests(HelperAssertions, test.TestCase):
             author=cls.user,
             product=cls.product,
             type=cls.plan_type)
-        cls.email_settings = f.TestPlanEmailSettingsFactory(plan=cls.test_plan)
         cls.plan_id = cls.test_plan.pk
 
     def test_open_plans_search(self):
@@ -492,6 +491,8 @@ class TestCloneView(BasePlanCase):
                            link_cases=True, copy_cases=None,
                            maintain_case_orignal_author=None,
                            keep_case_default_tester=None):
+        self.assertIsNotNone(cloned_plan.email_settings)
+
         self.assertEqual(f'Copy of {original_plan.name}', cloned_plan.name)
         self.assertEqual(Product.objects.get(pk=self.product.pk), cloned_plan.product)
         self.assertEqual(Version.objects.get(pk=self.version.pk), cloned_plan.product_version)

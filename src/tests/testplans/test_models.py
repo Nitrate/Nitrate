@@ -17,11 +17,11 @@ class TestSendEmailOnPlanUpdated(test.TestCase):
     def setUpTestData(cls):
         cls.owner = f.UserFactory(username='owner', email='owner@example.com')
         cls.plan = f.TestPlanFactory(owner=cls.owner, author=cls.owner)
-        f.TestPlanEmailSettingsFactory(
-            auto_to_plan_owner=True,
-            auto_to_plan_author=True,
-            notify_on_plan_update=True,
-            plan=cls.plan)
+
+        cls.plan.email_settings.auto_to_plan_owner = True
+        cls.plan.email_settings.auto_to_plan_author = True
+        cls.plan.email_settings.notify_on_plan_update = True
+        cls.plan.email_settings.save()
 
     def setUp(self):
         _listen()
@@ -48,11 +48,11 @@ class TestSendEmailOnPlanDeleted(test.TestCase):
     def setUpTestData(cls):
         cls.owner = f.UserFactory(username='owner', email='owner@example.com')
         cls.plan = f.TestPlanFactory(owner=cls.owner, author=cls.owner)
-        f.TestPlanEmailSettingsFactory(
-            auto_to_plan_owner=True,
-            auto_to_plan_author=True,
-            notify_on_plan_delete=True,
-            plan=cls.plan)
+
+        cls.plan.email_settings.auto_to_plan_owner = True
+        cls.plan.email_settings.auto_to_plan_author = True
+        cls.plan.email_settings.notify_on_plan_delete = True
+        cls.plan.email_settings.save()
 
     def setUp(self):
         _listen()
@@ -95,8 +95,6 @@ class TestGetPlanNotificationRecipients(test.TestCase):
             author=f.UserFactory(username='user6'),
             default_tester=f.UserFactory(username='user7', email=''),
             plan=[cls.plan])
-
-        f.TestPlanEmailSettingsFactory(plan=cls.plan)
 
     def test_collect_recipients(self):
         # Test data is a tuple of 5-elements tuples, each of one contains:
