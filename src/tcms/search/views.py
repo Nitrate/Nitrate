@@ -186,6 +186,18 @@ def remove_from_request_path(request, names: List[str]):
     })
 
 
+def make_name_prefix_meaningful(s: str) -> str:
+    return (
+        s
+        .replace('p_product', 'product')
+        .replace('p_', 'product ')
+        .replace('cs_', 'case ')
+        .replace('pl_', 'plan ')
+        .replace('r_', 'run ')
+        .replace('_', ' ')
+    )
+
+
 def fmt_errors(form_errors):
     """
     Format errors collected in a Django Form for a better appearance.
@@ -193,15 +205,9 @@ def fmt_errors(form_errors):
     errors = []
     for error in form_errors:
         for k, v in error.items():
-            k = k.replace('p_product', 'product')
-            k = k.replace('p_', 'product ')
-            k = k.replace('cs_', 'case ')
-            k = k.replace('pl_', 'plan ')
-            k = k.replace('r_', 'run ')
-            k = k.replace('_', ' ')
             if isinstance(v, list):
                 v = ', '.join(map(str, v))
-            errors.append((k, v))
+            errors.append((make_name_prefix_meaningful(k), v))
     return errors
 
 
@@ -210,12 +216,6 @@ def fmt_queries(*queries):
     results = {}
     for query in queries:
         for k, v in query.items():
-            k = k.replace('p_product', 'product')
-            k = k.replace('p_', 'product ')
-            k = k.replace('cs_', 'case ')
-            k = k.replace('pl_', 'plan ')
-            k = k.replace('r_', 'run ')
-            k = k.replace('_', ' ')
             if isinstance(v, bool) or v:
                 if isinstance(v, QuerySet):
                     try:
@@ -227,7 +227,7 @@ def fmt_queries(*queries):
                             v = ', '.join(v)
                 if isinstance(v, list):
                     v = ', '.join(map(str, v))
-                results[k] = v
+                results[make_name_prefix_meaningful(k)] = v
     return results
 
 
