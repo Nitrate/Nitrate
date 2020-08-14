@@ -5,11 +5,11 @@ Advance search implementations
 """
 
 import time
-from typing import List
+from typing import Dict, List, Union, Any
 from urllib.parse import urlparse, parse_qsl, urlencode
 
 from django.db.models.query import QuerySet
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_GET
 from django.core.paginator import Paginator
@@ -61,7 +61,24 @@ def advance_search(request, tmpl='search/advanced_search.html'):
     return render_results(request, results, start_time, queries)
 
 
-def query(request, plan_query, run_query, case_query, target, using='orm'):
+def query(request: HttpRequest,
+          plan_query: Dict,
+          run_query: Dict,
+          case_query: Dict,
+          target: str,
+          using: str = 'orm') -> QuerySet:
+    """Query plans, cases or runs according to the target
+
+    :param request: Django HTTP request object.
+    :type request: HttpRequest
+    :param dict plan_query: a mapping containing cleaned criteria used to query plans.
+    :param dict case_query: a mapping containing cleaned criteria used to query cases.
+    :param dict run_query: a mapping containing cleaned criteria used to query runs.
+    :param str target: query target, plan, case or run.
+    :param bool using: the name of query method. Default is ``orm``.
+    :return: a Django queryset object containing the query result.
+    :rtype: QuerySet
+    """
     USING = {
         'orm': {
             'query': SmartDjangoQuery,
@@ -77,7 +94,10 @@ def query(request, plan_query, run_query, case_query, target, using='orm'):
     return results
 
 
-def sum_orm_queries(plans, cases, runs, target):
+def sum_orm_queries(plans: SmartDjangoQuery,
+                    cases: SmartDjangoQuery,
+                    runs: SmartDjangoQuery,
+                    target: str) -> QuerySet:
     """Search target objects together with selected relatives
 
     :return: a QuerySet object representing queried target objects.
@@ -126,8 +146,11 @@ def sum_orm_queries(plans, cases, runs, target):
         return cases
 
 
-def render_results(request, results, start_time, queries,
-                   tmpl='search/results.html'):
+def render_results(request: HttpRequest,
+                   results: QuerySet,
+                   start_time: float,
+                   queries: Dict[str, Any],
+                   tmpl: str = 'search/results.html') -> HttpResponse:
     """Using a SQL "in" query and PKs as the arguments"""
     klasses = {
         'plan': {'class': TestPlan, 'result_key': 'test_plans'},
@@ -135,10 +158,10 @@ def render_results(request, results, start_time, queries,
         'run': {'class': TestRun, 'result_key': 'test_runs'}
     }
     asc = bool(request.GET.get('asc', None))
-    navigate_url = remove_from_request_path(request, 'page')
-    query_url = remove_from_request_path(request, 'order_by')
+    navigate_url = remove_from_request_path(request, ['page'])
+    query_url = remove_from_request_path(request, ['order_by'])
     if asc:
-        query_url = remove_from_request_path(query_url, 'asc')
+        query_url = remove_from_request_path(query_url, ['asc'])
     else:
         query_url = '%s&asc=True' % query_url
 
@@ -172,7 +195,8 @@ def render_results(request, results, start_time, queries,
     return render(request, tmpl, context=context_data)
 
 
-def remove_from_request_path(request, names: List[str]):
+def remove_from_request_path(request: Union[HttpRequest, str],
+                             names: List[str]) -> str:
     """
     Remove a parameter from request.get_full_path() and return the modified
     path afterwards.
@@ -231,7 +255,7 @@ def fmt_queries(*queries):
     return results
 
 
-def calculate_associated_data(queryset: List, query_target):
+def calculate_associated_data(queryset: List, query_target: str) -> None:
     """Calculate associated data and attach to objects in queryset"""
 
     # FIXME: Maybe plan and case associated data could be calculated here as well.

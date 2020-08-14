@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from typing import Dict
+from django.db.models import QuerySet
 
-def order_targets(target, queryset, queries):
+
+def order_targets(target: str, queryset: QuerySet, queries: Dict) -> QuerySet:
     """
     Designed to work with advance search module.
     Ordering queryset of testplan, testcase, or testrun.
@@ -39,7 +42,7 @@ def order_targets(target, queryset, queries):
     return ordered_set
 
 
-def order_plan_queryset(plans, field, asc=False):
+def order_plan_queryset(plans: QuerySet, field: str, asc: bool = False) -> QuerySet:
     """
     Annotate the TestPlan queryset by calling order_by on it.
     """
@@ -56,7 +59,7 @@ def order_plan_queryset(plans, field, asc=False):
     return plans
 
 
-def order_run_queryset(runs, field, asc=False):
+def order_run_queryset(runs: QuerySet, field: str, asc: bool = False) -> QuerySet:
     """
     Annotate the TestRun queryset by calling order_by on it.
     """
@@ -74,7 +77,7 @@ def order_run_queryset(runs, field, asc=False):
     return runs
 
 
-def order_case_queryset(cases, field, asc=False):
+def order_case_queryset(cases: QuerySet, field: str, asc: bool = False) -> QuerySet:
     """
     Annotate the TestCase queryset by calling order_by on it.
     """

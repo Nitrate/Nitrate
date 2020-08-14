@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+from typing import Dict
+
+from django.db.models import QuerySet
 
 from tcms.testcases.models import TestCase
 from tcms.testplans.models import TestPlan
@@ -96,7 +99,7 @@ class SmartDjangoQuery:
         }
     }
 
-    def __init__(self, queries, result_kls):
+    def __init__(self, queries: Dict, result_kls: str):
         self.queryset = self.CONTENT_TYPES[result_kls]._default_manager.all()
         self.queries = queries
         self.result_kls = result_kls
@@ -123,6 +126,6 @@ class SmartDjangoQuery:
 
         self.queryset = queryset
 
-    def evaluate(self):
+    def evaluate(self) -> QuerySet:
         self.filter()
         return self.queryset
