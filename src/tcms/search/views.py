@@ -182,17 +182,8 @@ def remove_from_request_path(request, names: List[str]):
     )
     return '?' + urlencode({
         name: value for name, value in parse_qsl(url_info.query)
-        if name in names
+        if name not in names
     })
-
-    # path = path.split('?')
-    # if len(path) > 1:
-    #     path = path[1].split('&')
-    # else:
-    #     return None
-    # path = [p for p in path if not p.startswith(name)]
-    # path = '&'.join(path)
-    # return '?' + path
 
 
 def fmt_errors(form_errors):
