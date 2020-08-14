@@ -106,26 +106,28 @@ def sum_orm_queries(plans: SmartDjangoQuery,
     plans = plans.evaluate()
     cases = cases.evaluate()
     runs = runs.evaluate()
+
     if target == 'run':
-        if not plans and not cases:
+        if plans is None and cases is None:
             if runs is None:
                 runs = TestRun.objects.none()
         if runs is None:
             runs = TestRun.objects.all()
-        if cases:
+        if cases is not None:
             runs = runs.filter(case_run__case__in=cases).distinct()
-        if plans:
+        if plans is not None:
             runs = runs.filter(plan__in=plans).distinct()
         return runs
+
     if target == 'plan':
-        if not cases and not runs:
+        if cases is None and runs is None:
             if plans is None:
                 plans = TestPlan.objects.none()
         if plans is None:
             plans = TestPlan.objects.all()
-        if cases:
+        if cases is not None:
             plans = plans.filter(case__in=cases).distinct()
-        if runs:
+        if runs is not None:
             plans = plans.filter(run__in=runs).distinct()
         plans = plans.extra(select={
             'num_cases': RawSQL.num_cases,
@@ -133,15 +135,16 @@ def sum_orm_queries(plans: SmartDjangoQuery,
             'num_children': RawSQL.num_plans,
         })
         return plans
+
     if target == 'case':
-        if not plans and not runs:
+        if plans is None and runs is None:
             if cases is None:
                 cases = TestCase.objects.none()
         if cases is None:
             cases = TestCase.objects.all()
-        if runs:
+        if runs is not None:
             cases = cases.filter(case_run__run__in=runs).distinct()
-        if plans:
+        if plans is not None:
             cases = cases.filter(plan__in=plans).distinct()
         return cases
 
