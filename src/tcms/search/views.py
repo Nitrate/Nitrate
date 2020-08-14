@@ -55,7 +55,7 @@ def advance_search(request, tmpl='search/advanced_search.html'):
                     run_form.cleaned_data,
                     case_form.cleaned_data,
                     target)
-    results = order_targets(target, results, data)
+    results = order_targets(results, data)
     queries = fmt_queries(*[f.cleaned_data for f in all_forms])
     queries['Target'] = target
     return render_results(request, results, start_time, queries)

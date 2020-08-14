@@ -36,7 +36,7 @@ from tcms.core.utils import DataTableResult
 from tcms.core.views import prompt
 from tcms.management.models import TCMSEnvGroup, Component
 from tcms.search.views import remove_from_request_path
-from tcms.search.order import order_plan_queryset
+from tcms.search.order import apply_order
 from tcms.testcases.data import get_exported_cases_and_related_data
 from tcms.testcases.forms import SearchCaseForm, QuickSearchCaseForm
 from tcms.testcases.models import TestCaseStatus
@@ -303,7 +303,7 @@ def search_plans(request, template_name='plan/all.html'):
                     'num_children': RawSQL.num_plans,
                 }))
 
-            tps = order_plan_queryset(tps, order_by, asc)
+            tps = apply_order(tps, order_by, asc)
     else:
         # Set search active plans only by default
         # I wish to use 'default' argument, as the same as in ModelForm

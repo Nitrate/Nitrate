@@ -36,7 +36,7 @@ from tcms.core.views import prompt
 from tcms.issuetracker.models import IssueTracker
 from tcms.logs.models import TCMSLogModel
 from tcms.management.models import Priority, TestTag
-from tcms.search.order import order_case_queryset
+from tcms.search.order import apply_order
 from tcms.search.views import remove_from_request_path
 from tcms.testcases.data import get_exported_cases_and_related_data
 from tcms.testcases.fields import CC_LIST_DEFAULT_DELIMITER
@@ -344,7 +344,7 @@ def sort_queried_testcases(request, testcases):
     """
     order_by = request.POST.get('order_by', 'create_date')
     asc = bool(request.POST.get('asc', None))
-    tcs = order_case_queryset(testcases, order_by, asc)
+    tcs = apply_order(testcases, order_by, asc)
     # default sorted by sortkey
     tcs = tcs.order_by('testcaseplan__sortkey')
     # Resort the order

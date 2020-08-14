@@ -4,7 +4,7 @@ from typing import Dict
 from django.db.models import QuerySet
 
 
-def order_targets(target: str, queryset: QuerySet, queries: Dict) -> QuerySet:
+def order_targets(queryset: QuerySet, queries: Dict) -> QuerySet:
     """
     Designed to work with advance search module.
     Ordering queryset of testplan, testcase, or testrun.
@@ -12,84 +12,38 @@ def order_targets(target: str, queryset: QuerySet, queries: Dict) -> QuerySet:
     Each kind of objects, plan, case and run, are ordered by created date by
     default if ``order_by`` is missing from argument ``queries``.
 
-    :param str target: what kind of objects to order. Valid choices are
-        ``plan``, ``run`` and ``case``.
     :param queryset: the queryset of objects to be ordered.
     :type queryset: QuerySet
     :param dict queries: the ``Form.cleaned_data``.
     :return: ordered queryset.
     :rtype: QuerySet.
     """
-    order_options = {
-        'plan': {
-            'default_order_by': 'create_date',
-            'orderer': order_plan_queryset,
-        },
-        'run': {
-            'default_order_by': 'create_date',
-            'orderer': order_run_queryset,
-        },
-        'case': {
-            'default_order_by': 'create_date',
-            'orderer': order_case_queryset,
-        },
-    }
-    orderer = order_options[target]['orderer']
-    default_order_by = order_options[target]['default_order_by']
-    order_by = queries.get('order_by', default_order_by)
+    order_by = queries.get('order_by', 'create_date')
     asc = bool(queries.get('asc', None))
-    ordered_set = orderer(queryset, order_by, asc)
-    return ordered_set
+    return apply_order(queryset, order_by, asc)
 
 
-def order_plan_queryset(plans: QuerySet, field: str, asc: bool = False) -> QuerySet:
-    """
-    Annotate the TestPlan queryset by calling order_by on it.
-    """
-    orderable_fields = (
-        'plan_id', 'name', 'author__username', 'owner__username',
-        'create_date', 'product__name', 'type',
-        'num_cases', 'num_runs', 'num_children',
-    )
+ORDERABLE_FIELDS = {
+    'TestPlan': (
+        'plan_id', 'name', 'author__username', 'owner__username', 'create_date',
+        'product__name', 'type', 'num_cases', 'num_runs', 'num_children',
+    ),
+    'TestCase': (
+        'case_id', 'summary', 'author__username', 'default_tester__username',
+        'priority', 'is_automated', 'category__name', 'case_status', 'create_date'
+    ),
+    'TestRun': (
+        'run_id', 'summary', 'manager__username', 'default_tester__username',
+        'env_groups', 'build__product__name', 'product_version', 'plan__name'
+    ),
+}
+
+
+def apply_order(queryset: QuerySet, field: str, asc: bool = False) -> QuerySet:
+    orderable_fields = ORDERABLE_FIELDS[queryset.model.__name__]
     if field in orderable_fields:
         order_by = field
         if not asc:
             order_by = '-%s' % order_by
-        plans = plans.order_by(order_by)
-    return plans
-
-
-def order_run_queryset(runs: QuerySet, field: str, asc: bool = False) -> QuerySet:
-    """
-    Annotate the TestRun queryset by calling order_by on it.
-    """
-    orderable_fields = (
-        'run_id', 'summary', 'manager__username',
-        'default_tester__username', 'env_groups',
-        'build__product__name', 'product_version',
-        'plan__name'
-    )
-    if field in orderable_fields:
-        order_by = field
-        if not asc:
-            order_by = '-%s' % order_by
-        runs = runs.order_by(order_by)
-    return runs
-
-
-def order_case_queryset(cases: QuerySet, field: str, asc: bool = False) -> QuerySet:
-    """
-    Annotate the TestCase queryset by calling order_by on it.
-    """
-    orderable_fields = (
-        'case_id', 'summary', 'author__username',
-        'default_tester__username', 'priority',
-        'is_automated', 'category__name', 'case_status',
-        'create_date'
-    )
-    if field in orderable_fields:
-        order_by = field
-        if not asc:
-            order_by = '-%s' % order_by
-        cases = cases.order_by(order_by)
-    return cases
+        queryset = queryset.order_by(order_by)
+    return queryset
