@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from functools import partial
+from typing import Callable, List, Union
 
 from django import forms
+from django.http import QueryDict
 
 from tcms.management.models import Product, TestBuild, Component, Version, Priority
 from tcms.testcases.forms import IssueKeyField
@@ -30,7 +32,7 @@ VersionF = partial(forms.ModelMultipleChoiceField, required=False,
                    queryset=Version.objects.none())
 
 
-def get_choice(value, _type=str, deli=','):
+def get_choice(value: str, _type: Callable = str, deli: str = ',') -> List[Union[int, str]]:
     """
     Used to clean a form field where multiple choices are seperated using a
     delimiter such as comma. Removing the empty value.
@@ -42,7 +44,7 @@ def get_choice(value, _type=str, deli=','):
         raise forms.ValidationError(str(e))
 
 
-def get_boolean_choice(value):
+def get_boolean_choice(value: str) -> Union[bool, None]:
     return {
         'yes': True,
         'no': False
@@ -64,22 +66,22 @@ class PlanForm(forms.Form):
     pl_component = ComponentF()
     pl_version = VersionF()
 
-    def clean_pl_active(self):
+    def clean_pl_active(self) -> bool:
         return get_boolean_choice(self.cleaned_data['pl_active'])
 
-    def clean_pl_id(self):
+    def clean_pl_id(self) -> List[int]:
         return get_choice(self.cleaned_data['pl_id'], _type=int)
 
-    def clean_pl_tags(self):
+    def clean_pl_tags(self) -> List[str]:
         return get_choice(self.cleaned_data['pl_tags'])
 
-    def clean_pl_authors(self):
+    def clean_pl_authors(self) -> List[str]:
         return get_choice(self.cleaned_data['pl_authors'])
 
-    def clean_pl_owners(self):
+    def clean_pl_owners(self) -> List[str]:
         return get_choice(self.cleaned_data['pl_owners'])
 
-    def populate(self, data):
+    def populate(self, data: QueryDict):
         prod_pks = data.getlist('pl_product')
         prod_pks = [k for k in prod_pks if k]
         if prod_pks:
@@ -137,7 +139,7 @@ class CaseForm(forms.Form):
     def clean_cs_tester(self):
         return get_choice(self.cleaned_data['cs_tester'])
 
-    def populate(self, data):
+    def populate(self, data: QueryDict):
         status_choice = list(TestCaseStatus.objects.order_by('pk')
                                                    .values_list('pk', 'name'))
         self.fields['cs_status'].choices = status_choice
@@ -180,25 +182,25 @@ class RunForm(forms.Form):
     r_product = ProductF()
     r_version = VersionF()
 
-    def clean_r_running(self):
+    def clean_r_running(self) -> Union[bool, None]:
         return get_boolean_choice(self.cleaned_data['r_running'])
 
-    def clean_r_id(self):
+    def clean_r_id(self) -> List[int]:
         return get_choice(self.cleaned_data['r_id'], _type=int)
 
-    def clean_r_tags(self):
+    def clean_r_tags(self) -> List[str]:
         return get_choice(self.cleaned_data['r_tags'])
 
-    def clean_r_tester(self):
+    def clean_r_tester(self) -> List[str]:
         return get_choice(self.cleaned_data['r_tester'])
 
-    def clean_r_real_tester(self):
+    def clean_r_real_tester(self) -> List[str]:
         return get_choice(self.cleaned_data['r_real_tester'])
 
-    def clean_r_manager(self):
+    def clean_r_manager(self) -> List[str]:
         return get_choice(self.cleaned_data['r_manager'])
 
-    def populate(self, data):
+    def populate(self, data: QueryDict):
         prod_pks = data.getlist('r_product')
         prod_pks = [k for k in prod_pks if k]
         if prod_pks:
