@@ -97,7 +97,7 @@ class TestAdvancedSearch(BaseCaseRun):
             manager=cls.tester,
             default_tester=cls.tester)
 
-        cls.url = reverse('advance_search')
+        cls.url = reverse('advanced-search')
 
     def test_open_advanced_search_page(self):
         self.client.get(self.url)
