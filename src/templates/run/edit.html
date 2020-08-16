@@ -33,7 +33,7 @@
 	<div class="sprites crumble">
 		<a href="{% url "nitrate-index" %}">Home</a>
 		{% if request.GET.from_plan %}
-		>> <a href="{% url "plans-all" %}">Planning</a>
+		>> <a href="{% url "plans-all" %}?is_active=on">Planning</a>
 		>> <a href="{{ test_run.plan.get_absolute_url }}">Test Plan :{{ test_run.plan.plan_id }}: {{ test_run.plan }}</a>
 		{% else %}
 		>> <a href="{% url "runs-all" %}">Test Runs</a>

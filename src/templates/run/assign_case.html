@@ -20,7 +20,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.AssignCase.on_load);
 <div id="content">
 	<div class="sprites crumble">
 		<a href="{% url "nitrate-index" %}">Home</a>
-		&gt;&gt; <a href="{% url "plans-all" %}">...</a>
+		&gt;&gt; <a href="{% url "plans-all" %}?is_active=on">...</a>
 		&gt;&gt; <a href="{{ test_run.plan.get_absolute_url }}">...</a>
 		&gt;&gt; <a href="{% url "run-get" test_run.run_id %}">{{ test_run.run_id }}: {{ test_run.summary }}</a>
 		&gt;&gt; Add test case

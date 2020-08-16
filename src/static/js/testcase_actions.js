@@ -402,8 +402,10 @@ Nitrate.TestCases.Clone.on_load = function () {
     let container = jQ('#id_plan_container');
     container.show();
 
+    let thisform = e.target;
     sendHTMLRequest({
-      url: '/plans/',
+      url: thisform.action,
+      method: thisform.method,
       data: jQ(this).serialize(),
       container: container,
     });

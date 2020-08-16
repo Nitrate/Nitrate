@@ -20,7 +20,7 @@
 <div id="content">
 	<div class="sprites crumble">
 		<a href="{% url "nitrate-index" %}">Home</a>
-		>> <a href="{% url "plans-all" %}">Planning</a>
+		>> <a href="{% url "plans-all" %}?is_active=on">Planning</a>
 		>> <a href="{{ testplan.get_absolute_url }}">{{ testplan.plan_id }}: {{ testplan.name }}</a>
 		>> Edit History
 	</div>

@@ -29,7 +29,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestCases.Create.on_load);
 	<div class="sprites crumble">
 		<a href="{% url "nitrate-index" %}">Home</a>
 		{% if test_plan %}
-		>> <a href="{% url "plans-all" %}">Planning</a>
+		>> <a href="{% url "plans-all" %}?is_active=on">Planning</a>
 		>> <a href="{{ test_plan.get_absolute_url }}">{{ test_plan.name }}</a>
 		{% else %}
 		>> <a href="{% url "cases-search" %}">Testing</a>

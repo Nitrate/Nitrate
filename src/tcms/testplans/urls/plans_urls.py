@@ -4,9 +4,23 @@ from django.urls import path
 from .. import views
 
 urlpatterns = [
-    path('', views.search_plans, name='plans-all'),
+    path('', views.SearchPlansView.as_view(), name='plans-all'),
+    path('pages/', views.SearchPlansPagesView.as_view(), name='plans-pages'),
+
+    path('filter-for-treeview/',
+         views.FilterPlansForTreeView.as_view(),
+         name='plans-for-treeview'),
+
+    # # FIXME: probably should move to testcases app
+    path('clone-cases/',
+         views.SimplePlansFilterView.as_view(template_name='case/clone_select_plan.html'),
+         name='plans-for-cloning-cases'),
+
+    path('preview/',
+         views.SimplePlansFilterView.as_view(template_name='plan/preview.html'),
+         name='plans-for-preview'),
+
     path('new/', views.CreateNewPlanView.as_view(), name='plans-new'),
-    path('ajax/', views.ajax_search, name='plans-ajax-search'),
     path('treeview/', views.tree_view, name='plans-treeview'),
     path('clone/', views.clone, name='plans-clone'),
     path('printable/', views.printable, name='plans-printable'),

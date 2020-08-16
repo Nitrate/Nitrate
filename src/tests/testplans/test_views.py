@@ -654,7 +654,7 @@ class TestCloneView(BasePlanCase):
             self.verify_cloned_plan(origin_plan, cloned_plan)
 
 
-class TestAJAXSearch(BasePlanCase):
+class TestPlansPagesView(BasePlanCase):
     """Test ajax_search view method"""
 
     @classmethod
@@ -670,7 +670,7 @@ class TestAJAXSearch(BasePlanCase):
 
         # So far, each test has 26 plans
 
-        cls.search_url = reverse('plans-ajax-search')
+        cls.search_url = reverse('plans-pages')
 
         # By default, search active plans. Search by other fields if needed,
         # copy this dict and add other fields.
@@ -692,16 +692,6 @@ class TestAJAXSearch(BasePlanCase):
             'bSortable_3': 'true',
             'bSortable_4': 'true',
         }
-
-    def test_emtpy_plans(self):
-        response = self.client.get(self.search_url, {})
-
-        data = json.loads(response.content)
-
-        self.assertEqual(0, data['sEcho'])
-        self.assertEqual(0, data['iTotalRecords'])
-        self.assertEqual(0, data['iTotalDisplayRecords'])
-        self.assertEqual([], data['aaData'])
 
     def test_get_first_page_order_by_pk(self):
         search_data = self.search_data.copy()

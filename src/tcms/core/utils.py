@@ -4,7 +4,7 @@ import functools
 import hashlib
 import operator
 import re
-from typing import List
+from typing import List, Dict, Any
 
 from django.apps import apps
 
@@ -160,8 +160,7 @@ class DataTableResult:
         number_of_sorting_cols = int(self.request_data.get('iSortingCols', 0))
         for idx_which_column in range(number_of_sorting_cols):
             sorting_col_index = int(
-                self.request_data.get(f'iSortCol_{idx_which_column}',
-                                      0))
+                self.request_data.get(f'iSortCol_{idx_which_column}', 0))
 
             sortable_key = f'bSortable_{sorting_col_index}'
             sort_dir_key = f'sSortDir_{idx_which_column}'
@@ -192,7 +191,7 @@ class DataTableResult:
         display_end = display_start + display_length
         self.queryset = self.queryset[display_start:display_end]
 
-    def get_response_data(self):
+    def get_response_data(self) -> Dict[str, Any]:
         total_records = total_display_records = self.queryset.count()
 
         self._sort_result()
