@@ -6,14 +6,14 @@
 		</li>
 		<li class="sprites menuline"></li>
 		<li class="nav_li{% if module == 'testplans' %} current{% endif %}">
-			<a href="{% url "plans-all" %}">{% trans "PLANNING" %}</a>
+			<a href="{% url "plans-all" %}?is_active=on">{% trans "PLANNING" %}</a>
 			<ul class="nav_sub sub_plan" style="display: none;">
 				<li {% if sub_module == 'plans' %} class="subcurrent"{% endif %} >
-					<a href="{% url "plans-all" %}">Search Plans</a>
+					<a href="{% url "plans-all" %}?is_active=on">Search Plans</a>
 				</li>
 				{% if user.is_authenticated %}
 				<li {% if sub_module == 'my_plans' %} class="subcurrent"{% endif %} >
-					<a href="{% url "plans-all" %}?author__email__startswith={{ user.email }}">My Plans</a>
+					<a href="{% url "plans-all" %}?author__email__startswith={{ user.email }}&is_active=on">My Plans</a>
 				</li>
 				{% endif %}
 				{% if perms.testplans.add_testplan %}

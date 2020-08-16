@@ -726,8 +726,8 @@ function previewPlan(parameters, action, callback, notice, s, c) {
   jQ(dialog).show();
 
   sendHTMLRequest({
-    url: '/plans/',
-    data: Object.assign({}, parameters, {t: 'html', f: 'preview'}),
+    url: '/plans/preview/',
+    data: Object.assign({}, parameters),
     success: function (data, textStatus, xhr) {
       jQ(dialog).html(
         constructForm(xhr.responseText, action, callback, notice, s, c)

@@ -40,8 +40,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestCases.Clone.on_load);
 					<input type="radio" id="id_use_filterplan" checked name="selectplan" />
 					<label for="id_use_filterplan" class="strong">Filter another plan</label>
 					<div id="id_filterPlan">
-					<form id="id_form_search_plan" action="{% url "plans-all" %}" method="get">
-						<input type="hidden" name="action" value="clone_case" />
+					<form id="id_form_search_plan" action="{% url "plans-for-cloning-cases" %}" method="get">
 						{% include 'plan/form/filter.html' %}
 						<div class="cell" style=" margin-left:0">
 							<input type="submit" value="Filter plan" />

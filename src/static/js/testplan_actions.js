@@ -41,7 +41,6 @@ Nitrate.TestPlans.TreeView = {
   'data': {},
   'tree_elements': jQ('<div>')[0],
   'default_container': 'id_tree_container',
-  'default_parameters': {t: 'ajax'}, // FIXME: Doesn't make effect here.
 
   /**
    * A wrapper of jQ.ajax to filter specific plans.
@@ -50,9 +49,12 @@ Nitrate.TestPlans.TreeView = {
    *                              response data will be passed in.
    */
   'filter': function (data, callback) {
-    let requestData = Object.assign({}, data, {t: 'ajax'});
-    let url = Nitrate.http.URLConf.reverse({name: 'plans'});
-    getRequest({url: url, data: requestData, sync: true, success: callback});
+    getRequest({
+      url: '/plans/filter-for-treeview/',
+      data: Object.assign({}, data),
+      sync: true,
+      success: callback
+    });
   },
 
   'init': function (planId) {
@@ -565,6 +567,17 @@ Nitrate.TestPlans.Advance_Search_List.on_load = function () {
   bindSearchResultActionEventHandlers();
 };
 
+Nitrate.DataTable = {
+  'commonSettings': {
+    'bFilter': false,
+    'bInfo': true,
+    'bLengthChange': false,
+    'bServerSide': true,
+    'iDisplayLength': 20,
+    'sPaginationType': 'full_numbers'
+  }
+};
+
 Nitrate.TestPlans.List.on_load = function () {
   registerProductAssociatedObjectUpdaters(
     document.getElementById('id_product'),
@@ -584,16 +597,19 @@ Nitrate.TestPlans.List.on_load = function () {
     });
   }
 
-  jQ('#testplans_table').dataTable({
-    'iDisplayLength': 20,
-    'sPaginationType': 'full_numbers',
-    'bFilter': false,
-    // 'bLengthChange': false,
-    'aLengthMenu': [[10, 20, 50, -1], [10, 20, 50, 'All']],
+  let plansSearchResultTableSettings = {
+    // By default, plans are sorted by create_date in desc order.
+    // It is equal to set the pk column in the DataTable initialization.
     'aaSorting': [[ 1, 'desc' ]],
+    'aLengthMenu': [[10, 20, 50, -1], [10, 20, 50, 'All']],
     'bProcessing': true,
-    'bServerSide': true,
-    'sAjaxSource': '/plans/ajax/' + this.window.location.search,
+    'iDeferLoading': Nitrate.TestPlans.List.numberOfPlans,
+    'sAjaxSource': '/plans/pages/' + this.window.location.search,
+
+    'oLanguage': {
+      'sEmptyTable': 'No plans found.'
+    },
+
     'aoColumns': [
       {'bSortable': false},
       null,
@@ -603,10 +619,32 @@ Nitrate.TestPlans.List.on_load = function () {
       null,
       {'bVisible': false},
       null,
-      {'bSortable': false},
-      {'bSortable': false},
+      null,
+      null,
       {'bSortable': false}
     ],
+
+    'fnInfoCallback': function (oSettings, iStart, iEnd, iMax, iTotal, sPre) {
+      return 'Showing ' + (iEnd - iStart + 1) + ' of ' + iTotal + ' plans';
+    },
+
+    // Move this callback to commonSettings when needed
+    'fnInitComplete': function (oSettings, json) {
+      if (oSettings.aoData.length > 1) {
+        return;
+      }
+      // If table is empty or only has a single row, ensure sortable columns
+      // are set to unsortable in order to avoid potential unnecessary HTTP
+      // request made by clicking header by user.
+      let columns = oSettings.aoColumns;
+      for (let i = 0; i < columns.length; i++) {
+        let column = columns[i];
+        if (column.bSortable) {
+          column.bSortable = false;
+        }
+      }
+    },
+
     'fnDrawCallback': function () {
       jQ('#testplans_table tbody tr td:nth-child(1)').shiftcheckbox({
         checkboxSelector: ':checkbox',
@@ -620,7 +658,11 @@ Nitrate.TestPlans.List.on_load = function () {
         jQ('.js-export-plans').prop('disabled', disable);
       });
     }
-  });
+  };
+
+  jQ('#testplans_table').dataTable(
+    Object.assign(plansSearchResultTableSettings, Nitrate.DataTable.commonSettings)
+  );
 
   bindSearchResultActionEventHandlers();
 };

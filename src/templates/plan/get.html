@@ -55,7 +55,7 @@ Nitrate.TestPlans.Instance = {
 <div id="content">
 	<div class="sprites crumble">
 		<a href="{% url "nitrate-index" %}">Home</a>
-		>> <a href="{% url "plans-all" %}">Planning</a>
+		>> <a href="{% url "plans-all" %}?is_active=on">Planning</a>
 		>> {{ test_plan.plan_id }}: {{ test_plan.name }}
 	</div>
 	<input id="id_plan_id" type="hidden" name="plan_id" value="{{ test_plan.plan_id }}">

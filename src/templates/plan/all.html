@@ -21,6 +21,7 @@
 
 <script type="text/javascript">
 Nitrate.Utils.after_page_load(Nitrate.TestPlans.List.on_load);
+Nitrate.TestPlans.List.numberOfPlans = {{ plans_count }};
 </script>
 {% endblock %}
 
@@ -28,12 +29,8 @@ Nitrate.Utils.after_page_load(Nitrate.TestPlans.List.on_load);
 <div id="content">
 	<div class="sprites crumble">
 		<a href="{% url "nitrate-index" %}">Home</a>
-		{% if query_result %}
-		>> <a href="{% url "plans-all" %}">Planning</a>
+		>> <a href="{% url "plans-all" %}?is_active=on">Planning</a>
 		>> Search result
-		{% else %}
-		>> Planning
-		{% endif %}
 	</div>
 	<div id="itemSearch" class="itemSearch">
 		<form id="id_search_plan_form" action="{% url "plans-all" %}" method="get">
@@ -52,8 +49,6 @@ Nitrate.Utils.after_page_load(Nitrate.TestPlans.List.on_load);
 			<div class="clear"></div>
 		</form>
 	</div>
-	{% if query_result %}
-		{% include 'plan/common/plans_filtered.html' %}
-	{% endif %}
+	{% include 'plan/common/plans_filtered.html' %}
 </div>
 {% endblock %}

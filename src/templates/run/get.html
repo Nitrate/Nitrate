@@ -40,7 +40,7 @@ jQ(function() {
 	<div class="sprites crumble">
 		<a href="{% url "nitrate-index" %}">Home</a>
 		{% if request.GET.from_plan %}
-		&gt;&gt; <a href="{% url "plans-all" %}">Seach Plan</a>
+		&gt;&gt; <a href="{% url "plans-all" %}?is_active=on">Seach Plan</a>
 		&gt;&gt; Test Plan: <a href="{{ test_run.plan.get_absolute_url }}">[{{ test_run.plan.plan_id }}] {{ test_run.plan.name }}</a>
 		{% else %}
 		&gt;&gt; <a href="{% url "runs-all" %}">Search Runs</a>
