@@ -7,12 +7,7 @@
 {% endblock %}
 {% block custom_javascript %}
 <script type="text/javascript" src="{% static "js/lib/jquery.dataTables.js" %}"></script>
-<script type="text/javascript" src="{% static "js/testplan_actions.js" %}"></script>
-<script type="text/javascript" src="{% static "js/testrun_actions.js" %}"></script>
 <script type="text/javascript" src="{% static "js/advance_search.js" %}"></script>
-
-{# FIXME: Only require the datatable code, refactor it? #}
-<script type="text/javascript" src="{% static "js/testcase_actions.js" %}"></script>
 {% endblock %}
 
 {% block contents %}
@@ -30,14 +25,44 @@
 		</ul>
 		<p></p>
 	</div>
-	<h2 class="clear">Search Results<span style="font-weight:normal; font-size:12px; padding:0 0 0 15px;">Time cost: {{ time_cost }} sec(s).</span></h2>
+	<h2 class="clear">
+		Search Results<span style="font-weight:normal; font-size:12px; padding:0 0 0 15px;">Time cost: {{ time_cost }} sec(s).</span>
+	</h2>
 
 	{% if search_target == "plan" %}
-		{% include "search/plans.html" %}
+
+	<script type="text/javascript" src="{% static "js/testplan_actions.js" %}"></script>
+	<script type="text/javascript">
+	  Nitrate.TestPlans.AdvancedSearch.numberOfPlans = {{ total_count }};
+	  Nitrate.Utils.after_page_load(Nitrate.TestPlans.AdvancedSearch.on_load);
+	</script>
+
+	{% include 'plan/search_result.html' %}
+
 	{% elif search_target == "case" %}
-		{% include "search/cases.html" %}
+
+	<script type="text/javascript" src="{% static "js/testcase_actions.js" %}"></script>
+	<script type="text/javascript">
+	  Nitrate.TestCases.List.Param = {
+		'case_printable': '{% url "cases-printable" %}',
+		'case_export':'{% url "cases-export" %}'
+	  };
+
+	  Nitrate.TestCases.AdvancedSearch.numberOfCases = {{ total_count }};
+	  Nitrate.Utils.after_page_load(Nitrate.TestCases.AdvancedSearch.on_load);
+	</script>
+
+	{% include "case/common/case_advance_filtered.html" %}
+
 	{% elif search_target == "run" %}
-		{% include "search/runs.html" %}
+
+	<script type="text/javascript" src="{% static "js/testrun_actions.js" %}"></script>
+	<script type="text/javascript">
+	  Nitrate.TestRuns.AdvancedSearch.numberOfRuns = {{ total_count }};
+	  Nitrate.Utils.after_page_load(Nitrate.TestRuns.AdvancedSearch.on_load);
+	</script>
+	{% include "run/common/run_advance_filtered.html" %}
+
 	{% endif %}
 
 {% endblock %}
