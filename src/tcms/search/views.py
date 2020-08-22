@@ -113,7 +113,7 @@ def advance_search(request, tmpl='search/advanced_search.html'):
             'time_cost': time_cost,
             'queries': queries,
             # FIXME: choose another name rather than this_page
-            'this_page': response_data['querySet'],
+            'object_list': response_data['querySet'],
             'total_count': results.count(),
         })
 

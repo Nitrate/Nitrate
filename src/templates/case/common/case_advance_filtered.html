@@ -34,7 +34,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			{% for test_case in this_page %}
+			{% for test_case in object_list %}
 			<tr class="case_title {% cycle 'odd' 'even' %}" data-pk="{{ test_case.pk }}">
 				<td>
 					<img class="expand blind_icon" src="{% static "images/t1.gif" %}" border="0" alt="">

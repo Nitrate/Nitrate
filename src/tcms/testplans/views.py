@@ -316,7 +316,7 @@ class SearchPlansView(SimplePlansFilterView):
         context.update({
             'module': MODULE_NAME,
             'sub_module': self.SUB_MODULE_NAME,
-            'plans': context['plans'][0:20],
+            'object_list': context['plans'][0:20],
             'plans_count': context['plans'].count(),
         })
         return context

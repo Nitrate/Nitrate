@@ -591,7 +591,6 @@ Nitrate.TestPlans.SearchResultTableSettings = Object.assign({}, Nitrate.DataTabl
     {'sType': 'html'},        // Author
     {'sType': 'html'},        // Owner
     null,                     // Product
-    {'bVisible': false},      // Invisible product version
     null,                     // Type
     null,                     // Cases
     null,                     // Runs
@@ -633,7 +632,7 @@ Nitrate.TestPlans.List.on_load = function () {
 
   if (jQ('#id_check_all_plans').length) {
     jQ('#id_check_all_plans').on('click', function () {
-      jQ('#plan_list_printable').prop('disabled', !this.checked);
+      jQ('.js-printable-plans').prop('disabled', !this.checked);
     });
   }
 

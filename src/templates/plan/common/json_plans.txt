@@ -7,26 +7,17 @@
     {
         "DT_RowId": "plan_{{test_plan.pk}}",
         "DT_RowClass": {% if not test_plan.is_active %}"line-through inactive"{%else%}""{% endif %},
-        "0":"<input type='checkbox' name='plan' value='{{ test_plan.pk }}' title='Select/Unselect'>",
-        "1":"<a href='{{ test_plan.get_absolute_url }}'>{{ test_plan.plan_id }}</a>",
-        "2":"<a href='{{ test_plan.get_absolute_url }}' title='Go to {{ test_plan.name }}'>{{ test_plan }} </a>",
-        "3":"<a href='{% url "user-profile" test_plan.author.username %}'>{{ test_plan.author }}</a>",
-        {% if test_plan.owner %}
-            "4":"<a href='{% url "user-profile" test_plan.owner.username %}'>{{ test_plan.owner }}</a>"
-        {% else %}
-            "4":"No owner"
-        {% endif %},
-        "5":"{{ test_plan.product }}",
-        "6":"{{ test_plan.product_version }}",
-        "7":"{{ test_plan.type }}",
-        "8":"<a href='{{ test_plan.get_absolute_url }}' title='{{ test_plan.cases_count }} test cases'>{{ test_plan.cases_count }}</a>",
-        "9":"<a href='{{ test_plan.get_absolute_url }}#testruns' title='{{ test_plan.runs_count }} test runs'>{{ test_plan.runs_count }}</a>",
-        {% if perms.testplans.change_testplan %}
-            "10":"<a class='editlink' href='{% url "plan-edit" test_plan.plan_id %}'>Edit</a>"
-        {% else %}
-            "10":""
-        {% endif %}
-        }
+        "0": "<input type='checkbox' name='plan' value='{{ test_plan.pk }}' title='Select/Unselect'>",
+        "1": "<a href='{{ test_plan.get_absolute_url }}'>{{ test_plan.plan_id }}</a>",
+        "2": "<a href='{{ test_plan.get_absolute_url }}' title='Go to {{ test_plan.name }}'>{{ test_plan }} </a>",
+        "3": "<a href='{% url "user-profile" test_plan.author.username %}'>{{ test_plan.author }}</a>",
+        "4": {% if test_plan.owner %}"<a href='{% url "user-profile" test_plan.owner.username %}'>{{ test_plan.owner }}</a>"{% else %}"No owner"{% endif %},
+        "5": "{{ test_plan.product }}",
+        "6": "{{ test_plan.type }}",
+        "7": "<a href='{{ test_plan.get_absolute_url }}' title='{{ test_plan.cases_count }} test cases'>{{ test_plan.cases_count }}</a>",
+        "8": "<a href='{{ test_plan.get_absolute_url }}#testruns' title='{{ test_plan.runs_count }} test runs'>{{ test_plan.runs_count }}</a>",
+        "9": {% if perms.testplans.change_testplan %}"<a class='editlink' href='{% url "plan-edit" test_plan.plan_id %}'>Edit</a>"{% else %}""{% endif %}
+    }
     {% if not forloop.last %}
     ,
     {% endif %}

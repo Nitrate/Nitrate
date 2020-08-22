@@ -23,7 +23,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			{% for test_run in this_page %}
+			{% for test_run in object_list %}
 			<tr id="run_{{test_run.run_id}}">
 				<td><input type='checkbox' name="run" value="{{ test_run.pk }}" class="run_selector" /></td>
 				<td><a href="{% url "run-get" test_run.run_id %}">{{ test_run.run_id }}</a></td>
