@@ -154,7 +154,8 @@ class TestAdvancedSearch(BaseCaseRun):
 
         self.assertListEqual(
             sorted(chain([case.pk for case in self.plan.case.all()],
-                         [case.pk for case in self.plan_02.case.all()])),
+                         [case.pk for case in self.plan_02.case.all()]),
+                   reverse=True),
             case_ids)
 
     def test_basic_search_runs(self):
@@ -174,11 +175,11 @@ class TestAdvancedSearch(BaseCaseRun):
         for tr in bs.find(id='testruns_table').find_all('tr')[1:]:
             run_ids.append(int(tr.find_all('td')[1].a.text.strip()))
 
-        expected_run_ids = [
+        expected_run_ids = sorted([
             self.test_run.pk,
             self.test_run_1.pk,
             self.test_run_with_env_group.pk
-        ]
+        ], reverse=True)
         self.assertListEqual(expected_run_ids, run_ids)
 
         # Collect data from env_group (Environment) column
@@ -186,7 +187,7 @@ class TestAdvancedSearch(BaseCaseRun):
         for tr in bs.find(id='testruns_table').find_all('tr')[1:]:
             env_group_names.append(tr.find_all('td')[8].text.strip())
 
-        self.assertListEqual(['None', 'None', 'db'], env_group_names)
+        self.assertListEqual(['db', 'None', 'None'], env_group_names)
 
     def test_combination_search_runs_and_cases(self):
         """Test search runs whose cases' priority is P2"""

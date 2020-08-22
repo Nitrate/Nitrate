@@ -3,19 +3,20 @@
 """
 Advance search implementations
 """
-
+import json
 import time
-from typing import Dict, List, Union, Any
+from collections import namedtuple
+from typing import Dict, List, Union
 from urllib.parse import urlparse, parse_qsl, urlencode
 
 from django.db.models.query import QuerySet
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, JsonResponse
 from django.shortcuts import render
+from django.template.loader import get_template
 from django.views.decorators.http import require_GET
-from django.core.paginator import Paginator
-from django.core.paginator import PageNotAnInteger
 
 from tcms.core.raw_sql import RawSQL
+from tcms.core.utils import DataTableResult
 from tcms.management.models import Priority
 from tcms.management.models import Product
 from tcms.search.forms import CaseForm, RunForm, PlanForm
@@ -25,6 +26,8 @@ from tcms.testcases.models import TestCase
 from tcms.testplans.models import TestPlan
 from tcms.testplans.models import TestPlanType
 from tcms.testruns.models import TestRun
+
+SearchInfo = namedtuple('SearchInfo', ['column_names', 'template_file'])
 
 
 @require_GET
@@ -36,12 +39,15 @@ def advance_search(request, tmpl='search/advanced_search.html'):
     plan_form = PlanForm(data)
     case_form = CaseForm(data)
     run_form = RunForm(data)
+
     # Update MultipleModelChoiceField on each form dynamically
     plan_form.populate(data)
     case_form.populate(data)
     run_form.populate(data)
+
     all_forms = (plan_form, case_form, run_form)
     errors = [f.errors for f in all_forms if not f.is_valid()]
+
     if errors or not data:
         products = Product.objects.order_by('pk').only('pk', 'name')
         plan_types = TestPlanType.objects.order_by('name').only('pk', 'name')
@@ -50,23 +56,74 @@ def advance_search(request, tmpl='search/advanced_search.html'):
         return render(request, tmpl, context=locals())
 
     start_time = time.time()
-    results = query(request,
-                    plan_form.cleaned_data,
-                    run_form.cleaned_data,
-                    case_form.cleaned_data,
-                    target)
+    results = search_objects(request,
+                             plan_form.cleaned_data,
+                             run_form.cleaned_data,
+                             case_form.cleaned_data,
+                             target)
     results = order_targets(results, data)
     queries = fmt_queries(*[f.cleaned_data for f in all_forms])
     queries['Target'] = target
-    return render_results(request, results, start_time, queries)
+
+    search_infos = {
+        'plan': SearchInfo(
+            column_names=[
+                '', 'plan_id', 'name', 'author__username', 'owner__username',
+                'product', 'product_version', 'type', 'cases_count', 'runs_count', ''
+            ],
+            template_file='plan/common/json_plans.txt'
+        ),
+        'case': SearchInfo(
+            column_names=[
+                '', '', 'case_id', 'summary', 'author__username', 'default_tester__username',
+                '', 'case_status__name', 'category__name', 'priority__value', 'create_date'
+            ],
+            template_file='case/common/json_cases.txt'
+        ),
+        'run': SearchInfo(
+            column_names=[
+                '', 'run_id', 'summary', 'manager__username', 'default_tester__username',
+                '', 'plan__product__name', 'product_version__value', '',
+                'cases_count', 'stop_date', ''
+            ],
+            template_file='run/common/json_runs.txt'
+        )
+    }
+
+    search_info = search_infos[target]
+
+    dt = DataTableResult(request.GET, results, search_info.column_names,
+                         default_order_key='-pk')
+    response_data = dt.get_response_data()
+
+    if target == 'run':
+        from tcms.testruns.views import calculate_associated_data
+        calculate_associated_data(response_data['querySet'])
+
+    if 'sEcho' in request.GET:
+        resp_data = (get_template(search_info.template_file)
+                     .render(response_data, request))
+        return JsonResponse(json.loads(resp_data))
+    else:
+        end_time = time.time()
+        time_cost = round(end_time - start_time, 3)
+
+        return render(request, 'search/results.html', context={
+            'search_target': target,
+            'time_cost': time_cost,
+            'queries': queries,
+            # FIXME: choose another name rather than this_page
+            'this_page': response_data['querySet'],
+            'total_count': results.count(),
+        })
 
 
-def query(request: HttpRequest,
-          plan_query: Dict,
-          run_query: Dict,
-          case_query: Dict,
-          target: str,
-          using: str = 'orm') -> QuerySet:
+def search_objects(request: HttpRequest,
+                   plan_query: Dict,
+                   run_query: Dict,
+                   case_query: Dict,
+                   target: str,
+                   using: str = 'orm') -> QuerySet:
     """Query plans, cases or runs according to the target
 
     :param request: Django HTTP request object.
@@ -117,6 +174,9 @@ def sum_orm_queries(plans: SmartDjangoQuery,
             runs = runs.filter(case_run__case__in=cases).distinct()
         if plans is not None:
             runs = runs.filter(plan__in=plans).distinct()
+        runs = runs.extra(select={
+            'cases_count': RawSQL.total_num_caseruns
+        })
         return runs
 
     if target == 'plan':
@@ -130,9 +190,8 @@ def sum_orm_queries(plans: SmartDjangoQuery,
         if runs is not None:
             plans = plans.filter(run__in=runs).distinct()
         plans = plans.extra(select={
-            'num_cases': RawSQL.num_cases,
-            'num_runs': RawSQL.num_runs,
-            'num_children': RawSQL.num_plans,
+            'cases_count': RawSQL.num_cases,
+            'runs_count': RawSQL.num_runs,
         })
         return plans
 
@@ -147,55 +206,6 @@ def sum_orm_queries(plans: SmartDjangoQuery,
         if plans is not None:
             cases = cases.filter(plan__in=plans).distinct()
         return cases
-
-
-def render_results(request: HttpRequest,
-                   results: QuerySet,
-                   start_time: float,
-                   queries: Dict[str, Any],
-                   tmpl: str = 'search/results.html') -> HttpResponse:
-    """Using a SQL "in" query and PKs as the arguments"""
-    klasses = {
-        'plan': {'class': TestPlan, 'result_key': 'test_plans'},
-        'case': {'class': TestCase, 'result_key': 'test_cases'},
-        'run': {'class': TestRun, 'result_key': 'test_runs'}
-    }
-    asc = bool(request.GET.get('asc', None))
-    navigate_url = remove_from_request_path(request, ['page'])
-    query_url = remove_from_request_path(request, ['order_by'])
-    if asc:
-        query_url = remove_from_request_path(query_url, ['asc'])
-    else:
-        query_url = '%s&asc=True' % query_url
-
-    paginator = Paginator(results, 20)
-    page = request.GET.get('page')
-    try:
-        this_page = paginator.page(page)
-    except PageNotAnInteger:
-        this_page = paginator.page(1)
-
-    page_start = paginator.per_page * (this_page.number - 1) + 1
-    page_end = (
-        page_start + min(len(this_page.object_list), paginator.per_page) - 1
-    )
-
-    calculate_associated_data(list(this_page), queries['Target'])
-
-    end_time = time.time()
-    time_cost = round(end_time - start_time, 3)
-    context_data = {
-        'search_target': klasses[request.GET['target']]['result_key'],
-        'time_cost': time_cost,
-        'queries': queries,
-        'query_url': query_url,
-        # For navigation
-        'navigate_url': navigate_url,
-        'this_page': this_page,
-        'page_start': page_start,
-        'page_end': page_end,
-    }
-    return render(request, tmpl, context=context_data)
 
 
 def remove_from_request_path(request: Union[HttpRequest, str],
@@ -256,17 +266,3 @@ def fmt_queries(*queries):
                     v = ', '.join(map(str, v))
                 results[make_name_prefix_meaningful(k)] = v
     return results
-
-
-def calculate_associated_data(queryset: List, query_target: str) -> None:
-    """Calculate associated data and attach to objects in queryset"""
-
-    # FIXME: Maybe plan and case associated data could be calculated here as well.
-
-    if query_target == 'run':
-        for run in queryset:
-            env_groups = run.plan.env_group.values_list('name', flat=True)
-            if env_groups:
-                run.associated_data = {'env_group': env_groups[0]}
-            else:
-                run.associated_data = {'env_group': None}

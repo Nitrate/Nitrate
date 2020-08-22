@@ -10,6 +10,9 @@
 <script type="text/javascript" src="{% static "js/testplan_actions.js" %}"></script>
 <script type="text/javascript" src="{% static "js/testrun_actions.js" %}"></script>
 <script type="text/javascript" src="{% static "js/advance_search.js" %}"></script>
+
+{# FIXME: Only require the datatable code, refactor it? #}
+<script type="text/javascript" src="{% static "js/testcase_actions.js" %}"></script>
 {% endblock %}
 
 {% block contents %}
@@ -29,16 +32,12 @@
 	</div>
 	<h2 class="clear">Search Results<span style="font-weight:normal; font-size:12px; padding:0 0 0 15px;">Time cost: {{ time_cost }} sec(s).</span></h2>
 
-	{% if search_target == "test_plans" %}
-	{% include "search/plans.html" %}
-	{% endif %}
-
-	{% if search_target == "test_cases" %}
-	{% include "search/cases.html" %}
-	{% endif %}
-
-	{% if search_target == "test_runs" %}
-	{% include "search/runs.html" %}
+	{% if search_target == "plan" %}
+		{% include "search/plans.html" %}
+	{% elif search_target == "case" %}
+		{% include "search/cases.html" %}
+	{% elif search_target == "run" %}
+		{% include "search/runs.html" %}
 	{% endif %}
 
 {% endblock %}

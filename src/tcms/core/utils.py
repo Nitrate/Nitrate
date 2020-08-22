@@ -7,6 +7,8 @@ import re
 from typing import List, Dict, Any
 
 from django.apps import apps
+from django.db.models import QuerySet
+from django.http import QueryDict
 
 
 def string_to_list(strs, spliter=','):
@@ -151,10 +153,15 @@ class DataTableResult:
 
     DEFAULT_PAGE_SIZE = 20
 
-    def __init__(self, request_data, queryset, column_names: List[str]):
+    def __init__(self,
+                 request_data: QueryDict,
+                 queryset: QuerySet,
+                 column_names: List[str],
+                 default_order_key: str = 'pk'):
         self.queryset = queryset
         self.request_data = request_data
         self.column_names = column_names
+        self._default_order_key = default_order_key
 
     def _iter_sorting_columns(self):
         number_of_sorting_cols = int(self.request_data.get('iSortingCols', 0))
@@ -181,7 +188,7 @@ class DataTableResult:
             self.queryset = self.queryset.order_by(*order_fields)
         else:
             # If no order key is specified, sort by pk by default.
-            self.queryset = self.queryset.order_by('pk')
+            self.queryset = self.queryset.order_by(self._default_order_key)
 
     def _paginate_result(self):
         display_length = min(

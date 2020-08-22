@@ -1,7 +1,7 @@
 Nitrate.TestPlans = {};
 Nitrate.TestPlans.Create = {};
 Nitrate.TestPlans.List = {};
-Nitrate.TestPlans.Advance_Search_List = {};
+Nitrate.TestPlans.AdvancedSearch = {};
 Nitrate.TestPlans.Details = {};
 Nitrate.TestPlans.Edit = {};
 Nitrate.TestPlans.SearchCase = {};
@@ -551,7 +551,7 @@ function bindSearchResultActionEventHandlers() {
   });
 }
 
-Nitrate.TestPlans.Advance_Search_List.on_load = function () {
+Nitrate.TestPlans.AdvancedSearch.on_load = function () {
   jQ('#testplans_table :checkbox').on('change', function () {
     let disable = jQ('#testplans_table tbody :checkbox:checked').length === 0;
     jQ('.js-printable-plans').prop('disabled', disable);
@@ -565,18 +565,58 @@ Nitrate.TestPlans.Advance_Search_List.on_load = function () {
   });
 
   bindSearchResultActionEventHandlers();
+
+  jQ('#testplans_table').dataTable(
+    Object.assign({}, Nitrate.TestPlans.SearchResultTableSettings, {
+      iDeferLoading: Nitrate.TestPlans.AdvancedSearch.numberOfPlans,
+      sAjaxSource: '/advance-search/' + this.window.location.search,
+    })
+  );
 };
 
-Nitrate.DataTable = {
-  'commonSettings': {
-    'bFilter': false,
-    'bInfo': true,
-    'bLengthChange': false,
-    'bServerSide': true,
-    'iDisplayLength': 20,
-    'sPaginationType': 'full_numbers'
+Nitrate.TestPlans.SearchResultTableSettings = Object.assign({}, Nitrate.DataTable.commonSettings, {
+
+  // By default, plans are sorted by create_date in desc order.
+  // It is equal to set the pk column in the DataTable initialization.
+  aaSorting: [[ 1, 'desc' ]],
+
+  oLanguage: {
+    sEmptyTable: 'No plans found.'
+  },
+
+  aoColumns: [
+    {'bSortable': false},     // Selector checkbox
+    null,                     // ID
+    {'sType': 'html'},        // Name
+    {'sType': 'html'},        // Author
+    {'sType': 'html'},        // Owner
+    null,                     // Product
+    {'bVisible': false},      // Invisible product version
+    null,                     // Type
+    null,                     // Cases
+    null,                     // Runs
+    {'bSortable': false}      // Actions
+  ],
+
+  fnDrawCallback: function () {
+    jQ('#testplans_table tbody tr td:nth-child(1)').shiftcheckbox({
+      checkboxSelector: ':checkbox',
+      selectAll: '#testplans_table .js-select-all'
+    });
+
+    jQ('#testplans_table :checkbox').on('change', function () {
+      let disable = jQ('#testplans_table tbody :checkbox:checked').length === 0;
+      jQ('.js-printable-plans').prop('disabled', disable);
+      jQ('.js-clone-plans').prop('disabled', disable);
+      jQ('.js-export-plans').prop('disabled', disable);
+    });
+  },
+
+  fnInfoCallback: function (oSettings, iStart, iEnd, iMax, iTotal, sPre) {
+    return 'Showing ' + (iEnd - iStart + 1) + ' of ' + iTotal + ' plans';
   }
-};
+
+});
 
 Nitrate.TestPlans.List.on_load = function () {
   registerProductAssociatedObjectUpdaters(
@@ -597,71 +637,11 @@ Nitrate.TestPlans.List.on_load = function () {
     });
   }
 
-  let plansSearchResultTableSettings = {
-    // By default, plans are sorted by create_date in desc order.
-    // It is equal to set the pk column in the DataTable initialization.
-    'aaSorting': [[ 1, 'desc' ]],
-    'aLengthMenu': [[10, 20, 50, -1], [10, 20, 50, 'All']],
-    'bProcessing': true,
-    'iDeferLoading': Nitrate.TestPlans.List.numberOfPlans,
-    'sAjaxSource': '/plans/pages/' + this.window.location.search,
-
-    'oLanguage': {
-      'sEmptyTable': 'No plans found.'
-    },
-
-    'aoColumns': [
-      {'bSortable': false},
-      null,
-      {'sType': 'html'},
-      {'sType': 'html'},
-      {'sType': 'html'},
-      null,
-      {'bVisible': false},
-      null,
-      null,
-      null,
-      {'bSortable': false}
-    ],
-
-    'fnInfoCallback': function (oSettings, iStart, iEnd, iMax, iTotal, sPre) {
-      return 'Showing ' + (iEnd - iStart + 1) + ' of ' + iTotal + ' plans';
-    },
-
-    // Move this callback to commonSettings when needed
-    'fnInitComplete': function (oSettings, json) {
-      if (oSettings.aoData.length > 1) {
-        return;
-      }
-      // If table is empty or only has a single row, ensure sortable columns
-      // are set to unsortable in order to avoid potential unnecessary HTTP
-      // request made by clicking header by user.
-      let columns = oSettings.aoColumns;
-      for (let i = 0; i < columns.length; i++) {
-        let column = columns[i];
-        if (column.bSortable) {
-          column.bSortable = false;
-        }
-      }
-    },
-
-    'fnDrawCallback': function () {
-      jQ('#testplans_table tbody tr td:nth-child(1)').shiftcheckbox({
-        checkboxSelector: ':checkbox',
-        selectAll: '#testplans_table .js-select-all'
-      });
-
-      jQ('#testplans_table :checkbox').on('change', function () {
-        let disable = jQ('#testplans_table tbody :checkbox:checked').length === 0;
-        jQ('.js-printable-plans').prop('disabled', disable);
-        jQ('.js-clone-plans').prop('disabled', disable);
-        jQ('.js-export-plans').prop('disabled', disable);
-      });
-    }
-  };
-
   jQ('#testplans_table').dataTable(
-    Object.assign(plansSearchResultTableSettings, Nitrate.DataTable.commonSettings)
+    Object.assign({}, Nitrate.TestPlans.SearchResultTableSettings, {
+      iDeferLoading: Nitrate.TestPlans.List.numberOfPlans,
+      sAjaxSource: '/plans/pages/' + this.window.location.search,
+    })
   );
 
   bindSearchResultActionEventHandlers();

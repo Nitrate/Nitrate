@@ -94,19 +94,56 @@ function cloneRunsClickHandler() {
 }
 
 Nitrate.TestRuns.AdvancedSearch.on_load = function () {
-  jQ('#testruns_table tbody tr td:nth-child(1)').shiftcheckbox({
-    checkboxSelector: ':checkbox',
-    selectAll: '#testruns_table .js-select-all',
-  });
-
-  jQ('#testruns_table :checkbox').on('change', function () {
-    jQ('.js-clone-testruns').prop(
-      'disabled', jQ('#testruns_table tbody :checkbox:checked').length === 0
-    );
-  });
 
   jQ('.js-clone-testruns').on('click', cloneRunsClickHandler);
-}
+
+  let runsSearchResultTableSettings = Object.assign({}, Nitrate.DataTable.commonSettings, {
+    aaSorting: [[1, 'desc']],
+    sAjaxSource: '/advance-search/' + this.window.location.search,
+
+    iDeferLoading: Nitrate.TestRuns.AdvancedSearch.numberOfRuns,
+
+    aoColumns: [
+      {'bSortable': false},       // Select checker
+      {'sType': 'numeric'},       // ID
+      {'sType': 'html'},          // Summary
+      {'sType': 'html'},          // Manager
+      {'sType': 'html'},          // Default Tester
+      {'bVisible': false},        // ?
+      null,                       // Product
+      null,                       // Product Version
+      null,                       // Environment
+      {'sType': 'numeric'},       // Cases
+      {'sType': 'html'},          // Status
+      {'bSortable': false}        // Completed progress
+    ],
+
+    oLanguage: {
+      sEmptyTable: 'No run was found.'
+    },
+
+    fnDrawCallback: function () {
+      jQ('#testruns_table tbody tr td:nth-child(1)').shiftcheckbox({
+        checkboxSelector: ':checkbox',
+        selectAll: '#testruns_table .js-select-all'
+      });
+
+      jQ('#testruns_table :checkbox').on('change', function () {
+        jQ('.js-clone-testruns').prop(
+          'disabled', jQ('#testruns_table tbody :checkbox:checked').length === 0
+        );
+      });
+    },
+
+    fnInfoCallback: function (oSettings, iStart, iEnd, iMax, iTotal, sPre) {
+      return 'Showing ' + (iEnd - iStart + 1) + ' of ' + iTotal + ' runs';
+    }
+
+  });
+
+  jQ('#testruns_table').dataTable(runsSearchResultTableSettings);
+
+};
 
 Nitrate.TestRuns.List.on_load = function () {
   registerProductAssociatedObjectUpdaters(

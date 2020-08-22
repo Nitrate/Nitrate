@@ -20,7 +20,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
 from django.db import transaction
-from django.db.models import Count
+from django.db.models import Count, QuerySet
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.http import JsonResponse
@@ -420,6 +420,65 @@ def load_runs_of_one_plan(request, plan_id,
     return JsonResponse(json.loads(resp_data))
 
 
+def calculate_associated_data(runs: QuerySet) -> None:
+    """Calculate associated data and set to each run in place
+
+    The associated data include:
+
+    * completed progress of each test run
+    * the environment of each test run
+    """
+    run_ids = [run.pk for run in runs]
+    qs = (TestCaseRun.objects
+          .filter(case_run_status=TestCaseRunStatus.name_to_id('FAILED'), run__in=run_ids)
+          .values('run', 'case_run_status')
+          .annotate(count=Count('pk'))
+          .order_by('run', 'case_run_status'))
+    failure_subtotal = magic_convert(qs, key_name='run', value_name='count')
+
+    completed_status_ids = TestCaseRunStatus.completed_status_ids()
+    qs = (TestCaseRun.objects
+          .filter(case_run_status__in=completed_status_ids, run__in=run_ids)
+          .values('run', 'case_run_status')
+          .annotate(count=Count('pk'))
+          .order_by('run', 'case_run_status'))
+    completed_subtotal = {
+        run_id: sum((item['count'] for item in stats_rows))
+        for run_id, stats_rows
+        in itertools.groupby(qs.iterator(), key=itemgetter('run'))
+    }
+
+    qs = (TestCaseRun.objects
+          .filter(run__in=run_ids)
+          .values('run')
+          .annotate(cases_count=Count('case')))
+    cases_subtotal = magic_convert(qs, key_name='run', value_name='cases_count')
+
+    # Relative env groups to runs
+    result = (TCMSEnvGroup.objects
+              .filter(plans__run__in=run_ids)
+              .values('plans__run', 'name'))
+    runs_env_groups = {item['plans__run']: item['name'] for item in result}
+
+    for run in runs:
+        run_id = run.pk
+        cases_count = cases_subtotal.get(run_id, 0)
+        if cases_count:
+            completed_percent = completed_subtotal.get(run_id, 0) * 1.0 / cases_count * 100
+            failure_percent = failure_subtotal.get(run_id, 0) * 1.0 / cases_count * 100
+        else:
+            completed_percent = failure_percent = 0
+
+        run.associated_data = {
+            'stats': {
+                'cases': cases_count,
+                'completed_percent': completed_percent,
+                'failure_percent': failure_percent,
+            },
+            'env_group': runs_env_groups.get(run_id),
+        }
+
+
 @require_GET
 def ajax_search(request, template_name='run/common/json_runs.txt'):
     """Response request to search test runs from Search Runs"""
@@ -430,100 +489,22 @@ def ajax_search(request, template_name='run/common/json_runs.txt'):
         search_form.populate()
 
     if search_form.is_valid():
-        trs = TestRun.list(search_form.cleaned_data)
-        trs = trs.select_related(
-            'manager',
-            'default_tester',
-            'build',
-            'plan',
-            'build__product'
-        ).only(
-            'run_id',
-            'summary',
-            'manager__username',
-            'default_tester__id',
-            'default_tester__username',
-            'plan__name',
-            'build__product__name',
-            'stop_date',
-            'product_version__value'
-        )
+        runs = (TestRun
+                .list(search_form.cleaned_data)
+                .select_related('manager', 'default_tester', 'build', 'plan', 'build__product')
+                .only('run_id', 'summary', 'manager__username', 'default_tester__id',
+                      'default_tester__username', 'plan__name', 'build__product__name',
+                      'stop_date', 'product_version__value'))
 
         column_names = [
-            '',
-            'run_id',
-            'summary',
-            'manager__username',
-            'default_tester__username',
-            'plan',
-            'build__product__name',
-            'product_version',
-            'env_groups',
-            'total_num_caseruns',
-            'stop_date',
-            'completed',
+            '', 'run_id', 'summary', 'manager__username', 'default_tester__username',
+            'plan', 'build__product__name', 'product_version', 'env_groups',
+            'total_num_caseruns', 'stop_date', 'completed',
         ]
 
-        dt = DataTableResult(request.GET, trs, column_names)
+        dt = DataTableResult(request.GET, runs, column_names)
         response_data = dt.get_response_data()
-        searched_runs = response_data['querySet']
-
-        # Get associated statistics data
-        run_ids = [run.pk for run in searched_runs]
-        qs = TestCaseRun.objects.filter(
-            case_run_status=TestCaseRunStatus.name_to_id('FAILED'),
-            run__in=run_ids
-        ).values(
-            'run', 'case_run_status'
-        ).annotate(
-            count=Count('pk')
-        ).order_by('run', 'case_run_status')
-        failure_subtotal = magic_convert(qs, key_name='run', value_name='count')
-
-        completed_status_ids = TestCaseRunStatus.completed_status_ids()
-        qs = TestCaseRun.objects.filter(
-            case_run_status__in=completed_status_ids,
-            run__in=run_ids
-        ).values(
-            'run', 'case_run_status'
-        ).annotate(
-            count=Count('pk')
-        ).order_by('run', 'case_run_status')
-        completed_subtotal = {
-            run_id: sum((item['count'] for item in stats_rows))
-            for run_id, stats_rows
-            in itertools.groupby(qs.iterator(), key=itemgetter('run'))
-        }
-
-        qs = TestCaseRun.objects.filter(
-            run__in=run_ids
-        ).values('run').annotate(
-            cases_count=Count('case')
-        )
-        cases_subtotal = magic_convert(qs, key_name='run', value_name='cases_count')
-
-        # Relative env groups to runs
-        result = (TCMSEnvGroup.objects.filter(plans__run__in=run_ids)
-                                      .values('plans__run', 'name'))
-        runs_env_groups = {item['plans__run']: item['name'] for item in result}
-
-        for run in searched_runs:
-            run_id = run.pk
-            cases_count = cases_subtotal.get(run_id, 0)
-            if cases_count:
-                completed_percent = completed_subtotal.get(run_id, 0) * 1.0 / cases_count * 100
-                failure_percent = failure_subtotal.get(run_id, 0) * 1.0 / cases_count * 100
-            else:
-                completed_percent = failure_percent = 0
-
-            run.associated_data = {
-                'stats': {
-                    'cases': cases_count,
-                    'completed_percent': completed_percent,
-                    'failure_percent': failure_percent,
-                },
-                'env_group': runs_env_groups.get(run_id),
-            }
+        calculate_associated_data(response_data['querySet'])
     else:
         response_data = {
             'sEcho': int(request.GET.get('sEcho', 0)),

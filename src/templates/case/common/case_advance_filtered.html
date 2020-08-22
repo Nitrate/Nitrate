@@ -1,16 +1,17 @@
 {% load static %}
 <form id="cases_form" action="{% url "cases-clone" %}" method="post">{% csrf_token %}
 	<div id="contentTab" class="mixbar">
-		{#}<span class="tit">{{ this_page.object_list|length }} Cases</span>{#}
 		<span>
 			{% if perms.testcases.add_testcase %}
-			<input type="submit" value="Clone" title="clone selected test plans" />
+			<input type="submit" class="js-clone-cases" value="Clone" title="clone selected test plans" disabled />
 			{% endif %}
-			<input type="button" disabled value="Printable copy" id="case_advance_printable" title="Create the printable copy for selected cases." />
-			<input type="button" id="export_selected_cases" value="Export" title="Export the cases for selected cases." />
+			<input type="button" class="js-printable-cases" value="Printable copy" id="case_advance_printable"
+				title="Create the printable copy for selected cases." disabled />
+			<input type="button" class="js-export-cases" id="export_selected_cases" value="Export"
+				title="Export the cases for selected cases." disabled />
 		</span>
 	</div>
-	<table class="list border-bottom" id="testcases_table" cellpadding="0" cellspacing="0" border="0">
+	<table id="testcases_table" class="list border-bottom" cellpadding="0" cellspacing="0" border="0">
 		<thead>
 			<tr>
 				<th width="18px">
@@ -21,21 +22,21 @@
 				<th width="20" class="nosort">
 					<input type="checkbox" id="id_checkbox_all_case" class="js-select-all" title="Select all/Select none">
 				</th>
-				<th class="widthID"><a href="{{query_url}}&order_by=case_id" title="Sort by Case Id">ID</a></th>
-				<th><a href="{{query_url}}&order_by=summary" title="Sort by Summary">Summary</a></th>
-				<th width="100"><a href="{{query_url}}&order_by=author__username" title="Sort by Author">Author</a></th>
-				<th width="130"><a href="{{query_url}}&order_by=default_tester__username" title="Sort by Default Tester">Default Tester</th>
-				<th width="140"><a href="{{query_url}}&order_by=is_automated" title="Sort by Automated">Automated</a></th>
-				<th width="90" ><a href="{{query_url}}&order_by=case_status" title="Sort by Case Status">Status</a></th>
-				<th width="120"><a href="{{query_url}}&order_by=category__name" title="Sort by Category">Category</a></th>
-				<th width="60"><a href="{{query_url}}&order_by=priority" title="Sort by Priority">Priority</th>
-				<th width="140" colspan='2'><a href="{{query_url}}&order_by=create_date" title="Sort by Create Date">Created</a></th>
+				<th width="60" title="Sort by Case Id">ID</th>
+				<th title="Sort by Summary">Summary</th>
+				<th width="100" title="Sort by Author">Author</th>
+				<th width="130" title="Sort by Default Tester">Default Tester</th>
+				<th width="140" title="Sort by Automated">Automated</th>
+				<th width="120" title="Sort by Case Status">Status</th>
+				<th width="120" title="Sort by Category">Category</th>
+				<th width="60" title="Sort by Priority">Priority</th>
+				<th width="140" title="Sort by Create Date">Created</th>
 			</tr>
 		</thead>
 		<tbody>
 			{% for test_case in this_page %}
-			<tr class="case_title {% cycle 'odd' 'even' %}">
-				<td class="expandable">
+			<tr class="case_title {% cycle 'odd' 'even' %}" data-pk="{{ test_case.pk }}">
+				<td>
 					<img class="expand blind_icon" src="{% static "images/t1.gif" %}" border="0" alt="">
 				</td>
 				<td valign="top"><input type="checkbox" name="case" value="{{ test_case.case_id }}"></td>
@@ -47,19 +48,9 @@
 				<td valign="top">{{ test_case.case_status }}</td>
 				<td valign="top">{{ test_case.category }}</td>
 				<td valign="top" align="center">{{ test_case.priority }}</td>
-				<td valign="top" colspan='2'>{{ test_case.create_date }}</td>
-			</tr>
-			<tr class="case_content hide" style="display: none;">
-				<td colspan="11">
-					<div id="id_loading_{{ test_case.pk }}" class="ajax_loading"></div>
-				</td>
-			</tr>
-			{% empty %}
-			<tr>
-				<td colspan="11"><center>No test cases found.</center></td>
+				<td valign="top">{{ test_case.create_date }}</td>
 			</tr>
 			{% endfor %}
 		</tbody>
 	</table>
 </form>
-{% include "search/navigator.html" %}

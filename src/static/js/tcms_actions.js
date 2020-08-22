@@ -1030,3 +1030,31 @@ function confirmDialog(options) {
   });
 }
 
+Nitrate.DataTable = {
+  commonSettings: {
+    bFilter: false,
+    bInfo: true,
+    bLengthChange: false,
+    bServerSide: true,
+    iDisplayLength: 20,
+    sPaginationType: 'full_numbers',
+    aLengthMenu: [[10, 20, 50, -1], [10, 20, 50, 'All']],
+    bProcessing: true,
+
+    fnInitComplete: function (oSettings, json) {
+      if (oSettings.aoData.length > 1) {
+        return;
+      }
+      // If table is empty or only has a single row, ensure sortable columns
+      // are set to unsortable in order to avoid potential unnecessary HTTP
+      // request made by clicking header by user.
+      let columns = oSettings.aoColumns;
+      for (let i = 0; i < columns.length; i++) {
+        let column = columns[i];
+        if (column.bSortable) {
+          column.bSortable = false;
+        }
+      }
+    },
+  }
+};
