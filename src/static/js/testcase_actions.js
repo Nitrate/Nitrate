@@ -192,8 +192,10 @@ Nitrate.TestCases.List.on_load = function () {
     'aaSorting': [[ 2, 'desc' ]],
     'bProcessing': true,
     'bServerSide': true,
-    'sAjaxSource': '/cases/ajax/' + this.window.location.search,
-    'aoColumns': [
+    'sAjaxSource': '/cases/search/' + this.window.location.search,
+
+    iDeferLoading: Nitrate.TestCases.List.numberOfCases,
+    aoColumns: [
       {'bSortable': false, 'sClass': 'expandable'},
       {'bSortable': false},
       {'sType': 'html', 'sClass': 'expandable'},
@@ -206,6 +208,7 @@ Nitrate.TestCases.List.on_load = function () {
       {'sClass': 'expandable'},
       {'sClass': 'expandable'}
     ],
+
     'fnDrawCallback': function () {
       jQ('#testcases_table tbody tr td:nth-child(2)').shiftcheckbox({
         checkboxSelector: ':checkbox',

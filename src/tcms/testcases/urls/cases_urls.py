@@ -6,8 +6,7 @@ from .. import views
 urlpatterns = [
     path('new/', views.new, name='cases-new'),
     path('', views.all, name='cases-all'),
-    path('search/', views.search, name='cases-search'),
-    path('ajax/', views.ajax_search, name='cases-ajax-search'),
+    path('search/', views.search_cases, name='cases-search'),
 
     path('automated/', views.ChangeCaseAutomatedPropertyView.as_view(),
          name='cases-automated'),

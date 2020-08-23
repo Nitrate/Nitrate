@@ -14,10 +14,11 @@
 <script type="text/javascript" src="{% static "js/testplan_actions.js" %}"></script>
 <script type="text/javascript" src="{% static "js/testcase_actions.js" %}"></script>
 <script type="text/javascript">
-	Nitrate.TestCases.List.Param = {
-		'case_printable': '{% url "cases-printable" %}',
-		'case_export':'{% url "cases-export" %}'
-	};
+Nitrate.TestCases.List.Param = {
+  'case_printable': '{% url "cases-printable" %}',
+  'case_export':'{% url "cases-export" %}'
+};
+Nitrate.TestCases.List.numberOfCases = {{ total_count }};
 Nitrate.Utils.after_page_load(Nitrate.TestCases.List.on_load);
 </script>
 {% endblock %}
@@ -46,9 +47,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestCases.List.on_load);
 			</div>
 		</div>
 	</form>
-	<!--case list-->
-    {% if search_criterias %}
-	    {% include "case/common/case_filtered.html" %}
-    {% endif %}
+
+    {% include "case/common/case_filtered.html" %}
 </div>
 {% endblock %}

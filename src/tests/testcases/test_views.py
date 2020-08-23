@@ -34,7 +34,7 @@ from tcms.testcases.models import TestCaseComponent
 from tcms.testcases.models import TestCasePlan
 from tcms.testcases.models import TestCaseTag
 from tcms.testcases.views import (
-    ajax_response, calculate_for_testcases, plan_from_request_or_none,
+    calculate_for_testcases, plan_from_request_or_none,
     update_case_email_settings)
 from tcms.testplans.models import TestPlan
 from tcms.testruns.models import TestCaseRun
@@ -818,38 +818,6 @@ class TestEditCase(BasePlanCase):
         self.assertRedirects(response, redirect_url, target_status_code=301)
 
 
-class TestAJAXSearchCases(BasePlanCase):
-    """Test ajax_search"""
-
-    @classmethod
-    def setUpTestData(cls):
-        super().setUpTestData()
-
-        cls.search_data = {
-            'summary': '',
-            'author': '',
-            'product': '',
-            'plan': '',
-            'is_automated': '',
-            'category': '',
-            'component': '',
-            'issue_key': '',
-            'tag__name__in': '',
-            'a': 'search',
-        }
-
-        cls.search_url = reverse('cases-ajax-search')
-
-    def test_search_all_cases(self):
-        response = self.client.get(self.search_url, self.search_data)
-
-        data = json.loads(response.content)
-
-        cases_count = self.plan.case.count()
-        self.assertEqual(cases_count, data['iTotalRecords'])
-        self.assertEqual(cases_count, data['iTotalDisplayRecords'])
-
-
 class TestChangeCasesAutomated(BasePlanCase):
     """Test automated view method"""
 
@@ -1519,44 +1487,33 @@ class TestSearchCases(BasePlanCase):
 
     @classmethod
     def setUpTestData(cls):
+        """Setup data for test
+
+        Besides those initial test cases created by base class, this test needs
+        more cases in order to test switching other page.
+        """
         super().setUpTestData()
-
-        cls.search_url = reverse('cases-search')
-
-    def test_search_without_selected_product(self):
-        response = self.client.get(self.search_url, {})
-        self.assertContains(
-            response,
-            '<option value="" selected="selected">---------</option>',
-            html=True)
-
-    def test_search_with_selected_product(self):
-        product = self.product
-        response = self.client.get(self.search_url, {'product': product.pk})
-        self.assertContains(
-            response,
-            f'<option value="{product.pk}" selected="selected">'
-            f'{product.name}'
-            f'</option>',
-            html=True
-        )
-
-
-class TestAjaxSearch(BasePlanCase):
-    """Test ajax_search"""
-
-    @classmethod
-    def setUpTestData(cls):
-        super(TestAjaxSearch, cls).setUpTestData()
 
         cls.functional_case = f.TestCaseCategoryFactory(
             name='Functional', product=cls.product
         )
 
         cls.case_2.category = cls.functional_case
+        cls.case_2.priority = Priority.objects.get(value='P2')
         cls.case_2.save()
         cls.case_3.category = cls.functional_case
+        cls.case_3.priority = Priority.objects.get(value='P5')
         cls.case_3.save()
+
+        # Create more cases. The total number must greater than 25 due to 20 is
+        # the default count per page.
+        for i in range(20):
+            f.TestCaseFactory(
+                author=cls.tester,
+                default_tester=None,
+                reviewer=cls.tester,
+                case_status=cls.case_status_confirmed,
+                plan=[cls.plan])
 
         cls.component_db = f.ComponentFactory(name='db', product=cls.product)
 
@@ -1574,73 +1531,48 @@ class TestAjaxSearch(BasePlanCase):
         cls.case_3.add_tag(cls.tag_python)
         cls.case_4.add_tag(cls.tag_fedora)
 
-    def test_search_in_general(self):
-        url = reverse('cases-ajax-search')
+        cls.search_url = reverse('cases-search')
 
-        # List case 2 and case 3, and ordered by pk
+    def test_show_first_page_for_initial_query(self):
+        resp = self.client.get(self.search_url, data={})
+        self.assert200(resp)
 
-        resp = self.client.get(url, data={
-            'a': 'search',
-            'product': self.product.pk,
-            'summary': 'Test case',
-            'component': self.component_db.pk,
-            'tag__name__in': f'{self.tag_python.name},{self.tag_fedora.name}'
-        })
-
-        result = json.loads(resp.content)
-        cases_list = result['aaData']
-
-        self.assertEqual(2, result['iTotalRecords'])
-        self.assertEqual(2, len(cases_list))
-
-        self.assertIn(self.case_2.summary, cases_list[0][3])
-        self.assertIn(self.case_3.summary, cases_list[1][3])
-
-
-class TestAJAXResponse(BasePlanCase):
-    """Test ajax_response"""
-
-    def setUp(self):
-        self.factory = RequestFactory()
-
-        self.column_names = [
-            'case_id',
-            'summary',
-            'author__username',
-            'default_tester__username',
-            'is_automated',
-            'case_status__name',
-            'category__name',
-            'priority__value',
-            'create_date',
+        bs = BeautifulSoup(resp.content.decode('utf-8'), 'html.parser')
+        case_ids = [
+            int(tr.find_all('td')[2].text)
+            for tr in bs.table.tbody.find_all('tr')
         ]
 
-        self.template = 'case/common/json_cases.txt'
+        expected_ids = list(TestCase.objects
+                            .values_list('pk', flat=True)
+                            .order_by('-create_date')[0:20])
 
-    def test_return_empty_cases(self):
-        url = reverse('cases-ajax-search')
-        request = self.factory.get(url, {
+        self.assertListEqual(expected_ids, case_ids)
 
+    def test_show_first_page_for_query(self):
+        resp = self.client.get(self.search_url, data={
+            'priority': Priority.objects.get(value='P2').pk
         })
-        request.user = self.tester
+        self.assert200(resp)
 
-        empty_cases = TestCase.objects.none()
-        response = ajax_response(request, empty_cases, self.column_names, self.template)
+        bs = BeautifulSoup(resp.content.decode('utf-8'), 'html.parser')
+        case_ids = [
+            int(tr.find_all('td')[2].text)
+            for tr in bs.table.tbody.find_all('tr')
+        ]
 
-        data = json.loads(response.content)
+        expected_ids = list(TestCase.objects
+                            .filter(priority__value='P2')
+                            .values_list('pk', flat=True)
+                            .order_by('-create_date'))
+        self.assertListEqual(expected_ids, case_ids)
 
-        self.assertEqual(0, data['sEcho'])
-        self.assertEqual(0, data['iTotalRecords'])
-        self.assertEqual(0, data['iTotalDisplayRecords'])
-        self.assertEqual([], data['aaData'])
-
-    def test_return_sorted_cases_by_name_desc(self):
-        url = reverse('cases-ajax-search')
-        request = self.factory.get(url, {
+    def test_switch_to_another_page_order_by_pk(self):
+        resp = self.client.get(self.search_url, data={
             'sEcho': 1,
-            'iDisplayStart': 0,
+            'iDisplayStart': 20,
             'iDisplayLength': 2,
-            'iSortCol_0': 0,
+            'iSortCol_0': 2,
             'sSortDir_0': 'desc',
             'iSortingCols': 1,
             'bSortable_0': 'true',
@@ -1648,27 +1580,17 @@ class TestAJAXResponse(BasePlanCase):
             'bSortable_2': 'true',
             'bSortable_3': 'true',
         })
-        request.user = self.tester
 
-        cases = self.plan.case.all()
-        response = ajax_response(request, cases, self.column_names, self.template)
-
-        data = json.loads(response.content)
-
-        total = self.plan.case.count()
-        self.assertEqual(1, data['sEcho'])
-        self.assertEqual(total, data['iTotalRecords'])
-        self.assertEqual(total, data['iTotalDisplayRecords'])
-        self.assertEqual(2, len(data['aaData']))
-
-        id_links = [row[2] for row in data['aaData']]
-        id_links.sort()
-        expected_id_links = [
-            f"<a href='{reverse('case-get', args=[case.pk])}'>{case.pk}</a>"
-            for case in self.plan.case.order_by('-pk')[0:2]
+        table_data = json.loads(resp.content)
+        case_ids = [
+            int(BeautifulSoup(item[2], 'html.parser').text)
+            for item in table_data['aaData']
         ]
-        expected_id_links.sort()
-        self.assertEqual(expected_id_links, id_links)
+
+        expected_ids = list(TestCase.objects
+                            .values_list('pk', flat=True)
+                            .order_by('-pk')[20:22])
+        self.assertListEqual(expected_ids, case_ids)
 
 
 class TestAddComponent(BasePlanCase):
