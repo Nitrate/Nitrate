@@ -579,7 +579,7 @@ function registerProductAssociatedObjectUpdaters(productSelect, triggerProductSe
  *
  * @param {string} path - this is the form action.
  * @param {object} params
- * @param {string} method - get or post. Defaults to post.
+ * @param {string} [method=post] - get or post. Defaults to post.
  */
 function postToURL(path, params, method) {
   method = method || 'post'; // Set method to post by default, if not specified.
