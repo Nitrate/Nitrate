@@ -543,7 +543,8 @@ def search_cases(request):
         return JsonResponse(json.loads(resp_data))
     else:
         context_data = {
-            'module': MODULE_NAME,
+            'module': 'testruns',
+            'sub_module': 'cases',
             'object_list': cases[0:20],
             'search_form': search_form,
             'total_count': cases.count(),
