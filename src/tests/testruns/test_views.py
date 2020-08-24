@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
-
 import json
 import os
 
 from datetime import datetime, timedelta
 from http import HTTPStatus
 from operator import attrgetter
+from typing import List, Union
 
 from unittest.mock import patch
 from xml.etree import ElementTree
 
-from django.db.models import Max
+from bs4 import BeautifulSoup
+from django.db.models import Max, QuerySet
 from django.utils import formats
 from django.urls import reverse
 from django.contrib.auth.models import User
@@ -560,46 +561,13 @@ class TestStartCloneRunFromRunsSearchPage(CloneRunBaseTest):
 
 
 class TestSearchRuns(BaseCaseRun):
+    """Test search runs view"""
 
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
 
-        cls.search_runs_url = reverse('runs-all')
-
-    def test_only_show_search_form(self):
-        response = self.client.get(self.search_runs_url)
-        self.assertContains(response, '<form id="runs_form"></form>', html=True)
-
-    def test_search_runs(self):
-        search_criteria = {'summary': 'run'}
-
-        response = self.client.get(self.search_runs_url, search_criteria)
-
-        self.assertContains(
-            response,
-            '<input id="id_summary" name="summary" value="run" type="text">',
-            html=True)
-
-        # Assert table with this ID exists. Because searching runs actually
-        # happens in an AJAX requested from DataTable, no need to verify
-        # search runs at this moment.
-        self.assertContains(response, 'id="testruns_table"')
-
-
-class TestAJAXSearchRuns(BaseCaseRun):
-    """Test ajax_search view
-
-    View method ajax_search is called by DataTable in a AJAX GET request. This
-    test aims to test the search, so DataTable related behavior do not belong
-    to test purpose, ignore it.
-    """
-
-    @classmethod
-    def setUpTestData(cls):
-        super().setUpTestData()
-
-        cls.search_url = reverse('runs-ajax-search')
+        cls.search_url = reverse('runs-all')
 
         # Add more test runs for testing different search criterias
 
@@ -625,7 +593,7 @@ class TestAJAXSearchRuns(BaseCaseRun):
         )
 
         # Probably need more cases as well in order to create case runs to
-        # test statistcis in search result
+        # test statistics in search result
 
         cls.build_issuetracker_fast = f.TestBuildFactory(
             product=cls.product_issuetracker)
@@ -658,7 +626,7 @@ class TestAJAXSearchRuns(BaseCaseRun):
             tag=[f.TestTagFactory(name='rhel')])
 
         cls.search_data = {
-            'action': 'search',
+            # 'action': 'search',
             # Add criteria for searching runs in each test
 
             # DataTable properties: pagination and sorting
@@ -684,55 +652,70 @@ class TestAJAXSearchRuns(BaseCaseRun):
             'bSortable_11': 'true',
         }
 
-    def assert_found_runs(self, expected_found_runs, search_result):
-        expected_runs_count = len(expected_found_runs)
-        self.assertEqual(expected_runs_count, search_result['iTotalRecords'])
-        self.assertEqual(expected_runs_count, search_result['iTotalDisplayRecords'])
-        self.assertEqual(expected_runs_count, len(search_result['aaData']))
+    def assert_found_runs_in_first_page(
+            self,
+            found_runs: Union[QuerySet, List],
+            response):
+        bs = BeautifulSoup(response.content.decode('utf-8'), 'html.parser')
+        run_ids = list(map(int, (
+            tr.td.input.get('value') for tr in bs.table.tbody.find_all('tr')
+        )))
+        expected_run_ids = [run.pk for run in found_runs]
+        self.assertListEqual(expected_run_ids, run_ids)
 
-        for run, row in zip(expected_found_runs, search_result['aaData']):
+    def test_switch_to_another_page(self):
+        search_data = self.search_data.copy()
+        page_size = 2
+        search_data['iDisplayStart'] = 2  # Switch to the second page
+        search_data['iDisplayLength'] = page_size
+        search_data['sSortDir_0'] = 'desc'
+
+        response = self.client.get(self.search_url, data=search_data)
+        table_data = json.loads(response.content)
+
+        total_count = TestRun.objects.count()
+
+        self.assertEqual(total_count, table_data['iTotalRecords'])
+        self.assertEqual(total_count, table_data['iTotalDisplayRecords'])
+        self.assertEqual(page_size, len(table_data['aaData']))
+
+        runs = TestRun.objects.order_by('-pk')[2:4]  # Get runs for the second page
+
+        for run, row in zip(runs, table_data['aaData']):
             self.assertEqual(
-                "<a href='{}'>{}</a>".format(
-                    reverse('run-get', args=[run.pk]), run.pk),
-                row[1])
-            self.assertEqual(
-                "<a href='{}'>{}</a>".format(
-                    reverse('run-get', args=[run.pk]), run.summary),
-                row[2])
+                run.pk,
+                int(BeautifulSoup(row[0], 'html.parser').input.get('value')))
+
+            run_url = reverse('run-get', args=[run.pk])
+            self.assertEqual(f"<a href='{run_url}'>{run.pk}</a>", row[1])
+            self.assertEqual(f"<a href='{run_url}'>{run.summary}</a>", row[2])
 
             # Verify env_groups
-            env_groups = run.plan.env_group.values_list('name', flat=True)
-            if env_groups:
-                self.assertEqual(env_groups[0], row[8])
-            else:
-                self.assertEqual('None', row[8])
+            env_groups = list(run.plan.env_group.values_list('name', flat=True))
+            self.assertEqual(env_groups[0] if env_groups else 'None', row[8])
 
-    def test_search_all_runs(self):
+    def test_search_for_the_first_page(self):
         response = self.client.get(self.search_url)
-
-        search_result = json.loads(response.content)
-        self.assert_found_runs(TestRun.objects.order_by('pk'), search_result)
+        self.assert_found_runs_in_first_page(
+            TestRun.objects.order_by('-pk')[0:20], response)
 
     def test_empty_search_result(self):
         response = self.client.get(self.search_url, {'build': 9999})
-
-        search_result = json.loads(response.content)
-        self.assert_found_runs([], search_result)
+        self.assert_no_run_found(response)
 
     def test_search_by_summary(self):
         response = self.client.get(self.search_url, {'summary': 'run'})
-
-        search_result = json.loads(response.content)
-        self.assert_found_runs([self.test_run, self.test_run_1], search_result)
+        self.assert_found_runs_in_first_page(
+            [self.test_run_1, self.test_run], response)
 
     def test_search_by_product(self):
-        response = self.client.get(self.search_url,
-                                   {'product': self.product_issuetracker.pk})
+        response = self.client.get(self.search_url, {
+            'product': self.product_issuetracker.pk
+        })
 
-        search_result = json.loads(response.content)
-        self.assert_found_runs(
-            [self.run_hotfix, self.run_release, self.run_daily],
-            search_result)
+        self.assert_found_runs_in_first_page(
+            [self.run_daily, self.run_release, self.run_hotfix],
+            response)
 
     def test_search_by_product_and_version(self):
         query_criteria = {
@@ -741,8 +724,7 @@ class TestAJAXSearchRuns(BaseCaseRun):
         }
         response = self.client.get(self.search_url, query_criteria)
 
-        search_result = json.loads(response.content)
-        self.assert_found_runs([self.run_release], search_result)
+        self.assert_found_runs_in_first_page([self.run_release], response)
 
     def test_search_by_product_and_build(self):
         query_criteria = {
@@ -751,10 +733,9 @@ class TestAJAXSearchRuns(BaseCaseRun):
         }
         response = self.client.get(self.search_url, query_criteria)
 
-        search_result = json.loads(response.content)
-        self.assert_found_runs(
-            [self.run_hotfix, self.run_release, self.run_daily],
-            search_result)
+        self.assert_found_runs_in_first_page(
+            [self.run_daily, self.run_release, self.run_hotfix],
+            response)
 
     def test_search_by_product_and_other_product_build(self):
         query_criteria = {
@@ -762,88 +743,85 @@ class TestAJAXSearchRuns(BaseCaseRun):
             'build': self.build.pk,
         }
         response = self.client.get(self.search_url, query_criteria)
-
-        search_result = json.loads(response.content)
-        self.assert_found_runs([], search_result)
+        self.assert_no_run_found(response)
 
     def test_search_by_plan_name(self):
         response = self.client.get(self.search_url, {'plan': 'Issue'})
 
-        search_result = json.loads(response.content)
-        self.assert_found_runs(
-            [self.run_hotfix, self.run_release, self.run_daily],
-            search_result)
+        self.assert_found_runs_in_first_page(
+            [self.run_daily, self.run_release, self.run_hotfix],
+            response)
 
     def test_search_by_empty_plan_name(self):
         response = self.client.get(self.search_url, {'plan': ''})
-
-        search_result = json.loads(response.content)
-        self.assert_found_runs(TestRun.objects.order_by('pk'), search_result)
+        self.assert_found_runs_in_first_page(
+            TestRun.objects.order_by('-pk'), response)
 
     def test_search_by_plan_id(self):
         response = self.client.get(self.search_url, {'plan': self.plan.pk})
-
-        search_result = json.loads(response.content)
-        self.assert_found_runs([self.test_run, self.test_run_1], search_result)
+        self.assert_found_runs_in_first_page(
+            [self.test_run_1, self.test_run], response)
 
     def test_search_by_manager_or_default_tester(self):
-        response = self.client.get(self.search_url, {'people_type': 'people',
-                                                     'people': self.run_tester})
-        search_result = json.loads(response.content)
-        self.assert_found_runs(
-            [self.run_hotfix, self.run_release, self.run_daily],
-            search_result)
+        response = self.client.get(self.search_url, {
+            'people_type': 'people',
+            'people': self.run_tester
+        })
+        self.assert_found_runs_in_first_page(
+            [self.run_daily, self.run_release, self.run_hotfix],
+            response)
 
         response = self.client.get(self.search_url, {'people_type': 'people',
                                                      'people': self.tester})
-        search_result = json.loads(response.content)
-        self.assert_found_runs(TestRun.objects.order_by('pk'), search_result)
+        self.assert_found_runs_in_first_page(
+            TestRun.objects.order_by('-pk'), response)
 
     def test_search_by_manager(self):
         response = self.client.get(self.search_url,
                                    {'people_type': 'manager',
                                     'people': self.tester.username})
-        search_result = json.loads(response.content)
-        self.assert_found_runs(TestRun.objects.order_by('pk'), search_result)
+        self.assert_found_runs_in_first_page(
+            TestRun.objects.order_by('-pk'), response)
 
     def test_search_by_non_existing_manager(self):
         response = self.client.get(self.search_url,
                                    {'people_type': 'manager',
                                     'people': 'nonexisting-manager'})
-        search_result = json.loads(response.content)
-        self.assert_found_runs([], search_result)
+        self.assert_no_run_found(response)
 
     def test_search_by_default_tester(self):
         response = self.client.get(self.search_url,
                                    {'people_type': 'default_tester',
                                     'people': self.run_tester.username})
-        search_result = json.loads(response.content)
-        self.assert_found_runs(
-            [self.run_hotfix, self.run_release, self.run_daily],
-            search_result)
+        self.assert_found_runs_in_first_page(
+            [self.run_daily, self.run_release, self.run_hotfix],
+            response)
 
     def test_search_by_non_existing_default_tester(self):
-        response = self.client.get(self.search_url,
-                                   {'people_type': 'default_tester',
-                                    'people': 'nonexisting-default-tester'})
-        search_result = json.loads(response.content)
-        self.assert_found_runs([], search_result)
+        response = self.client.get(self.search_url, {
+            'people_type': 'default_tester',
+            'people': 'nonexisting-default-tester'
+        })
+        self.assert_no_run_found(response)
 
     def test_search_running_runs(self):
         response = self.client.get(self.search_url, {'status': 'running'})
-        search_result = json.loads(response.content)
-        self.assert_found_runs(TestRun.objects.order_by('pk'), search_result)
+        self.assert_found_runs_in_first_page(
+            TestRun.objects.order_by('-pk'), response)
+
+    def assert_no_run_found(self, response):
+        bs = BeautifulSoup(response.content.decode('utf-8'), 'html.parser')
+        # The DataTable does not run during the response.
+        self.assertEqual('', bs.table.tbody.text.strip())
 
     def test_search_finished_runs(self):
         response = self.client.get(self.search_url, {'status': 'finished'})
-        search_result = json.loads(response.content)
-        self.assert_found_runs([], search_result)
+        self.assert_no_run_found(response)
 
     def test_search_by_tag(self):
         response = self.client.get(self.search_url, {'tag__name__in': 'rhel'})
-        search_result = json.loads(response.content)
-        self.assert_found_runs([self.run_hotfix, self.run_daily],
-                               search_result)
+        self.assert_found_runs_in_first_page(
+            [self.run_daily, self.run_hotfix], response)
 
 
 class TestAddRemoveRunCC(BaseCaseRun):

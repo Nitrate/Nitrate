@@ -18,7 +18,7 @@
 		"{{ run.build.product }}",
 		"{{ run.product_version }}",
 		"{{ run.associated_data.env_group }}",
-		"{{ run.total_num_caseruns }}",
+		"{{ run.cases_count }}",
 		{% if run.stop_date %}
 			"<span class='pauselink'>Finished</span>"
 		{% else %}

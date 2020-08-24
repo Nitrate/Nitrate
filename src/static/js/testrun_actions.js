@@ -192,7 +192,8 @@ Nitrate.TestRuns.List.on_load = function () {
     'aaSorting': [[ 1, 'desc' ]],
     'bProcessing': true,
     'bServerSide': true,
-    'sAjaxSource': '/runs/ajax/' + this.window.location.search,
+    'iDeferLoading': Nitrate.TestRuns.List.numberOfRuns,
+    'sAjaxSource': '/runs/' + window.location.search,
     'aoColumns': [
       {'bSortable': false},
       {'sType': 'numeric'},
@@ -202,8 +203,8 @@ Nitrate.TestRuns.List.on_load = function () {
       {'bVisible': false},
       null,
       null,
-      null,
-      {'sType': 'numeric', 'bSortable': false},
+      {'bSortable': false},
+      {'sType': 'numeric'},
       null,
       {'bSortable': false}
     ],

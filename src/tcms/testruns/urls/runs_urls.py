@@ -5,8 +5,8 @@ from django.urls import path
 from .. import views
 
 urlpatterns = [
-    path('', views.all, name='runs-all'),
-    path('ajax/', views.ajax_search, name='runs-ajax-search'),
+    path('', views.search_runs, name='runs-all'),
+
     path('clone/', views.clone, name='runs-clone'),
 
     path('env_value/add/', views.AddEnvValueToRunView.as_view(),

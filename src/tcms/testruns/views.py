@@ -36,6 +36,8 @@ from django.views.generic import RedirectView, FormView
 from django.views.generic.base import TemplateView, View
 
 from django_comments.models import Comment
+
+from tcms.core.raw_sql import RawSQL
 from tcms.core.responses import JsonResponseBadRequest
 
 from tcms.issuetracker.models import Issue
@@ -274,7 +276,7 @@ def delete(request, run_id):
 
 
 @require_GET
-def all(request, template_name='run/all.html'):
+def all(request):
     """Read the test runs from database and display them."""
     SUB_MODULE_NAME = "runs"
 
@@ -291,13 +293,55 @@ def all(request, template_name='run/all.html'):
     else:
         search_form = SearchRunForm()
 
-    context_data = {
+    return render(request, 'run/all.html', context={
         'module': MODULE_NAME,
         'sub_module': SUB_MODULE_NAME,
         'query_result': query_result,
         'search_form': search_form,
-    }
-    return render(request, template_name, context=context_data)
+    })
+
+
+@require_GET
+def search_runs(request):
+    """Search test runs"""
+    search_form = SearchRunForm(request.GET)
+    product_id = request.GET.get('product')
+    search_form.populate(product_id=int(product_id) if product_id else None)
+
+    runs = TestRun.objects.none()
+
+    if search_form.is_valid():
+        runs = (TestRun
+                .list(search_form.cleaned_data)
+                .select_related('manager', 'default_tester', 'build', 'plan', 'build__product')
+                .only('run_id', 'summary', 'manager__username', 'default_tester__id',
+                      'default_tester__username', 'plan__name', 'build__product__name',
+                      'stop_date', 'product_version__value')
+                .extra(select={'cases_count': RawSQL.total_num_caseruns}))
+
+    column_names = [
+        '', 'run_id', 'summary', 'manager__username', 'default_tester__username',
+        'plan', 'build__product__name', 'product_version', 'env_groups',
+        'cases_count', 'stop_date', 'completed',
+    ]
+
+    dt = DataTableResult(request.GET, runs, column_names,
+                         default_order_key='-pk')
+    response_data = dt.get_response_data()
+    calculate_associated_data(response_data['querySet'])
+
+    if 'sEcho' in request.GET:
+        resp_data = (get_template('run/common/json_runs.txt')
+                     .render(response_data, request))
+        return JsonResponse(json.loads(resp_data))
+    else:
+        return render(request, 'run/all.html', context={
+            'module': MODULE_NAME,
+            'sub_module': 'runs',
+            'object_list': response_data['querySet'],
+            'search_form': search_form,
+            'total_count': runs.count()
+        })
 
 
 def run_queryset_from_querystring(querystring):
@@ -430,7 +474,8 @@ def calculate_associated_data(runs: QuerySet) -> None:
     """
     run_ids = [run.pk for run in runs]
     qs = (TestCaseRun.objects
-          .filter(case_run_status=TestCaseRunStatus.name_to_id('FAILED'), run__in=run_ids)
+          .filter(case_run_status=TestCaseRunStatus.name_to_id('FAILED'),
+                  run__in=run_ids)
           .values('run', 'case_run_status')
           .annotate(count=Count('pk'))
           .order_by('run', 'case_run_status'))
@@ -477,44 +522,6 @@ def calculate_associated_data(runs: QuerySet) -> None:
             },
             'env_group': runs_env_groups.get(run_id),
         }
-
-
-@require_GET
-def ajax_search(request, template_name='run/common/json_runs.txt'):
-    """Response request to search test runs from Search Runs"""
-    search_form = SearchRunForm(request.GET)
-    if request.GET.get('product'):
-        search_form.populate(product_id=request.GET['product'])
-    else:
-        search_form.populate()
-
-    if search_form.is_valid():
-        runs = (TestRun
-                .list(search_form.cleaned_data)
-                .select_related('manager', 'default_tester', 'build', 'plan', 'build__product')
-                .only('run_id', 'summary', 'manager__username', 'default_tester__id',
-                      'default_tester__username', 'plan__name', 'build__product__name',
-                      'stop_date', 'product_version__value'))
-
-        column_names = [
-            '', 'run_id', 'summary', 'manager__username', 'default_tester__username',
-            'plan', 'build__product__name', 'product_version', 'env_groups',
-            'total_num_caseruns', 'stop_date', 'completed',
-        ]
-
-        dt = DataTableResult(request.GET, runs, column_names)
-        response_data = dt.get_response_data()
-        calculate_associated_data(response_data['querySet'])
-    else:
-        response_data = {
-            'sEcho': int(request.GET.get('sEcho', 0)),
-            'iTotalRecords': 0,
-            'iTotalDisplayRecords': 0,
-            'runs': TestRun.objects.none(),
-        }
-
-    resp_data = get_template(template_name).render(response_data, request)
-    return JsonResponse(json.loads(resp_data))
 
 
 def open_run_get_case_runs(request, run):
