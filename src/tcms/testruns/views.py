@@ -311,18 +311,23 @@ def search_runs(request):
     runs = TestRun.objects.none()
 
     if search_form.is_valid():
-        runs = (TestRun
-                .list(search_form.cleaned_data)
-                .select_related('manager', 'default_tester', 'build', 'plan', 'build__product')
-                .only('run_id', 'summary', 'manager__username', 'default_tester__id',
-                      'default_tester__username', 'plan__name', 'build__product__name',
-                      'stop_date', 'product_version__value')
-                .extra(select={'cases_count': RawSQL.total_num_caseruns}))
+        runs = (
+            TestRun
+            .list(search_form.cleaned_data)
+            .select_related('manager', 'default_tester', 'build', 'plan',
+                            'build__product')
+            .only('run_id', 'summary', 'manager__username',
+                  'default_tester__id', 'default_tester__username',
+                  'plan__name', 'build__product__name',
+                  'stop_date', 'product_version__value')
+            .extra(select={'cases_count': RawSQL.total_num_caseruns})
+        )
 
     column_names = [
-        '', 'run_id', 'summary', 'manager__username', 'default_tester__username',
-        'plan', 'build__product__name', 'product_version', 'env_groups',
-        'cases_count', 'stop_date', 'completed',
+        '', 'run_id', 'summary', 'manager__username',
+        'default_tester__username', 'build__product__name',
+        'product_version__value', 'env_groups', 'cases_count', 'stop_date',
+        'completed',
     ]
 
     dt = DataTableResult(request.GET, runs, column_names,

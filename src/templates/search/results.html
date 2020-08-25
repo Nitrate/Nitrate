@@ -57,10 +57,10 @@
 
 	<script type="text/javascript" src="{% static "js/testrun_actions.js" %}"></script>
 	<script type="text/javascript">
-	  Nitrate.TestRuns.AdvancedSearch.numberOfRuns = {{ total_count }};
+	  Nitrate.TestRuns.Search.numberOfRuns = {{ total_count }};
 	  Nitrate.Utils.after_page_load(Nitrate.TestRuns.AdvancedSearch.on_load);
 	</script>
-	{% include "run/common/run_advance_filtered.html" %}
+	{% include "run/search_result.html" %}
 
 	{% endif %}
 

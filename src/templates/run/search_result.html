@@ -1,7 +1,8 @@
 <form id='runs_form'>
 	<div id="contentTab" class="mixbar">
 		<span class="tit"><a href="{% url "runs-all" %}?case_run__assignee={{ user.email }}">View My Assigned Runs</a></span>
-		<input type="button" value="Clone" title="clone selected test runs" class="js-clone-testruns" disabled data-param="{% url "runs-clone" %}" />
+		<input type="button" value="Clone" title="clone selected test runs"
+			class="js-clone-testruns" data-param="{% url "runs-clone" %}" disabled />
 	</div>
 	<table id="testruns_table" class="list border-bottom js-advance-search-runs" cellpadding="0" cellspacing="0" border="0">
 		<thead>
@@ -9,11 +10,10 @@
 				<th width="30">
 					<input id='id_check_all_runs' class="js-select-all" type="checkbox" title="Select all/Select none" />
 				</th>
-				<th class="widthID"><a href="{{query_url}}&order_by=run_id" title="Sort by Run ID">ID</a></th>
-				<th><a href="{{query_url}}&order_by=summary" title="Sort by Summary">Summary</a></th>
+				<th class="widthID" title="Sort by Run ID">ID</th>
+				<th title="Sort by Summary">Summary</th>
 				<th width="80" title="Sort by Manager Name">Manager</th>
 				<th width="100" title="Sort by Default Tester">Default Tester</th>
-				<th class="text" title="Sort by Plan" style="display:none" id="col_plan_head">Plan</th>
 				<th width="130" title="Sort by Product">Product</th>
 				<th width="120" title="Sort by Product Version">Product version</th>
 				<th width="100" title='Plan Environment Group'>Environment</th>
@@ -23,38 +23,24 @@
 			</tr>
 		</thead>
 		<tbody>
-			{% for test_run in object_list %}
+		{% for test_run in object_list %}
 			<tr id="run_{{test_run.run_id}}">
 				<td><input type='checkbox' name="run" value="{{ test_run.pk }}" class="run_selector" /></td>
 				<td><a href="{% url "run-get" test_run.run_id %}">{{ test_run.run_id }}</a></td>
 				<td><a href="{% url "run-get" test_run.run_id %}">{{ test_run.summary }}</a></td>
 				<td><a href="{% url "user-profile" test_run.manager.username %}">{{ test_run.manager }}</a></td>
 				<td>{% if test_run.default_tester_id %}<a href="{% url "user-profile" test_run.default_tester.username %}">{% endif %}{{ test_run.default_tester }}{% if test_run.default_tester_id %}</a>{% endif %}</td>
-				<td style="display:none" class="col_plan_content"><a href="{{ test_run.plan.get_absolute_url }}">{{ test_run.plan }}</a></td>
 				<td>{{ test_run.build.product }}</td>
 				<td>{{ test_run.product_version }}</td>
 				<td>{{ test_run.associated_data.env_group }}</td>
 				<td>{{ test_run.cases_count }}</td>
 				<td>
-					{% if test_run.stop_date %}
+				{% if test_run.stop_date %}
 					<span class="pauselink">Finished</span>
-					{% else %}
+				{% else %}
 					<span class="runninglink">Running</span>
-					{% endif %}
+				{% endif %}
 				</td>
-
-				{% comment %}
-				<td>
-					<div class="progress-bar" title="failed:{{ test_run.failed_case_run_percent|default:"0" }}%">
-						<div class="progress-inner" style="width:{{ test_run.completed_case_run_percent|default:"0" }}%;">
-							<div class="progress-failed" style="width:{{ test_run.failed_case_run_percent|default:"0" }}%;">
-							</div>
-						</div>
-						<div class="percent">{{ test_run.completed_case_run_percent|default:"0" }}%</div>
-					</div>
-				</td>
-				{% endcomment %}
-
 				<td>
 					<div class='progress-bar'>
 						<div class='progress-inner' style='width: {{ test_run.associated_data.stats.completed_percent|floatformat:2 }}px;'>
@@ -67,7 +53,7 @@
 					</div>
 				</td>
 			</tr>
-			{% endfor %}
+		{% endfor %}
 		</tbody>
 	</table>
 </form>

@@ -1,4 +1,5 @@
 Nitrate.TestRuns = {};
+Nitrate.TestRuns.Search = {};
 Nitrate.TestRuns.List = {};
 Nitrate.TestRuns.Details = {};
 Nitrate.TestRuns.New = {};
@@ -93,15 +94,17 @@ function cloneRunsClickHandler() {
   postToURL(jQ(this).data('param'), Nitrate.Utils.formSerialize(this.form), 'get');
 }
 
-Nitrate.TestRuns.AdvancedSearch.on_load = function () {
 
-  jQ('.js-clone-testruns').on('click', cloneRunsClickHandler);
-
+/**
+ * Initialize the test runs search result table and associated action buttons.
+ * @param {stirng} searchEndpoint - the endpoint to search test runs.
+ */
+Nitrate.TestRuns.Search.initializeSearchResult = function (searchEndpoint) {
   let runsSearchResultTableSettings = Object.assign({}, Nitrate.DataTable.commonSettings, {
     aaSorting: [[1, 'desc']],
-    sAjaxSource: '/advance-search/' + this.window.location.search,
+    sAjaxSource: searchEndpoint + window.location.search,
 
-    iDeferLoading: Nitrate.TestRuns.AdvancedSearch.numberOfRuns,
+    iDeferLoading: Nitrate.TestRuns.Search.numberOfRuns,
 
     aoColumns: [
       {'bSortable': false},       // Select checker
@@ -109,7 +112,6 @@ Nitrate.TestRuns.AdvancedSearch.on_load = function () {
       {'sType': 'html'},          // Summary
       {'sType': 'html'},          // Manager
       {'sType': 'html'},          // Default Tester
-      {'bVisible': false},        // ?
       null,                       // Product
       null,                       // Product Version
       null,                       // Environment
@@ -120,6 +122,10 @@ Nitrate.TestRuns.AdvancedSearch.on_load = function () {
 
     oLanguage: {
       sEmptyTable: 'No run was found.'
+    },
+
+    fnInitComplete: function () {
+      jQ('.js-clone-testruns').on('click', cloneRunsClickHandler);
     },
 
     fnDrawCallback: function () {
@@ -142,7 +148,10 @@ Nitrate.TestRuns.AdvancedSearch.on_load = function () {
   });
 
   jQ('#testruns_table').dataTable(runsSearchResultTableSettings);
+};
 
+Nitrate.TestRuns.AdvancedSearch.on_load = function () {
+  Nitrate.TestRuns.Search.initializeSearchResult('/advance-search/');
 };
 
 Nitrate.TestRuns.List.on_load = function () {
@@ -184,40 +193,7 @@ Nitrate.TestRuns.List.on_load = function () {
     });
   }
 
-  jQ('#testruns_table').dataTable({
-    'iDisplayLength': 20,
-    'sPaginationType': 'full_numbers',
-    'bFilter': false,
-    'bLengthChange': false,
-    'aaSorting': [[ 1, 'desc' ]],
-    'bProcessing': true,
-    'bServerSide': true,
-    'iDeferLoading': Nitrate.TestRuns.List.numberOfRuns,
-    'sAjaxSource': '/runs/' + window.location.search,
-    'aoColumns': [
-      {'bSortable': false},
-      {'sType': 'numeric'},
-      {'sType': 'html'},
-      {'sType': 'html'},
-      {'sType': 'html'},
-      {'bVisible': false},
-      null,
-      null,
-      {'bSortable': false},
-      {'sType': 'numeric'},
-      null,
-      {'bSortable': false}
-    ],
-    'oLanguage': {'sEmptyTable': 'No run was found.'},
-    'fnDrawCallback': function () {
-      jQ('#testruns_table tbody tr td:nth-child(1)').shiftcheckbox({
-        checkboxSelector: ':checkbox',
-        selectAll: '#testruns_table .js-select-all'
-      });
-    }
-  });
-
-  jQ('.js-clone-testruns').on('click', cloneRunsClickHandler);
+  Nitrate.TestRuns.Search.initializeSearchResult('/runs/');
 };
 
 

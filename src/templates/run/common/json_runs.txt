@@ -14,7 +14,6 @@
 		{% else %}
 			"{{ run.default_tester }}"
 		{% endif %},
-		"{{ run.plan }}",
 		"{{ run.build.product }}",
 		"{{ run.product_version }}",
 		"{{ run.associated_data.env_group }}",

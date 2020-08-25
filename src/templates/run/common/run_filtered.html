@@ -1,54 +1,59 @@
-<table id="testruns_table" class="list border-bottom" cellpadding="0" cellspacing="0" border="0">
-	<thead>
-		<tr>
-			<th class="nosort" width="30">
-				<input id="id_check_all_runs" class="js-select-all" type="checkbox" title="Select all/Select none" />
-			</th>
-			<th class="number nosort widthID">ID</th>
-			<th class="text nosort">Summary</th>
-			<th class="text nosort" width="80">Manager</th>
-			<th class="text nosort" width="100">Default Tester</th>
-			<th class="text nosort" style="display:none" id="col_plan_head" >Plan</th>
-			<th class="text nosort" width="130">Product</th>
-			<th class="sortable nosort" width="120">Product Version</th>
-			<th class="text nosort" width="100" title='Plan Environment Group'>Environment</th>
-			<th class="number nosort" width="40">Cases</th>
-			<th class="text nosort" width="80">Status</th>
-			<th class="number nosort" width="110">Completed</th>
-		</tr>
-	</thead>
-	<tbody>
-	{% for test_run in object_list %}
-		<tr id="run_{{test_run.run_id}}">
-			<td><input type='checkbox' name="run" value="{{ test_run.pk }}" class="run_selector" /></td>
-			<td><a href="{% url "run-get" test_run.run_id %}">{{ test_run.run_id }}</a></td>
-			<td><a href="{% url "run-get" test_run.run_id %}">{{ test_run.summary }}</a></td>
-			<td><a href="{% url "user-profile" test_run.manager.username %}">{{ test_run.manager }}</a></td>
-			<td>{% if test_run.default_tester_id %}<a href="{% url "user-profile" test_run.default_tester.username %}">{% endif %}{{ test_run.default_tester }}{% if test_run.default_tester_id %}</a>{% endif %}</td>
-			<td style="display:none" class="col_plan_content"><a href="{{ test_run.plan.get_absolute_url }}">{{ test_run.plan }}</a></td>
-			<td>{{ test_run.build.product }}</td>
-			<td>{{ test_run.product_version }}</td>
-			<td>{{ test_run.associated_data.env_group }}</td>
-			<td>{{ test_run.cases_count }}</td>
-			<td>
+<form id="runs_form">
+	<div id="contentTab" class="mixbar">
+		<span class="tit"><a href="{% url "runs-all" %}?case_run__assignee={{ user.email }}">View My Assigned Runs</a></span>
+		<input type="button" value="Clone" title="clone selected test runs"
+			class="js-clone-testruns" data-param="{% url "runs-clone" %}" disabled />
+	</div>
+	<table id="testruns_table" class="list border-bottom" cellpadding="0" cellspacing="0" border="0">
+		<thead>
+			<tr>
+				<th class="nosort" width="30">
+					<input id="id_check_all_runs" class="js-select-all" type="checkbox" title="Select all/Select none" />
+				</th>
+				<th class="number nosort widthID">ID</th>
+				<th class="text nosort">Summary</th>
+				<th class="text nosort" width="80">Manager</th>
+				<th class="text nosort" width="100">Default Tester</th>
+				<th class="text nosort" width="130">Product</th>
+				<th class="sortable nosort" width="120">Product Version</th>
+				<th class="text nosort" width="100" title='Plan Environment Group'>Environment</th>
+				<th class="number nosort" width="40">Cases</th>
+				<th class="text nosort" width="80">Status</th>
+				<th class="number nosort" width="110">Completed</th>
+			</tr>
+		</thead>
+		<tbody>
+		{% for test_run in object_list %}
+			<tr id="run_{{test_run.run_id}}">
+				<td><input type='checkbox' name="run" value="{{ test_run.pk }}" class="run_selector" /></td>
+				<td><a href="{% url "run-get" test_run.run_id %}">{{ test_run.run_id }}</a></td>
+				<td><a href="{% url "run-get" test_run.run_id %}">{{ test_run.summary }}</a></td>
+				<td><a href="{% url "user-profile" test_run.manager.username %}">{{ test_run.manager }}</a></td>
+				<td>{% if test_run.default_tester_id %}<a href="{% url "user-profile" test_run.default_tester.username %}">{% endif %}{{ test_run.default_tester }}{% if test_run.default_tester_id %}</a>{% endif %}</td>
+				<td>{{ test_run.build.product }}</td>
+				<td>{{ test_run.product_version }}</td>
+				<td>{{ test_run.associated_data.env_group }}</td>
+				<td>{{ test_run.cases_count }}</td>
+				<td>
 				{% if test_run.stop_date %}
 					<span class="pauselink">Finished</span>
 				{% else %}
 					<span class="runninglink">Running</span>
 				{% endif %}
-			</td>
-			<td>
-				<div class='progress-bar'>
-					<div class='progress-inner' style='width: {{ test_run.associated_data.stats.completed_percent|floatformat:2 }}px;'>
-						<div class='progress-failed' style='width: {{ test_run.associated_data.stats.failed_percent|floatformat:2 }}px;'>
+				</td>
+				<td>
+					<div class='progress-bar'>
+						<div class='progress-inner' style='width: {{ test_run.associated_data.stats.completed_percent|floatformat:2 }}px;'>
+							<div class='progress-failed' style='width: {{ test_run.associated_data.stats.failed_percent|floatformat:2 }}px;'>
+							</div>
+						</div>
+						<div class='percent'>
+							{{ test_run.associated_data.stats.completed_percent|floatformat:2 }}%
 						</div>
 					</div>
-					<div class='percent'>
-						{{ test_run.associated_data.stats.completed_percent|floatformat:2 }}%
-					</div>
-				</div>
-			</td>
-		</tr>
-	{% endfor %}
-	</tbody>
-</table>
+				</td>
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+</form>

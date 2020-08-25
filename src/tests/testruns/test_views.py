@@ -692,7 +692,7 @@ class TestSearchRuns(BaseCaseRun):
 
             # Verify env_groups
             env_groups = list(run.plan.env_group.values_list('name', flat=True))
-            self.assertEqual(env_groups[0] if env_groups else 'None', row[8])
+            self.assertEqual(env_groups[0] if env_groups else 'None', row[7])
 
     def test_search_for_the_first_page(self):
         response = self.client.get(self.search_url)

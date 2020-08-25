@@ -13,7 +13,7 @@
 <script type="text/javascript" src="{% static "js/testrun_actions.js" %}"></script>
 <script type="text/javascript" src="{% static "js/management_actions.js" %}"></script>
 <script type="text/javascript">
-Nitrate.TestRuns.List.numberOfRuns = {{ total_count }};
+Nitrate.TestRuns.Search.numberOfRuns = {{ total_count }};
 Nitrate.Utils.after_page_load(Nitrate.TestRuns.List.on_load);
 </script>
 {% endblock %}
@@ -48,12 +48,6 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.List.on_load);
 			<div class="clear"></div>
 		</div>
 	</form>
-	<form id="runs_form">
-		<div id="contentTab" class="mixbar">
-			<span class="tit"><a href="{% url "runs-all" %}?case_run__assignee={{ user.email }}">View My Assigned Runs</a></span>
-			<input type="button" value="Clone" title="clone selected test runs" class="js-clone-testruns" data-param='{% url "runs-clone" %}' />
-		</div>
-		{% include "run/common/run_filtered.html" %}
-	</form>
+	{% include "run/search_result.html" %}
 </div>
 {% endblock %}

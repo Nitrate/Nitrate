@@ -82,9 +82,10 @@ def advance_search(request, tmpl='search/advanced_search.html'):
         ),
         'run': SearchInfo(
             column_names=[
-                '', 'run_id', 'summary', 'manager__username', 'default_tester__username',
-                '', 'plan__product__name', 'product_version__value', '',
-                'cases_count', 'stop_date', ''
+                '', 'run_id', 'summary', 'manager__username',
+                'default_tester__username', 'build__product__name',
+                'product_version__value', 'env_groups', 'cases_count',
+                'stop_date', 'completed'
             ],
             template_file='run/common/json_runs.txt'
         )

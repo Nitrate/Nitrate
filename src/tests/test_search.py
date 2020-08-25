@@ -185,7 +185,7 @@ class TestAdvancedSearch(BaseCaseRun):
         # Collect data from env_group (Environment) column
         env_group_names = []
         for tr in bs.find(id='testruns_table').find_all('tr')[1:]:
-            env_group_names.append(tr.find_all('td')[8].text.strip())
+            env_group_names.append(tr.find_all('td')[7].text.strip())
 
         self.assertListEqual(['db', 'None', 'None'], env_group_names)
 
