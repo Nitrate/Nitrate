@@ -19,7 +19,7 @@ class TestSetDefaultPerms(test.TestCase):
         perms = {
             'KeyTesters': {
                 'user': {'add': 0, 'change': 1, 'delete': 0},
-                'bookmark': {'add': 1, 'change': 1, 'delete': 1},
+                'testplan': {'add': 1, 'change': 1, 'delete': 1},
             }
         }
 
@@ -29,8 +29,9 @@ class TestSetDefaultPerms(test.TestCase):
         g = Group.objects.get(name='KeyTesters')
         added_codenames = [p.codename for p in g.permissions.all()]
 
-        for codename in ['change_user', 'add_bookmark',
-                         'change_bookmark', 'delete_bookmark']:
+        for codename in [
+            'change_user', 'add_testplan', 'change_testplan', 'delete_testplan'
+        ]:
             self.assertIn(codename, added_codenames)
 
         for codename in ['add_user', 'delete_user']:

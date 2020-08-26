@@ -10,7 +10,6 @@ from tcms.auth import views as tcms_auth_views
 urlpatterns = [
     path('profile/', views.redirect_to_profile, name='user-profile-redirect'),
     re_path(r'^(?P<username>[\w.@+-]+)/profile/$', views.profile, name='user-profile'),
-    re_path(r'^(?P<username>[\w.@+-]+)/bookmarks/$', views.bookmark, name='user-bookmark'),
     re_path(r'^(?P<username>[\w.@+-]+)/recent/$', views.recent, name='user-recent'),
 
     path('logout/', tcms_auth_views.logout, name='nitrate-logout'),

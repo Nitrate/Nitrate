@@ -62,15 +62,6 @@
 		</label>
 		</div>
 		{% include 'menu.html' %}
-		{% if user.is_authenticated %}
-		<form id="id_bookmark_iform" action="{% url "user-bookmark" user.username %}" method="get">
-			<input type="hidden" name="a" value="render_form" />
-			<input type="hidden" name="user" value="{{ request.user.pk }}" />
-			<input type="hidden" name="site" value="{{ SETTINGS.SITE_ID }}" />
-			{% block content_type %}{% endblock %}
-			<input type="submit" value="Bookmark this page" class='sprites bookmark' />
-		</form>
-		{% endif %}
 	</div>
 	{% block contents %}{% endblock %}
 	<div id="dialog" style="display:none"><div class="ajax_loading"></div></div>

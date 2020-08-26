@@ -18,7 +18,6 @@
 		<ul>
 			<li><a href="{% url "user-profile" user.username %}">Basic Information</a></li>
 			{% if user_profile.user == user %}
-			<li><a href="{% url "user-bookmark" user.username %}">Bookmarks</a></li>
 			<li class="profile_tab_active"><a href="{% url "user-recent" user.username %}">Recent</a></li>
 			{% endif %}
 		</ul>

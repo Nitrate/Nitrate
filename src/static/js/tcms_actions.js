@@ -223,41 +223,6 @@ jQ(window).on('load', function () {
     function () { jQ(this).children(':eq(1)').show(); },
     function () { jQ(this).children(':eq(1)').hide(); }
   );
-
-  // Observe the bookmark form
-  if (jQ('#id_bookmark_iform').length) {
-    jQ('#id_bookmark_iform').on('submit', function (e) {
-      e.stopPropagation();
-      e.preventDefault();
-
-      let url = this.action;
-      let dialog = showDialog();
-      let parameters = Nitrate.Utils.formSerialize(this);
-      parameters.url = window.location.href;
-
-      if (!parameters.name) {
-        parameters.name = document.title;
-      }
-
-      sendHTMLRequest({
-        url: url,
-        data: parameters,
-        container: dialog,
-        callbackAfterFillIn: function (xhr) {
-          jQ(dialog).html(constructForm(xhr.responseText, url, function (e) {
-            e.stopPropagation();
-            e.preventDefault();
-
-            addBookmark(this.action, this.method, Nitrate.Utils.formSerialize(this), function (responseData) {
-              clearDialog();
-              showModal(defaultMessages.alert.bookmark_added);
-              return responseData;
-            });
-          }));
-        },
-      });
-    });
-  }
 });
 
 const defaultMessages = {
@@ -267,7 +232,6 @@ const defaultMessages = {
     'ajax_failure': 'Communication with server got some unknown errors.',
     'tree_reloaded': 'The tree has been reloaded.',
     'last_case_run': 'It is the last case run',
-    'bookmark_added': 'Bookmark added.',
     'no_run_selected': 'No run selected.',
     'no_plan_specified': 'Please specify one plan at least.'
   },
@@ -357,12 +321,6 @@ const defaultMessages = {
 
   Nitrate.http = http;
 }());
-
-function addBookmark(url, method, parameters, callback) {
-  parameters.a = 'add';
-  // FIXME: use POST
-  getRequest({url: url, data: parameters, success: callback});
-}
 
 function splitString(str, num) {
   if (str.length > num) {

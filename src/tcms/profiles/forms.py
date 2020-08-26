@@ -6,7 +6,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth import get_backends
 
-from .models import Bookmark, UserProfile
+from .models import UserProfile
 from tcms.core.forms import StripURLField
 
 
@@ -118,54 +118,3 @@ class UserProfileForm(forms.ModelForm):
         user.last_name = self.cleaned_data['last_name']
         user.save()
         return instance
-
-
-class BookmarkForm(forms.Form):
-    a = forms.CharField(widget=forms.HiddenInput)
-    content_type = forms.CharField(
-        required=False, widget=forms.HiddenInput
-    )
-    object_pk = forms.CharField(
-        required=False, widget=forms.HiddenInput
-    )
-    user = forms.IntegerField(widget=forms.HiddenInput)
-    url = StripURLField()
-    name = forms.CharField(max_length=1024, required=False)
-    description = forms.CharField(required=False, widget=forms.Textarea)
-
-    def clean(self):
-        from django.apps import apps
-        from django.conf import settings
-        from django.core.exceptions import ObjectDoesNotExist, ValidationError
-        from django.contrib.sites.models import Site
-        from django.contrib.auth.models import User
-        from django.contrib.contenttypes.models import ContentType
-
-        cleaned_data = self.cleaned_data.copy()
-        if cleaned_data.get('content_type'):
-            try:
-                m = apps.get_model(*cleaned_data['content_type'].split(".", 1))
-                target = m._default_manager.get(pk=cleaned_data['object_pk'])
-                app_label, model = cleaned_data['content_type'].split(".", 1)
-                ct = ContentType.objects.get(
-                    app_label=app_label, model=model
-                )
-                cleaned_data['content_type'] = ct
-                cleaned_data['object_pk'] = target.pk
-            except ObjectDoesNotExist as error:
-                raise ValidationError(error)
-
-        cleaned_data['user'] = User.objects.get(pk=cleaned_data['user'])
-        cleaned_data['site'] = Site.objects.get(pk=settings.SITE_ID)
-        return cleaned_data
-
-    def populate(self, user):
-        pass
-
-    def save(self):
-        cleaned_data = self.cleaned_data.copy()
-        del cleaned_data['a']
-        if not cleaned_data['content_type']:
-            del cleaned_data['content_type']
-            del cleaned_data['object_pk']
-        return Bookmark.objects.create(**cleaned_data)

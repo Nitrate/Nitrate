@@ -617,26 +617,6 @@ class UserProfileFactory(DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
 
 
-class BookmarkCategoryFactory(DjangoModelFactory):
-
-    class Meta:
-        model = 'profiles.BookmarkCategory'
-
-    user = factory.SubFactory(UserFactory)
-    name = factory.Sequence(lambda n: 'Bookmark category %d' % n)
-
-
-class BookmarkFactory(DjangoModelFactory):
-
-    class Meta:
-        model = 'profiles.Bookmark'
-
-    user = factory.SubFactory(UserFactory)
-    category = factory.SubFactory(BookmarkCategoryFactory)
-    name = factory.Sequence(lambda n: 'Bookmark %d' % n)
-    description = ''
-    url = 'http://localhost/plan/1'
-
 # Issue Tracker
 
 

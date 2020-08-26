@@ -12,8 +12,6 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_PERMS = {
     'Tester': {
-        'bookmark':                     {'add': 1, 'change': 1, 'delete': 1},
-        'bookmarkcategory':             {'add': 1, 'change': 1, 'delete': 1},
         'classification':               {'add': 1, 'change': 1, 'delete': 0},
         'comment':                      {'add': 1, 'change': 1, 'delete': 0},
         'commentflag':                  {'add': 1, 'change': 0, 'delete': 0},
@@ -72,8 +70,6 @@ DEFAULT_PERMS = {
         'user':                         {'add': 0, 'change': 1, 'delete': 0},
     },
     'Administrator': {
-        'bookmark':                     {'add': 1, 'change': 1, 'delete': 1},
-        'bookmarkcategory':             {'add': 1, 'change': 1, 'delete': 1},
         'classification':               {'add': 1, 'change': 1, 'delete': 0},
         'comment':                      {'add': 1, 'change': 1, 'delete': 0},
         'commentflag':                  {'add': 1, 'change': 1, 'delete': 0},

@@ -13,72 +13,13 @@ from django.views.decorators.http import require_GET
 from django.shortcuts import get_object_or_404
 
 from tcms.core.raw_sql import RawSQL
-from tcms.core.responses import JsonResponseBadRequest
 from tcms.testplans.models import TestPlan
 from tcms.testruns.models import TestRun
-from tcms.profiles.models import Bookmark
 from tcms.profiles.models import UserProfile
-from tcms.profiles.forms import BookmarkForm, UserProfileForm
+from tcms.profiles.forms import UserProfileForm
 
 
 MODULE_NAME = 'profile'
-
-
-@require_http_methods(['GET', 'POST'])
-@login_required
-def bookmark(request, username, template_name='profile/bookmarks.html'):
-    """
-    Bookmarks for the user
-    """
-
-    if username != request.user.username:
-        return http.HttpResponseRedirect(reverse('nitrate-login'))
-    else:
-        up = {'user': request.user}
-
-    class BookmarkActions:
-
-        def add(self):
-            form = BookmarkForm(request.GET)
-            if not form.is_valid():
-                return JsonResponseBadRequest({
-                    'message': form.errors.as_text()
-                })
-
-            form.save()
-            return http.JsonResponse({})
-
-        def remove(self):
-            pks = request.POST.getlist('pk')
-            bks = Bookmark.objects.filter(pk__in=pks, user=request.user)
-            bks.delete()
-
-            return http.JsonResponse({})
-
-        def render(self):
-            if request.GET.get('category'):
-                bks = Bookmark.objects.filter(user=request.user,
-                                              category_id=request.GET['category'])
-            else:
-                bks = Bookmark.objects.filter(user=request.user)
-
-            context_data = {
-                'user_profile': up,
-                'bookmarks': bks,
-            }
-            return render(request, template_name, context=context_data)
-
-        def render_form(self):
-            query = request.GET.copy()
-            query['a'] = 'add'
-            form = BookmarkForm(initial=query)
-            form.populate(user=request.user)
-            return http.HttpResponse(form.as_p())
-
-    action = BookmarkActions()
-    request_data = request.GET or request.POST
-    func = getattr(action, request_data.get('a', 'render'))
-    return func()
 
 
 @require_http_methods(['GET', 'POST'])
