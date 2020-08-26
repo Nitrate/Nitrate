@@ -6,8 +6,7 @@ from django import test
 
 from tcms.testcases.models import TestCase
 from tcms.testcases.models import TestCasePlan
-from tcms.testplans.models import TCMSEnvPlanMap
-from tcms.testplans.models import TestPlan
+from tcms.testplans.models import TCMSEnvPlanMap, TestPlan, TestPlanType
 from tcms.xmlrpc.api import testplan as XmlrpcTestPlan
 from tcms.xmlrpc.api.testplan import import_case_via_XML
 from tcms.xmlrpc.serializer import datetime_to_str
@@ -442,3 +441,45 @@ class TestGet(test.TestCase):
         plan = XmlrpcTestPlan.get(self.http_req, self.plan.pk)
         plan['tag'].sort()
         self.assertEqual(expected_plan, plan)
+
+
+class TestCreatePlan(XmlrpcAPIBaseTest):
+    """Test API create"""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.author = f.UserFactory(username='user', email='user@example.com')
+        cls.http_req = make_http_request(user=cls.author,
+                                         user_perm='testplans.add_testplan')
+
+        cls.product = f.ProductFactory()
+        cls.version = f.VersionFactory(product=cls.product)
+        cls.type = TestPlanType.objects.first()
+
+    def test_create_a_plan(self):
+        plan_doc = '<h1>Main Plan</h1>'
+        plan = XmlrpcTestPlan.create(self.http_req, {
+            'name': 'Test xmlrpc plan create API',
+            'product': self.product.pk,
+            'product_version': self.version.pk,
+            'type': self.type.pk,
+            'text': plan_doc
+        })
+
+        created_plan = TestPlan.objects.first()
+
+        self.assertIsNotNone(created_plan.email_settings)
+
+        self.assertEqual(created_plan.pk, plan['plan_id'])
+        self.assertEqual(created_plan.product.pk, plan['product_id'])
+        self.assertEqual(created_plan.product_version.pk, plan['product_version_id'])
+        self.assertEqual(created_plan.type.pk, plan['type_id'])
+        self.assertEqual(created_plan.text.first().plan_text, plan_doc)
+
+    def test_missing_product(self):
+        self.assertXmlrpcFaultBadRequest(XmlrpcTestPlan.create, self.http_req, {
+            'name': 'Test xmlrpc plan create API',
+            'product_version': self.version.pk,
+            'type': self.type.pk,
+            'text': 'plan text'
+        })
