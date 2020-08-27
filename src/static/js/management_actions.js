@@ -79,8 +79,9 @@ Nitrate.Management.Environment.Groups = {
 
   /**
    * Delete an environment group.
-   * @param {number} envGroupId
-   * @param {string} envGroupName
+   *
+   * @param {number} envGroupId - the environment group id.
+   * @param {string} envGroupName - the environment group name.
    */
   deleteEnvGroup: function (envGroupId, envGroupName) {
     confirmDialog({
@@ -100,7 +101,8 @@ Nitrate.Management.Environment.Groups = {
 
   /**
    * Enable or disable an environment group.
-   * @param {number} envGroupID
+   *
+   * @param {number} envGroupID - the environment group id.
    * @param {number} status - 0 for disable and 1 for enable.
    */
   setEnvGroupStatus: function (envGroupID, status) {
@@ -152,7 +154,8 @@ Nitrate.Management.Environment.Property = {
 
   /**
    * Select environment property
-   * @param {number} propertyId
+   *
+   * @param {number} propertyId - th property id.
    */
   selectEnvProperty: function (propertyId) {
     jQ('#id_properties_container li.focus').removeClass('focus');
@@ -168,7 +171,8 @@ Nitrate.Management.Environment.Property = {
 
   /**
    * Edit an environment property
-   * @param {number} id
+   *
+   * @param {number} id - the environment property id.
    */
   editEnvProperty: function (id) {
     let newPropertyName = window.prompt('New property name', jQ('#id_property_name_' + id).html());
@@ -226,6 +230,7 @@ Nitrate.Management.Environment.Property = {
 
   /**
    * Disable selected environment properties.
+   *
    * @param {number} status - 0 for disable and 1 for enable.
    */
   setEnvPropertyStatus: function (status) {
@@ -267,7 +272,8 @@ Nitrate.Management.Environment.Property = {
 Nitrate.Management.Environment.PropertyValue = {
   /**
    * Add an environment property value.
-   * @param {number} propertyId
+   *
+   * @param {number} propertyId - the environment property id.
    */
   add: function (propertyId) {
     let valueName = jQ('#id_value_name').val().trim();
@@ -299,8 +305,9 @@ Nitrate.Management.Environment.PropertyValue = {
 
   /**
    * Edit an environment property value.
-   * @param {number} propertyId
-   * @param {number} valueId
+   *
+   * @param {number} propertyId - the environment property id.
+   * @param {number} valueId - the property value id.
    */
   edit: function (propertyId, valueId) {
     let newValueName = prompt('New value name', jQ('#id_value_' + valueId.toString()).html());
@@ -319,6 +326,7 @@ Nitrate.Management.Environment.PropertyValue = {
 
   /**
    * Disable an environment property value.
+   *
    * @param {number} status - 0 for disable and 1 for enable.
    */
   setStatus: function (status) {

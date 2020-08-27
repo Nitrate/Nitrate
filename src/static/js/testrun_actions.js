@@ -62,6 +62,7 @@ function toggleTestCaseContents(
 
 /**
  * Remove a case from test run new page.
+ *
  * @param {string} item - the HTML id of a container element containing the case to be removed.
  * @param {number} caseEstimatedTime - the case' estimated time.
  */
@@ -97,7 +98,8 @@ function cloneRunsClickHandler() {
 
 /**
  * Initialize the test runs search result table and associated action buttons.
- * @param {stirng} searchEndpoint - the endpoint to search test runs.
+ *
+ * @param {string} searchEndpoint - the endpoint to search test runs.
  */
 Nitrate.TestRuns.Search.initializeSearchResult = function (searchEndpoint) {
   let runsSearchResultTableSettings = Object.assign({}, Nitrate.DataTable.commonSettings, {
@@ -833,7 +835,11 @@ Nitrate.TestRuns.AssignCase.on_load = function () {
 /**
  * A callback called after a comment is added to a case run or a case run status is updated with a
  * short comment.
- * @callback
+ *
+ * @param {jQuery} caseRunRow - the container representing the case run table row.
+ * @param {jQuery} expandedCaseRunDetailRow - the container representing the expanded table row
+ *                                            containing case run details.
+ * @param {string} caseRunStatusId - case run status ID.
  */
 function updateCaseRunDetailAfterCommentIsAdded(caseRunRow, expandedCaseRunDetailRow, caseRunStatusId) {
   // Update the contents
@@ -867,7 +873,7 @@ function updateCaseRunDetailAfterCommentIsAdded(caseRunRow, expandedCaseRunDetai
   if (jQ('#id_check_box_auto_blinddown').prop('checked') && caseRunStatusId !== '') {
     let nextTitle = expandedCaseRunDetailRow.next();
     if (!nextTitle.length) {
-      return false;
+      return;
     }
     if (nextTitle.next().is(':hidden')) {
       nextTitle.find('.expandable').trigger('click');
@@ -879,8 +885,8 @@ function updateCaseRunDetailAfterCommentIsAdded(caseRunRow, expandedCaseRunDetai
 
 /**
  * A function registered to the form submit event, from where to add comment to or change status for a case run.
- * @callback
- * @param e
+ *
+ * @param {Event} e - the DOM event.
  */
 function updateCaseRunStatus(e) {
   e.stopPropagation();
@@ -1459,7 +1465,7 @@ function getAddLinkDialog() {
 /**
  * Do AJAX request to backend to remove a link
  *
- * @param sender:
+ * @param {HTMLElement} sender - the HTML element triggering the event to remove a link.
  * @param {number} linkId - the ID of an arbitrary link.
  */
 function removeLink(sender, linkId) {
@@ -1473,9 +1479,9 @@ function removeLink(sender, linkId) {
 /**
  * Add link to case run
  *
- * @param sender - the Add link button, which is pressed to fire this event.
- * @param {number} caseId
- * @param {number} caseRunId
+ * @param {HTMLElement} sender - the Add link button, which is pressed to fire this event.
+ * @param {number} caseId - the test case ID.
+ * @param {number} caseRunId - the test case run ID.
  */
 function addLinkToCaseRun(sender, caseId, caseRunId) {
   let dialog = getAddLinkDialog();
@@ -1495,7 +1501,7 @@ function addLinkToCaseRun(sender, caseId, caseRunId) {
  * Initialize dialog for getting information about new link, which is attached
  * to an arbitrary instance of TestCaseRun
  *
- * @param linkTarget - string, the name of Model to whose instance new link will be linked.
+ * @param {string} linkTarget - the name of Model to whose instance new link will be linked.
  */
 function initializeAddLinkDialog(linkTarget) {
   let dialog = getAddLinkDialog();
@@ -1561,13 +1567,14 @@ function initializeAddLinkDialog(linkTarget) {
 /**
  * Toggle TestCaseRun panel to edit a case run in run page.
  *
- * @param {Object} options
- * @param {HTMLElement} options.caserunRowContainer
- * @param {HTMLElement} options.expandPaneContainer
- * @param {number} options.caseId
- * @param {number} options.caserunId
- * @param {number} options.caseTextVersion
- * @param {function} options.callback
+ * @param {object} options - options for toggling the test case run pane.
+ * @param {HTMLElement} options.caserunRowContainer - the container element containing the test case run row.
+ * @param {HTMLElement} options.expandPaneContainer - the container element to be expanded for the associated test case
+ *                                                    run.
+ * @param {number} options.caseId - the associated test case ID.
+ * @param {number} options.caserunId - the test case run ID.
+ * @param {number} options.caseTextVersion - the test case' text version.
+ * @param {Function} options.callback - a function called after the content is filled in the expanded container.
  */
 function toggleTestCaseRunPane(options) {
   let container = options.expandPaneContainer;

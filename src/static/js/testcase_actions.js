@@ -78,6 +78,7 @@ Nitrate.TestCases.SearchResultTableSettings = Object.assign({}, Nitrate.DataTabl
 
 /**
  * Initialize test cases search result table and associated action buttons.
+ *
  * @param {string} searchEndpoint - the search endpoint.
  */
 Nitrate.TestCases.Search.initializeSearchResult = function (searchEndpoint) {
@@ -129,6 +130,7 @@ Nitrate.TestCases.Search.initializeSearchResult = function (searchEndpoint) {
 
 /**
  * Set action buttons' status
+ *
  * @param {boolean} disabled - true for disable, otherwise enable them.
  */
 Nitrate.TestCases.Search.setActionButtonsStatus = function (disabled) {
@@ -437,7 +439,8 @@ function toggleSimpleCaseRunPane(options) {
  * A function bound to AJAX request success event to add or remove issue to and from a case. It
  * displays the issues table returned from the backend, and bind necessary event handlers, count and
  * display current number of issues added to case already.
- * @param {object} data
+ *
+ * @param {object} data - an object containing the data to display.
  * @param {string} data.html - a piece of HTML containing the issues table.
  */
 function issueOperationSuccessCallback(data) {
@@ -501,7 +504,8 @@ function removeCaseIssue(issueKey, caseId, caseRunId) {
 /**
  * Handle triggered by click event of Remove button to remove a plan from a
  * case' plans table. This is bound to specific element in the template directly.
- * @param {number} caseId
+ *
+ * @param {number} caseId - the case id.
  * @param {HTMLButtonElement} button - the element this handler is bound to.
  */
 function removePlanFromPlansTableHandler(caseId, button) {
@@ -523,8 +527,9 @@ function removePlanFromPlansTableHandler(caseId, button) {
 /**
  * Handler triggered by the form submit event to add plans to the case. This is
  * called in form submit event directly in the template.
- * @param {number} caseId
- * @param {HTMLFormElement} form
+ *
+ * @param {number} caseId - the case id.
+ * @param {HTMLFormElement} form - the form element containing elements having plan ids.
  */
 function addCaseToPlansHandler(caseId, form) {
   let planIds = form.elements['pk__in'].value.trim();
@@ -568,12 +573,15 @@ function addCaseIssueViaEnterKey(element, e) {
 
 /**
  * Toggle case runs by plan
- * @param {Object} params
- * @param {string|HTMLElement} params.c_container
- * @param {string|HTMLElement} params.container
- * @param {number} params.case_id
- * @param {number} params.case_run_plan_id
- * @param callback
+ *
+ * @param {object} params - an object containing information to toggle case runs.
+ * @param {string|HTMLElement} params.c_container - the container containing all the content
+ *                                                  including case runs.
+ * @param {string|HTMLElement} params.container - the container containing case runs.
+ * @param {number} params.case_id - the case id.
+ * @param {number} params.case_run_plan_id - the plan id.
+ * @param {Function} [callback] - a callback function passed to argument `callbackAfterFillIn` of
+ *                                function `sendHTMLRequest`.
  */
 function toggleCaseRunsByPlan(params, callback) {
   let contentContainer = typeof params.c_container === 'string' ?

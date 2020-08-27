@@ -44,8 +44,13 @@ jobs:
       before_script: echo "No need of testbox image. Skip building the image."
       script: |
         docker run --rm -v $PWD:/code:Z -it fedora:32 /bin/bash -c "
-          dnf install -y node npm python3-tox
-          npm install -g eslint@7.1.0
+          set -ex
+          dnf \
+            --disablerepo=fedora-modular --disablerepo=updates-modular --disablerepo=fedora-cisco-openh264 \
+            install -y node npm python3-tox
+          npm install eslint@7.1.0
+          npm install eslint-plugin-jsdoc@30.3.0
+          export PATH=/node_modules/.bin:$PATH
           cd /code
           tox -e jslint
         "

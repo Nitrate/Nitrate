@@ -11,6 +11,7 @@ Nitrate.TestPlans.Attachment = {};
 /* eslint no-redeclare:off */
 /**
  * Collect selected case IDs from a given container HTML element.
+ *
  * @param {HTMLElement} container - could be any container like HTML element from where to find out
  *                                  checked inputs with type checkbox and name case.
  * @returns {string[]} a list of selected case IDs without parsing to integer value.
@@ -24,6 +25,7 @@ function getSelectedCaseIDs(container) {
 /**
  * Collect selected case IDs from a given container and submit them to a specific location. The
  * container element should have children HTMLInputElement with type checkbox and name case.
+ *
  * @param {string} url - the URL for exporting cases.
  * @param {HTMLElement} container - a container element from where to find out selected case IDs.
  */
@@ -44,8 +46,9 @@ Nitrate.TestPlans.TreeView = {
 
   /**
    * A wrapper of jQ.ajax to filter specific plans.
+   *
    * @param {object} data - data to send to server side.
-   * @param {function} callback - a function called when AJAX request succeeds and the parsed
+   * @param {Function} callback - a function called when AJAX request succeeds and the parsed
    *                              response data will be passed in.
    */
   'filter': function (data, callback) {
@@ -119,7 +122,6 @@ Nitrate.TestPlans.TreeView = {
 
   /**
    * An event handler will be hooked to "Up" button when render the tree.
-   * @param {Event} e - HTML DOM event.
    */
   'up': function () {
     let tree = Nitrate.TestPlans.TreeView;
@@ -149,7 +151,6 @@ Nitrate.TestPlans.TreeView = {
 
   /**
    * Event handler hooked into the toggle icon click event.
-   * @param {Event} e - the DOM event object.
    */
   'blind': function () {
     let tree = Nitrate.TestPlans.TreeView;
@@ -1110,6 +1111,7 @@ function changeTestCaseStatus(planId, selector, caseId, beConfirmed, wasConfirme
  *  a jQuery object whose click event is triggered to expand the case.
  * @param {jQuery} expandedCaseDetailsPane
  *  a jQuery object representing the container containing expanded case details.
+ * @returns {Function} an event handler to be registered.
  */
 function reviewCaseContentCallback(expandableEventTarget, expandedCaseDetailsPane) {
   return function () {
@@ -1156,10 +1158,11 @@ function reviewCaseContentCallback(expandableEventTarget, expandedCaseDetailsPan
 /**
  * Check whether all cases within confirmed or reviewing cases tab are collapsed.
  *
- * @param {boolean} inReviewingCasesTab
- *  indicate to get the number of reviewing cases, otherwise get the number of confirmed cases.
- * @return {boolean}
- *  return true if all expanded case details pane is collapsed, otherwise false is returned.
+ * @param {boolean} inReviewingCasesTab - indicate to get the number of reviewing cases, otherwise
+ *                                        get the number of confirmed cases.
+ * @param {HTMLElement} casesTable - the table containing cases.
+ * @returns {boolean} - return true if all expanded case details pane is collapsed, otherwise
+ *                      false is returned.
  */
 function areAllCasesCollapsed(inReviewingCasesTab, casesTable) {
   let numberContainerId = inReviewingCasesTab ? 'review_case_count' : 'run_case_count'
@@ -1232,10 +1235,13 @@ function bindEventsOnLoadedCases(options) {
 /**
  * Serialize form data including the selected cases for AJAX requst.
  * Used in function constructPlanDetailsCasesZone.
- * @param {Object} options
- * @property {HTMLElement} options.zoneContainer
- * @property {string[]} options.selectedCaseIDs
- * @property {boolean} options.hashable
+ *
+ * @param {object} options - options to serialize form data
+ * @param {string[]} options.selectedCaseIDs - an array of selected case ids.
+ * @param {boolean} [options.hashable=false] - indicate whether to construct and return an object
+ *                                             containing the form data.
+ * @returns {object|string} - an object containing the serialized form data if options.hashable is
+ *                            true, otherwise a string representation will be returned.
  */
 function serializeFormData(options) {
   let hashable = options.hashable || false;

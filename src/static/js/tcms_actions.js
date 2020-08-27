@@ -28,8 +28,9 @@ Nitrate.Utils.convert = function (argument, data) {
 
 /**
  * Collect form data from input elements.
+ *
  * @param {HTMLFormElement} f - A HTML form from where to collect data.
- * @returns {Object} a mapping containing form data.
+ * @returns {object} a mapping containing form data.
  */
 Nitrate.Utils.formSerialize = function (f) {
   let data = {};
@@ -50,8 +51,9 @@ Nitrate.Utils.formSerialize = function (f) {
 
 /**
  * Simple wrapper of jQuery.ajax to add header for CSRF.
- * @param {string} url
- * @param {object} options
+ *
+ * @param {string} url - a url passed to url argument of jQuery $.ajax
+ * @param {object} options - the options passed to options argument of jQuery $.ajax
  */
 function $ajax(url, options) {
   options = Object.assign({}, options, {
@@ -67,6 +69,7 @@ function $ajax(url, options) {
 /**
  * Send a AJAX request to the backend server and handle the response. The response from backend is
  * expected to be in JSON data format.
+ *
  * @param {object} options - configure the jQuery.ajax call.
  * @param {string} options.url - url of the resource.
  * @param {string} [options.method] - type of the request. Default is POST.
@@ -81,7 +84,7 @@ function $ajax(url, options) {
  *                                          unsuccessfully like 500 and 400. If omitted, default
  *                                          message will be shown for each specific response,
  *                                          please refer to the code.
- * @param {function} [options.success] - hook to success option of jQuery.ajax. If omitted, a
+ * @param {Function} [options.success] - hook to success option of jQuery.ajax. If omitted, a
  *                                       default callback will be hooked to reload the page.
  */
 function sendAjaxRequest(options) {
@@ -137,24 +140,27 @@ function sendAjaxRequest(options) {
 
 /**
  * Wrapper of sendAjaxRequest to send an HTTP GET request.
- * @param {object} options
+ *
+ * @param {object} options - options for making a GET request.
  */
 function getRequest(options) {
   let forwardOptions = Object.assign({}, options, {'method': 'GET'})
-  return sendAjaxRequest(forwardOptions);
+  sendAjaxRequest(forwardOptions);
 }
 
 /**
  * Wrapper of sendAjaxRequest to send an HTTP POST request.
- * @param {object} options
+ *
+ * @param {object} options - options for making a POST request.
  */
 function postRequest(options) {
   let forwardOptions = Object.assign({}, options, {'method': 'POST'})
-  return sendAjaxRequest(forwardOptions);
+  sendAjaxRequest(forwardOptions);
 }
 
 /**
  * Send request and expect server responses content in HTML.
+ *
  * @param {object} options - configure the jQuery.ajax call.
  * @param {string} options.url - url of the resource.
  * @param {string} [options.method] - type of the request. Default is GET.
@@ -165,13 +171,13 @@ function postRequest(options) {
  * @param {string} [options.forbiddenMessage] - alternative message shown when server responses 403.
  * @param {string} [options.badRequestMessage] - alternative message shown when server responses 400.
  * @param {string} [options.notFoundMessage] - alternative message shown when server responses 404.
- * @param {function} [options.success] - hook to success option of jQuery.ajax. If omitted, a
+ * @param {Function} [options.success] - hook to success option of jQuery.ajax. If omitted, a
  *                                       default callback will be hooked to fill the content
  *                                       returned from server side in the specified container
  *                                       element and invoke the callback if specified.
  * @param {HTMLElement} [options.container] - an HTML container element which the content
  *                                            returned from server will be filled in.
- * @param {function} [options.callbackAfterFillIn] - a function will be called after the returned
+ * @param {Function} [options.callbackAfterFillIn] - a function will be called after the returned
  *                                                   content is filled in the given container.
  */
 function sendHTMLRequest(options) {
@@ -331,6 +337,7 @@ function splitString(str, num) {
 
 /**
  * Clear all options from a give SELECT element.
+ *
  * @param {HTMLSelectElement} selectElement - the SELECT element from which to remove all options.
  */
 function emptySelect(selectElement) {
@@ -342,6 +349,7 @@ function emptySelect(selectElement) {
 
 /**
  * Setup option of a given select element in place. The original selection is preserved.
+ *
  * @param {HTMLSelectElement} elemSelect - the select element to update the options.
  * @param {Array} values - A list of 2-tuple of options, the first is value and the other is the text.
  * @param {boolean} addBlankOption - whether to add a blank option optionally.
@@ -387,9 +395,10 @@ function setUpChoices(elemSelect, values, addBlankOption) {
 
 /**
  * Request builds associated with product and update the build select list
- * @param {string[]} productIds
- * @param {HTMLSelectElement} buildSelect
- * @param {boolean} addBlankOption
+ *
+ * @param {string[]} productIds - the product ids.
+ * @param {HTMLSelectElement} buildSelect - requested builds will be filled into this select element.
+ * @param {boolean} addBlankOption - indicate whether to add a blank option.
  */
 function getBuildsByProductId(productIds, buildSelect, addBlankOption) {
   let data = {info_type: 'builds', product_id: productIds}
@@ -423,9 +432,10 @@ function getBuildsByProductId(productIds, buildSelect, addBlankOption) {
 
 /**
  * Update product version select list according to a specific product
- * @param {string[]} productIds
- * @param {HTMLSelectElement} versionSelect
- * @param {boolean} addBlankOption
+ *
+ * @param {string[]} productIds - the product ids.
+ * @param {HTMLSelectElement} versionSelect - the SELECT element of product version.
+ * @param {boolean} addBlankOption - indicate whether to add a blank option.
  */
 function getVersionsByProductId(productIds, versionSelect, addBlankOption) {
   getRequest({
@@ -445,10 +455,12 @@ function getVersionsByProductId(productIds, versionSelect, addBlankOption) {
 
 /**
  * Update associated components of a specific product
+ *
  * @param {string[]} productIds - the product Id to update the associated components.
- * @param {HTMLSelectElement} componentSelect
- * @param {boolean} addBlankOption
- * @param [callback]
+ * @param {HTMLSelectElement} componentSelect - fill the returned components into this select
+ *                                              element.
+ * @param {boolean} addBlankOption - indicate whether to display a blank option.
+ * @param {Function} [callback] - a function called after requested components are filled in.
  */
 function getComponentsByProductId(productIds, componentSelect, addBlankOption, callback) {
   getRequest({
@@ -470,6 +482,7 @@ function getComponentsByProductId(productIds, componentSelect, addBlankOption, c
 
 /**
  * Refresh categories related to a product and fill in a SELECT element.
+ *
  * @param {string[]} productIds - the product Id used to update associated categories.
  * @param {HTMLSelectElement} categorySelect - the category element to fill in.
  * @param {boolean} addBlankOption - whether to add a special option item to SELECT as a blank
@@ -493,11 +506,12 @@ function getCategoriesByProductId(productIds, categorySelect, addBlankOption) {
 
 /**
  * Register updaters to update associated objects when select specific product options.
+ *
  * @param {HTMLElement} productSelect - the product SELECT element. Associated objects are changed
  *                                      accordingly when select one or more options.
  * @param {boolean} triggerProductSelect - whether to trigger the product SELECT element change
  *                                         event immediately just after binding the change event handler.
- * @param {Object[]} updaters
+ * @param {object[]} updaters - list of updater information.
  * @param {Function} updaters.func - the function to be called to get associated objects from server side, and then
  *                                   fill in the target element. This function must have three arguments, the first one
  *                                   accepts selected product IDs from the product element, the second one accepts
@@ -536,7 +550,7 @@ function registerProductAssociatedObjectUpdaters(productSelect, triggerProductSe
  * Make an HTTP request by simulating a form submission
  *
  * @param {string} path - this is the form action.
- * @param {object} params
+ * @param {object} params - the form data.
  * @param {string} [method=post] - get or post. Defaults to post.
  */
 function postToURL(path, params, method) {
@@ -671,12 +685,13 @@ function editTag(container, tag) {
 
 /**
  * Preview Plan
- * @param parameters
- * @param action
- * @param {function} callback - a function with only one event argument will be bound to a HTMLFormElement submit event.
- * @param notice
- * @param s
- * @param c
+ *
+ * @param {object} parameters - parameters to request plans for preview.
+ * @param {string} action - same as the argument action of function constructForm.
+ * @param {Function} callback - a function with only one event argument will be bound to a HTMLFormElement submit event.
+ * @param {string} notice - a text message displayed in the plans preview dialog.
+ * @param {jQuery} [s] - same as the argument s of function constructForm.
+ * @param {jQuery} [c] - same as the argument c of function constructForm.
  */
 function previewPlan(parameters, action, callback, notice, s, c) {
   let dialog = getDialog();
@@ -742,13 +757,14 @@ function constructAjaxLoading(id) {
 
 /**
  * Construct an HTML form element.
- * @param content
- * @param action
- * @param {function} form_observe - an optional function bound to the generated form's submit event.
- * @param info
- * @param s
- * @param c
- * @returns the form element.
+ *
+ * @param {string} content - the content displayed in the constructed form.
+ * @param {string} action - the endpoint passed to form element's action attribute.
+ * @param {Function} formObserve - an optional function bound to the generated form's submit event.
+ * @param {string} [info] - a text message displayed in the form.
+ * @param {jQuery} [s] - the submit button to submit the constructed form.
+ * @param {jQuery} [c] - the cancel button to close the dialog containing the constructed form.
+ * @returns {HTMLFormElement} - the constructed form element.
  */
 function constructForm(content, action, formObserve, info, s, c) {
   let f = jQ('<form>', {'action': action});
@@ -847,11 +863,13 @@ function blindupAllCases(element) {
 
 /**
  * Toggle a test case detail pane.
- * @param {Object} options
- * @param {String|number} options.case_id
- * @param {Object} options.casePaneContainer
- * @param {boolean} options.reviewing
- * @param {Function} [callback]
+ *
+ * @param {object} options - options to toggle test case pane.
+ * @param {string|number} options.case_id - the case id.
+ * @param {object} options.casePaneContainer - the pane container jQuery object.
+ * @param {boolean} options.reviewing - indicate whether to toggle the pane containing reviewing
+ *                                      cases.
+ * @param {Function} [callback] - a function called when pane content is returned from the server.
  */
 function toggleTestCasePane(options, callback) {
   let casePaneContainer = options.casePaneContainer;
@@ -931,6 +949,7 @@ function clearDialog(element) {
 
 /**
  * Show a modal dialog.
+ *
  * @param {string} showMessage - show this message in the modal dialog.
  * @param {string} [title] - the dialog title.
  */
@@ -954,10 +973,11 @@ function showModal(showMessage, title) {
 
 /**
  * Show confirmation dialog with a specific message.
- * @param {object} options
+ *
+ * @param {object} options - options to show a confirm dialog.
  * @param {string} options.message - the message to be shown in the dialog.
  * @param {string} [options.title] - dialog title.
- * @param {function} [options.yesFunc] - the function to be called when click Yes button.
+ * @param {Function} [options.yesFunc] - the function to be called when click Yes button.
  */
 function confirmDialog(options) {
   let messageElem = document.getElementById('confirmMessage');

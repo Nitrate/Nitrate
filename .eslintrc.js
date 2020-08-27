@@ -1,11 +1,17 @@
 module.exports = {
+  "plugins": [
+    "jsdoc"
+  ],
   "env": {
     "browser": true,
     "es6": true,
     "jquery": true,
     "qunit": true
   },
-  "extends": "eslint:recommended",
+  "extends": [
+    "eslint:recommended",
+    "plugin:jsdoc/recommended"
+  ],
   "globals": {
     "Atomics": "readonly",
     "SharedArrayBuffer": "readonly",
@@ -81,5 +87,6 @@ module.exports = {
     "quotes": ["error", "single", {"avoidEscape": true}],
     "space-before-function-paren": ["error", {"anonymous": "always", "named": "never", "asyncArrow": "always"}],
     "space-infix-ops": "error",
+    "jsdoc/require-jsdoc": 0
   }
 };

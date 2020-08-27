@@ -29,6 +29,7 @@ function submitComment(container, parameters, callback) {
 
 /**
  * Update comments count by increasing or decreasing the number.
+ *
  * @param {string} caseId - the case id used to select specific elements to be updated.
  * @param {boolean} increase - increase or decrease the number.
  */
