@@ -62,3 +62,11 @@ jobs:
       install: pip install tox
       before_script: echo "No need of testbox image. Skip building the image."
       script: tox -e docs
+    - name: Build RPM (f32)
+      before_script: echo "No need of testbox image. Skip building the image."
+      script: |
+        docker run --name build_rpm -v $(pwd):/code:Z --rm -it registry.fedoraproject.org/fedora:32 /bin/bash /code/contrib/travis-ci/build-rpm.sh
+    - name: Build RPM (f31)
+      before_script: echo "No need of testbox image. Skip building the image."
+      script: |
+        docker run --name build_rpm -v $(pwd):/code:Z --rm -it registry.fedoraproject.org/fedora:31 /bin/bash /code/contrib/travis-ci/build-rpm.sh

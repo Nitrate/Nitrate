@@ -8,7 +8,7 @@ DEFINE_OPTS=--define "_sourcedir $(PWD)/dist" --define "_srcrpmdir $(PWD)/dist" 
 
 .PHONY: tarball
 tarball:
-	@python setup.py sdist
+	@python3 setup.py sdist
 
 
 .PHONY: srpm
