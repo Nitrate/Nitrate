@@ -1,0 +1,127 @@
+.. _4.8:
+
+4.8
+===
+
+*Aug 30, 2020*
+
+Python 3.8 is added to test environment and Nitrate should work with Python 3.8
+well.
+
+eslint-plugin-jsdoc is used to lint jsdocs in the JavaScript source code.
+
+Lots of duplication of templates and JavaScript code of plans, cases and runs
+search result are removed.
+
+Deployment pipeline is added to Travis CI. From now on, when tag a new release
+with a version, e.g. v4.8, the pipeline is triggered automatically to publish
+Python source distribution package, build RPM in Copr, build a container image
+and publish the image to Quay.io registry.
+
+Bookmark application is removed entirely.
+
+Get and install
+---------------
+
+From PyPI::
+
+    pip install nitrate-tcms
+
+From image registry::
+
+    docker pull quay.io/nitrate/nitrate:4.8
+
+Refer to :ref:`how_to_run` for details of installation.
+
+Database Migration
+------------------
+
+Bookmark app is removed entirely. Before running database migration, ensure
+existing bookmark data is backed up.
+
+Run migrations::
+
+    django-admin --settings=tcms.settings.produce migrate
+
+Change Log
+----------
+
+* Implement deployment pipeline
+* New CI jobs: test building rpm package
+* JS: lint jsdoc (`#677`_)
+* Remove bookmark app (`#419`_)
+* Add tests for XMLRPC API TestPlan.create
+* Remove duplicate runs search result templates (`#699`_)
+* Show first page of runs search result directly
+* Show menu current marker correctly for searching cases
+* JS: mark argument method optional for postToURL
+* Remove duplicate cases search result template (`#697`_)
+* Show cases search result first page directly
+* Cleanup advanced search templates
+* Remove duplicate plans search result template (`#698`_)
+* Use datatable to manage advanced search result (`#746`_)
+* Show first page of plans search result directly (`#739`_)
+* Add types to search/forms.py
+* Do not hardcode advanced search url in templates
+* Avoid evaluating associated plan, cases and runs before real query
+* Merge advanced search order functions
+* Annotate advanced search code
+* Remove duplicate code replacing name prefix
+* Fix wrong query string in paging buttons (`#731`_)
+* Set email_settings to new plan (`#737`_)
+* Remove downloads badge
+* Use env NITRATE_DB_NAME in dev container entrypoint
+* Do not use utf8 to create database in dev container entrypoint
+* Wait for database instance is launched in dev web container
+* Avoid duplicate manage.py in dev image entrypoint
+* Use Fedora 32 as base image in all Dockerfiles
+* Create a bash function to create venv for building testbox image
+* New style of putting && to the front of next command
+* Cleanup code of searching plans
+* Use correct void function name, it is not avoid
+* JS: only pass required plan id for actions on searched plans
+* JS: do not set csrf token for GET request in postToURL
+* Fix wrong buttons CSS class in plans search result page
+* Use quay.io/nitrate/nitrate:develop as dev image tag
+* Avoid duplicating httpd conf in release container
+* Set up mariadb database with utf8mb4
+* Activate venv during dev image build
+* Add Python 3.8 to testenv (`#725`_)
+* Upgrade psycopg2-binary to 2.8.5
+* Fix change log display for reviewing case (`#479`_)
+* Fix wrong variable type passed to DataTableResult
+* Fix HTML attrs disabled, selected and checked
+* Fix typo form_error_messags_to_list
+* Replace ifequal and ifnotequal with if (`#716`_)
+* Refactor manage_case_issues into class-based views (#578)
+* Refactor view env_value to class-based views - `#584`_
+* Reverse admin urls - `#695`_
+* Remove duplicates of get_cases.html and get_review_cases.html - `#714`_
+* Replace #testcases with javascript:void(0) in plan page
+* JS: remove duplicates from testplan_actions.js
+* JS: simplify the event handlers in plan cases details pane
+* JS: simplify constructPlanDetailsCasesZoneCallback
+* JS: refactor updateObject
+* JS: fix objectPk type description
+* JS: getSelectCaseRunIDs returns an array now
+* Set  javascript:void(0) in dropdown menu items in test run page - `#694`_
+* Specify specific MariaDB version to run with released image
+* Use podman by default for commands running from Makefile
+
+.. _#419: https://github.com/Nitrate/Nitrate/issues/419
+.. _#479: https://github.com/Nitrate/Nitrate/issues/479
+.. _#578: https://github.com/Nitrate/Nitrate/issues/578
+.. _#584: https://github.com/Nitrate/Nitrate/issues/584
+.. _#677: https://github.com/Nitrate/Nitrate/issues/677
+.. _#694: https://github.com/Nitrate/Nitrate/issues/694
+.. _#695: https://github.com/Nitrate/Nitrate/issues/695
+.. _#697: https://github.com/Nitrate/Nitrate/issues/697
+.. _#698: https://github.com/Nitrate/Nitrate/issues/698
+.. _#699: https://github.com/Nitrate/Nitrate/issues/699
+.. _#714: https://github.com/Nitrate/Nitrate/issues/714
+.. _#716: https://github.com/Nitrate/Nitrate/issues/716
+.. _#725: https://github.com/Nitrate/Nitrate/issues/725
+.. _#731: https://github.com/Nitrate/Nitrate/issues/731
+.. _#737: https://github.com/Nitrate/Nitrate/issues/737
+.. _#739: https://github.com/Nitrate/Nitrate/issues/739
+.. _#746: https://github.com/Nitrate/Nitrate/issues/746
