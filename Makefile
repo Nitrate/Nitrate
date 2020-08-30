@@ -64,8 +64,12 @@ release-image:
 
 .PHONY: publish-release-image
 publish-release-image:
-	@$(CONTAINER) login quay.io
-	@$(CONTAINER) push $(IMAGE_TAG)
+	@if [[ -n "$(QUAY_ROBOT_USER)" ]] && [[ -n "$(QUAY_ROBOT_PASSWORD)" ]]; then \
+		echo "$(QUAY_ROBOT_PASSWORD)" | $(CONTAINER) login -u "$(QUAY_ROBOT_USER)" --password-stdin quay.io; \
+	else \
+		$(CONTAINER) login quay.io; \
+  	fi
+	$(CONTAINER) push $(IMAGE_TAG)
 
 dev-image:
 	@$(CONTAINER) build -t $(IMAGE_TAG:$(RELEASE_VERSION)=dev) -f ./docker/dev/Dockerfile .

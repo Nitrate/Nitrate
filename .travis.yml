@@ -70,3 +70,26 @@ jobs:
       before_script: echo "No need of testbox image. Skip building the image."
       script: |
         docker run --name build_rpm -v $(pwd):/code:Z --rm -it registry.fedoraproject.org/fedora:31 /bin/bash /code/contrib/travis-ci/build-rpm.sh
+
+# Following deploy steps are triggered by pushing a new release tag and will run one by one.
+# All them work will be done according to the new release tag.
+deploy:
+# Create and publish sdist package to PyPI.
+- provider: script
+  script: sh contrib/travis-ci/deployment/publish-sdist.sh
+  on:
+    tags: true
+    branch: develop
+# Build RPM in Copr using the new sdist package downloaded from PyPI.
+- provider: script
+  script: sh contrib/travis-ci/deployment/build-rpm.sh
+  on:
+    tags: true
+    branch: develop
+# Build and publish the release image, inside which Nitrate will be installed
+# from the above Copr repo.
+- provider: script
+  script: sh contrib/travis-ci/deployment/release-image.sh
+  on:
+    tags: true
+    branch: develop
