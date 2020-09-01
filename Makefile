@@ -64,11 +64,11 @@ release-image:
 
 .PHONY: publish-release-image
 publish-release-image:
-	@if [[ -n "$(QUAY_ROBOT_USER)" ]] && [[ -n "$(QUAY_ROBOT_PASSWORD)" ]]; then \
-		echo "$(QUAY_ROBOT_PASSWORD)" | $(CONTAINER) login -u "$(QUAY_ROBOT_USER)" --password-stdin quay.io; \
+	@if [ -n "$(QUAY_USER)" ] && [ -n "$(QUAY_PASSWORD)" ]; then \
+		echo "$(QUAY_PASSWORD)" | $(CONTAINER) login -u "$(QUAY_USER)" --password-stdin quay.io; \
 	else \
 		$(CONTAINER) login quay.io; \
-  	fi
+	fi
 	$(CONTAINER) push $(IMAGE_TAG)
 
 dev-image:
