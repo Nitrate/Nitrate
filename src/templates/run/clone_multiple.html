@@ -22,7 +22,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.Clone.on_load);
 		>> Clone mulitple
 	</div>
 
-	<form action="{% url "runs-clone" %}" method="post">
+	<form action="{% url "runs-clone" %}" method="post">{% csrf_token %}
 		<div class="boxnotype">
         	<div class="boxtitle">The runs you have choosed</div>
             {{ clone_form.run }}
