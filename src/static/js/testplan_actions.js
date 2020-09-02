@@ -922,26 +922,28 @@ Nitrate.TestPlans.SearchCase.on_load = function () {
   });
 
   if (jQ('#id_table_cases').length) {
-    jQ('#id_table_cases').dataTable({
-      'aoColumnDefs':[{'bSortable':false, 'aTargets':[ 'nosort' ]}],
-      'aaSorting': [[ 1, 'desc' ]],
-      'sPaginationType': 'full_numbers',
-      'bFilter': false,
-      'aLengthMenu': [[10, 20, 50, -1], [10, 20, 50, 'All']],
-      'iDisplayLength': 20,
-      'bProcessing': true,
-      'fnDrawCallback': function () {
-        jQ('#id_table_cases tbody tr td:nth-child(1)').shiftcheckbox({
-          checkboxSelector: ':checkbox',
-          selectAll: '#id_table_cases .js-select-all'
-        });
+    jQ('#id_table_cases').dataTable(
+      Object.assign({}, Nitrate.DataTable.commonSettings, {
+        bServerSide: false,
 
-        jQ('#id_table_cases :checkbox').on('change', function () {
-          let disable = jQ('#id_table_cases tbody :checkbox:checked').length === 0;
-          jQ('#add-selected-cases').prop('disabled', disable);
-        });
-      }
-    });
+        aaSorting: [[1, 'desc']],
+        aoColumnDefs: [
+          {'bSortable': false, 'aTargets': ['nosort']}
+        ],
+
+        fnDrawCallback: function () {
+          jQ('#id_table_cases tbody tr td:nth-child(1)').shiftcheckbox({
+            checkboxSelector: ':checkbox',
+            selectAll: '#id_table_cases .js-select-all'
+          });
+
+          jQ('#id_table_cases :checkbox').on('change', function () {
+            let disable = jQ('#id_table_cases tbody :checkbox:checked').length === 0;
+            jQ('#add-selected-cases').prop('disabled', disable);
+          });
+        }
+      })
+    );
   }
 };
 
@@ -2170,34 +2172,35 @@ Nitrate.TestPlans.Runs = {
     if (jQ('#tab_testruns').hasClass('tab_focus')) {
       if (!jQ.fn.DataTable.fnIsDataTable(jQ('#testruns_table')[0])) {
         let url = that.makeUrlFromPlanId(jQ('#testruns_table').data('param'));
-        jQ('#testruns_table').dataTable({
-          'aoColumnDefs':[
-            {'bSortable': false, 'aTargets':[0, 8, 9, 10]},
-            {'sType': 'numeric', 'aTargets': [1, 6, 8, 9, 10 ]},
-            {'sType': 'date', 'aTargets': [5]}
-          ],
-          'bSort': true,
-          'bProcessing': true,
-          'bFilter': false,
-          'bLengthChange': false,
-          'oLanguage': {'sEmptyTable': 'No test run was found in this plan.'},
-          'bServerSide': true,
-          'sAjaxSource': url,
-          'iDisplayLength': 20,
-          'sPaginationType': 'full_numbers',
-          'fnServerParams': function (aoData) {
-            let params = jQ('#run_filter').serializeArray();
-            params.forEach(function (param) {
-              aoData.push(param);
-            });
-          },
-          'fnDrawCallback': function () {
-            jQ('#testruns_table tbody tr').shiftcheckbox({
-              checkboxSelector: ':checkbox',
-              selectAll: '#testruns_table .js-select-all'
-            });
-          }
-        });
+        jQ('#testruns_table').dataTable(
+          Object.assign({}, Nitrate.DataTable.commonSettings, {
+            sAjaxSource: url,
+
+            'aoColumnDefs':[
+              {'bSortable': false, 'aTargets':[0, 8, 9, 10]},
+              {'sType': 'numeric', 'aTargets': [1, 6, 8, 9, 10 ]},
+              {'sType': 'date', 'aTargets': [5]}
+            ],
+
+            oLanguage: {
+              sEmptyTable: 'No test run was found in this plan.'
+            },
+
+            fnServerParams: function (aoData) {
+              let params = jQ('#run_filter').serializeArray();
+              params.forEach(function (param) {
+                aoData.push(param);
+              });
+            },
+
+            fnDrawCallback: function () {
+              jQ('#testruns_table tbody tr').shiftcheckbox({
+                checkboxSelector: ':checkbox',
+                selectAll: '#testruns_table .js-select-all'
+              });
+            }
+          })
+        );
       }
     }
   },

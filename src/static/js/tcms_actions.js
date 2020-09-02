@@ -1010,14 +1010,14 @@ function confirmDialog(options) {
 
 Nitrate.DataTable = {
   commonSettings: {
+    aLengthMenu: [[10, 20, 50, -1], [10, 20, 50, 'All']],
     bFilter: false,
     bInfo: true,
     bLengthChange: false,
+    bProcessing: true,
     bServerSide: true,
     iDisplayLength: 20,
     sPaginationType: 'full_numbers',
-    aLengthMenu: [[10, 20, 50, -1], [10, 20, 50, 'All']],
-    bProcessing: true,
 
     fnInitComplete: function (oSettings, json) {
       if (oSettings.aoData.length > 1) {
