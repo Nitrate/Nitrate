@@ -1290,9 +1290,9 @@ function getSelectedCaseRunIDs() {
   return result;
 }
 
-function showCaseRunsWithSelectedStatus(form, statusId) {
-  form.case_run_status__pk.value = statusId;
-  jQ(form).find('input[type="submit"]').trigger('click');
+function showCaseRunsWithSelectedStatus(form, statusName) {
+  form.case_run_status__name.value = statusName;
+  form.submit();
 }
 
 //Added for choose runs and add cases to those runs
