@@ -331,3 +331,39 @@ def get_groupby_result(sql, params,
                 yield _key_conv(key), value
 
     return GroupByResult(_rows_generator(), total_name=_rollup_name)
+
+
+class CaseRunStatusGroupByResult(GroupByResult):
+    """Specific for group by result from TestCaseRun"""
+
+    @property
+    def complete_count(self):
+        return (self.get('PASSED', 0) +
+                self.get('ERROR', 0) +
+                self.get('FAILED', 0) +
+                self.get('WAIVED', 0))
+
+    @property
+    def failure_count(self):
+        return self.get('ERROR', 0) + self.get('FAILED', 0)
+
+    @property
+    def complete_percent(self):
+        if self.total:
+            return self.complete_count * 100.0 / self.total
+        else:
+            return .0
+
+    @property
+    def failure_percent_in_complete(self):
+        if self.complete_count:
+            return self.failure_count * 100.0 / self.complete_count
+        else:
+            return .0
+
+    @property
+    def failure_percent_in_total(self):
+        if self.total:
+            return self.failure_count * 100.0 / self.total
+        else:
+            return .0

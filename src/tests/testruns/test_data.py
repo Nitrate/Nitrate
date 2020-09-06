@@ -24,18 +24,12 @@ class TestGetCaseRunsStatsByStatusFromEmptyTestRun(BasePlanCase):
             default_tester=cls.tester,
             plan=cls.plan)
 
-        cls.case_run_statuss = f.TestCaseRunStatus.objects.all().order_by('pk')
-
     def test_get_from_empty_case_runs(self):
-        data = stats_caseruns_status(self.empty_test_run.pk,
-                                     self.case_run_statuss)
+        data = stats_caseruns_status(self.empty_test_run.pk)
 
-        subtotal = {status.pk: [0, status] for status in self.case_run_statuss}
-
-        self.assertEqual(subtotal, data.StatusSubtotal)
-        self.assertEqual(0, data.CaseRunsTotalCount)
-        self.assertEqual(.0, data.CompletedPercentage)
-        self.assertEqual(.0, data.FailurePercentage)
+        self.assertEqual(0, data.total)
+        self.assertEqual(.0, data.complete_percent)
+        self.assertEqual(.0, data.failure_percent_in_complete)
 
 
 class TestGetCaseRunsStatsByStatus(BasePlanCase):
@@ -43,8 +37,6 @@ class TestGetCaseRunsStatsByStatus(BasePlanCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-
-        cls.case_run_statuss = f.TestCaseRunStatus.objects.all().order_by('pk')
 
         get_status = f.TestCaseRunStatus.objects.get
         cls.case_run_status_idle = get_status(name='IDLE')
@@ -71,20 +63,14 @@ class TestGetCaseRunsStatsByStatus(BasePlanCase):
                 case_run_status=status)
 
     def test_get_stats(self):
-        data = stats_caseruns_status(self.test_run.pk, self.case_run_statuss)
-
-        subtotal = {status.pk: [0, status] for status in self.case_run_statuss}
-        subtotal[self.case_run_status_idle.pk][0] = 1
-        subtotal[self.case_run_status_failed.pk][0] = 2
-        subtotal[self.case_run_status_waived.pk][0] = 3
+        data = stats_caseruns_status(self.test_run.pk)
 
         expected_completed_percentage = 5.0 * 100 / 6
         expected_failure_percentage = 2.0 * 100 / 5
 
-        self.assertEqual(subtotal, data.StatusSubtotal)
-        self.assertEqual(6, data.CaseRunsTotalCount)
-        self.assertEqual(expected_completed_percentage, data.CompletedPercentage)
-        self.assertEqual(expected_failure_percentage, data.FailurePercentage)
+        self.assertEqual(6, data.total)
+        self.assertEqual(expected_completed_percentage, data.complete_percent)
+        self.assertEqual(expected_failure_percentage, data.failure_percent_in_complete)
 
 
 class TestGetCaseRunsComments(BaseCaseRun):

@@ -11,7 +11,7 @@ from django.contrib.sites.models import Site
 from django.core import mail
 
 from tcms.core import responses
-from tcms.core.db import GroupByResult
+from tcms.core.db import GroupByResult, CaseRunStatusGroupByResult
 from tcms.core.utils import string_to_list
 from tcms.core.mailto import mailto
 from tcms.core.task import AsyncTask
@@ -407,3 +407,49 @@ class TestModelLogAction(test.TestCase):
             self.assertEqual(new_value, log.new_value)
             self.assertEqual(field or '', log.field)
             self.assertEqual(original_value or '', log.original_value)
+
+
+class TestCaseRunStatusGroupbyResult(test.TestCase):
+    """Test CaseRunStatusGroupByResult"""
+
+    def setUp(self):
+        self.result = CaseRunStatusGroupByResult({
+            'PASSED': 20, 'ERROR': 0, 'FAILED': 10, 'IDLE': 50
+        })
+        self.empty_result = CaseRunStatusGroupByResult()
+
+    def test_complete_count(self):
+        r = self.result
+        self.assertEqual(r['PASSED'] + r['ERROR'] + r['FAILED'],
+                         r.complete_count)
+        self.assertEqual(0, self.empty_result.complete_count)
+
+    def test_failure_count(self):
+        r = self.result
+        self.assertEqual(r['ERROR'] + r['FAILED'], r.failure_count)
+        self.assertEqual(0, self.empty_result.failure_count)
+
+    def test_complete_percent(self):
+        r = self.result
+        self.assertEqual(
+            (r['PASSED'] + r['ERROR'] + r['FAILED']) * 1.0 / r.total * 100,
+            self.result.complete_percent
+        )
+        self.assertEqual(.0, self.empty_result.complete_percent)
+
+    def test_failure_percent_in_complete(self):
+        r = self.result
+        # It is not stable to compare the equality of two float numbers.
+        self.assertEqual(
+            round((r['ERROR'] + r['FAILED']) * 1.0 / r.complete_count * 100, 1),
+            round(self.result.failure_percent_in_complete, 1)
+        )
+        self.assertEqual(.0, self.empty_result.failure_percent_in_complete)
+
+    def test_failure_percent_in_total(self):
+        r = self.result
+        self.assertEqual(
+            (r['ERROR'] + r['FAILED']) * 1.0 / r.total * 100,
+            self.result.failure_percent_in_total
+        )
+        self.assertEqual(.0, self.empty_result.failure_percent_in_total)

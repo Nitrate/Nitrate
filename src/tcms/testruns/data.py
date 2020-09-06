@@ -1,78 +1,38 @@
 # -*- coding: utf-8 -*-
 
-from collections import namedtuple
 from itertools import groupby
 from operator import itemgetter
 
 from django.conf import settings
 from django.db.models import Count, F
 
+from tcms.core.db import CaseRunStatusGroupByResult
 from tcms.testruns.models import TestCaseRun
 from tcms.testruns.models import TestCaseRunStatus
 
 
-TestCaseRunStatusSubtotal = namedtuple('TestCaseRunStatusSubtotal',
-                                       'StatusSubtotal '
-                                       'CaseRunsTotalCount '
-                                       'CompletedPercentage '
-                                       'FailurePercentage')
-
-
-def stats_caseruns_status(run_id, case_run_statuss):
+def stats_caseruns_status(run_id) -> CaseRunStatusGroupByResult:
     """Get statistics based on case runs' status
 
-    @param run_id: id of test run from where to get statistics
-    @type run_id: int
-    @param case_run_statuss: iterable object containing TestCaseRunStatus
-        objects representing PASS, FAIL, WAIVED, etc.
-    @type case_run_statuss: iterable object
-    @return: the statistics including the number of each status mapping,
+    :param int run_id: id of test run from where to get statistics
+    :return: the statistics including the number of each status mapping,
         total number of case runs, complete percent, and failure percent.
-    @rtype: namedtuple
+    :rtype: CaseRunStatusGroupByResult
     """
-    rows = TestCaseRun.objects.filter(
-        run=run_id
-    ).values(
-        'case_run_status'
-    ).annotate(status_count=Count('case_run_status'))
+    result = (TestCaseRun.objects
+              .filter(run=run_id)
+              .values('case_run_status__name')
+              .annotate(count=Count('pk')))
 
-    caserun_statuss_subtotal = {
-        status.pk: [0, status] for status in case_run_statuss
+    # e.g. {'passed': 1, 'error': 2, 'idle': 3}
+    status_subtotal = {
+        item['case_run_status__name']: item['count'] for item in result
     }
-
-    for row in rows:
-        status_pk = row['case_run_status']
-        caserun_statuss_subtotal[status_pk][0] = row['status_count']
-
-    complete_count = 0
-    failure_count = 0
-    caseruns_total_count = 0
-    status_complete_names = TestCaseRunStatus.complete_status_names
-    status_failure_names = TestCaseRunStatus.failure_status_names
-
-    for status_pk, total_info in caserun_statuss_subtotal.items():
-        status_caseruns_count, caserun_status = total_info
-        status_name = caserun_status.name
-
-        caseruns_total_count += status_caseruns_count
-
-        if status_name in status_complete_names:
-            complete_count += status_caseruns_count
-        if status_name in status_failure_names:
-            failure_count += status_caseruns_count
-
-    # Final calculation
-    complete_percent = .0
-    if caseruns_total_count:
-        complete_percent = complete_count * 100.0 / caseruns_total_count
-    failure_percent = .0
-    if complete_count:
-        failure_percent = failure_count * 100.0 / complete_count
-
-    return TestCaseRunStatusSubtotal(caserun_statuss_subtotal,
-                                     caseruns_total_count,
-                                     complete_percent,
-                                     failure_percent)
+    statuses_without_data = TestCaseRunStatus.objects.exclude(
+        name__in=list(status_subtotal.keys()))
+    for item in statuses_without_data:
+        status_subtotal[item.name] = 0
+    return CaseRunStatusGroupByResult(status_subtotal)
 
 
 class TestCaseRunDataMixin:
