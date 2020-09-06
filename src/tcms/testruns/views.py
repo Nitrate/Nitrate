@@ -602,12 +602,13 @@ def get(request, run_id, template_name='run/get.html'):
     # 2. get test run's all case runs
     tcrs = open_run_get_case_runs(request, tr)
 
-    case_run_statuss = TestCaseRunStatus.objects.only('pk', 'name')
-    case_run_statuss = case_run_statuss.order_by('pk')
+    case_run_statuss = (TestCaseRunStatus.objects
+                        .only('pk', 'name')
+                        .order_by('pk'))
 
     # Count the status
     # 3. calculate number of case runs of each status
-    status_stats_result = stats_caseruns_status(run_id, case_run_statuss)
+    status_stats_result = stats_caseruns_status(run_id)
 
     # Get the test case run bugs summary
     # 6. get the number of bugs of this run

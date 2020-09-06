@@ -1,25 +1,25 @@
 {% load static %}
 <div id="run-statistics" class="statu" style="float:left;" >
 	<div class="progress-bar" style="float:none">
-		<div class="percent"><span id='complete_percent'>{{ status_stats.CompletedPercentage|floatformat:0 }}</span>%</div>
-		<div class="progress-inner" style="width:{{ status_stats.CompletedPercentage|floatformat:"0" }}%;">
-			<div class="progress-failed" style="width:{{ status_stats.FailurePercentage|floatformat:"0" }}%;"></div>
+		<div class="percent"><span id='complete_percent'>{{ status_stats.complete_percent|floatformat:0 }}</span>%</div>
+		<div class="progress-inner" style="width:{{ status_stats.complete_percent|floatformat:"0" }}%;">
+			<div class="progress-failed" style="width:{{ status_stats.failure_percent_in_complete|floatformat:"0" }}%;"></div>
 		</div>
 	</div>
 	<ul>
-		{% for status_pk, total_info in status_stats.StatusSubtotal.items %}
+		{% for status_name, count in status_stats.iteritems %}
 		<li>
-			<label>{{ total_info.1.name }}</label>
-			{% if total_info.0 != 0 %}
-			<span id='{{ total_info.1.name }}'>[<a href="javascript:void(0)" class="js-status-subtotal" data-param="{{ total_info.1.pk }}">{{ total_info.0 }}</a>]</span>
+			<label>{{ status_name }}</label>
+			{% if count != 0 %}
+			<span id='{{ status_name }}'>[<a href="javascript:void(0)" class="js-status-subtotal" data-param="{{ status_name }}">{{ count }}</a>]</span>
 			{% else %}
-			<span id='{{ total_info.1.name }}'>[<a>{{ total_info.0 }}</a>]</span>
+			<span id='{{ status_name }}'>[<a>{{ count }}</a>]</span>
 			{% endif %}
 		</li>
 		{% endfor %}
 		<li>
 			<label>TOTAL</label>
-			<span id="TOTAL">[</span><a href="javascript:void(0)" class="js-caserun-total">{{ status_stats.CaseRunsTotalCount }}</a><span>]</span>
+			<span id="TOTAL">[</span><a href="javascript:void(0)" class="js-caserun-total">{{ status_stats.total }}</a><span>]</span>
 		</li>
 	</ul>
 	<div class="clear"></div>
