@@ -11,7 +11,7 @@ from tcms.testruns.models import TestCaseRun
 from tcms.testruns.models import TestCaseRunStatus
 
 
-def stats_caseruns_status(run_id) -> CaseRunStatusGroupByResult:
+def stats_case_runs_status(run_id) -> CaseRunStatusGroupByResult:
     """Get statistics based on case runs' status
 
     :param int run_id: id of test run from where to get statistics
