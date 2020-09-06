@@ -77,8 +77,8 @@
 				<span class="title"><label for="id_is_automated">Automated&nbsp;:</label></span>
 				<select id="id_is_automated" name="case__is_automated">
 					<option value="">--------</option>
-										<option value="0">Manual</option>
-										<option value="1">Auto</option>
+					<option value="0">Manual</option>
+					<option value="1">Auto</option>
 				</select>
 			</div>
 		</div>
@@ -90,10 +90,12 @@
 			</div>
 			<div class="listinfo">
 				<span class="title"><label for="id_case_run_status">Status&nbsp;:</label></span>
-				<select id="id_case_run_status" name="case_run_status__pk">
+				<select id="id_case_run_status" name="case_run_status__name">
 					<option value="">--------</option>
 					{% for case_run_status in test_case_run_status %}
-					<option value="{{ case_run_status.pk }}"{% if case_run_status.pk == REQUEST_CONTENTS.case_run_status__pk %} selected{% endif %}>{{ case_run_status }}</option>
+					<option value="{{ case_run_status.name }}"{% if case_run_status.name == REQUEST_CONTENTS.case_run_status__name %} selected{% endif %}>
+						{{ case_run_status }}
+					</option>
 					{% endfor %}
 				</select>
 			</div>
