@@ -342,8 +342,10 @@ class CustomDetailsReportData(CustomReportData):
 
             status_name = case_run_status_names[case_run_status_id]
             run_node[status_name] = status_count
+
             # calculate the last total line
-            status_total_line[status_name] += status_count
+            status_total_line[status_name] = \
+                status_total_line.setdefault(status_name, 0) + status_count
 
         # Add total line to final data set
         matrix_dataset[None] = status_total_line

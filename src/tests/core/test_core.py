@@ -113,6 +113,10 @@ class GroupByResultDictLikeTest(unittest.TestCase):
         self.assertNotIn('count', self.groupby_result)
         self.assertEqual(len(self.groupby_result), 0)
 
+    def test_raise_key_error(self):
+        with self.assertRaises(KeyError):
+            self.groupby_result['unknown_key']
+
 
 class GroupByResultCalculationTest(unittest.TestCase):
     """Test calculation of GroupByResult"""
@@ -188,11 +192,6 @@ class GroupByResultCalculationTest(unittest.TestCase):
     def test_zero_percentage(self):
         result = GroupByResult({})
         self.assertEqual(.0, result.PASSED_percent)
-
-    def test_default_zero(self):
-        result = GroupByResult()
-        result['RUNNING'] += 1
-        self.assertEqual(1, result['RUNNING'])
 
 
 class GroupByResultLevelTest(unittest.TestCase):
