@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 from tcms.comments.models import add_comment
 from tcms.testruns.data import TestCaseRunDataMixin
-from tcms.testruns.data import stats_caseruns_status
+from tcms.testruns.data import stats_case_runs_status
 from tests import factories as f
 from tests import BaseCaseRun
 from tests import BasePlanCase
@@ -25,7 +25,7 @@ class TestGetCaseRunsStatsByStatusFromEmptyTestRun(BasePlanCase):
             plan=cls.plan)
 
     def test_get_from_empty_case_runs(self):
-        data = stats_caseruns_status(self.empty_test_run.pk)
+        data = stats_case_runs_status(self.empty_test_run.pk)
 
         self.assertEqual(0, data.total)
         self.assertEqual(.0, data.complete_percent)
@@ -63,7 +63,7 @@ class TestGetCaseRunsStatsByStatus(BasePlanCase):
                 case_run_status=status)
 
     def test_get_stats(self):
-        data = stats_caseruns_status(self.test_run.pk)
+        data = stats_case_runs_status(self.test_run.pk)
 
         expected_completed_percentage = 5.0 * 100 / 6
         expected_failure_percentage = 2.0 * 100 / 5
