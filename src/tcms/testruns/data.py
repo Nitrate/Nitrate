@@ -2,6 +2,7 @@
 
 from itertools import groupby
 from operator import itemgetter
+from typing import Dict, List
 
 from django.conf import settings
 from django.db.models import Count, F
@@ -11,28 +12,46 @@ from tcms.testruns.models import TestCaseRun
 from tcms.testruns.models import TestCaseRunStatus
 
 
-def stats_case_runs_status(run_id) -> CaseRunStatusGroupByResult:
+def stats_case_runs_status(run_ids: List[int]) -> Dict[int, CaseRunStatusGroupByResult]:
     """Get statistics based on case runs' status
 
-    :param int run_id: id of test run from where to get statistics
+    :param list[int] run_ids: id of test run from where to get statistics
     :return: the statistics including the number of each status mapping,
         total number of case runs, complete percent, and failure percent.
-    :rtype: CaseRunStatusGroupByResult
+    :rtype: dict[int, CaseRunStatusGroupByResult]
     """
     result = (TestCaseRun.objects
-              .filter(run=run_id)
-              .values('case_run_status__name')
-              .annotate(count=Count('pk')))
+              .filter(run__in=run_ids)
+              .values('run_id', status_name=F('case_run_status__name'))
+              .annotate(count=Count('pk'))
+              .order_by('run_id', 'status_name'))
 
-    # e.g. {'passed': 1, 'error': 2, 'idle': 3}
-    status_subtotal = {
-        item['case_run_status__name']: item['count'] for item in result
-    }
-    statuses_without_data = TestCaseRunStatus.objects.exclude(
-        name__in=list(status_subtotal.keys()))
-    for item in statuses_without_data:
-        status_subtotal[item.name] = 0
-    return CaseRunStatusGroupByResult(status_subtotal)
+    # Example of final result: {
+    #     # run_id: {status_1: count, ...}
+    #     1: {'PASSED': 1, 'FAILED': 2, 'IDLE': 3, ...},
+    #     2: {'PASSED': 1, 'ERROR': 2, 'IDLE': 3, ...},
+    #     3: {'PASSED': 1, 'FAILED': 2, 'IDLE': 3, 'WAIVED': 4, ...},
+    # }
+
+    if result:
+        subtotal = {}
+        for item in result:
+            run_id = item['run_id']
+            status_subtotal = subtotal.setdefault(run_id, CaseRunStatusGroupByResult())
+            status_subtotal[item['status_name']] = item['count']
+    else:
+        subtotal = {run_id: CaseRunStatusGroupByResult() for run_id in run_ids}
+
+    stock_status_names = TestCaseRunStatus.objects.values_list('name', flat=True)
+
+    # Not all case runs of a test run are not in all the status, hence some
+    # status could be missed in the subtotal result.
+    for item in subtotal.values():
+        for name in stock_status_names:
+            if name not in item:
+                item[name] = 0
+
+    return subtotal
 
 
 class TestCaseRunDataMixin:
