@@ -25,7 +25,8 @@ class TestGetCaseRunsStatsByStatusFromEmptyTestRun(BasePlanCase):
             plan=cls.plan)
 
     def test_get_from_empty_case_runs(self):
-        data = stats_case_runs_status(self.empty_test_run.pk)
+        pk = self.empty_test_run.pk
+        data = stats_case_runs_status([pk])[pk]
 
         self.assertEqual(0, data.total)
         self.assertEqual(.0, data.complete_percent)
@@ -63,7 +64,8 @@ class TestGetCaseRunsStatsByStatus(BasePlanCase):
                 case_run_status=status)
 
     def test_get_stats(self):
-        data = stats_case_runs_status(self.test_run.pk)
+        pk = self.test_run.pk
+        data = stats_case_runs_status([pk])[pk]
 
         expected_completed_percentage = 5.0 * 100 / 6
         expected_failure_percentage = 2.0 * 100 / 5
