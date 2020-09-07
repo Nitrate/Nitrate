@@ -26,24 +26,26 @@
 		<div class="leftlistinfo">
 			<table cellpadding="0" cellspacing="0" class="home_table">
 				<tr>
-					<th colspan="4"><div class="sprites tableheader"> <div class="sprites tableheaderleft">Test Runs</div><div class="sprites tableheaderright"></div></div></th>
+					<th colspan="4">
+						<div class="sprites tableheader">
+							<div class="sprites tableheaderleft">Test Runs</div>
+							<div class="sprites tableheaderright"></div>
+						</div>
+					</th>
 				</tr>
 				{% for test_run in last_15_test_runs %}
 				<tr>
 					<td class="sprites home_table_bar" width="120" align="center">
 						<div class="progress-bar" style="float:none">
-							<div class="percent">{{ test_run.completed_case_run_percent|default:"0" }}%</div>
-							<div class="progress-inner" style="width:{{ test_run.completed_case_run_percent|default:"0" }}%; ">
-								<div class="progress-failed" style="width:{{ test_run.failed_case_run_percent|default:"0" }}%; ">
+							<div class="percent">{{ test_run.case_runs_subtotal.complete_percent|floatformat:1 }}%</div>
+							<div class="progress-inner" style="width:{{ test_run.case_runs_subtotal.complete_percent|floatformat:1 }}%;">
+								<div class="progress-failed" style="width:{{ test_run.case_runs_subtotal.FAILED_percent|floatformat:1 }}%;">
 								</div>
 							</div>
 						</div>
-
 					</td>
 					<td colspan="3">
-						<a	class="link" href="{% url "run-get" test_run.run_id %}">
-							{{ test_run.summary }}
-						</a>
+						<a class="link" href="{% url "run-get" test_run.run_id %}">{{ test_run.summary }}</a>
 						<div class="grey" style="margin-top:5px">Start at {{ test_run.start_date }}</div>
 					</td>
 				</tr>
