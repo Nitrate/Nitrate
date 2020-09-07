@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
-
 from datetime import datetime, timedelta
+from typing import Dict
 
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
 from django.urls import reverse
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from django.db.models.signals import post_save, post_delete, pre_save
 from django.db.models import Count
 
@@ -85,7 +85,7 @@ class TestRun(TCMSActionModel):
         return s.serialize_queryset()
 
     @classmethod
-    def list(cls, query):
+    def list(cls, query: Dict) -> QuerySet:
         conditions = []
 
         mapping = {
@@ -257,33 +257,6 @@ class TestRun(TCMSActionModel):
         percent = round(percent, 2)
         return percent
 
-    def _get_completed_case_run_percentage(self):
-        ids = TestCaseRunStatus.completed_status_ids()
-        completed_caserun = self.case_run.filter(
-            case_run_status__in=ids)
-
-        percentage = self.get_percentage(completed_caserun.count())
-        return percentage
-
-    # IIRC, this could be used inside the test runs search result to provide
-    # data for progress bar.
-    completed_case_run_percent = property(_get_completed_case_run_percentage)
-
-    def _get_failed_case_run_num(self):
-        failed_status_id = TestCaseRunStatus.name_to_id('FAILED')
-        failed_caserun = self.case_run.filter(
-            case_run_status=failed_status_id
-        )
-        return failed_caserun.count()
-
-    failed_case_run_num = property(_get_failed_case_run_num)
-
-    def _get_failed_case_run_percentage(self):
-        percentage = self.get_percentage(self.failed_case_run_num)
-        return percentage
-
-    failed_case_run_percent = property(_get_failed_case_run_percentage)
-
     def _get_passed_case_run_num(self):
         passed_status_id = TestCaseRunStatus.name_to_id('PASSED')
         passed_caserun = self.case_run.filter(
@@ -347,6 +320,9 @@ class TestCaseRunStatus(EnumLike, TCMSActionModel):
     complete_status_names = ('PASSED', 'ERROR', 'FAILED', 'WAIVED')
     failure_status_names = ('ERROR', 'FAILED')
     idle_status_names = ('IDLE',)
+
+    _complete_statuses = None
+    _failed_status = None
 
     id = models.AutoField(db_column='case_run_status_id', primary_key=True)
     name = models.CharField(max_length=60, blank=True, unique=True)
