@@ -43,7 +43,7 @@ def login(request, credential):
 
     for backend_str in settings.AUTHENTICATION_BACKENDS:
         backend = get_backend(backend_str)
-        user = backend.authenticate(*check_user_name(credential))
+        user = backend.authenticate(request, *check_user_name(credential))
 
         if user:
             user.backend = "{}.{}".format(backend.__module__,
