@@ -92,7 +92,7 @@ def create_request_user(username=None, password=None):
     return user
 
 
-class HelperAssertions:
+class HelperAssertions(SimpleTestCase):
     """Helper assertion methods"""
 
     def assert200(self, response):
