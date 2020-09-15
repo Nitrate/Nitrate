@@ -19,7 +19,7 @@ from tcms.testcases.forms import TestCase
 from tcms.testplans.models import TestPlan
 from tcms.testruns.models import TestCaseRun
 from tcms.testruns.models import TestCaseRunStatus
-from tests import BaseCaseRun, BasePlanCase
+from tests import AuthMixin, BaseCaseRun, BasePlanCase
 from tests import remove_perm_from_user
 from tests import user_should_have_perm
 from tests import factories as f
@@ -106,14 +106,14 @@ class TestQuickSearch(BaseCaseRun):
 class TestCommentCaseRuns(BaseCaseRun):
     """Test case for ajax.comment_case_runs"""
 
+    auto_login = True
+
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
         cls.many_comments_url = reverse('caserun-comment-caseruns')
 
     def test_refuse_if_missing_comment(self):
-        self.client.login(username=self.tester.username, password='password')
-
         response = self.client.post(self.many_comments_url,
                                     {'run': [self.case_run_1.pk, self.case_run_2.pk]})
         self.assertJsonResponse(
@@ -123,8 +123,6 @@ class TestCommentCaseRuns(BaseCaseRun):
         )
 
     def test_refuse_if_missing_no_case_run_pk(self):
-        self.client.login(username=self.tester.username, password='password')
-
         response = self.client.post(self.many_comments_url,
                                     {'comment': 'new comment', 'run': []})
         self.assertJsonResponse(
@@ -142,8 +140,6 @@ class TestCommentCaseRuns(BaseCaseRun):
         )
 
     def test_refuse_if_passed_case_run_pks_not_exist(self):
-        self.client.login(username=self.tester.username, password='password')
-
         response = self.client.post(self.many_comments_url, {
             'comment': 'new comment',
             'run': [99999998, 1009900]
@@ -155,8 +151,6 @@ class TestCommentCaseRuns(BaseCaseRun):
         )
 
     def test_add_comment_to_case_runs(self):
-        self.client.login(username=self.tester.username, password='password')
-
         new_comment = 'new comment'
         response = self.client.post(self.many_comments_url, {
             'comment': new_comment,
@@ -177,6 +171,8 @@ class TestCommentCaseRuns(BaseCaseRun):
 class TestUpdateObject(BasePlanCase):
     """Test case for update"""
 
+    auto_login = True
+
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
@@ -185,11 +181,10 @@ class TestUpdateObject(BasePlanCase):
         cls.update_url = reverse('ajax-update')
 
     def setUp(self):
+        super().setUp()
         user_should_have_perm(self.tester, self.permission)
 
     def test_refuse_if_missing_permission(self):
-        self.client.login(username=self.tester.username, password='password')
-
         remove_perm_from_user(self.tester, self.permission)
 
         response = self.client.post(self.update_url, {
@@ -207,8 +202,6 @@ class TestUpdateObject(BasePlanCase):
         )
 
     def test_update_plan_is_active(self):
-        self.client.login(username=self.tester.username, password='password')
-
         response = self.client.post(self.update_url, {
             'content_type': 'testplans.testplan',
             'object_pk': self.plan.pk,
@@ -222,7 +215,7 @@ class TestUpdateObject(BasePlanCase):
         self.assertFalse(plan.is_active)
 
 
-class TestAddPlanParent(test.TestCase):
+class TestAddPlanParent(AuthMixin, test.TestCase):
     """
     Another case of ajax.update by adding a parent plan to a plan which does
     not have one yet
@@ -231,8 +224,11 @@ class TestAddPlanParent(test.TestCase):
     properly.
     """
 
+    auto_login = True
+
     @classmethod
     def setUpTestData(cls):
+        super().setUpTestData()
         cls.product = f.ProductFactory()
         cls.product_version = f.VersionFactory(value='1.0', product=cls.product)
         cls.plan = f.TestPlanFactory(
@@ -241,13 +237,9 @@ class TestAddPlanParent(test.TestCase):
         cls.parent = f.TestPlanFactory(
             product=cls.product,
             product_version=cls.product_version)
-        cls.tester = User.objects.create_user(username='tester', email='tester@example.com')
-        cls.tester.set_password('password')
-        cls.tester.save()
 
     def test_set_plan_parent_for_the_first_time(self):
         user_should_have_perm(self.tester, 'testplans.change_testplan')
-        self.client.login(username=self.tester.username, password='password')
 
         self.client.post(reverse('ajax-update'), {
             'content_type': 'testplans.testplan',
@@ -269,6 +261,8 @@ class TestAddPlanParent(test.TestCase):
 class TestUpdateCaseRunStatus(BaseCaseRun):
     """Test case for update_case_run_status"""
 
+    auto_login = True
+
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
@@ -277,11 +271,11 @@ class TestUpdateCaseRunStatus(BaseCaseRun):
         cls.update_url = reverse('ajax-update-caserun-status')
 
     def setUp(self):
+        super().setUp()
         user_should_have_perm(self.tester, self.permission)
 
     def test_refuse_if_missing_permission(self):
         remove_perm_from_user(self.tester, self.permission)
-        self.client.login(username=self.tester.username, password='password')
 
         response = self.client.post(self.update_url, {
             'content_type': 'testruns.testcaserun',
@@ -298,8 +292,6 @@ class TestUpdateCaseRunStatus(BaseCaseRun):
         )
 
     def test_change_case_run_status(self):
-        self.client.login(username=self.tester.username, password='password')
-
         response = self.client.post(self.update_url, {
             'content_type': 'testruns.testcaserun',
             'object_pk': self.case_run_1.pk,
@@ -328,6 +320,8 @@ class TestGetForm(test.TestCase):
 class TestUpdateCasePriority(BasePlanCase):
     """Test case for update_cases_default_tester"""
 
+    auto_login = True
+
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
@@ -336,11 +330,11 @@ class TestUpdateCasePriority(BasePlanCase):
         cls.case_update_url = reverse('ajax-update-cases-default-tester')
 
     def setUp(self):
+        super().setUp()
         user_should_have_perm(self.tester, self.permission)
 
     def test_refuse_if_missing_permission(self):
         remove_perm_from_user(self.tester, self.permission)
-        self.client.login(username=self.tester.username, password='password')
 
         response = self.client.post(
             self.case_update_url,
@@ -358,8 +352,6 @@ class TestUpdateCasePriority(BasePlanCase):
         )
 
     def test_update_case_priority(self):
-        self.client.login(username=self.tester.username, password='password')
-
         response = self.client.post(
             self.case_update_url,
             {

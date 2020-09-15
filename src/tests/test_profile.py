@@ -13,6 +13,8 @@ from tests import factories as f
 class TestRecentPage(BaseCaseRun):
     """Test recent page"""
 
+    auto_login = True
+
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
@@ -83,7 +85,6 @@ class TestRecentPage(BaseCaseRun):
 
     def test_open_recent(self):
         url = reverse('user-recent', args=[self.tester.username])
-        self.login_tester()
         resp = self.client.get(url)
         self.assert_test_runs_list(resp)
         self.assert_test_plans_list(resp)

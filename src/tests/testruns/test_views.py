@@ -98,6 +98,8 @@ class TestGetRun(BaseCaseRun):
 class TestCreateNewRun(BasePlanCase):
     """Test creating new run"""
 
+    auto_login = True
+
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
@@ -109,20 +111,16 @@ class TestCreateNewRun(BasePlanCase):
         cls.build_fast = f.TestBuildFactory(name='fast', product=cls.product)
 
     def test_refuse_if_missing_plan_pk(self):
-        self.client.login(username=self.tester.username, password='password')
         response = self.client.post(self.url, {})
         self.assertRedirects(response, reverse('plans-all'))
 
     def test_refuse_if_missing_cases_pks(self):
-        self.client.login(username=self.tester.username, password='password')
         response = self.client.post(self.url, {'from_plan': self.plan.pk})
         self.assertContains(
             response,
             'At least one case is required by a run.')
 
     def test_show_create_new_run_page(self):
-        self.client.login(username=self.tester.username, password='password')
-
         response = self.client.post(self.url, {
             'from_plan': self.plan.pk,
             'case': [self.case_1.pk, self.case_2.pk, self.case_3.pk]
@@ -141,8 +139,6 @@ class TestCreateNewRun(BasePlanCase):
                 html=True)
 
     def test_create_a_new_run(self):
-        self.client.login(username=self.tester.username, password='password')
-
         clone_data = {
             'summary': self.plan.name,
             'from_plan': self.plan.pk,
@@ -220,6 +216,8 @@ class CloneRunBaseTest(BaseCaseRun):
 class TestStartCloneRunFromRunPage(CloneRunBaseTest):
     """Test case for cloning run from a run page"""
 
+    auto_login = True
+
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
@@ -228,7 +226,6 @@ class TestStartCloneRunFromRunPage(CloneRunBaseTest):
         user_should_have_perm(cls.tester, cls.permission)
 
     def test_refuse_without_selecting_case_runs(self):
-        self.client.login(username=self.tester.username, password='password')
         url = reverse('run-clone', args=[self.test_run.pk])
 
         response = self.client.post(url, {})
@@ -238,7 +235,6 @@ class TestStartCloneRunFromRunPage(CloneRunBaseTest):
             'At least one case is required by a run')
 
     def test_open_clone_page_by_selecting_case_runs(self):
-        self.client.login(username=self.tester.username, password='password')
         url = reverse('run-clone', args=[self.test_run.pk])
 
         response = self.client.post(url, {
@@ -248,8 +244,6 @@ class TestStartCloneRunFromRunPage(CloneRunBaseTest):
         self.assert_one_run_clone_page(response)
 
     def assert_clone_a_run(self, reserve_status=False, reserve_assignee=True):
-        self.client.login(username=self.tester.username, password='password')
-
         new_summary = 'Clone {} - {}'.format(
             self.test_run.pk, self.test_run.summary)
 
@@ -343,6 +337,8 @@ class TestStartCloneRunFromRunPage(CloneRunBaseTest):
 class TestStartCloneRunFromRunsSearchPage(CloneRunBaseTest):
     """Test case for cloning runs from runs search result page"""
 
+    auto_login = True
+
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
@@ -390,8 +386,6 @@ class TestStartCloneRunFromRunsSearchPage(CloneRunBaseTest):
                 case=case)
 
     def test_refuse_clone_without_selecting_runs(self):
-        self.client.login(username=self.tester.username, password='password')
-
         response = self.client.get(self.clone_url, {})
 
         self.assertContains(
@@ -399,15 +393,11 @@ class TestStartCloneRunFromRunsSearchPage(CloneRunBaseTest):
             'At least one run is required')
 
     def test_open_clone_page_by_selecting_only_one_run(self):
-        self.client.login(username=self.tester.username, password='password')
-
         response = self.client.get(self.clone_url, {'run': self.test_run.pk})
 
         self.assert_one_run_clone_page(response)
 
     def test_open_clone_page_by_selecting_multiple_runs(self):
-        self.client.login(username=self.tester.username, password='password')
-
         runs = [self.test_run_1, self.test_run]
         response = self.client.get(self.clone_url, {
             'run': [item.pk for item in runs]
@@ -466,8 +456,6 @@ class TestStartCloneRunFromRunsSearchPage(CloneRunBaseTest):
     def assert_clone_runs(self, runs_to_clone,
                           clone_cc=True, clone_tag=True, update_case_text=True):
         """Test only clone the selected one run from runs/clone/"""
-        self.client.login(username=self.tester.username, password='password')
-
         original_runs_count = TestRun.objects.count()
 
         post_data = {
@@ -909,6 +897,8 @@ class TestAddRemoveRunCC(BaseCaseRun):
 class TestEnvValue(BaseCaseRun):
     """Test env_value view method"""
 
+    auto_login = True
+
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
@@ -931,8 +921,6 @@ class TestEnvValue(BaseCaseRun):
         user_should_have_perm(cls.tester, 'testruns.delete_tcmsenvrunvaluemap')
 
     def test_add_env_value(self):
-        self.login_tester()
-
         self.client.post(reverse('runs-add-env-value'), {
             'env_value': self.value_bsd.pk,
             'runs': self.test_run.pk
@@ -945,8 +933,6 @@ class TestEnvValue(BaseCaseRun):
         )
 
     def test_add_env_value_to_runs(self):
-        self.login_tester()
-
         self.client.post(reverse('runs-add-env-value'), {
             'env_value': self.value_bsd.pk,
             'runs': [self.test_run.pk, self.test_run_1.pk]
@@ -964,7 +950,9 @@ class TestEnvValue(BaseCaseRun):
             ).exists()
         )
 
-    def test_no_perm_to_delete(self):
+    def test_anonymouse_is_not_allowed_to_delete(self):
+        self.client.logout()
+
         resp = self.client.post(reverse('runs-add-env-value'), {
             'env_value': self.value_linux.pk,
             'runs': self.test_run.pk,
@@ -972,8 +960,6 @@ class TestEnvValue(BaseCaseRun):
         self.assert403(resp)
 
     def test_delete_env_value(self):
-        self.login_tester()
-
         self.client.post(reverse('runs-add-env-value'), {
             'env_value': self.value_linux.pk,
             'runs': self.test_run.pk,
@@ -986,8 +972,6 @@ class TestEnvValue(BaseCaseRun):
         )
 
     def test_delete_env_value_from_runs(self):
-        self.login_tester()
-
         self.client.post(reverse('runs-add-env-value'), {
             'env_value': self.value_linux.pk,
             'runs': [self.test_run.pk, self.test_run_1.pk],
@@ -1045,6 +1029,8 @@ class TestExportTestRunCases(BaseCaseRun):
 class TestIssueActions(BaseCaseRun):
     """Test issue view method"""
 
+    auto_login = True
+
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
@@ -1074,15 +1060,12 @@ class TestIssueActions(BaseCaseRun):
         cls.case_run_1.add_issue(cls.jira_nitrate_100, cls.orgjira)
 
     def test_404_if_case_run_id_not_exist(self):
-        self.login_tester()
         self.run_issues_url = reverse('run-issues', args=[999])
 
         response = self.client.get(self.run_issues_url, {})
         self.assert404(response)
 
     def test_refuse_if_action_is_unknown(self):
-        self.login_tester()
-
         post_data = {
             'a': 'unknown action',
             'case_run': [self.case_run_1.pk],
@@ -1097,8 +1080,6 @@ class TestIssueActions(BaseCaseRun):
             status_code=HTTPStatus.BAD_REQUEST)
 
     def test_remove_issue_from_case_run(self):
-        self.login_tester()
-
         post_data = {
             'a': 'remove',
             'case_run': [self.case_run_1.pk],
@@ -1126,6 +1107,8 @@ class TestIssueActions(BaseCaseRun):
 class TestRemoveCaseRuns(BaseCaseRun):
     """Test remove_case_run view method"""
 
+    auto_login = True
+
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
@@ -1134,8 +1117,6 @@ class TestRemoveCaseRuns(BaseCaseRun):
             'run-remove-caserun', args=[cls.test_run.pk])
 
     def test_nothing_change_if_no_case_run_passed(self):
-        self.login_tester()
-
         response = self.client.post(self.remove_case_run_url, {})
 
         self.assertRedirects(
@@ -1143,8 +1124,6 @@ class TestRemoveCaseRuns(BaseCaseRun):
             reverse('run-get', args=[self.test_run.pk]))
 
     def test_ignore_non_integer_case_run_ids(self):
-        self.login_tester()
-
         expected_rest_case_runs_count = self.test_run.case_run.count() - 2
 
         self.client.post(self.remove_case_run_url,
@@ -1158,8 +1137,6 @@ class TestRemoveCaseRuns(BaseCaseRun):
                          self.test_run.case_run.count())
 
     def test_remove_case_runs(self):
-        self.login_tester()
-
         expected_rest_case_runs_count = self.test_run.case_run.count() - 1
 
         self.client.post(self.remove_case_run_url,
@@ -1169,8 +1146,6 @@ class TestRemoveCaseRuns(BaseCaseRun):
                          self.test_run.case_run.count())
 
     def test_redirect_to_run_if_still_case_runs_exist_after_removal(self):
-        self.login_tester()
-
         response = self.client.post(self.remove_case_run_url,
                                     {'case_run': [self.case_run_1.pk]})
 
@@ -1179,8 +1154,6 @@ class TestRemoveCaseRuns(BaseCaseRun):
             reverse('run-get', args=[self.test_run.pk]))
 
     def test_redirect_to_add_case_runs_if_all_case_runs_are_removed(self):
-        self.login_tester()
-
         response = self.client.post(
             self.remove_case_run_url,
             {
@@ -1195,6 +1168,8 @@ class TestRemoveCaseRuns(BaseCaseRun):
 
 class TestUpdateCaseRunText(BaseCaseRun):
     """Test update_case_run_text view method"""
+
+    auto_login = True
 
     @classmethod
     def setUpTestData(cls):
@@ -1213,8 +1188,6 @@ class TestUpdateCaseRunText(BaseCaseRun):
                                      breakdown='breakdown_1')
 
     def test_update_selected_case_runs(self):
-        self.login_tester()
-
         response = self.client.post(self.update_url, {
             'case_run': [self.case_run_1.pk]
         })
@@ -1229,6 +1202,8 @@ class TestUpdateCaseRunText(BaseCaseRun):
 
 class TestEditRun(BaseCaseRun):
     """Test edit view method"""
+
+    auto_login = True
 
     @classmethod
     def setUpTestData(cls):
@@ -1249,16 +1224,12 @@ class TestEditRun(BaseCaseRun):
             email='intern@example.com')
 
     def test_404_if_edit_non_existing_run(self):
-        self.login_tester()
-
         url = reverse('run-edit', args=[9999])
         response = self.client.get(url)
 
         self.assert404(response)
 
     def test_edit_run(self):
-        self.login_tester()
-
         post_data = {
             'summary': 'New run summary',
             'product': self.new_product.pk,
@@ -1283,6 +1254,8 @@ class TestEditRun(BaseCaseRun):
 class TestAddCasesToRun(BaseCaseRun):
     """Test AddCasesToRunView"""
 
+    auto_login = True
+
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
@@ -1297,7 +1270,6 @@ class TestAddCasesToRun(BaseCaseRun):
         user_should_have_perm(cls.tester, 'testruns.add_testcaserun')
 
     def test_show_add_cases_to_run(self):
-        self.login_tester()
         url = reverse('add-cases-to-run', args=[self.test_run.pk])
         response = self.client.get(url)
 
@@ -1391,6 +1363,8 @@ class TestRunReportView(BaseCaseRun):
 class TestChangeRunStatus(BaseCaseRun):
     """Test view to change a test run status"""
 
+    auto_login = True
+
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
@@ -1399,8 +1373,6 @@ class TestChangeRunStatus(BaseCaseRun):
         user_should_have_perm(cls.tester, 'testruns.change_testrun')
 
     def test_run_id_does_not_exist(self):
-        self.login_tester()
-
         result = TestRun.objects.aggregate(max_pk=Max('pk'))
         max_pk = result['max_pk']
 
@@ -1409,7 +1381,6 @@ class TestChangeRunStatus(BaseCaseRun):
         self.assert404(resp)
 
     def test_set_finish(self):
-        self.login_tester()
         resp = self.client.get(self.url, data={'finished': '1'})
 
         self.assertRedirects(
@@ -1421,7 +1392,6 @@ class TestChangeRunStatus(BaseCaseRun):
         self.assertIsNotNone(self.test_run_1.stop_date)
 
     def test_set_running(self):
-        self.login_tester()
         self.test_run_1.stop_date = datetime.now()
         self.test_run_1.save()
 

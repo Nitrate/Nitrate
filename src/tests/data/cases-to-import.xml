@@ -5,7 +5,7 @@
         ]>
 <testopia version="1.1">
 
-    <testcase author="admin@example.com"
+    <testcase author="nitrate-tester@example.com"
               priority="P1"
               automated="0"
               status="CONFIRMED">
@@ -21,7 +21,7 @@
 
     </testcase>
 
-    <testcase author="admin@example.com"
+    <testcase author="nitrate-tester@example.com"
               priority="P1"
               automated="0"
               status="CONFIRMED">
@@ -37,7 +37,7 @@
 
     </testcase>
 
-    <testcase author="admin@example.com"
+    <testcase author="nitrate-tester@example.com"
               priority="P1"
               automated="0"
               status="CONFIRMED">
@@ -53,7 +53,7 @@
 
     </testcase>
 
-    <testcase author="admin@example.com"
+    <testcase author="nitrate-tester@example.com"
               priority="P1"
               automated="0"
               status="CONFIRMED">
@@ -69,7 +69,7 @@
 
     </testcase>
 
-    <testcase author="admin@example.com"
+    <testcase author="nitrate-tester@example.com"
               priority="P1"
               automated="0"
               status="CONFIRMED">
@@ -85,7 +85,7 @@
 
     </testcase>
 
-    <testcase author="admin@example.com"
+    <testcase author="nitrate-tester@example.com"
               priority="P1"
               automated="0"
               status="CONFIRMED">
