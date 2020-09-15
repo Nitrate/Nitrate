@@ -3,6 +3,7 @@
 import json
 import re
 
+from functools import partial
 from http import HTTPStatus
 from urllib.parse import urlparse, parse_qs
 
@@ -236,56 +237,21 @@ class BasePlanCase(AuthMixin, HelperAssertions, NitrateTestCase):
             product=cls.product,
             product_version=cls.version)
 
-        cls.case = f.TestCaseFactory(
-            summary='Test case 0',
-            author=cls.tester,
-            default_tester=None,
-            reviewer=cls.tester,
-            case_status=cls.case_status_confirmed,
-            plan=[cls.plan])
-        cls.case_1 = f.TestCaseFactory(
-            summary='Test case 1',
-            author=cls.tester,
-            default_tester=None,
-            reviewer=cls.tester,
-            case_status=cls.case_status_confirmed,
-            plan=[cls.plan])
-        cls.case_2 = f.TestCaseFactory(
-            summary='Test case 2',
-            author=cls.tester,
-            default_tester=None,
-            reviewer=cls.tester,
-            case_status=cls.case_status_confirmed,
-            plan=[cls.plan])
-        cls.case_3 = f.TestCaseFactory(
-            summary='Test case 3',
+        case_creator = partial(
+            f.TestCaseFactory,
             author=cls.tester,
             default_tester=None,
             reviewer=cls.tester,
             case_status=cls.case_status_confirmed,
             plan=[cls.plan])
 
-        cls.case_4 = f.TestCaseFactory(
-            summary='Test case 4',
-            author=cls.tester,
-            default_tester=None,
-            reviewer=cls.tester,
-            case_status=cls.case_status_confirmed,
-            plan=[cls.plan])
-        cls.case_5 = f.TestCaseFactory(
-            summary='Test case 5',
-            author=cls.tester,
-            default_tester=None,
-            reviewer=cls.tester,
-            case_status=cls.case_status_confirmed,
-            plan=[cls.plan])
-        cls.case_6 = f.TestCaseFactory(
-            summary='Test case 6',
-            author=cls.tester,
-            default_tester=None,
-            reviewer=cls.tester,
-            case_status=cls.case_status_confirmed,
-            plan=[cls.plan])
+        cls.case = case_creator(summary='Test case 0')
+        cls.case_1 = case_creator(summary='Test case 1')
+        cls.case_2 = case_creator(summary='Test case 2')
+        cls.case_3 = case_creator(summary='Test case 3')
+        cls.case_4 = case_creator(summary='Test case 4')
+        cls.case_5 = case_creator(summary='Test case 5')
+        cls.case_6 = case_creator(summary='Test case 6')
 
 
 class BaseCaseRun(BasePlanCase):
@@ -296,8 +262,14 @@ class BaseCaseRun(BasePlanCase):
         super().setUpTestData()
 
         cls.case_run_status_idle = TestCaseRunStatus.objects.get(name='IDLE')
-
         cls.build = f.TestBuildFactory(product=cls.product)
+
+        case_run_creator = partial(
+            f.TestCaseRunFactory,
+            assignee=cls.tester,
+            tested_by=cls.tester,
+            build=cls.build,
+            case_run_status=cls.case_run_status_idle)
 
         cls.test_run = f.TestRunFactory(
             product_version=cls.version,
@@ -306,17 +278,14 @@ class BaseCaseRun(BasePlanCase):
             manager=cls.tester,
             default_tester=cls.tester)
 
-        cls.case_run_1, cls.case_run_2, cls.case_run_3 = [
-            f.TestCaseRunFactory(
-                assignee=cls.tester,
-                tested_by=cls.tester,
-                run=cls.test_run,
-                build=cls.build,
-                case_run_status=cls.case_run_status_idle,
-                case=case,
-                sortkey=i * 10)
-            for i, case in enumerate((cls.case_1, cls.case_2, cls.case_3), 1)
-        ]
+        cls.case_run_1 = case_run_creator(
+            run=cls.test_run, case=cls.case_1, sortkey=10)
+
+        cls.case_run_2 = case_run_creator(
+            run=cls.test_run, case=cls.case_2, sortkey=20)
+
+        cls.case_run_3 = case_run_creator(
+            run=cls.test_run, case=cls.case_3, sortkey=30)
 
         cls.test_run_1 = f.TestRunFactory(
             product_version=cls.version,
@@ -325,14 +294,11 @@ class BaseCaseRun(BasePlanCase):
             manager=cls.tester,
             default_tester=cls.tester)
 
-        cls.case_run_4, cls.case_run_5, cls.case_run_6 = [
-            f.TestCaseRunFactory(
-                assignee=cls.tester,
-                tested_by=cls.tester,
-                run=cls.test_run_1,
-                build=cls.build,
-                case_run_status=cls.case_run_status_idle,
-                case=case,
-                sortkey=i * 10)
-            for i, case in enumerate((cls.case_4, cls.case_5, cls.case_6), 1)
-        ]
+        cls.case_run_4 = case_run_creator(
+            run=cls.test_run_1, case=cls.case_4, sortkey=10)
+
+        cls.case_run_5 = case_run_creator(
+            run=cls.test_run_1, case=cls.case_5, sortkey=20)
+
+        cls.case_run_6 = case_run_creator(
+            run=cls.test_run_1, case=cls.case_6, sortkey=30)
