@@ -152,25 +152,20 @@ TESTS_DATA_DIR = os.path.realpath(
 class TestImportCasesToPlan(BasePlanCase):
     """Test import cases to a plan"""
 
+    auto_login = True
+
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-
-        cls.plan_tester = User.objects.create_user(
-            username='plan_tester',
-            email='admin@example.com',
-            password='password')
-
-        user_should_have_perm(cls.plan_tester, 'testcases.add_testcaseplan')
+        user_should_have_perm(cls.tester, 'testcases.add_testcaseplan')
 
     def test_import_cases(self):
-        self.client.login(username=self.plan_tester.username,
-                          password='password')
-
         location = reverse('plan-import-cases', args=[self.plan.pk])
         filename = os.path.join(TESTS_DATA_DIR, 'cases-to-import.xml')
+
         with open(filename, 'r') as fin:
             response = self.client.post(location, {'xml_file': fin})
+
         self.assertRedirects(
             response,
             reverse('plan-get', args=[self.plan.pk]) + '#testcases',
@@ -184,19 +179,13 @@ class TestImportCasesToPlan(BasePlanCase):
 class TestDeleteCasesFromPlan(BasePlanCase):
     """Test case for deleting cases from a plan"""
 
-    @classmethod
-    def setUpTestData(cls):
-        super().setUpTestData()
-        cls.plan_tester = User(username='tester')
-        cls.plan_tester.set_password('password')
-        cls.plan_tester.save()
+    auto_login = True
 
-        cls.cases_url = reverse('plan-delete-cases', args=[cls.plan.pk])
+    def setUp(self):
+        super().setUp()
+        self.cases_url = reverse('plan-delete-cases', args=[self.plan.pk])
 
     def test_missing_cases_ids(self):
-        self.client.login(username=self.plan_tester.username,
-                          password='password')
-
         response = self.client.post(self.cases_url, {})
         self.assertJsonResponse(
             response,
@@ -205,9 +194,6 @@ class TestDeleteCasesFromPlan(BasePlanCase):
         )
 
     def test_delete_cases(self):
-        self.client.login(username=self.plan_tester.username,
-                          password='password')
-
         post_data = {'case': [self.case_1.pk, self.case_3.pk]}
         response = self.client.post(self.cases_url, post_data)
         data = json.loads(response.content)
@@ -234,18 +220,14 @@ class TestDeleteCasesFromPlan(BasePlanCase):
 class TestSortCases(BasePlanCase):
     """Test case for sorting cases"""
 
+    auto_login = True
+
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.plan_tester = User(username='tester')
-        cls.plan_tester.set_password('password')
-        cls.plan_tester.save()
-
         cls.cases_url = reverse('plan-reorder-cases', args=[cls.plan.pk])
 
     def test_missing_cases_ids(self):
-        self.client.login(username=self.plan_tester.username, password='password')
-
         response = self.client.post(self.cases_url, {})
         self.assertJsonResponse(
             response,
@@ -254,8 +236,6 @@ class TestSortCases(BasePlanCase):
         )
 
     def test_order_cases(self):
-        self.client.login(username=self.plan_tester.username, password='password')
-
         post_data = {'case': [self.case_3.pk, self.case_1.pk]}
         response = self.client.post(self.cases_url, post_data)
         data = json.loads(response.content)
@@ -271,6 +251,8 @@ class TestSortCases(BasePlanCase):
 
 class TestLinkCases(BasePlanCase):
     """Test case for linking cases from other plans"""
+
+    auto_login = True
 
     @classmethod
     def setUpTestData(cls):
@@ -294,41 +276,29 @@ class TestLinkCases(BasePlanCase):
             reviewer=cls.tester,
             plan=[cls.another_plan])
 
-        cls.plan_tester = User(username='tester')
-        cls.plan_tester.set_password('password')
-        cls.plan_tester.save()
-
         cls.search_cases_for_link_url = reverse('plan-search-cases-for-link',
                                                 args=[cls.plan.pk])
         cls.link_cases_url = reverse('plan-link-cases', args=[cls.plan.pk])
 
     def tearDown(self):
         # Ensure permission is removed whenever it was added during tests
-        remove_perm_from_user(self.plan_tester, 'testcases.add_testcaseplan')
+        remove_perm_from_user(self.tester, 'testcases.add_testcaseplan')
 
     def assert_quick_search_is_shown(self, response):
-        self.client.login(username=self.plan_tester.username, password='password')
-
         self.assertContains(
             response,
             '<li class="profile_tab_active" id="quick_tab">')
 
     def assert_normal_search_is_shown(self, response):
-        self.client.login(username=self.plan_tester.username, password='password')
-
         self.assertContains(
             response,
             '<li class="profile_tab_active" id="normal_tab">')
 
     def test_show_quick_search_by_default(self):
-        self.client.login(username=self.plan_tester.username, password='password')
-
         response = self.client.post(self.search_cases_for_link_url, {})
         self.assert_quick_search_is_shown(response)
 
     def assert_search_result(self, response):
-        self.client.login(username=self.plan_tester.username, password='password')
-
         self.assertContains(
             response,
             '<a href="{}">{}</a>'.format(
@@ -343,8 +313,6 @@ class TestLinkCases(BasePlanCase):
                 self.case_2.pk))
 
     def test_quick_search(self):
-        self.client.login(username=self.plan_tester.username, password='password')
-
         post_data = {
             'search_mode': 'quick',
             'case_id_set': ','.join(
@@ -356,8 +324,6 @@ class TestLinkCases(BasePlanCase):
         self.assert_search_result(response)
 
     def test_normal_search(self):
-        self.client.login(username=self.plan_tester.username, password='password')
-
         post_data = {
             'search_mode': 'normal',
             'case_id_set': ','.join(
@@ -369,9 +335,7 @@ class TestLinkCases(BasePlanCase):
         self.assert_search_result(response)
 
     def test_link_cases(self):
-        self.client.login(username=self.plan_tester.username, password='password')
-
-        user_should_have_perm(self.plan_tester, 'testcases.add_testcaseplan')
+        user_should_have_perm(self.tester, 'testcases.add_testcaseplan')
 
         post_data = {
             'case': [self.another_case_1.pk, self.another_case_2.pk]
@@ -393,6 +357,8 @@ class TestLinkCases(BasePlanCase):
 
 class TestCloneView(BasePlanCase):
     """Test case for cloning a plan"""
+
+    auto_login = True
 
     @classmethod
     def setUpTestData(cls):
@@ -431,29 +397,19 @@ class TestCloneView(BasePlanCase):
             author=cls.tester, default_tester=None,
             reviewer=cls.tester, plan=[cls.totally_new_plan])
 
-        cls.plan_tester = User.objects.create_user(
-            username='plan_tester',
-            email='tester@example.com',
-            password='password')
-        user_should_have_perm(cls.plan_tester, 'testplans.add_testplan')
+        user_should_have_perm(cls.tester, 'testplans.add_testplan')
         cls.plan_clone_url = reverse('plans-clone')
 
     def test_refuse_if_missing_a_plan(self):
-        self.client.login(username=self.plan_tester.username, password='password')
-
         data_missing_plan = {}  # No plan is passed
         response = self.client.get(self.plan_clone_url, data_missing_plan)
         self.assertContains(response, 'At least one plan is required by clone function')
 
     def test_refuse_if_give_nonexisting_plan(self):
-        self.client.login(username=self.plan_tester.username, password='password')
-
         response = self.client.get(self.plan_clone_url, {'plan': 99999})
         self.assertContains(response, 'The plan you specify does not exist in database')
 
     def test_open_clone_page_to_clone_one_plan(self):
-        self.client.login(username=self.plan_tester.username, password='password')
-
         response = self.client.get(self.plan_clone_url, {'plan': self.plan.pk})
 
         self.assertContains(
@@ -468,8 +424,6 @@ class TestCloneView(BasePlanCase):
             html=True)
 
     def test_open_clone_page_to_clone_multiple_plans(self):
-        self.client.login(username=self.plan_tester.username, password='password')
-
         response = self.client.get(self.plan_clone_url,
                                    {'plan': [self.plan.pk, self.another_plan.pk]})
 
@@ -541,13 +495,13 @@ class TestCloneView(BasePlanCase):
                 if maintain_case_orignal_author:
                     self.assertEqual(original_case.author, copied_case.author)
                 else:
-                    me = self.plan_tester
+                    me = self.tester
                     self.assertEqual(me, copied_case.author)
 
                 if keep_case_default_tester:
                     self.assertEqual(original_case.default_tester, copied_case.default_tester)
                 else:
-                    me = self.plan_tester
+                    me = self.tester
                     self.assertEqual(me, copied_case.default_tester)
 
     def test_clone_a_plan_with_default_options(self):
@@ -565,7 +519,6 @@ class TestCloneView(BasePlanCase):
             'keep_case_default_tester': 'on',
             'submit': 'Clone',
         }
-        self.client.login(username=self.plan_tester.username, password='password')
         response = self.client.post(self.plan_clone_url, post_data)
 
         cloned_plan = TestPlan.objects.get(name=self.third_plan.make_cloned_name())
@@ -594,7 +547,6 @@ class TestCloneView(BasePlanCase):
 
             'copy_testcases': 'on',
         }
-        self.client.login(username=self.plan_tester.username, password='password')
         self.client.post(self.plan_clone_url, post_data)
         cloned_plan = TestPlan.objects.get(name=self.totally_new_plan.make_cloned_name())
         self.verify_cloned_plan(self.totally_new_plan, cloned_plan,
@@ -618,7 +570,6 @@ class TestCloneView(BasePlanCase):
             'copy_testcases': 'on',
             # Do not pass maintain_case_orignal_author and keep_case_default_tester
         }
-        self.client.login(username=self.plan_tester.username, password='password')
         self.client.post(self.plan_clone_url, post_data)
         cloned_plan = TestPlan.objects.get(name=self.totally_new_plan.make_cloned_name())
         self.verify_cloned_plan(self.totally_new_plan, cloned_plan, copy_cases=True)
@@ -637,7 +588,6 @@ class TestCloneView(BasePlanCase):
             'keep_case_default_tester': 'on',
             'submit': 'Clone',
         }
-        self.client.login(username=self.plan_tester.username, password='password')
         response = self.client.post(self.plan_clone_url, post_data)
 
         url_querystr = urllib.parse.urlencode({
@@ -836,6 +786,8 @@ class TestExport(PlanCaseExportTestHelper, BasePlanCase):
 class TestChooseCasesToRun(BaseCaseRun):
     """Test choose_run view"""
 
+    auto_login = True
+
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
@@ -852,15 +804,12 @@ class TestChooseCasesToRun(BaseCaseRun):
         cls.url = reverse('plan-choose-run', args=[cls.plan.pk])
 
     def test_plan_id_does_not_exist(self):
-        self.login_tester()
         max_pk = TestPlan.objects.aggregate(max_pk=Max('pk'))['max_pk']
         url = reverse('plan-choose-run', args=[max_pk + 1])
         resp = self.client.get(url)
         self.assert404(resp)
 
     def test_show_page(self):
-        self.login_tester()
-
         resp = self.client.get(self.url, data={
             'case': [self.case_1.pk, self.case_2.pk]
         })
@@ -887,8 +836,6 @@ class TestChooseCasesToRun(BaseCaseRun):
             self.assertContains(resp, item, html=True)
 
     def test_add_cases_to_runs(self):
-        self.login_tester()
-
         resp = self.client.post(self.url, data={
             'testrun_ids': self.test_run_2.pk,
             'case_ids': [self.case_1.pk, self.case_2.pk]
@@ -905,8 +852,6 @@ class TestChooseCasesToRun(BaseCaseRun):
                 TestCaseRun.objects.filter(run=run_id, case=case_id).exists())
 
     def test_empty_selected_runs(self):
-        self.login_tester()
-
         resp = self.client.post(self.url, data={
             'case_ids': [self.case_1.pk, self.case_2.pk]
         })
@@ -917,8 +862,6 @@ class TestChooseCasesToRun(BaseCaseRun):
             'runs.')
 
     def test_404_if_some_run_id_does_not_exist(self):
-        self.login_tester()
-
         resp = self.client.post(self.url, data={
             'testrun_ids': self.test_run_2.pk + 1,
             'case_ids': [self.case_1.pk, self.case_2.pk]
@@ -927,8 +870,6 @@ class TestChooseCasesToRun(BaseCaseRun):
         self.assert404(resp)
 
     def test_no_selected_cases(self):
-        self.login_tester()
-
         result = TestCase.objects.aggregate(max_pk=Max('pk'))
         max_pk = result['max_pk']
 

@@ -38,6 +38,8 @@ class TestStripParameters(unittest.TestCase):
 class TestUpdateCasesDefaultTester(AuthMixin, HelperAssertions, test.TestCase):
     """Test set default tester to selected cases"""
 
+    auto_login = True
+
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
@@ -54,9 +56,6 @@ class TestUpdateCasesDefaultTester(AuthMixin, HelperAssertions, test.TestCase):
 
         cls.user_1 = f.UserFactory(username='user1')
         cls.url = reverse('ajax-update-cases-default-tester')
-
-    def setUp(self):
-        self.login_tester()
 
     def test_set_default_tester(self):
         resp = self.client.post(self.url, data={

@@ -16,7 +16,7 @@ from tcms.management.models import TCMSEnvGroup
 from tcms.management.models import TCMSEnvGroupPropertyMap
 from tcms.management.models import TCMSEnvProperty
 from tcms.testplans.models import TestPlan, _listen, _disconnect_signals
-from tests import HelperAssertions
+from tests import HelperAssertions, AuthMixin
 from tests import factories as f
 from tests import remove_perm_from_user
 from tests import user_should_have_perm
@@ -132,8 +132,10 @@ class TestVisitAndSearchGroupPage(TestCase):
             html=True)
 
 
-class TestAddGroup(HelperAssertions, TestCase):
+class TestAddGroup(AuthMixin, HelperAssertions, TestCase):
     """Test case for adding a group"""
+
+    auto_login = True
 
     @classmethod
     def setUpTestData(cls):
@@ -150,7 +152,6 @@ class TestAddGroup(HelperAssertions, TestCase):
         user_should_have_perm(cls.tester, cls.permission)
 
     def test_missing_permission(self):
-        self.client.login(username=self.tester, password='password')
         remove_perm_from_user(self.tester, self.permission)
 
         response = self.client.post(
@@ -158,8 +159,6 @@ class TestAddGroup(HelperAssertions, TestCase):
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
     def test_missing_group_name(self):
-        self.client.login(username=self.tester, password='password')
-
         response = self.client.post(self.group_add_url, {})
         self.assertJsonResponse(
             response, {'message': 'Environment group name is required.'},
@@ -173,8 +172,6 @@ class TestAddGroup(HelperAssertions, TestCase):
         )
 
     def test_add_a_new_group(self):
-        self.client.login(username=self.tester, password='password')
-
         response = self.client.post(self.group_add_url,
                                     {'name': self.new_group_name})
 
@@ -194,8 +191,6 @@ class TestAddGroup(HelperAssertions, TestCase):
                          log.new_value)
 
     def test_add_existing_group(self):
-        self.client.login(username=self.tester, password='password')
-
         self.client.post(self.group_add_url, {'name': self.new_group_name})
 
         response = self.client.post(self.group_add_url,
@@ -209,8 +204,10 @@ class TestAddGroup(HelperAssertions, TestCase):
         )
 
 
-class TestDeleteGroup(HelperAssertions, TestCase):
+class TestDeleteGroup(AuthMixin, HelperAssertions, TestCase):
     """Test case for deleting a group"""
+
+    auto_login = True
 
     @classmethod
     def setUpTestData(cls):
@@ -218,10 +215,6 @@ class TestDeleteGroup(HelperAssertions, TestCase):
 
         cls.permission = 'management.delete_tcmsenvgroup'
 
-        cls.tester = User.objects.create_user(
-            username='tester',
-            email='tester@exmaple.com',
-            password='password')
         cls.group_manager = User.objects.create_user(
             username='group-manager',
             email='manager@example.com',
@@ -249,7 +242,6 @@ class TestDeleteGroup(HelperAssertions, TestCase):
             TCMSEnvGroup.objects.filter(pk=self.group_nitrate.pk).exists())
 
     def test_missing_permission_when_delete_by_non_manager(self):
-        self.client.login(username=self.tester.username, password='password')
         url = reverse('management-delete-env-group',
                       args=[self.group_nitrate.pk])
         response = self.client.post(url)
@@ -257,7 +249,6 @@ class TestDeleteGroup(HelperAssertions, TestCase):
 
     def test_delete_group_by_non_manager(self):
         user_should_have_perm(self.tester, self.permission)
-        self.client.login(username=self.tester.username, password='password')
 
         url = reverse('management-delete-env-group',
                       args=[self.group_fedora.pk])
@@ -269,23 +260,19 @@ class TestDeleteGroup(HelperAssertions, TestCase):
             TCMSEnvGroup.objects.filter(pk=self.group_fedora.pk).exists())
 
     def test_return_404_if_delete_a_nonexisting_group(self):
-        self.client.login(username=self.tester.username,
-                          password='password')
         url = reverse('management-delete-env-group', args=[9999999999])
         response = self.client.post(url)
         self.assert404(response)
 
 
-class TestSetGroupStatus(HelperAssertions, TestCase):
+class TestSetGroupStatus(AuthMixin, HelperAssertions, TestCase):
     """Test enable and disable an environment group"""
+
+    auto_login = True
 
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-
-        cls.tester = User.objects.create_user(username='tester',
-                                              email='tester@exmaple.com',
-                                              password='password')
 
         cls.group_nitrate = f.TCMSEnvGroupFactory(
             name='nitrate', manager=cls.tester)
@@ -298,13 +285,11 @@ class TestSetGroupStatus(HelperAssertions, TestCase):
         remove_perm_from_user(self.tester, self.permission)
 
     def test_refuse_when_missing_permission(self):
-        self.client.login(username=self.tester.username, password='password')
         response = self.client.post(self.set_status_url, {'status': 0})
         self.assert403(response)
 
     def test_missing_status(self):
         user_should_have_perm(self.tester, self.permission)
-        self.client.login(username=self.tester.username, password='password')
 
         response = self.client.post(self.set_status_url)
         self.assertJsonResponse(
@@ -314,7 +299,6 @@ class TestSetGroupStatus(HelperAssertions, TestCase):
 
     def test_refuse_invalid_status_value(self):
         user_should_have_perm(self.tester, self.permission)
-        self.client.login(username=self.tester.username, password='password')
 
         # Status value is not valid as long as it's not 0 or 1.
         for status in ('true', 'false', 'yes', 'no', '2'):
@@ -326,7 +310,6 @@ class TestSetGroupStatus(HelperAssertions, TestCase):
 
     def test_404_if_group_pk_not_exist(self):
         user_should_have_perm(self.tester, self.permission)
-        self.client.login(username=self.tester.username, password='password')
 
         url = reverse('management-set-env-group-status', args=[999999999])
         response = self.client.post(url, {'status': 1})
@@ -334,7 +317,6 @@ class TestSetGroupStatus(HelperAssertions, TestCase):
 
     def test_disable_a_group(self):
         user_should_have_perm(self.tester, self.permission)
-        self.client.login(username=self.tester.username, password='password')
 
         self.client.post(self.set_status_url, {'status': 0})
 
@@ -343,7 +325,6 @@ class TestSetGroupStatus(HelperAssertions, TestCase):
 
     def test_enable_a_group(self):
         user_should_have_perm(self.tester, self.permission)
-        self.client.login(username=self.tester.username, password='password')
 
         self.client.post(self.set_status_url, {'status': 1})
 
@@ -412,16 +393,15 @@ class TestSetGroupStatus(HelperAssertions, TestCase):
 #             html=True)
 
 
-class TestEditGroup(TestCase):
+class TestEditGroup(AuthMixin, TestCase):
     """Test case for editing environment group"""
+
+    auto_login = True
 
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
 
-        cls.tester = User.objects.create_user(username='tester',
-                                              email='tester@example.com',
-                                              password='password')
         user_should_have_perm(cls.tester, 'management.change_tcmsenvgroup')
 
         cls.group_nitrate = f.TCMSEnvGroupFactory(
@@ -436,8 +416,6 @@ class TestEditGroup(TestCase):
         cls.property_3 = f.TCMSEnvPropertyFactory()
 
     def test_refuse_if_there_is_duplicate_group_name(self):
-        self.client.login(username=self.tester.username, password='password')
-
         url = reverse('management-env-group-edit', args=[self.group_nitrate.pk])
         response = self.client.post(url, {
             'name': self.duplicate_group.name,
@@ -447,8 +425,6 @@ class TestEditGroup(TestCase):
         self.assertContains(response, 'Duplicated name already exists')
 
     def test_show_edit_page(self):
-        self.client.login(username=self.tester.username, password='password')
-
         url = reverse('management-env-group-edit', args=[self.group_nitrate.pk])
         response = self.client.get(url)
 
@@ -464,8 +440,6 @@ class TestEditGroup(TestCase):
         )
 
     def test_edit_group(self):
-        self.client.login(username=self.tester.username, password='password')
-
         new_group_name = 'nitrate-dev'
         url = reverse('management-env-group-edit', args=[self.group_nitrate.pk])
         self.client.post(url, {
@@ -483,8 +457,6 @@ class TestEditGroup(TestCase):
             group_id=self.group_nitrate.pk, property_id=self.property_2.pk).exists())
 
     def test_disable_group(self):
-        self.client.login(username=self.tester.username, password='password')
-
         url = reverse('management-env-group-edit', args=[self.group_nitrate.pk])
         # For disable, enable is not in the post data
         self.client.post(url, {
@@ -495,8 +467,6 @@ class TestEditGroup(TestCase):
         self.assertFalse(TCMSEnvGroup.objects.get(pk=self.group_nitrate.pk).is_active)
 
     def test_enable_group(self):
-        self.client.login(username=self.tester.username, password='password')
-
         self.group_db.is_active = False
         self.group_db.save()
 
@@ -510,8 +480,6 @@ class TestEditGroup(TestCase):
 
     @patch('tcms.management.views.TCMSEnvGroup.log_action')
     def test_do_not_update_name_if_no_change(self, log_action):
-        self.client.login(username=self.tester.username, password='password')
-
         url = reverse('management-env-group-edit', args=[self.group_db.pk])
         self.client.post(url, {
             'name': self.group_db.name,
@@ -522,8 +490,10 @@ class TestEditGroup(TestCase):
         log_action.assert_not_called()
 
 
-class TestAddProperty(HelperAssertions, TestCase):
+class TestAddProperty(AuthMixin, HelperAssertions, TestCase):
     """Test case for adding properties to a group"""
+
+    auto_login = True
 
     @classmethod
     def setUpTestData(cls):
@@ -532,27 +502,21 @@ class TestAddProperty(HelperAssertions, TestCase):
         cls.permission = 'management.add_tcmsenvproperty'
         cls.add_group_property_url = reverse('management-add-env-property')
 
-        cls.tester = User.objects.create_user(username='tester',
-                                              email='tester@example.com',
-                                              password='password')
-
         cls.group_nitrate = f.TCMSEnvGroupFactory(
             name='nitrate', manager=cls.tester)
         cls.duplicate_property = f.TCMSEnvPropertyFactory(name='f26')
 
     def setUp(self):
+        super().setUp()
         user_should_have_perm(self.tester, self.permission)
 
     def test_refuse_if_missing_permission(self):
         remove_perm_from_user(self.tester, self.permission)
-        self.client.login(username=self.tester.username, password='password')
 
         response = self.client.post(self.add_group_property_url, {})
         self.assert403(response)
 
     def test_refuse_if_missing_property_name(self):
-        self.client.login(username=self.tester.username, password='password')
-
         response = self.client.post(self.add_group_property_url, {})
         self.assertJsonResponse(
             response,
@@ -568,8 +532,6 @@ class TestAddProperty(HelperAssertions, TestCase):
         )
 
     def test_refuse_to_create_duplicate_property(self):
-        self.client.login(username=self.tester.username, password='password')
-
         duplicate_name = self.duplicate_property.name
         response = self.client.post(self.add_group_property_url, {
             'name': duplicate_name,
@@ -585,8 +547,6 @@ class TestAddProperty(HelperAssertions, TestCase):
         )
 
     def test_add_new_property(self):
-        self.client.login(username=self.tester.username, password='password')
-
         new_property_name = 'f24'
         request_data = {
             'action': 'add',
@@ -603,8 +563,10 @@ class TestAddProperty(HelperAssertions, TestCase):
         })
 
 
-class TestEditProperty(HelperAssertions, TestCase):
+class TestEditProperty(AuthMixin, HelperAssertions, TestCase):
     """Test case for editing a property"""
+
+    auto_login = True
 
     @classmethod
     def setUpTestData(cls):
@@ -612,27 +574,21 @@ class TestEditProperty(HelperAssertions, TestCase):
 
         cls.permission = 'management.change_tcmsenvproperty'
 
-        cls.tester = User.objects.create_user(username='tester',
-                                              email='tester@example.com',
-                                              password='password')
-
         cls.property = f.TCMSEnvPropertyFactory(name='f26')
         cls.property_edit_url = reverse('management-edit-env-property',
                                         args=[cls.property.pk])
 
     def setUp(self):
+        super().setUp()
         user_should_have_perm(self.tester, self.permission)
 
     def test_refuse_if_missing_permission(self):
         remove_perm_from_user(self.tester, self.permission)
-        self.client.login(username=self.tester.username, password='password')
 
         response = self.client.post(self.property_edit_url)
         self.assert403(response)
 
     def test_refuse_if_property_id_not_exist(self):
-        self.client.login(username=self.tester.username, password='password')
-
         property_id = 999999999
         response = self.client.post(
             reverse('management-edit-env-property', args=[property_id]))
@@ -647,8 +603,6 @@ class TestEditProperty(HelperAssertions, TestCase):
         )
 
     def test_edit_a_property(self):
-        self.client.login(username=self.tester.username, password='password')
-
         new_property_name = 'fedora-24'
         response = self.client.post(self.property_edit_url, {
             'name': new_property_name
@@ -660,8 +614,10 @@ class TestEditProperty(HelperAssertions, TestCase):
             response, {'id': env_property.pk, 'name': env_property.name})
 
 
-class TestEnableDisableProperty(HelperAssertions, TestCase):
+class TestEnableDisableProperty(AuthMixin, HelperAssertions, TestCase):
     """Test enable and disable a property"""
+
+    auto_login = True
 
     @classmethod
     def setUpTestData(cls):
@@ -669,10 +625,6 @@ class TestEnableDisableProperty(HelperAssertions, TestCase):
 
         cls.permission = 'management.change_tcmsenvproperty'
         cls.set_status_url = reverse('management-set-env-property-status')
-
-        cls.tester = User.objects.create_user(username='tester',
-                                              email='tester@example.com',
-                                              password='password')
 
         cls.group_nitrate = f.TCMSEnvGroupFactory(name='nitrate')
 
@@ -693,8 +645,8 @@ class TestEnableDisableProperty(HelperAssertions, TestCase):
                                          property=cls.disabled_property_2)
 
     def setUp(self):
+        super().setUp()
         user_should_have_perm(self.tester, self.permission)
-        self.client.login(username=self.tester.username, password='password')
 
     def test_refuse_if_missing_permission(self):
         remove_perm_from_user(self.tester, self.permission)
@@ -827,22 +779,19 @@ class TestEnvironmentPropertyValuesListView(HelperAssertions, TestCase):
             self.assertContains(response, html, html=True)
 
 
-class TestEnvironmentPropertyValuesAddView(TestCase):
+class TestEnvironmentPropertyValuesAddView(AuthMixin, TestCase):
     """Test add property values"""
+
+    auto_login = True
 
     @classmethod
     def setUpTestData(cls):
-        cls.tester = User.objects.create_user(username='tester',
-                                              email='tester@example.com',
-                                              password='password')
+        super().setUpTestData()
         cls.property_py = f.TCMSEnvPropertyFactory(name='python')
         cls.property_db = f.TCMSEnvPropertyFactory(name='db')
         f.TCMSEnvValueFactory(value='mysql', property=cls.property_db)
 
         user_should_have_perm(cls.tester, 'management.add_tcmsenvvalue')
-
-    def setUp(self):
-        self.client.login(username=self.tester.username, password='password')
 
     def test_property_id_does_not_exist(self):
         url = reverse('management-add-env-property-values', args=[9999])
@@ -877,14 +826,14 @@ class TestEnvironmentPropertyValuesAddView(TestCase):
         self.assertListEqual(values_to_add, sorted(values))
 
 
-class TestEnvironmentPropertyValuesSetStatusView(HelperAssertions, TestCase):
+class TestEnvironmentPropertyValuesSetStatusView(AuthMixin, HelperAssertions, TestCase):
     """Test set status for environment property values"""
+
+    auto_login = True
 
     @classmethod
     def setUpTestData(cls):
-        cls.tester = User.objects.create_user(username='tester',
-                                              email='tester@example.com',
-                                              password='password')
+        super().setUpTestData()
         user_should_have_perm(cls.tester, 'management.change_tcmsenvvalue')
         cls.set_status_url = reverse('management-set-env-property-values-status')
 
@@ -895,9 +844,6 @@ class TestEnvironmentPropertyValuesSetStatusView(HelperAssertions, TestCase):
             value='pgsql', is_active=False, property=cls.property_db)
         cls.value_mariadb = f.TCMSEnvValueFactory(
             value='mariadb', property=cls.property_db)
-
-    def setUp(self):
-        self.client.login(username=self.tester.username, password='password')
 
     def test_missing_value_ids(self):
         response = self.client.post(self.set_status_url)
@@ -958,14 +904,14 @@ class TestEnvironmentPropertyValuesSetStatusView(HelperAssertions, TestCase):
         self.assertFalse(TCMSEnvValue.objects.get(pk=v.pk).is_active)
 
 
-class TestEnvironmentPropertyValueEditView(TestCase):
+class TestEnvironmentPropertyValueEditView(AuthMixin, TestCase):
     """Test edit environment property value"""
+
+    auto_login = True
 
     @classmethod
     def setUpTestData(cls):
-        cls.tester = User.objects.create_user(username='tester',
-                                              email='tester@example.com',
-                                              password='password')
+        super().setUpTestData()
         user_should_have_perm(cls.tester, 'management.change_tcmsenvvalue')
 
         cls.property_db = f.TCMSEnvPropertyFactory(name='db')
@@ -974,9 +920,6 @@ class TestEnvironmentPropertyValueEditView(TestCase):
 
         cls.edit_url = reverse('management-env-property-value-edit',
                                args=[cls.property_value.pk])
-
-    def setUp(self):
-        self.client.login(username=self.tester.username, password='password')
 
     def test_missing_new_value(self):
         response = self.client.post(self.edit_url)

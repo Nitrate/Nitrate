@@ -12,7 +12,7 @@ from django.test import TestCase
 from django.core import mail
 
 from tcms.auth.models import UserActivateKey
-
+from tests import AuthMixin
 
 # ### Test cases for models ###
 
@@ -67,27 +67,19 @@ class TestForceToSetRandomKey(TestCase):
 
 # ### Test cases for view methods ###
 
-class TestLogout(TestCase):
+class TestLogout(AuthMixin, TestCase):
     """Test for logout view method"""
 
-    @classmethod
-    def setUpTestData(cls):
-        super().setUpTestData()
-
-        cls.tester = User.objects.create_user(username='authtester',
-                                              email='authtester@example.com',
-                                              password='password')
-        cls.logout_url = reverse('nitrate-logout')
+    auto_login = True
 
     def test_logout_then_redirect_to_next(self):
-        self.client.login(username=self.tester.username, password='password')
-        response = self.client.get(self.logout_url, follow=True)
+        response = self.client.get(reverse('nitrate-logout'), follow=True)
         self.assertRedirects(response, reverse('nitrate-login'))
 
     def test_logout_then_goto_next(self):
-        self.client.login(username=self.tester.username, password='password')
         next_url = reverse('plans-all')
-        response = self.client.get(self.logout_url, {'next': next_url}, follow=True)
+        response = self.client.get(
+            reverse('nitrate-logout'), {'next': next_url}, follow=True)
         self.assertRedirects(response, next_url)
 
 

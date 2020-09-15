@@ -9,23 +9,16 @@ from django_comments.models import Comment
 
 from tcms.comments import get_form
 from tcms.comments.models import add_comment
-from tests import factories as f, user_should_have_perm, HelperAssertions
+from tests import factories as f, user_should_have_perm, HelperAssertions, AuthMixin
 
 
-class TestPostComment(HelperAssertions, test.TestCase):
+class TestPostComment(AuthMixin, HelperAssertions, test.TestCase):
     """Test post comments"""
 
     @classmethod
     def setUpTestData(cls):
-        cls.tester = User.objects.create_user(
-            username='tester', email='tester@example.com')
-        cls.tester.set_password('password')
-        cls.tester.save()
-
+        super().setUpTestData()
         cls.case = f.TestCaseFactory()
-
-    def setUp(self):
-        self.post_comment_url = reverse('comments-post')
 
     def _post_comment(self, comment):
         form = get_form()(self.case)
@@ -40,7 +33,7 @@ class TestPostComment(HelperAssertions, test.TestCase):
             'security_hash': form.initial_security_hash(timestamp),
         }
 
-        return self.client.post(self.post_comment_url, data=data)
+        return self.client.post(reverse('comments-post'), data=data)
 
     def test_post_a_comment(self):
         self._post_comment('first comment')
@@ -53,7 +46,7 @@ class TestPostComment(HelperAssertions, test.TestCase):
         # TODO: assert comments inside the response?
 
     def test_post_a_comment_by_authenticated_user(self):
-        self.client.login(username=self.tester.username, password='password')
+        self.login_tester()
 
         self._post_comment('useful comment')
 
@@ -66,23 +59,19 @@ class TestPostComment(HelperAssertions, test.TestCase):
         self.assertEqual(self.tester.email, comment.email)
 
     def test_still_response_comments_even_if_fail_to_add_one(self):
-        self.client.login(username=self.tester.username, password='password')
+        self.login_tester()
         response = self._post_comment('comment' * 2000)
         self.assert400(response)
 
 
-class TestDeleteComment(HelperAssertions, test.TestCase):
+class TestDeleteComment(AuthMixin, HelperAssertions, test.TestCase):
     """Test delete a comment"""
+
+    auto_login = True
 
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-
-        cls.tester = User.objects.create_user(
-            username='tester', email='tester@example.com'
-        )
-        cls.tester.set_password('password')
-        cls.tester.save()
 
         cls.comment_author = f.UserFactory()
 
@@ -104,8 +93,8 @@ class TestDeleteComment(HelperAssertions, test.TestCase):
                     'testcases.testcase', [cls.case_1.pk], '4th comment')
 
     def setUp(self):
+        super().setUp()
         self.url = reverse('comments-delete')
-        self.client.login(username=self.tester.username, password='password')
 
     def test_delete_a_comment(self):
         comment = Comment.objects.get(comment='second comment',

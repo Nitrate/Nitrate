@@ -10,12 +10,14 @@ from django import test
 from django.contrib.auth.models import Permission
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.test import SimpleTestCase
 
 from tcms.testcases.models import TestCaseStatus
 from tcms.testruns.models import TestCaseRunStatus
 from tests import factories as f
 
 __all__ = (
+    'AuthMixin',
     'user_should_have_perm',
     'remove_perm_from_user',
     'BasePlanCase',
@@ -151,7 +153,14 @@ class HelperAssertions:
             self.fail('ValidationError is not raised.')
 
 
-class AuthMixin(object):
+class AuthMixin(SimpleTestCase):
+
+    # If every test requires an authenticated user to perform an HTTP request,
+    # set this to True. This is helpful to avoid repeating
+    # ``self.login_tester()`` or ``self.client.login(...)``.
+    auto_login = False
+
+    tester = None
 
     @classmethod
     def setUpTestData(cls):
@@ -160,6 +169,10 @@ class AuthMixin(object):
             email='nitrate-tester@example.com')
         cls.tester.set_password('password')
         cls.tester.save()
+
+    def setUp(self):
+        if self.auto_login:
+            self.login_tester()
 
     def login_tester(self, user=None, password=None):
         """Login tester user for test
@@ -204,7 +217,7 @@ class NitrateTestCase(test.TestCase):
             validate_regex=r'^[A-Z]+-\d+$')
 
 
-class BasePlanCase(HelperAssertions, AuthMixin, NitrateTestCase):
+class BasePlanCase(AuthMixin, HelperAssertions, NitrateTestCase):
     """Base test case by providing essential Plan and Case objects used in tests"""
 
     @classmethod

@@ -26,16 +26,16 @@ from tests import user_should_have_perm
 class TestUploadFile(BasePlanCase):
     """Test view upload_file"""
 
+    auto_login = True
+
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
 
         cls.upload_file_url = reverse('upload-file')
 
-        cls.password = 'password'
-        cls.user = create_request_user(username='uploader', password=cls.password)
-        user_should_have_perm(cls.user, 'management.add_testattachment')
-        user_should_have_perm(cls.user, 'testcases.add_testcaseattachment')
+        user_should_have_perm(cls.tester, 'management.add_testattachment')
+        user_should_have_perm(cls.tester, 'testcases.add_testcaseattachment')
 
     def setUp(self):
         super().setUp()
@@ -50,8 +50,6 @@ class TestUploadFile(BasePlanCase):
         super().tearDown()
 
     def test_no_file_is_posted(self):
-        self.client.login(username=self.user.username, password=self.password)
-
         response = self.client.post(reverse('upload-file'),
                                     {'to_plan_id': self.plan.pk})
         self.assertRedirects(
@@ -66,8 +64,6 @@ class TestUploadFile(BasePlanCase):
 
     @patch('tcms.core.files.settings.MAX_UPLOAD_SIZE', new=10)
     def test_refuse_if_file_is_too_big(self):
-        self.client.login(username=self.user.username, password=self.password)
-
         with open(self.upload_filename, 'r') as upload_file:
             response = self.client.post(self.upload_file_url,
                                         {'to_plan_id': self.plan.pk,
@@ -76,8 +72,6 @@ class TestUploadFile(BasePlanCase):
         self.assertContains(response, 'You upload entity is too large')
 
     def test_upload_file_to_plan(self):
-        self.client.login(username=self.user.username, password=self.password)
-
         with tempfile.TemporaryDirectory() as tmpdir:
             with patch('tcms.core.files.settings.FILE_UPLOAD_DIR', new=tmpdir):
                 with open(self.upload_filename, 'r') as upload_file:
@@ -95,15 +89,13 @@ class TestUploadFile(BasePlanCase):
         self.assertTrue(attachments)
 
         attachment = attachments[0]
-        self.assertEqual(self.user.pk, attachment.submitter.pk)
+        self.assertEqual(self.tester.pk, attachment.submitter.pk)
 
         plan_attachment_rel_exists = TestPlanAttachment.objects.filter(
             plan=self.plan, attachment=attachment).exists()
         self.assertTrue(plan_attachment_rel_exists)
 
     def test_upload_file_to_case(self):
-        self.client.login(username=self.user.username, password=self.password)
-
         with tempfile.TemporaryDirectory() as tmpdir:
             with patch('tcms.core.files.settings.FILE_UPLOAD_DIR', new=tmpdir):
                 with open(self.upload_filename, 'r') as upload_file:
@@ -121,15 +113,13 @@ class TestUploadFile(BasePlanCase):
         self.assertTrue(attachments)
 
         attachment = attachments[0]
-        self.assertEqual(self.user.pk, attachment.submitter.pk)
+        self.assertEqual(self.tester.pk, attachment.submitter.pk)
 
         case_attachment_rel_exists = TestCaseAttachment.objects.filter(
             case=self.case_1, attachment=attachment).exists()
         self.assertTrue(case_attachment_rel_exists)
 
     def test_missing_both_plan_id_and_case_id(self):
-        self.client.login(username=self.user.username, password=self.password)
-
         with open(self.upload_filename, 'r') as upload_file:
             response = self.client.post(self.upload_file_url, {
                 'upload_file': upload_file

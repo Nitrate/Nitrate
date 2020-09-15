@@ -64,6 +64,8 @@ class LinkReferenceModel(test.TestCase):
 class TestAddLinkReference(HelperAssertions, AuthMixin, test.TestCase):
     """Test add link reference"""
 
+    auto_login = True
+
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
@@ -73,8 +75,6 @@ class TestAddLinkReference(HelperAssertions, AuthMixin, test.TestCase):
         user_should_have_perm(cls.tester, 'testruns.change_testcaserun')
 
     def test_add_to_a_case_run(self):
-        self.login_tester()
-
         resp = self.client.post(self.url, data={
             'target': 'TestCaseRun',
             'target_id': self.case_run.pk,
@@ -93,8 +93,6 @@ class TestAddLinkReference(HelperAssertions, AuthMixin, test.TestCase):
                 url='https://coolsite.com/').exists())
 
     def test_wrong_target_type(self):
-        self.login_tester()
-
         resp = self.client.post(self.url, data={
             'target': 'TestCase',
             'target_id': self.case.pk,
@@ -150,6 +148,8 @@ class TestGetLinkReferencesFromSpecificTarget(HelperAssertions, test.TestCase):
 class TestRemoveLinkReference(HelperAssertions, AuthMixin, test.TestCase):
     """Test remove view"""
 
+    auto_login = True
+
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
@@ -159,7 +159,6 @@ class TestRemoveLinkReference(HelperAssertions, AuthMixin, test.TestCase):
         user_should_have_perm(cls.tester, 'testruns.change_testcaserun')
 
     def test_remove(self):
-        self.login_tester()
         url = reverse('remove-link-reference', args=[self.link2.pk])
         self.client.post(url)
         self.assertFalse(
@@ -168,7 +167,6 @@ class TestRemoveLinkReference(HelperAssertions, AuthMixin, test.TestCase):
     @unittest.mock.patch('tcms.linkreference.models.LinkReference.unlink')
     def test_fail_to_unlink(self, unlink):
         unlink.side_effect = Exception
-        self.login_tester()
         url = reverse('remove-link-reference', args=[self.link2.pk])
         resp = self.client.post(url)
         self.assert400(resp)
