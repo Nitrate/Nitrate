@@ -26,7 +26,6 @@ Nitrate.Utils.convert = function (argument, data) {
   }
 };
 
-Nitrate.Utils.after_page_load(
 /**
  * Collect form data from input elements.
  *
