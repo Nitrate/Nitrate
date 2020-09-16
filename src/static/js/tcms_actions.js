@@ -8,9 +8,9 @@ window.Nitrate = Nitrate;
 Nitrate.Utils = {};
 const SHORT_STRING_LENGTH = 100;
 
-/*
-    Utility function.
-    Set up a function callback for after the page has loaded
+/**
+ * Utility function.
+ * Set up a function callback for after the page has loaded
  */
 Nitrate.Utils.after_page_load = function (callback) {
   jQ(window).on('load', callback);
@@ -26,6 +26,7 @@ Nitrate.Utils.convert = function (argument, data) {
   }
 };
 
+Nitrate.Utils.after_page_load(
 /**
  * Collect form data from input elements.
  *

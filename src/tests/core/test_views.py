@@ -4,7 +4,6 @@ import json
 from http import HTTPStatus
 
 from django import test
-from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core import serializers
 from django.urls import reverse

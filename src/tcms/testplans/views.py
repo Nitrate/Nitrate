@@ -52,7 +52,6 @@ from tcms.testruns.models import TestRun, TestCaseRun
 
 MODULE_NAME = "testplans"
 
-
 # _____________________________________________________________________________
 # helper functons
 
