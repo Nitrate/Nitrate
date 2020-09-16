@@ -11,7 +11,6 @@ from unittest.mock import patch
 from bs4 import BeautifulSoup
 
 from django import test
-from django.contrib.auth.models import User
 from django.db.models import Max
 from django.http import Http404
 from django.template import Template, Context

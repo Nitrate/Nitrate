@@ -19,7 +19,6 @@ from tcms.testcases.models import TestCaseAttachment
 from tcms.testplans.models import TestPlanAttachment
 from tests import factories as f
 from tests import BasePlanCase
-from tests import create_request_user
 from tests import user_should_have_perm
 
 

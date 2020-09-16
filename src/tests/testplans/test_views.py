@@ -8,7 +8,6 @@ import urllib
 from http import HTTPStatus
 
 from django import test
-from django.contrib.auth.models import User
 from django.db.models import Max
 from django.urls import reverse
 from django.test.client import Client
