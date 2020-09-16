@@ -7,10 +7,12 @@
 <link rel="stylesheet" type="text/css" href="{% static "style/print.css" %}" media="print" />
 <link rel="stylesheet" type="text/css" href="{% static "style/dataTables/jquery.dataTables.css" %}" />
 <link rel="stylesheet" type="text/css" href="{% static "style/dataTables/jquery.dataTables_themeroller.css" %}" />
+<link rel="stylesheet" type="text/css" href="{% static "style/jstree/style.css" %}" />
 {% endblock %}
 {% block custom_javascript %}
 <script type="text/javascript" src="{% static "js/lib/jquery.tablednd.js" %}"></script>
 <script type="text/javascript" src="{% static "js/lib/jquery.dataTables.js" %}"></script>
+<script type="text/javascript" src="{% static "js/lib/jstree.js" %}"></script>
 <script type="text/javascript" src="{% static "js/comment.js" %}"></script>
 <script type="text/javascript" src="{% static "js/testplan_actions.js" %}"></script>
 <script type="text/javascript" src="{% static "js/testcase_actions.js" %}"></script>
@@ -213,7 +215,7 @@ Nitrate.TestPlans.Instance = {
 				{% include "plan/get_log.html" %}
 			</div>
 			<div id="treeview" class="tab_list" style="display:none;">
-				{% include "plan/get_treeview.html" %}
+				{% comment %}{% include "plan/get_treeview.html" %}{% endcomment %}
 			</div>
 			<div id="reviewcases" class="tab_list" style="display:none">
 				<div class="ajax_loading"></div>

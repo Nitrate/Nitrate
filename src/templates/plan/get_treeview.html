@@ -14,6 +14,56 @@
 		</ul>
 	</div>
 </div>
+{% comment %}
 <div id="id_tree_container" data-param="{{ test_plan.pk }}">
 	<div class="ajax_loading"></div>
+</div>
+{% endcomment %}
+<script type="text/javascript">
+	// Tree view data will be assigned to core/data to initialize the plans tree
+	// view by jstree.
+	let plansTreeViewData = [
+		{% for item in plans %}
+		{
+			id: '{{ item.plan_id }}',
+			parent: '{{ item.parent_id|default:"#" }}',
+			text: [
+				'{% if item.plan_id == current_plan_id %}<strong>{% endif %}',
+				'[<a href="{{ item.get_absolute_url }}">{{ item.plan_id }}</a>] ',
+				'<a href="{{ item.get_absolute_url }}">{{ item.name }}</a> (',
+
+				{% if item.cases_count %}
+				{% if item.pk == current_plan_id %}
+				'<a href="javascript:void(0)" class="js-open-cases-tab">{{ item.cases_count }} cases</a>, ',
+				{% else %}
+				'<a href="{{ item.get_absolute_url }}#testcases">{{ item.cases_count }} cases</a>, ',
+				{% endif %}
+				{% else %}
+				'{{ item.cases_count }} cases, ',
+				{% endif %}
+
+				{% if item.runs_count %}
+				{% if item.pk == current_plan_id %}
+				'<a href="javascript:void(0)" class="js-open-runs-tab">{{ item.runs_count }} runs</a>, ',
+				{% else %}
+				'<a href="{{ item.get_absolute_url }}#testruns">{{ item.runs_count }} runs</a>, ',
+				{% endif %}
+				{% else %}
+				'{{ item.runs_count }} runs, ',
+				{% endif %}
+
+				{% if item.children_count %}
+				'<a href="javascript:void(0)">{{ item.children_count }} children</a>)',
+				{% else %}
+				'{{ item.children_count }} children)',
+				{% endif %}
+
+				'{% if item.plan_id == current_plan_id %}</strong>{% endif %}',
+			].join('')
+		},
+		{% endfor %}
+	];
+</script>
+<div id="id_tree_container" data-param="{{ current_plan_id }}">
+	<div class="js-plans-treeview"></div>
 </div>

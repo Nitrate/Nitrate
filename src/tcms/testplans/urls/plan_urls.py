@@ -30,4 +30,6 @@ urlpatterns = [
 
     path('<int:plan_id>/runs/', testruns_views.load_runs_of_one_plan,
          name='load_runs_of_one_plan_url'),
+
+    path('<int:plan_id>/treeview/', views.construct_plans_treeview, name='plan-treeview'),
 ]
