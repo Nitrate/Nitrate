@@ -668,14 +668,56 @@ Nitrate.TestPlans.Details = {
       return jQ('#' + id);
     }
   },
+
+  /**
+   * Open a specific tab in a plan page
+   * @param {string} tabHash - the hash of a specific tab to be opened. For example, #testcases.
+   */
+  openTab: function (tabHash) {
+    jQ('a[href="' + tabHash + '"]').trigger('click');
+  },
+
   /*
    * Lazy-loading TestPlans TreeView
    */
   'loadPlansTreeView': function (planId) {
     // Initial the tree view
-    Nitrate.TestPlans.TreeView.init(planId);
-    Nitrate.TestPlans.TreeView.render_page();
+    //Nitrate.TestPlans.TreeView.init(planId);
+    //Nitrate.TestPlans.TreeView.render_page();
+
+    sendHTMLRequest({
+      url: '/plan/' + planId + '/treeview/',
+      container: document.getElementById('treeview'),
+      callbackAfterFillIn: function (xhr) {
+        jQ('div.js-plans-treeview').jstree({
+          core: {
+            themes: {
+              dots: false,
+              icons: false
+            },
+            data: plansTreeViewData,
+          }
+        })
+        .on('ready.jstree', function (e, data) {
+          jQ(this).jstree('open_all');
+
+          // A workaround to disable the behavior of selecting a node when click an anchor inside
+          // the node.
+          jQ(this).off('click.jstree', '.jstree-anchor');
+
+          jQ(this).on('click', 'a.js-open-cases-tab', function () {
+            Nitrate.TestPlans.Details.openTab('#testcases');
+          });
+
+          jQ(this).on('click', 'a.js-open-runs-tab', function () {
+            Nitrate.TestPlans.Details.openTab('#testruns');
+          });
+        })
+        ;
+      }
+    });
   },
+
   'initTabs': function () {
     jQ('li.tab a').on('click', function () {
       jQ('div.tab_list').hide();
@@ -698,7 +740,8 @@ Nitrate.TestPlans.Details = {
     if (!exist) {
       switchTo = defaultSwitchTo;
     }
-    jQ('a[href="' + switchTo + '"]').trigger('click');
+
+    Nitrate.TestPlans.Details.openTab(switchTo);
   },
   /*
    * Load cases table.

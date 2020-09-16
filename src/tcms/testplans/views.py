@@ -874,11 +874,6 @@ class PlanComponentsActionView(View):
         return render(request, self.template_name, context={'test_plan': plan})
 
 
-def tree_view(request):
-    """Whole tree view for plans"""
-    # FIXME:
-
-
 @require_GET
 def printable(request, template_name='plan/printable.html'):
     """Create the printable copy for plan"""
@@ -927,3 +922,81 @@ def export(request, template_name='case/export.xml'):
     filename = f'tcms-testcases-{timestamp_str}.xml'
     response['Content-Disposition'] = f'attachment; filename={filename}'
     return response
+
+
+def construct_plans_treeview(request, plan_id):
+    """Construct a plan's tree view
+
+    Tasks:
+
+    1. view function returns tree view JSON data
+    2. add tree view container element in template
+    3. include jstree in template in the right place
+    4. rewrite load tree view to construct jstree with the data
+    5. ensure links in each node is clickable and can navigate
+    """
+
+    from textwrap import dedent
+
+    sql_descendants = dedent(f'''
+        WITH RECURSIVE sub_tree AS (
+            SELECT plan_id, name, parent_id, 1 AS depth
+            FROM test_plans
+            WHERE plan_id = {plan_id}
+
+            UNION ALL
+
+            SELECT tp.plan_id, tp.name, tp.parent_id, st.depth + 1
+            FROM test_plans AS tp, sub_tree AS st
+            WHERE tp.parent_id = st.plan_id
+        )
+        SELECT * FROM sub_tree;
+    ''')
+
+    from django.db import connection
+
+    with connection.cursor() as cursor:
+        cursor.execute(sql_descendants)
+        result = cursor.fetchall()
+
+    plan_ids = [row[0] for row in result]
+
+    sql_ancestors = dedent(f'''
+        WITH RECURSIVE sub_tree AS (
+            SELECT plan_id, name, parent_id, 1 AS depth
+            FROM test_plans
+            WHERE plan_id = {plan_id}
+
+            UNION ALL
+
+            SELECT tp.plan_id, tp.name, tp.parent_id, st.depth + 1
+            FROM test_plans AS tp, sub_tree AS st
+            WHERE st.parent_id = tp.plan_id
+        )
+        SELECT * FROM sub_tree;
+    ''')
+
+    with connection.cursor() as cursor:
+        cursor.execute(sql_ancestors)
+        result = cursor.fetchall()
+
+    plan_ids += [row[0] for row in result]
+
+    plans = TestPlan.objects.filter(pk__in=plan_ids).extra(
+        select={
+            'cases_count':
+                'SELECT count(*) FROM test_case_plans '
+                'WHERE test_plans.plan_id = test_case_plans.plan_id',
+            'runs_count':
+                'SELECT count(*) FROM test_runs '
+                'WHERE test_runs.plan_id = test_plans.plan_id',
+            'children_count':
+                'SELECT count(*) FROM test_plans AS child '
+                'WHERE child.parent_id = test_plans.plan_id'
+        }
+    ).only('pk', 'name', 'parent_id').order_by('parent_id', 'pk')
+
+    return render(request, 'plan/get_treeview.html', context={
+        'current_plan_id': plan_id,
+        'plans': plans
+    })

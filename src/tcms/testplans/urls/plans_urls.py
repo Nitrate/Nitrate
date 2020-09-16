@@ -21,7 +21,6 @@ urlpatterns = [
          name='plans-for-preview'),
 
     path('new/', views.CreateNewPlanView.as_view(), name='plans-new'),
-    path('treeview/', views.tree_view, name='plans-treeview'),
     path('clone/', views.clone, name='plans-clone'),
     path('printable/', views.printable, name='plans-printable'),
     path('export/', views.export, name='plans-export'),
