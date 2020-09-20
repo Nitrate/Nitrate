@@ -14,15 +14,10 @@
 		</ul>
 	</div>
 </div>
-{% comment %}
-<div id="id_tree_container" data-param="{{ test_plan.pk }}">
-	<div class="ajax_loading"></div>
-</div>
-{% endcomment %}
 <script type="text/javascript">
 	// Tree view data will be assigned to core/data to initialize the plans tree
 	// view by jstree.
-	let plansTreeViewData = [
+	Nitrate.TestPlans.Details.treeViewData = [
 		{% for item in plans %}
 		{
 			id: '{{ item.plan_id }}',

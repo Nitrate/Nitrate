@@ -445,22 +445,8 @@ Nitrate.TestPlans.TreeView = {
         value: planId,
         valueType: 'int',
         callback: function () {
-          let tree = Nitrate.TestPlans.TreeView;
-          tree.filter({plan_id: p}, function (responseData) {
-            let plan = Nitrate.Utils.convert('obj_to_list', responseData);
-
-            if (tree.data[0].pk === currentPlanId) {
-              plan[0].children = jQ.extend({}, tree.data);
-              tree.data = plan;
-              tree.render_page();
-            } else {
-              plan[0].children = jQ.extend({}, tree.data[0].children);
-              tree.data = plan;
-              tree.render_page();
-            }
-
-            clearDialog();
-          });
+          clearDialog();
+          Nitrate.TestPlans.Details.loadPlansTreeView(currentPlanId);
         }
       });
     },
@@ -681,24 +667,47 @@ Nitrate.TestPlans.Details = {
    * Lazy-loading TestPlans TreeView
    */
   'loadPlansTreeView': function (planId) {
-    // Initial the tree view
-    //Nitrate.TestPlans.TreeView.init(planId);
-    //Nitrate.TestPlans.TreeView.render_page();
+    let treeViewContainer = document.getElementById('treeview');
+
+    // An array referencing tree view nodes passed to jstree to render the plans
+    // tree view.
+    // Two purpose of setting it to null here:
+    // 1. for the first time to load the tree view, define the variable to reference the array of
+    // nodes to be rendered.
+    // 2. for subsequent tree view render, mark the old data is expired and it will reference the
+    // new value later (see below).
+    Nitrate.TestPlans.Details.treeViewData = null;
+
+    jQ(treeViewContainer).html('');
+    jQ(treeViewContainer).html(constructAjaxLoading());
 
     sendHTMLRequest({
       url: '/plan/' + planId + '/treeview/',
-      container: document.getElementById('treeview'),
+      container: treeViewContainer,
       callbackAfterFillIn: function (xhr) {
+        let planPK = parseInt(jQ('#id_tree_container').data('param'));
+
+        jQ('#js-change-parent-node').on('click', function () {
+          Nitrate.TestPlans.TreeView.changeParentPlan(treeViewContainer, planPK);
+        });
+
+        jQ('#js-add-child-node').on('click', function () {
+          Nitrate.TestPlans.TreeView.addChildPlan(treeViewContainer, planPK);
+        });
+
+        jQ('#js-remove-child-node').on('click', function () {
+          Nitrate.TestPlans.TreeView.removeChildPlan(treeViewContainer, planPK);
+        });
+
         jQ('div.js-plans-treeview').jstree({
           core: {
             themes: {
               dots: false,
               icons: false
             },
-            data: plansTreeViewData,
+            data: Nitrate.TestPlans.Details.treeViewData,
           }
-        })
-        .on('ready.jstree', function (e, data) {
+        }).on('ready.jstree', function (e, data) {
           jQ(this).jstree('open_all');
 
           // A workaround to disable the behavior of selecting a node when click an anchor inside
@@ -712,8 +721,7 @@ Nitrate.TestPlans.Details = {
           jQ(this).on('click', 'a.js-open-runs-tab', function () {
             Nitrate.TestPlans.Details.openTab('#testruns');
           });
-        })
-        ;
+        });
       }
     });
   },
@@ -895,19 +903,6 @@ Nitrate.TestPlans.Details = {
     jQ('.js-del-attach').on('click', function () {
       let params = jQ(this).data('params');
       deleConfirm(params[0], 'from_plan', params[1]);
-    });
-
-    let treeview = jQ('#treeview')[0];
-    let planPK = parseInt(jQ('#id_tree_container').data('param'));
-
-    jQ('#js-change-parent-node').on('click', function () {
-      Nitrate.TestPlans.TreeView.changeParentPlan(treeview, planPK);
-    });
-    jQ('#js-add-child-node').on('click', function () {
-      Nitrate.TestPlans.TreeView.addChildPlan(treeview, planPK);
-    });
-    jQ('#js-remove-child-node').on('click', function () {
-      Nitrate.TestPlans.TreeView.removeChildPlan(treeview, planPK);
     });
   }
 };
