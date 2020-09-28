@@ -685,7 +685,6 @@ Nitrate.TestPlans.Details = {
         });
 
         jQ('#js-add-child-node').on('click', function () {
-          // Nitrate.TestPlans.TreeView.addChildPlan(treeViewContainer, planPK);
           Nitrate.TestPlans.TreeView.addChildPlan(planPK);
         });
 
@@ -715,6 +714,12 @@ Nitrate.TestPlans.Details = {
           jQ(this).on('click', 'a.js-open-runs-tab', function () {
             Nitrate.TestPlans.Details.openTab('#testruns');
           });
+
+          let currentPlanId = parseInt(
+            jQ(treeViewContainer).find('input[name=plan_id]').prop('value')
+          );
+          jQ(treeViewContainer).find('#js-remove-child-node')[0].disabled =
+            jQ(this).jstree(true).get_node(currentPlanId).children.length === 0;
         });
       }
     });
