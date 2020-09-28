@@ -7,6 +7,7 @@ import json
 import urllib
 
 from operator import add, itemgetter
+from typing import List
 
 from django.utils.decorators import method_decorator
 from django.conf import settings
@@ -14,9 +15,10 @@ from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
-from django.http import Http404, HttpResponsePermanentRedirect
+from django.http import Http404, HttpResponsePermanentRedirect, HttpRequest
 from django.http import HttpResponse, HttpResponseRedirect
 from django.http import HttpResponseBadRequest, JsonResponse
+from django.views.decorators.http import require_POST
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import get_template
 from django.views.decorators.csrf import csrf_protect
@@ -24,7 +26,6 @@ from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_http_methods
 from django.views.generic import View
 from django.views.generic.base import TemplateView
-from tcms.core.responses import JsonResponseBadRequest
 from uuslug import slugify
 
 from tcms.core.db import SQLExecution
@@ -32,6 +33,7 @@ from tcms.core.models import TCMSLog
 from tcms.core.raw_sql import RawSQL
 from tcms.core.utils import checksum
 from tcms.core.utils import DataTableResult
+from tcms.core.responses import JsonResponseBadRequest, JsonResponseNotFound
 from tcms.core.views import prompt
 from tcms.management.models import TCMSEnvGroup, Component
 from tcms.testcases.data import get_exported_cases_and_related_data
@@ -924,65 +926,19 @@ def export(request, template_name='case/export.xml'):
     return response
 
 
+# TODO: add request method decorator
+# TODO: add test for this view
 def construct_plans_treeview(request, plan_id):
-    """Construct a plan's tree view
+    """Construct a plan's tree view"""
+    plan = get_object_or_404(TestPlan, pk=plan_id)
 
-    Tasks:
+    tree_plan_ids = plan.get_ancestor_ids() + plan.get_descendant_ids()
+    tree_plan_ids.append(plan.pk)
 
-    1. view function returns tree view JSON data
-    2. add tree view container element in template
-    3. include jstree in template in the right place
-    4. rewrite load tree view to construct jstree with the data
-    5. ensure links in each node is clickable and can navigate
-    """
-
-    from textwrap import dedent
-
-    sql_descendants = dedent(f'''
-        WITH RECURSIVE sub_tree AS (
-            SELECT plan_id, name, parent_id, 1 AS depth
-            FROM test_plans
-            WHERE plan_id = {plan_id}
-
-            UNION ALL
-
-            SELECT tp.plan_id, tp.name, tp.parent_id, st.depth + 1
-            FROM test_plans AS tp, sub_tree AS st
-            WHERE tp.parent_id = st.plan_id
-        )
-        SELECT * FROM sub_tree;
-    ''')
-
-    from django.db import connection
-
-    with connection.cursor() as cursor:
-        cursor.execute(sql_descendants)
-        result = cursor.fetchall()
-
-    plan_ids = [row[0] for row in result]
-
-    sql_ancestors = dedent(f'''
-        WITH RECURSIVE sub_tree AS (
-            SELECT plan_id, name, parent_id, 1 AS depth
-            FROM test_plans
-            WHERE plan_id = {plan_id}
-
-            UNION ALL
-
-            SELECT tp.plan_id, tp.name, tp.parent_id, st.depth + 1
-            FROM test_plans AS tp, sub_tree AS st
-            WHERE st.parent_id = tp.plan_id
-        )
-        SELECT * FROM sub_tree;
-    ''')
-
-    with connection.cursor() as cursor:
-        cursor.execute(sql_ancestors)
-        result = cursor.fetchall()
-
-    plan_ids += [row[0] for row in result]
-
-    plans = TestPlan.objects.filter(pk__in=plan_ids).extra(
+    plans = TestPlan.objects.filter(pk__in=tree_plan_ids).extra(
+        # TODO: Reuse the raw SQL to calculate these statistics.
+        # NOTE: consider abstract this piece of code into a separate function
+        #       that could be reused without duplicate calls.
         select={
             'cases_count':
                 'SELECT count(*) FROM test_case_plans '
@@ -999,4 +955,53 @@ def construct_plans_treeview(request, plan_id):
     return render(request, 'plan/get_treeview.html', context={
         'current_plan_id': plan_id,
         'plans': plans
+    })
+
+
+@require_POST
+def treeview_add_child_plans(request: HttpRequest, plan_id: int):
+    plan = TestPlan.objects.filter(pk=plan_id).only('pk').first()
+    if plan is None:
+        return JsonResponseNotFound({
+            'message': f'Plan {plan_id} does not exist.'
+        })
+
+    child_plan_ids: List[str] = request.POST.getlist('children')
+    child_plans: List[TestPlan] = []
+
+    ancestor_ids = plan.get_ancestor_ids()
+    descendant_ids = plan.get_descendant_ids()
+
+    for child_plan_id in child_plan_ids:
+        if not child_plan_id.isdigit():
+            return JsonResponseBadRequest({
+                'message': f'Child plan id {child_plan_id} is not a number.'
+            })
+        child_plan: TestPlan = (TestPlan.objects
+                                .filter(pk=int(child_plan_id)).only('pk')
+                                .first())
+        if child_plan is None:
+            return JsonResponseBadRequest({
+                'message': f'Child plan {child_plan_id} does not exist.'
+            })
+        if child_plan.pk in ancestor_ids:
+            return JsonResponseBadRequest({
+                'message': f'Plan {child_plan_id} is an ancestor of '
+                           f'plan {plan_id} already.'
+            })
+        if child_plan.pk in descendant_ids:
+            return JsonResponseBadRequest({
+                'message': f'Plan {child_plan_id} is a descendant of '
+                           f'plan {plan_id} already.'
+            })
+
+        child_plans.append(child_plan)
+
+    for child_plan in child_plans:
+        child_plan.parent = plan
+        child_plan.save(update_fields=['parent'])
+
+    return JsonResponse({
+        'parent_plan': plan.pk,
+        'children_plans': [plan.pk for plan in child_plans]
     })

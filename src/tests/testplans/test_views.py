@@ -881,3 +881,68 @@ class TestChooseCasesToRun(BaseCaseRun):
             resp,
             'At least one test run and one case is required to add cases to '
             'runs.')
+
+
+class TestTreeViewAddChildPlan(BasePlanCase):
+    """Test plan's treeview"""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.create_treeview_data()
+
+    def test_plan_id_does_not_exist(self):
+        max_plan_id = self.get_max_plan_id()
+        self.url = reverse('plan-treeview-add-children', args=[max_plan_id + 1])
+        response = self.client.post(self.url, {'children': [1]})
+        self.assertJsonResponse(
+            response,
+            {'message': f'Plan {max_plan_id + 1} does not exist.'},
+            status_code=HTTPStatus.NOT_FOUND)
+
+    def test_child_plan_id_does_not_exist(self):
+        max_plan_id = self.get_max_plan_id()
+        self.url = reverse('plan-treeview-add-children', args=[self.plan_2.pk])
+        response = self.client.post(self.url, {
+            'children': [max_plan_id + 1]
+        })
+        self.assertJsonResponse(
+            response,
+            {'message': f'Child plan {max_plan_id + 1} does not exist.'},
+            status_code=HTTPStatus.BAD_REQUEST)
+
+    def test_add_child_that_is_an_ancestor_already(self):
+        plan_id = self.plan_6.pk
+        child_plan_id = self.plan_3.pk
+        self.url = reverse('plan-treeview-add-children', args=[plan_id])
+        response = self.client.post(self.url, {'children': [child_plan_id]})
+        self.assertJsonResponse(
+            response,
+            {'message': f'Plan {child_plan_id} is an ancestor of '
+                        f'plan {plan_id} already.'},
+            status_code=HTTPStatus.BAD_REQUEST)
+
+    def test_add_child_that_is_already_a_descendant(self):
+        plan_id = self.plan_2.pk
+        child_plan_id = self.plan_4.pk
+        self.url = reverse('plan-treeview-add-children', args=[plan_id])
+        response = self.client.post(self.url, {'children': [child_plan_id]})
+        self.assertJsonResponse(
+            response,
+            {'message': f'Plan {child_plan_id} is a descendant of '
+                        f'plan {plan_id} already.'},
+            status_code=HTTPStatus.BAD_REQUEST)
+
+    def test_add_a_child(self):
+        plan_id = self.plan_4.pk
+        child_plan_id = self.plan_9.pk
+        self.url = reverse('plan-treeview-add-children', args=[plan_id])
+        response = self.client.post(self.url, {'children': [child_plan_id]})
+
+        plan = TestPlan.objects.get(pk=child_plan_id)
+        self.assertEqual(plan_id, plan.parent.pk)
+
+        self.assertJsonResponse(response, {
+            'parent_plan': plan_id,
+            'children_plans': [self.plan_9.pk]
+        })

@@ -312,52 +312,45 @@ Nitrate.TestPlans.TreeView = {
     tvTabContainer.find('.remove_node')[0].disabled = ! toEnableRemoveButton;
   },
 
-  'addChildPlan': function (container, currentPlanId) {
-    let self = this;
-    let tree = Nitrate.TestPlans.TreeView;
-    let childPlanIds = window.prompt('Enter a comma separated list of plan IDs').trim();
-    if (!childPlanIds) {
+  /**
+   * Add child plans to a specific test plan
+   * @param {number} currentPlanId - the parent plan of the children.
+   */
+  addChildPlan: function (currentPlanId) {
+    let inputChildPlanIds = window
+      .prompt('Enter a comma separated list of plan IDs')
+      .replace(/^[,\s]+|[,\s]+$/g, '')
+      .split(/[,\s]+/)
+      .filter(function (elem) { return elem.length > 0 });
+
+    if (inputChildPlanIds.length === 0) {
       return false;
     }
 
-    let cleanedChildPlanIds = [];
-    let inputChildPlanIds = childPlanIds.split(',');
-
     for (let i = 0; i < inputChildPlanIds.length; i++) {
-      let s = inputChildPlanIds[i].trim();
-      if (s === '') { continue; }
-      if (!/^\d+$/.test(s)) {
+      let item = inputChildPlanIds[i];
+      if (!/^\d+$/.test(item)) {
         showModal(
-          'Plan Id should be a numeric. ' + s + ' is not valid.', 'Add child plan'
+          'Plan id ' + item + ' is not a number. ', 'Add child plan'
         );
         return;
       }
-      let childPlanId = parseInt(s);
-      let isParentOrThisPlan = childPlanId === parseInt(tree.data[0].pk) || childPlanId === currentPlanId;
-      if (isParentOrThisPlan) {
-        showModal('Cannot add parent or self.', 'Add child plan');
-        return;
-      }
-      cleanedChildPlanIds.push(childPlanId);
     }
 
-    previewPlan({pk__in: cleanedChildPlanIds.join(',')}, '', function (e) {
+    previewPlan({pk__in: inputChildPlanIds.join(',')}, '', function (e) {
       e.stopPropagation();
       e.preventDefault();
 
-      let planId = Nitrate.Utils.formSerialize(this).plan_id;
-      updateObject({
-        contentType: 'testplans.testplan',
-        objectPk: planId,
-        field: 'parent',
-        value: currentPlanId,
-        valueType: 'int',
-        callback: function () {
-          clearDialog();
+      clearDialog();  // Close the preview dialog
+
+      postRequest({
+        url: '/plan/' + currentPlanId + '/treeview/add-children/',
+        data: {'children': inputChildPlanIds},
+        traditional: true,
+        success: function () {
           Nitrate.TestPlans.Details.loadPlansTreeView(currentPlanId);
-          self.toggleRemoveChildPlanButton();
         }
-      })
+      });
     },
     'This operation will overwrite existing data');
   },
@@ -692,7 +685,8 @@ Nitrate.TestPlans.Details = {
         });
 
         jQ('#js-add-child-node').on('click', function () {
-          Nitrate.TestPlans.TreeView.addChildPlan(treeViewContainer, planPK);
+          // Nitrate.TestPlans.TreeView.addChildPlan(treeViewContainer, planPK);
+          Nitrate.TestPlans.TreeView.addChildPlan(planPK);
         });
 
         jQ('#js-remove-child-node').on('click', function () {
