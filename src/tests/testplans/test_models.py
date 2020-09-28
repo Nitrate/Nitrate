@@ -181,38 +181,31 @@ class TestPlanTreeView(BasePlanCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
+        cls.create_treeview_data()
 
-        from functools import partial
+    def test_get_ancestor_ids(self):
+        expected = [1, 2, 3]
+        plan: TestPlan = TestPlan.objects.get(pk=self.plan_4.pk)
+        self.assertListEqual(expected, sorted(plan.get_ancestor_ids()))
 
-        plan_creator = partial(
-            f.TestPlanFactory,
-            author=cls.tester,
-            owner=cls.tester,
-            product=cls.product,
-            product_version=cls.version)
+    def test_get_ancestors(self):
+        expected = [
+            repr(item) for item in
+            TestPlan.objects.filter(pk__in=[1, 2, 3]).order_by('pk')
+        ]
+        plan: TestPlan = TestPlan.objects.get(pk=self.plan_4.pk)
+        self.assertQuerysetEqual(plan.get_ancestors().order_by('pk'), expected)
 
-        cls.sub_plan_1 = plan_creator(parent=cls.plan)
-        cls.sub_sub_plan_1 = plan_creator(parent=cls.sub_plan_1)
-        cls.sub_plan_2 = plan_creator(parent=cls.plan)
+    def test_get_descendant_ids(self):
+        expected = [4, 5, 6, 7]
+        plan: TestPlan = TestPlan.objects.get(pk=self.plan_3.pk)
+        self.assertListEqual(expected, sorted(plan.get_descendant_ids()))
 
-    def test_get_plan_treeview(self):
-        from django.db import connection
-        from textwrap import dedent
-
-        with connection.cursor() as cursor:
-            cursor.execute(dedent('''
-                WITH RECURSIVE sub_tree AS (
-                  SELECT plan_id, name, parent_id, 1 AS depth
-                  FROM test_plans
-                  WHERE plan_id = 1
-
-                  UNION ALL
-
-                  SELECT tp.plan_id, tp.name, tp.parent_id, st.depth + 1
-                  FROM test_plans AS tp, sub_tree AS st
-                  WHERE tp.parent_id = st.plan_id
-                )
-                SELECT * FROM sub_tree;
-            '''))
-
-            print(cursor.fetchall())
+    def test_get_descendants(self):
+        expected = [
+            repr(item) for item in
+            TestPlan.objects.filter(pk__in=[4, 5, 6, 7]).order_by('pk')
+        ]
+        plan: TestPlan = TestPlan.objects.get(pk=self.plan_3.pk)
+        self.assertQuerysetEqual(
+            plan.get_descendants().order_by('pk'), expected)

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime
+from textwrap import dedent
+from typing import List
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
@@ -448,6 +450,48 @@ class TestPlan(TCMSActionModel):
                 tc.add_tag(tag=tag)
 
         self.add_case(tc, sortkey=sortkey)
+
+    def get_descendant_ids(self) -> List[int]:
+        sql_descendants = dedent(f'''
+            WITH RECURSIVE sub_tree AS (
+                SELECT plan_id FROM test_plans WHERE plan_id = {self.pk}
+                UNION ALL
+                SELECT tp.plan_id FROM test_plans AS tp, sub_tree AS st
+                WHERE tp.parent_id = st.plan_id
+            )
+            SELECT * FROM sub_tree;
+        ''')
+        with connection.reader_cursor as cursor:
+            cursor.execute(sql_descendants)
+            result = [row[0] for row in cursor.fetchall()]
+            result.remove(self.pk)
+            return result
+
+    def get_descendants(self):
+        descendant_ids = self.get_descendant_ids()
+        return TestPlan.objects.filter(pk__in=descendant_ids)
+
+    def get_ancestor_ids(self) -> List[int]:
+        sql_ancestors = dedent(f'''
+            WITH RECURSIVE sub_tree AS (
+                SELECT plan_id, parent_id FROM test_plans
+                WHERE plan_id = {self.pk}
+                UNION ALL
+                SELECT tp.plan_id, tp.parent_id
+                FROM test_plans AS tp, sub_tree AS st
+                WHERE st.parent_id = tp.plan_id
+            )
+            SELECT * FROM sub_tree;
+        ''')
+        with connection.reader_cursor as cursor:
+            cursor.execute(sql_ancestors)
+            result = [row[0] for row in cursor.fetchall()]
+            result.remove(self.pk)
+            return result
+
+    def get_ancestors(self):
+        ancestor_ids = self.get_ancestor_ids()
+        return TestPlan.objects.filter(pk__in=ancestor_ids)
 
 
 class TestPlanText(TCMSActionModel):

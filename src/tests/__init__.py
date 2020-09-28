@@ -11,9 +11,11 @@ from django import test
 from django.contrib.auth.models import Permission
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.db.models import Max
 from django.test import SimpleTestCase
 
 from tcms.testcases.models import TestCaseStatus
+from tcms.testplans.models import TestPlan
 from tcms.testruns.models import TestCaseRunStatus
 from tests import factories as f
 
@@ -217,6 +219,9 @@ class NitrateTestCase(test.TestCase):
             issues_display_url_fmt='http://jira.example.com/?jql=issuekey in ({issue_keys})',
             validate_regex=r'^[A-Z]+-\d+$')
 
+    def get_max_plan_id(self):
+        return TestPlan.objects.aggregate(max_pk=Max('pk'))['max_pk']
+
 
 class BasePlanCase(AuthMixin, HelperAssertions, NitrateTestCase):
     """Base test case by providing essential Plan and Case objects used in tests"""
@@ -252,6 +257,38 @@ class BasePlanCase(AuthMixin, HelperAssertions, NitrateTestCase):
         cls.case_4 = case_creator(summary='Test case 4')
         cls.case_5 = case_creator(summary='Test case 5')
         cls.case_6 = case_creator(summary='Test case 6')
+
+    @classmethod
+    def create_treeview_data(cls):
+        """Create data for testing plan tree view"""
+
+        plan_creator = partial(
+            f.TestPlanFactory,
+            author=cls.tester,
+            owner=cls.tester,
+            product=cls.product,
+            product_version=cls.version)
+
+        # Sample tree view
+        # plan 1
+        #   plan 2
+        #     plan 3
+        #       plan 4
+        #         plan 5
+        #         plan 6
+        #       plan 7
+        #     plan 8
+
+        cls.plan_2 = plan_creator(parent=cls.plan)
+        cls.plan_3 = plan_creator(parent=cls.plan_2)
+        cls.plan_4 = plan_creator(parent=cls.plan_3)
+        cls.plan_5 = plan_creator(parent=cls.plan_4)
+        cls.plan_6 = plan_creator(parent=cls.plan_4)
+        cls.plan_7 = plan_creator(parent=cls.plan_3)
+        cls.plan_8 = plan_creator(parent=cls.plan_2)
+
+        # Floating plan used to test adding child plan
+        cls.plan_9 = plan_creator()
 
 
 class BaseCaseRun(BasePlanCase):
