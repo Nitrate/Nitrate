@@ -18,7 +18,7 @@ from django.urls import reverse
 from django.http import Http404, HttpResponsePermanentRedirect, HttpRequest
 from django.http import HttpResponse, HttpResponseRedirect
 from django.http import HttpResponseBadRequest, JsonResponse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import get_template
 from django.views.decorators.csrf import csrf_protect
@@ -905,8 +905,7 @@ def export(request, template_name='case/export.xml'):
     return response
 
 
-# TODO: add request method decorator
-# TODO: add test for this view
+@require_GET
 def construct_plans_treeview(request, plan_id):
     """Construct a plan's tree view"""
     plan = get_object_or_404(TestPlan, pk=plan_id)
