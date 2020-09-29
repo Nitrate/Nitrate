@@ -339,16 +339,22 @@ Nitrate.TestPlans.TreeView = {
       .jstree(true)
       .get_node(Nitrate.TestPlans.TreeView.getCurrentPlanId())
       .parents
+      .filter(function (value) { return value !== '#'; })
       .map(function (value) { return parseInt(value); });
   },
 
-  getDescendants: function () {
-    return jQ(Nitrate.TestPlans.TreeView.getContainer())
+  /**
+   * Get descendants of current plan
+   * @param {boolean} [direct=false] - whether to get the direct descendant plans.
+   * @returns {Array}
+   */
+  getDescendants: function (direct) {
+    let result = jQ(Nitrate.TestPlans.TreeView.getContainer())
       .find('.js-plans-treeview')
       .jstree(true)
-      .get_node(Nitrate.TestPlans.TreeView.getCurrentPlanId())
-      .children_d
-      .map(function (value) { return parseInt(value); });
+      .get_node(Nitrate.TestPlans.TreeView.getCurrentPlanId());
+    result = direct ? result.children : result.children_d;
+    return result.map(function (value) { return parseInt(value); });
   },
 
   /**
@@ -400,56 +406,32 @@ Nitrate.TestPlans.TreeView = {
     'This operation will overwrite existing data');
   },
 
-  'removeChildPlan': function (container, currentPlanId) {
-    let self = this;
-    let tree = Nitrate.TestPlans.TreeView;
-    let childrenPks = tree.traverse(tree.data, currentPlanId).children.map(function (child) {
-      return child.pk;
-    });
-    childrenPks.sort();
+  removeChildPlan: function (container, currentPlanId) {
+    let descendants = Nitrate.TestPlans.TreeView.getDescendants();
+    let inputChildPlanIds = window
+      .prompt('Enter a comma separated list of plan IDs to be removed')
+      .replace(/^[,\s]+|[,\s]+$/g, '')
+      .split(/[,\s]+/)
+      .filter(function (elem) { return elem.length > 0 })
+      .filter(function (elem) { return descendants.indexOf(parseInt(elem)) >= 0 });
 
-    let inputChildPlanIds = window.prompt('Enter a comma separated list of plan IDs to be removed');
-    if (!inputChildPlanIds) {
-      return false;
-    }
-    let cleanedChildPlanIds = [];
-    inputChildPlanIds = inputChildPlanIds.split(',');
-    for (let j = 0; j < inputChildPlanIds.length; j++) {
-      let s = inputChildPlanIds[j].trim();
-      if (s === '') { continue; }
-      if (!/^\d+$/.test(s)) {
-        showModal(
-          'Plan ID must be a number. ' + inputChildPlanIds[j] + ' is not valid.',
-          'Remove child plan'
-        )
-        return;
-      }
-      if (s === currentPlanId.toString()) {
-        showModal('Cannot remove current plan.', 'Remove child plan');
-        return;
-      }
-      if (childrenPks.indexOf(parseInt(s)) === -1) {
-        showModal('Plan ' + s + ' is not the child node of current plan', 'Remove child plan');
-        return;
-      }
-      cleanedChildPlanIds.push(s);
+    if (inputChildPlanIds.length === 0) {
+      return;
     }
 
-    previewPlan({pk__in: cleanedChildPlanIds.join(',')}, '', function (e) {
+    previewPlan({pk__in: inputChildPlanIds.join(',')}, '', function (e) {
       e.stopPropagation();
       e.preventDefault();
 
-      let planId = Nitrate.Utils.formSerialize(this).plan_id;
-      updateObject({
-        contentType: 'testplans.testplan',
-        objectPk: planId,
-        field: 'parent',
-        value: '0',
-        valueType: 'None',
-        callback: function () {
-          clearDialog();
+      // Close the preview dialog
+      clearDialog();
+
+      postRequest({
+        url: '/plan/' + currentPlanId + '/treeview/remove-children/',
+        data: {'children': inputChildPlanIds},
+        traditional: true,
+        success: function () {
           Nitrate.TestPlans.Details.loadPlansTreeView(currentPlanId);
-          self.toggleRemoveChildPlanButton();
         }
       });
     },
