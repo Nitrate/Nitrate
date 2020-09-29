@@ -891,6 +891,9 @@ class TestTreeViewAddChildPlan(BasePlanCase):
         super().setUpTestData()
         cls.create_treeview_data()
 
+    def setUp(self):
+        self.login_tester()
+
     def test_plan_id_does_not_exist(self):
         max_plan_id = self.get_max_plan_id()
         self.url = reverse('plan-treeview-add-children', args=[max_plan_id + 1])
