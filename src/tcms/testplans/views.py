@@ -7,11 +7,11 @@ import json
 import urllib
 
 from operator import add, itemgetter
-from typing import List
+from typing import List, Set
 
 from django.utils.decorators import method_decorator
 from django.conf import settings
-from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.decorators import permission_required, login_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
@@ -1004,4 +1004,27 @@ def treeview_add_child_plans(request: HttpRequest, plan_id: int):
     return JsonResponse({
         'parent_plan': plan.pk,
         'children_plans': [plan.pk for plan in child_plans]
+    })
+
+
+@login_required
+@require_POST
+def treeview_remove_child_plans(request, plan_id: int):
+    plan: TestPlan = TestPlan.objects.filter(pk=plan_id).only('pk').first()
+    if plan is None:
+        return JsonResponseNotFound({
+            'message': f'Plan {plan_id} does not exist.'
+        })
+
+    child_plan_ids: Set[int] = set(map(int, request.POST.getlist('children')))
+    direct_descendants = set(plan.get_descendant_ids(True))
+    ids_to_remove = child_plan_ids & direct_descendants
+
+    if ids_to_remove:
+        TestPlan.objects.filter(pk__in=ids_to_remove).update(parent=None)
+
+    return JsonResponse({
+        'parent_plan': plan.pk,
+        'removed': sorted(ids_to_remove),
+        'non_descendants': sorted(child_plan_ids - direct_descendants),
     })

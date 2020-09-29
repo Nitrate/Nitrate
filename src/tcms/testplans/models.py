@@ -451,21 +451,30 @@ class TestPlan(TCMSActionModel):
 
         self.add_case(tc, sortkey=sortkey)
 
-    def get_descendant_ids(self) -> List[int]:
-        sql_descendants = dedent(f'''
-            WITH RECURSIVE sub_tree AS (
-                SELECT plan_id FROM test_plans WHERE plan_id = {self.pk}
-                UNION ALL
-                SELECT tp.plan_id FROM test_plans AS tp, sub_tree AS st
-                WHERE tp.parent_id = st.plan_id
-            )
-            SELECT * FROM sub_tree;
-        ''')
+    def get_descendant_ids(self, direct: bool = False) -> List[int]:
+        if direct:
+            sql = dedent(f'''
+                WITH RECURSIVE sub_tree AS (
+                    SELECT plan_id, 0 as depth FROM test_plans WHERE plan_id = {self.pk}
+                    UNION ALL
+                    SELECT tp.plan_id, depth + 1 FROM test_plans AS tp, sub_tree AS st
+                    WHERE tp.parent_id = st.plan_id
+                )
+                SELECT plan_id FROM sub_tree WHERE depth = 1;
+            ''')
+        else:
+            sql = dedent(f'''
+                WITH RECURSIVE sub_tree AS (
+                    SELECT plan_id, 0 as depth FROM test_plans WHERE plan_id = {self.pk}
+                    UNION ALL
+                    SELECT tp.plan_id, depth + 1 FROM test_plans AS tp, sub_tree AS st
+                    WHERE tp.parent_id = st.plan_id
+                )
+                SELECT plan_id FROM sub_tree WHERE depth > 0;
+            ''')
         with connection.reader_cursor as cursor:
-            cursor.execute(sql_descendants)
-            result = [row[0] for row in cursor.fetchall()]
-            result.remove(self.pk)
-            return result
+            cursor.execute(sql)
+            return [row[0] for row in cursor.fetchall()]
 
     def get_descendants(self):
         descendant_ids = self.get_descendant_ids()

@@ -946,3 +946,63 @@ class TestTreeViewAddChildPlan(BasePlanCase):
             'parent_plan': plan_id,
             'children_plans': [self.plan_9.pk]
         })
+
+
+class TestTreeViewRemoveChildPlan(BasePlanCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.create_treeview_data()
+
+    def test_parent_plan_does_not_exist(self):
+        self.login_tester()
+
+        nonexisting = self.get_max_plan_id() + 1
+        url = reverse('plan-treeview-remove-children', args=[nonexisting])
+        resp = self.client.post(url)
+        self.assertJsonResponse(
+            resp,
+            {'message': f'Plan {nonexisting} does not exist.'},
+            status_code=HTTPStatus.NOT_FOUND
+        )
+
+    def test_remove_children(self):
+        self.login_tester()
+
+        max_plan_id = self.get_max_plan_id()
+
+        test_data = [
+            [
+                self.plan_4.pk,
+                [self.plan_5.pk, self.plan_6.pk],
+                {
+                    'parent_plan': self.plan_4.pk,
+                    'removed': [self.plan_5.pk, self.plan_6.pk],
+                    'non_descendants': [],
+                }
+            ],
+            [
+                self.plan_2.pk,
+                [self.plan_8.pk, max_plan_id + 1],
+                {
+                    'parent_plan': self.plan_2.pk,
+                    'removed': [self.plan_8.pk],
+                    'non_descendants': [max_plan_id + 1],
+                }
+            ],
+            [
+                self.plan_4.pk,
+                [max_plan_id + 1, max_plan_id + 2],
+                {
+                    'parent_plan': self.plan_4.pk,
+                    'removed': [],
+                    'non_descendants': [max_plan_id + 1, max_plan_id + 2],
+                }
+            ],
+        ]
+
+        for parent_plan, post_data, expected_json in test_data:
+            url = reverse('plan-treeview-remove-children', args=[parent_plan])
+            resp = self.client.post(url, data={'children': post_data})
+            self.assertJsonResponse(resp, expected_json)

@@ -38,4 +38,8 @@ urlpatterns = [
     path('<int:plan_id>/treeview/add-children/',
          views.treeview_add_child_plans,
          name='plan-treeview-add-children'),
+
+    path('<int:plan_id>/treeview/remove-children/',
+         views.treeview_remove_child_plans,
+         name='plan-treeview-remove-children'),
 ]

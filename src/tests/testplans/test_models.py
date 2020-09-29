@@ -209,3 +209,14 @@ class TestPlanTreeView(BasePlanCase):
         plan: TestPlan = TestPlan.objects.get(pk=self.plan_3.pk)
         self.assertQuerysetEqual(
             plan.get_descendants().order_by('pk'), expected)
+
+    def test_get_direct_descendants(self):
+        test_data = [
+            [self.plan.pk, [self.plan_2.pk]],
+            [self.plan_5.pk, []],
+            [self.plan_3.pk, [self.plan_4.pk, self.plan_7.pk]],
+        ]
+
+        for parent_plan, expected in test_data:
+            plan: TestPlan = TestPlan.objects.get(pk=parent_plan)
+            self.assertListEqual(expected, plan.get_descendant_ids(True))
