@@ -87,7 +87,7 @@
 					<td height="27"><a class="link" href="{{ test_plan.get_absolute_url }}">{{ test_plan.name }}</a></td>
 					<td>{{ test_plan.product }}</td>
 					<td>{{ test_plan.type }}</td>
-					<td><a href="/runs/?plan={{ test_plan.plan_id }}">{{ test_plan.num_runs }}</a></td>
+					<td><a href="/runs/?plan={{ test_plan.plan_id }}">{{ test_plan.runs_count }}</a></td>
 				</tr>
                 {% endif %}
 				{% endfor %}

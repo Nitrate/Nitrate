@@ -26,7 +26,7 @@ def order_targets(queryset: QuerySet, queries: Dict) -> QuerySet:
 ORDERABLE_FIELDS = {
     'TestPlan': (
         'plan_id', 'name', 'author__username', 'owner__username', 'create_date',
-        'product__name', 'type', 'num_cases', 'num_runs', 'num_children',
+        'product__name', 'type', 'cases_count', 'runs_count', 'children_count',
     ),
     'TestCase': (
         'case_id', 'summary', 'author__username', 'default_tester__username',

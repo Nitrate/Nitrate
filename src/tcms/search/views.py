@@ -190,11 +190,7 @@ def sum_orm_queries(plans: SmartDjangoQuery,
             plans = plans.filter(case__in=cases).distinct()
         if runs is not None:
             plans = plans.filter(run__in=runs).distinct()
-        plans = plans.extra(select={
-            'cases_count': RawSQL.num_cases,
-            'runs_count': RawSQL.num_runs,
-        })
-        return plans
+        return TestPlan.apply_subtotal(plans, cases_count=True, runs_count=True)
 
     if target == 'case':
         if plans is None and runs is None:
