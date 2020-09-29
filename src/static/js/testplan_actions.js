@@ -313,6 +313,45 @@ Nitrate.TestPlans.TreeView = {
   },
 
   /**
+   * Find and return the element containing this tree view.
+   * @returns {HTMLElement} the container element.
+   */
+  getContainer: function () {
+    return document.getElementById('treeview');
+  },
+
+  /**
+   * The tree view container has an element containing current plan id. This
+   * function returns the id to be used to operate the tree view.
+   * @return {number} the plan id.
+   */
+  getCurrentPlanId: function () {
+    return parseInt(
+      jQ(Nitrate.TestPlans.TreeView.getContainer())
+        .find('input[name=plan_id]')
+        .prop('value')
+    );
+  },
+
+  getAncestors: function () {
+    return jQ(Nitrate.TestPlans.TreeView.getContainer())
+      .find('.js-plans-treeview')
+      .jstree(true)
+      .get_node(Nitrate.TestPlans.TreeView.getCurrentPlanId())
+      .parents
+      .map(function (value) { return parseInt(value); });
+  },
+
+  getDescendants: function () {
+    return jQ(Nitrate.TestPlans.TreeView.getContainer())
+      .find('.js-plans-treeview')
+      .jstree(true)
+      .get_node(Nitrate.TestPlans.TreeView.getCurrentPlanId())
+      .children_d
+      .map(function (value) { return parseInt(value); });
+  },
+
+  /**
    * Add child plans to a specific test plan
    * @param {number} currentPlanId - the parent plan of the children.
    */
@@ -327,12 +366,18 @@ Nitrate.TestPlans.TreeView = {
       return false;
     }
 
+    let descendants = Nitrate.TestPlans.TreeView.getDescendants();
+
     for (let i = 0; i < inputChildPlanIds.length; i++) {
       let item = inputChildPlanIds[i];
       if (!/^\d+$/.test(item)) {
         showModal(
           'Plan id ' + item + ' is not a number. ', 'Add child plan'
         );
+        return;
+      }
+      if (descendants.indexOf(parseInt(item)) >= 0) {
+        showModal('Plan ' + item + ' has been a descendant already.');
         return;
       }
     }
@@ -424,6 +469,12 @@ Nitrate.TestPlans.TreeView = {
     if (planId === currentPlanId) {
       showModal('Parent plan should not be the current plan itself.', 'Change parent plan');
       return false;
+    }
+
+    let ancestors = Nitrate.TestPlans.TreeView.getAncestors();
+    if (ancestors.indexOf(planId) >= 0) {
+      showModal('Plan ' + planId + ' has been an ancestor already.');
+      return;
     }
 
     previewPlan({plan_id: p}, '', function (e) {
@@ -660,7 +711,7 @@ Nitrate.TestPlans.Details = {
    * Lazy-loading TestPlans TreeView
    */
   'loadPlansTreeView': function (planId) {
-    let treeViewContainer = document.getElementById('treeview');
+    let treeViewContainer = Nitrate.TestPlans.TreeView.getContainer();
 
     // An array referencing tree view nodes passed to jstree to render the plans
     // tree view.
@@ -715,9 +766,8 @@ Nitrate.TestPlans.Details = {
             Nitrate.TestPlans.Details.openTab('#testruns');
           });
 
-          let currentPlanId = parseInt(
-            jQ(treeViewContainer).find('input[name=plan_id]').prop('value')
-          );
+          let currentPlanId = Nitrate.TestPlans.TreeView.getCurrentPlanId(treeViewContainer);
+
           jQ(treeViewContainer).find('#js-remove-child-node')[0].disabled =
             jQ(this).jstree(true).get_node(currentPlanId).children.length === 0;
         });
