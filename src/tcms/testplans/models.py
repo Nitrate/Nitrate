@@ -15,6 +15,7 @@ from django.urls import reverse
 from uuslug import slugify
 
 from tcms.core.models import TCMSActionModel
+from tcms.core.raw_sql import RawSQL
 from tcms.core.utils import checksum
 from tcms.core.tcms_router import connection
 from tcms.management.models import Version
@@ -111,6 +112,22 @@ class TestPlan(TCMSActionModel):
             del new_query['search']
 
         return q.filter(**new_query).distinct()
+
+    @classmethod
+    def apply_subtotal(cls, queryset,
+                       cases_count: bool = False,
+                       runs_count: bool = False,
+                       children_count: bool = False):
+        select = {}
+        if cases_count:
+            select['cases_count'] = RawSQL.num_cases
+        if runs_count:
+            select['runs_count'] = RawSQL.num_runs
+        if children_count:
+            select['children_count'] = RawSQL.num_child_plans
+        if select:
+            queryset = queryset.extra(select=select)
+        return queryset
 
     def confirmed_case(self):
         return self.case.filter(case_status__name='CONFIRMED')

@@ -12,7 +12,6 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.http import require_GET
 from django.shortcuts import get_object_or_404
 
-from tcms.core.raw_sql import RawSQL
 from tcms.testplans.models import TestPlan
 from tcms.testruns.data import stats_case_runs_status
 from tcms.testruns.models import TestRun
@@ -71,8 +70,9 @@ def recent(request, username):
                      is_active=True)
              .select_related('product', 'type')
              .order_by('-plan_id')
-             .only('name', 'is_active', 'type__name', 'product__name')
-             .extra(select={'num_runs': RawSQL.num_runs}))
+             .only('name', 'is_active', 'type__name', 'product__name'))
+
+    plans = TestPlan.apply_subtotal(plans, runs_count=True)
 
     runs = (TestRun
             .list({'people': request.user, 'is_active': True, 'status': 'running'})

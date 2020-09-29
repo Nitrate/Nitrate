@@ -14,7 +14,7 @@ class RawSQL:
         'WHERE test_runs.plan_id = test_plans.plan_id'
     )
 
-    num_plans = (
+    num_child_plans = (
         'SELECT COUNT(*) '
         'FROM test_plans AS ch_plans '
         'WHERE ch_plans.parent_id = test_plans.plan_id'

@@ -30,7 +30,6 @@ from uuslug import slugify
 
 from tcms.core.db import SQLExecution
 from tcms.core.models import TCMSLog
-from tcms.core.raw_sql import RawSQL
 from tcms.core.utils import checksum
 from tcms.core.utils import DataTableResult
 from tcms.core.responses import JsonResponseBadRequest, JsonResponseNotFound
@@ -193,33 +192,13 @@ class SimplePlansFilterView(TemplateView):
             if req_user.is_authenticated and author in (req_user.username, req_user.email):
                 self.SUB_MODULE_NAME = "my_plans"
 
-            plans = (
-                TestPlan
-                .list(search_form.cleaned_data)
-                .select_related('author', 'type', 'product')
+            plans = (TestPlan
+                     .list(search_form.cleaned_data)
+                     .select_related('author', 'type', 'product')
+                     .order_by('-create_date'))
 
-                # We want to get the number of cases and runs, without doing
-                # lots of per-test queries.
-                #
-                # Ideally we would get the case/run counts using m2m field tricks
-                # in the ORM
-                # Unfortunately, Django's select_related only works on ForeignKey
-                # relationships, not on ManyToManyField attributes
-                # See http://code.djangoproject.com/ticket/6432
-
-                # SQLAlchemy can handle this kind of thing in several ways.
-                # Unfortunately we're using Django
-
-                # The cleanest way I can find to get it into one query is to
-                # use QuerySet.extra()
-                # See http://docs.djangoproject.com/en/dev/ref/models/querysets
-                .extra(select={
-                    'cases_count': RawSQL.num_cases,
-                    'runs_count': RawSQL.num_runs,
-                    'children_count': RawSQL.num_plans,
-                })
-
-                .order_by('-create_date')
+            plans = TestPlan.apply_subtotal(
+                plans, cases_count=True, runs_count=True, children_count=True,
             )
 
         return search_form, plans
@@ -935,22 +914,14 @@ def construct_plans_treeview(request, plan_id):
     tree_plan_ids = plan.get_ancestor_ids() + plan.get_descendant_ids()
     tree_plan_ids.append(plan.pk)
 
-    plans = TestPlan.objects.filter(pk__in=tree_plan_ids).extra(
-        # TODO: Reuse the raw SQL to calculate these statistics.
-        # NOTE: consider abstract this piece of code into a separate function
-        #       that could be reused without duplicate calls.
-        select={
-            'cases_count':
-                'SELECT count(*) FROM test_case_plans '
-                'WHERE test_plans.plan_id = test_case_plans.plan_id',
-            'runs_count':
-                'SELECT count(*) FROM test_runs '
-                'WHERE test_runs.plan_id = test_plans.plan_id',
-            'children_count':
-                'SELECT count(*) FROM test_plans AS child '
-                'WHERE child.parent_id = test_plans.plan_id'
-        }
-    ).only('pk', 'name', 'parent_id').order_by('parent_id', 'pk')
+    plans = (TestPlan.objects
+             .filter(pk__in=tree_plan_ids)
+             .only('pk', 'name', 'parent_id')
+             .order_by('parent_id', 'pk'))
+
+    plans = TestPlan.apply_subtotal(
+        plans, cases_count=True, runs_count=True, children_count=True
+    )
 
     return render(request, 'plan/get_treeview.html', context={
         'current_plan_id': plan_id,
