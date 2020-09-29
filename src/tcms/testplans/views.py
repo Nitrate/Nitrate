@@ -958,6 +958,7 @@ def construct_plans_treeview(request, plan_id):
     })
 
 
+@login_required
 @require_POST
 def treeview_add_child_plans(request: HttpRequest, plan_id: int):
     plan = TestPlan.objects.filter(pk=plan_id).only('pk').first()
