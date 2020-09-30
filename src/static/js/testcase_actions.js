@@ -500,7 +500,6 @@ function removeCaseIssue(issueKey, caseId, caseRunId) {
 }
 
 
-/* eslint no-unused-vars:off */
 /**
  * Handle triggered by click event of Remove button to remove a plan from a
  * case' plans table. This is bound to specific element in the template directly.

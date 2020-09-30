@@ -1928,7 +1928,6 @@ function FocusTabOnPlanPage(element) {
 }
 
 // TODO: remove !!!
-/* eslint no-unused-vars: "off" */
 function expandCurrentPlan(element) {
   let tree = Nitrate.TestPlans.TreeView;
 

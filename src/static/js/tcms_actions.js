@@ -1,5 +1,4 @@
 /* eslint no-redeclare: "off" */
-/* eslint no-unused-vars: "off" */
 
 // Create a dictionary to avoid polluting the global namespace:
 const Nitrate = window.Nitrate || {}; // Ironically, this global name is not respected. So u r on ur own.
