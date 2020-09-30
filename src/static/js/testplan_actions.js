@@ -39,32 +39,36 @@ function submitSelectedCaseIDs(url, container) {
 }
 
 Nitrate.TestPlans.TreeView = {
+  containerId: 'treeview',
+
   /**
    * Find and return the element containing this tree view.
+   *
    * @returns {HTMLElement} the container element.
    */
   getContainer: function () {
-    return document.getElementById('treeview');
+    return document.getElementById(this.containerId);
   },
 
   /**
    * The tree view container has an element containing current plan id. This
    * function returns the id to be used to operate the tree view.
-   * @return {number} the plan id.
+   *
+   * @returns {number} the plan id.
    */
   getCurrentPlanId: function () {
     return parseInt(
-      jQ(Nitrate.TestPlans.TreeView.getContainer())
+      jQ(this.getContainer())
         .find('input[name=plan_id]')
         .prop('value')
     );
   },
 
   getAncestors: function () {
-    return jQ(Nitrate.TestPlans.TreeView.getContainer())
+    return jQ(this.getContainer())
       .find('.js-plans-treeview')
       .jstree(true)
-      .get_node(Nitrate.TestPlans.TreeView.getCurrentPlanId())
+      .get_node(this.getCurrentPlanId())
       .parents
       .filter(function (value) { return value !== '#'; })
       .map(function (value) { return parseInt(value); });
@@ -72,20 +76,93 @@ Nitrate.TestPlans.TreeView = {
 
   /**
    * Get descendants of current plan
+   *
    * @param {boolean} [direct=false] - whether to get the direct descendant plans.
-   * @returns {Array}
+   * @returns {Array} - an array of found descendant ids.
    */
   getDescendants: function (direct) {
-    let result = jQ(Nitrate.TestPlans.TreeView.getContainer())
+    let result = jQ(this.getContainer())
       .find('.js-plans-treeview')
       .jstree(true)
-      .get_node(Nitrate.TestPlans.TreeView.getCurrentPlanId());
+      .get_node(this.getCurrentPlanId());
     result = direct ? result.children : result.children_d;
     return result.map(function (value) { return parseInt(value); });
   },
 
   /**
+   * Lazy-loading TestPlans TreeView
+   *
+   * @param {number} planId - load tree view for this plan.
+   */
+  load: function (planId) {
+    let thisView = this
+      , treeViewContainer = this.getContainer();
+
+    // An array referencing tree view nodes passed to jstree to render the plans
+    // tree view.
+    // Two purpose of setting it to null here:
+    // 1. for the first time to load the tree view, define the variable to reference the array of
+    // nodes to be rendered.
+    // 2. for subsequent tree view render, mark the old data is expired and it will reference the
+    // new value later (see below).
+    thisView.treeViewData = null;
+
+    jQ(treeViewContainer).html('');
+    jQ(treeViewContainer).html(constructAjaxLoading());
+
+    sendHTMLRequest({
+      url: '/plan/' + planId + '/treeview/',
+      container: treeViewContainer,
+      callbackAfterFillIn: function (xhr) {
+        let planPK = parseInt(jQ('#id_tree_container').data('param'));
+
+        jQ('#js-change-parent-node').on('click', function () {
+          thisView.changeParentPlan(planPK);
+        });
+
+        jQ('#js-add-child-node').on('click', function () {
+          thisView.addChildPlan(planPK);
+        });
+
+        jQ('#js-remove-child-node').on('click', function () {
+          thisView.removeChildPlan(planPK);
+        });
+
+        jQ('div.js-plans-treeview').jstree({
+          core: {
+            themes: {
+              dots: false,
+              icons: false
+            },
+            data: thisView.treeViewData,
+          }
+        }).on('ready.jstree', function (e, data) {
+          jQ(this).jstree('open_all');
+
+          // A workaround to disable the behavior of selecting a node when click an anchor inside
+          // the node.
+          jQ(this).off('click.jstree', '.jstree-anchor');
+
+          jQ(this).on('click', 'a.js-open-cases-tab', function () {
+            Nitrate.TestPlans.Details.openTab('#testcases');
+          });
+
+          jQ(this).on('click', 'a.js-open-runs-tab', function () {
+            Nitrate.TestPlans.Details.openTab('#testruns');
+          });
+
+          let currentPlanId = thisView.getCurrentPlanId();
+
+          jQ(treeViewContainer).find('#js-remove-child-node')[0].disabled =
+            jQ(this).jstree(true).get_node(currentPlanId).children.length === 0;
+        });
+      }
+    });
+  },
+
+  /**
    * Add child plans to a specific test plan
+   *
    * @param {number} currentPlanId - the parent plan of the children.
    */
   addChildPlan: function (currentPlanId) {
@@ -96,10 +173,11 @@ Nitrate.TestPlans.TreeView = {
       .filter(function (elem) { return elem.length > 0 });
 
     if (inputChildPlanIds.length === 0) {
-      return false;
+      return;
     }
 
-    let descendants = Nitrate.TestPlans.TreeView.getDescendants();
+    let thisView = this;
+    let descendants = this.getDescendants();
 
     for (let i = 0; i < inputChildPlanIds.length; i++) {
       let item = inputChildPlanIds[i];
@@ -126,15 +204,17 @@ Nitrate.TestPlans.TreeView = {
         data: {'children': inputChildPlanIds},
         traditional: true,
         success: function () {
-          Nitrate.TestPlans.Details.loadPlansTreeView(currentPlanId);
+          thisView.load(currentPlanId);
         }
       });
     },
     'This operation will overwrite existing data');
   },
 
-  removeChildPlan: function (container, currentPlanId) {
-    let descendants = Nitrate.TestPlans.TreeView.getDescendants();
+  removeChildPlan: function (currentPlanId) {
+    let thisView = this
+      , descendants = this.getDescendants();
+
     let inputChildPlanIds = window
       .prompt('Enter a comma separated list of plan IDs to be removed')
       .replace(/^[,\s]+|[,\s]+$/g, '')
@@ -158,14 +238,14 @@ Nitrate.TestPlans.TreeView = {
         data: {'children': inputChildPlanIds},
         traditional: true,
         success: function () {
-          Nitrate.TestPlans.Details.loadPlansTreeView(currentPlanId);
+          thisView.load(currentPlanId);
         }
       });
     },
     'This operation will overwrite existing data');
   },
 
-  'changeParentPlan': function (container, currentPlanId) {
+  changeParentPlan: function (currentPlanId) {
     let p = prompt('Enter new parent plan ID');
     if (!p) {
       return false;
@@ -180,7 +260,8 @@ Nitrate.TestPlans.TreeView = {
       return false;
     }
 
-    let ancestors = Nitrate.TestPlans.TreeView.getAncestors();
+    let thisView = this;
+    let ancestors = thisView.getAncestors();
     if (ancestors.indexOf(planId) >= 0) {
       showModal('Plan ' + planId + ' has been an ancestor already.');
       return;
@@ -190,6 +271,8 @@ Nitrate.TestPlans.TreeView = {
       e.stopPropagation();
       e.preventDefault();
 
+      clearDialog();
+
       let planId = Nitrate.Utils.formSerialize(this).plan_id;
       updateObject({
         contentType: 'testplans.testplan',
@@ -198,8 +281,7 @@ Nitrate.TestPlans.TreeView = {
         value: planId,
         valueType: 'int',
         callback: function () {
-          clearDialog();
-          Nitrate.TestPlans.Details.loadPlansTreeView(currentPlanId);
+          thisView.load(currentPlanId);
         }
       });
     },
@@ -416,74 +498,6 @@ Nitrate.TestPlans.Details = {
     jQ('a[href="' + tabHash + '"]').trigger('click');
   },
 
-  /*
-   * Lazy-loading TestPlans TreeView
-   */
-  'loadPlansTreeView': function (planId) {
-    let treeViewContainer = Nitrate.TestPlans.TreeView.getContainer();
-
-    // An array referencing tree view nodes passed to jstree to render the plans
-    // tree view.
-    // Two purpose of setting it to null here:
-    // 1. for the first time to load the tree view, define the variable to reference the array of
-    // nodes to be rendered.
-    // 2. for subsequent tree view render, mark the old data is expired and it will reference the
-    // new value later (see below).
-    Nitrate.TestPlans.Details.treeViewData = null;
-
-    jQ(treeViewContainer).html('');
-    jQ(treeViewContainer).html(constructAjaxLoading());
-
-    sendHTMLRequest({
-      url: '/plan/' + planId + '/treeview/',
-      container: treeViewContainer,
-      callbackAfterFillIn: function (xhr) {
-        let planPK = parseInt(jQ('#id_tree_container').data('param'));
-
-        jQ('#js-change-parent-node').on('click', function () {
-          Nitrate.TestPlans.TreeView.changeParentPlan(treeViewContainer, planPK);
-        });
-
-        jQ('#js-add-child-node').on('click', function () {
-          Nitrate.TestPlans.TreeView.addChildPlan(planPK);
-        });
-
-        jQ('#js-remove-child-node').on('click', function () {
-          Nitrate.TestPlans.TreeView.removeChildPlan(treeViewContainer, planPK);
-        });
-
-        jQ('div.js-plans-treeview').jstree({
-          core: {
-            themes: {
-              dots: false,
-              icons: false
-            },
-            data: Nitrate.TestPlans.Details.treeViewData,
-          }
-        }).on('ready.jstree', function (e, data) {
-          jQ(this).jstree('open_all');
-
-          // A workaround to disable the behavior of selecting a node when click an anchor inside
-          // the node.
-          jQ(this).off('click.jstree', '.jstree-anchor');
-
-          jQ(this).on('click', 'a.js-open-cases-tab', function () {
-            Nitrate.TestPlans.Details.openTab('#testcases');
-          });
-
-          jQ(this).on('click', 'a.js-open-runs-tab', function () {
-            Nitrate.TestPlans.Details.openTab('#testruns');
-          });
-
-          let currentPlanId = Nitrate.TestPlans.TreeView.getCurrentPlanId(treeViewContainer);
-
-          jQ(treeViewContainer).find('#js-remove-child-node')[0].disabled =
-            jQ(this).jstree(true).get_node(currentPlanId).children.length === 0;
-        });
-      }
-    });
-  },
-
   'initTabs': function () {
     jQ('li.tab a').on('click', function () {
       jQ('div.tab_list').hide();
@@ -561,7 +575,7 @@ Nitrate.TestPlans.Details = {
 
     jQ('#tab_treeview').on('click', function () {
       if (!NTPD.plansTreeViewOpened) {
-        NTPD.loadPlansTreeView(planId);
+        Nitrate.TestPlans.TreeView.load(planId);
         NTPD.plansTreeViewOpened = true;
       }
     });
