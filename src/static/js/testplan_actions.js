@@ -390,7 +390,7 @@ Nitrate.TestPlans.AdvancedSearch.on_load = function () {
 
   jQ('#testplans_table').dataTable(
     Object.assign({}, Nitrate.TestPlans.SearchResultTableSettings, {
-      iDeferLoading: Nitrate.TestPlans.AdvancedSearch.numberOfPlans,
+      iDeferLoading: this.numberOfPlans,
       sAjaxSource: '/advance-search/' + this.window.location.search,
     })
   );
@@ -460,7 +460,7 @@ Nitrate.TestPlans.List.on_load = function () {
 
   jQ('#testplans_table').dataTable(
     Object.assign({}, Nitrate.TestPlans.SearchResultTableSettings, {
-      iDeferLoading: Nitrate.TestPlans.List.numberOfPlans,
+      iDeferLoading: this.numberOfPlans,
       sAjaxSource: '/plans/pages/' + this.window.location.search,
     })
   );
@@ -480,6 +480,8 @@ Nitrate.TestPlans.Details = {
     'treeview': 'treeview',
     'tag': 'tag'
   },
+
+  // TODO: remove !!!
   'getTabContentContainer': function (options) {
     let constants = Nitrate.TestPlans.Details.tabContentContainerIds;
     let id = constants[options.containerId];
@@ -522,7 +524,7 @@ Nitrate.TestPlans.Details = {
       switchTo = defaultSwitchTo;
     }
 
-    Nitrate.TestPlans.Details.openTab(switchTo);
+    this.openTab(switchTo);
   },
   /*
    * Load cases table.
@@ -532,8 +534,8 @@ Nitrate.TestPlans.Details = {
   'loadCases': function (container, planId, parameters) {
     constructPlanDetailsCasesZone(container, planId, parameters);
 
-    if (Nitrate.TestPlans.Details._bindEventsOnLoadedCases === undefined) {
-      Nitrate.TestPlans.Details._bindEventsOnLoadedCases = bindEventsOnLoadedCases({
+    if (this._bindEventsOnLoadedCases === undefined) {
+      this._bindEventsOnLoadedCases = bindEventsOnLoadedCases({
         'cases_container': container,
         'plan_id': planId,
         'parameters': parameters
@@ -543,7 +545,7 @@ Nitrate.TestPlans.Details = {
   // Loading newly created cases with proposal status to show table of these kind of cases.
   'loadConfirmedCases': function (planId) {
     let containerId = 'testcases';
-    Nitrate.TestPlans.Details.loadCases(containerId, planId, {
+    this.loadCases(containerId, planId, {
       'a': 'initial',
       'template_type': 'case',
       'from_plan': planId
@@ -552,39 +554,44 @@ Nitrate.TestPlans.Details = {
   // Loading reviewing cases to show table of these kind of cases.
   'loadReviewingCases': function (planId) {
     let containerId = 'reviewcases';
-    Nitrate.TestPlans.Details.loadCases(containerId, planId, {
+    this.loadCases(containerId, planId, {
       'a': 'initial',
       'template_type': 'review_case',
       'from_plan': planId
     });
   },
+
+  // TODO: remove !!! Unused.
   'bindEventsOnLoadedCases': function (container) {
     let elem = typeof container === 'string' ? jQ('#' + container) : jQ(container);
     let form = elem.children()[0];
     let table = elem.children()[1];
     Nitrate.TestPlans.Details._bindEventsOnLoadedCases(table, form);
   },
+
   'observeEvents': function (planId) {
-    let NTPD = Nitrate.TestPlans.Details;
+    // let NTPD = Nitrate.TestPlans.Details;
+
+    let self = this;
 
     jQ('#tab_testcases').on('click', function () {
-      if (!NTPD.testcasesTabOpened) {
-        NTPD.loadConfirmedCases(planId);
-        NTPD.testcasesTabOpened = true;
+      if (!self.testcasesTabOpened) {
+        self.loadConfirmedCases(planId);
+        self.testcasesTabOpened = true;
       }
     });
 
     jQ('#tab_treeview').on('click', function () {
-      if (!NTPD.plansTreeViewOpened) {
+      if (!self.plansTreeViewOpened) {
         Nitrate.TestPlans.TreeView.load(planId);
-        NTPD.plansTreeViewOpened = true;
+        self.plansTreeViewOpened = true;
       }
     });
 
     jQ('#tab_reviewcases').on('click', function () {
-      if (!Nitrate.TestPlans.Details.reviewingCasesTabOpened) {
-        Nitrate.TestPlans.Details.loadReviewingCases(planId);
-        Nitrate.TestPlans.Details.reviewingCasesTabOpened = true;
+      if (!self.reviewingCasesTabOpened) {
+        self.loadReviewingCases(planId);
+        self.reviewingCasesTabOpened = true;
       }
     });
 
@@ -614,10 +621,10 @@ Nitrate.TestPlans.Details = {
     }
   },
   'reopenCasesTabThen': function () {
-    Nitrate.TestPlans.Details.testcasesTabOpened = false;
+    this.testcasesTabOpened = false;
   },
   'reopenReviewingCasesTabThen': function () {
-    Nitrate.TestPlans.Details.reviewingCasesTabOpened = false;
+    this.reviewingCasesTabOpened = false;
   },
   /*
    * Helper function to reopen other tabs.
@@ -629,10 +636,10 @@ Nitrate.TestPlans.Details = {
   'reopenTabHelper': function (container) {
     let switchMap = {
       'testcases': function () {
-        Nitrate.TestPlans.Details.reopenReviewingCasesTabThen();
+        this.reopenReviewingCasesTabThen();
       },
       'reviewcases': function () {
-        Nitrate.TestPlans.Details.reopenCasesTabThen();
+        this.reopenCasesTabThen();
       }
     };
     switchMap[container.prop('id')]();
@@ -644,8 +651,8 @@ Nitrate.TestPlans.Details = {
     constructTagZone(jQ('#tag')[0], {plan: planId});
     constructPlanComponentsZone('components');
 
-    Nitrate.TestPlans.Details.observeEvents(planId);
-    Nitrate.TestPlans.Details.initTabs();
+    this.observeEvents(planId);
+    this.initTabs();
 
     // Make the import case dialog draggable.
     jQ('#id_import_case_zone').draggable({containment: '#content'});
@@ -1920,6 +1927,7 @@ function FocusTabOnPlanPage(element) {
   jQ('#' + tabName).show();
 }
 
+// TODO: remove !!!
 /* eslint no-unused-vars: "off" */
 function expandCurrentPlan(element) {
   let tree = Nitrate.TestPlans.TreeView;

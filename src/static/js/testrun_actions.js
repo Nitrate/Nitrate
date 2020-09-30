@@ -106,7 +106,7 @@ Nitrate.TestRuns.Search.initializeSearchResult = function (searchEndpoint) {
     aaSorting: [[1, 'desc']],
     sAjaxSource: searchEndpoint + window.location.search,
 
-    iDeferLoading: Nitrate.TestRuns.Search.numberOfRuns,
+    iDeferLoading: this.numberOfRuns,
 
     aoColumns: [
       {'bSortable': false},       // Select checker

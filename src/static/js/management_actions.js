@@ -27,6 +27,8 @@ Nitrate.Management.Environment.Edit = {
 
 Nitrate.Management.Environment.Groups = {
   on_load: function () {
+    let self = this;
+
     jQ('#changelist-search').on('submit', function (e) {
       if (jQ(e.target).find('input[name=name]').val().trim() === '') {
         return false;
@@ -38,22 +40,22 @@ Nitrate.Management.Environment.Groups = {
     });
 
     jQ('.js-add-env-group').on('click', function () {
-      Nitrate.Management.Environment.Groups.addEnvGroup();
+      self.addEnvGroup();
     });
 
     jQ('.js-del-env-group').on('click', function () {
       let params = jQ(this).parents('.js-env-group').data('params');
-      Nitrate.Management.Environment.Groups.deleteEnvGroup(params[0], params[1]);
+      self.deleteEnvGroup(params[0], params[1]);
     });
 
     jQ('.js-enable-env-group').on('click', function () {
       let params = jQ(this).parents('.js-env-group').data('params');
-      Nitrate.Management.Environment.Groups.setEnvGroupStatus(params[0], 1)
+      self.setEnvGroupStatus(params[0], 1)
     });
 
     jQ('.js-disable-env-group').on('click', function () {
       let params = jQ(this).parents('.js-env-group').data('params');
-      Nitrate.Management.Environment.Groups.setEnvGroupStatus(params[0], 0)
+      self.setEnvGroupStatus(params[0], 0)
     });
   },
 
@@ -66,12 +68,14 @@ Nitrate.Management.Environment.Groups = {
       return;
     }
 
+    let self = this;
+
     postRequest({
-      url: Nitrate.Management.Environment.Groups.URLs.add_group,
+      url: self.URLs.add_group,
       data: {'name': groupName},
       forbiddenMessage: 'You are not allowed to add an environment group.',
       success: function (data) {
-        let url = Nitrate.Management.Environment.Groups.URLs.edit_group;
+        let url = self.URLs.edit_group;
         window.location.href = url.replace('$id', data.env_group_id);
       },
     });
@@ -84,12 +88,13 @@ Nitrate.Management.Environment.Groups = {
    * @param {string} envGroupName - the environment group name.
    */
   deleteEnvGroup: function (envGroupId, envGroupName) {
+    let self = this;
     confirmDialog({
       message: 'Are you sure you wish to remove environment group - ' + envGroupName,
       title: 'Manage Environment Group',
       yesFunc: function () {
         postRequest({
-          url: Nitrate.Management.Environment.Groups.URLs.delete_group.replace('$id', envGroupId),
+          url: self.URLs.delete_group.replace('$id', envGroupId),
           forbiddenMessage: 'You are not allowed to delete an environment group.',
           success: function () {
             jQ('#' + envGroupId).remove();
@@ -106,7 +111,7 @@ Nitrate.Management.Environment.Groups = {
    * @param {number} status - 0 for disable and 1 for enable.
    */
   setEnvGroupStatus: function (envGroupID, status) {
-    let url = Nitrate.Management.Environment.Groups.URLs.set_group_status.replace('$id', envGroupID);
+    let url = this.URLs.set_group_status.replace('$id', envGroupID);
     postRequest({
       url: url,
       data: {status: status},
@@ -129,22 +134,24 @@ Nitrate.Management.Environment.Groups = {
 
 Nitrate.Management.Environment.Property = {
   on_load: function () {
+    let self = this;
+
     jQ('#js-add-prop').on('click', function () {
-      Nitrate.Management.Environment.Property.addEnvProperty();
+      self.addEnvProperty();
     });
     jQ('#js-disable-prop').on('click', function () {
-      Nitrate.Management.Environment.Property.setEnvPropertyStatus(0);
+      self.setEnvPropertyStatus(0);
     });
     jQ('#js-enable-prop').on('click', function () {
-      Nitrate.Management.Environment.Property.setEnvPropertyStatus(1);
+      self.setEnvPropertyStatus(1);
     });
     jQ('.js-prop-name').on('click', function () {
-      Nitrate.Management.Environment.Property.selectEnvProperty(
+      self.selectEnvProperty(
         parseInt(jQ(this).parents('.js-one-prop').data('param'))
       );
     });
     jQ('.js-edit-prop').on('click', function () {
-      Nitrate.Management.Environment.Property.editEnvProperty(
+      self.editEnvProperty(
         parseInt(jQ(this).parents('.js-one-prop').data('param'))
       );
     });
@@ -162,7 +169,7 @@ Nitrate.Management.Environment.Property = {
     jQ('#id_property_' + propertyId).addClass('focus');
 
     sendHTMLRequest({
-      url: MgtEnv.Property.URLs.list_property_values.replace('$id', propertyId),
+      url: this.URLs.list_property_values.replace('$id', propertyId),
       container: jQ('#' + 'id_values_container'),
       callbackAfterFillIn: MgtEnv.PropertyValue.bindPropertyValueActions,
       notFoundMessage: 'Cannot find environment property with id ' + propertyId.toString(),
@@ -180,10 +187,8 @@ Nitrate.Management.Environment.Property = {
       return;
     }
 
-    let urls = Nitrate.Management.Environment.Property.URLs;
-
     postRequest({
-      url: urls.edit_property.replace('$id', id),
+      url: this.URLs.edit_property.replace('$id', id),
       data: {id: id, name: newPropertyName},
       forbiddenMessage: 'You are not allowed to add environment property.',
       success: function (data) {
@@ -201,9 +206,10 @@ Nitrate.Management.Environment.Property = {
       return;
     }
 
-    let urls = Nitrate.Management.Environment.Property.URLs;
+    let self = this;
+
     postRequest({
-      url: urls.add_property,
+      url: self.URLs.add_property,
       data: {name: propertyName},
       forbiddenMessage: 'You are not allowed to add environment property.',
       success: function (data) {
@@ -213,17 +219,17 @@ Nitrate.Management.Environment.Property = {
         let context = {'id': data.id, 'name': data.name};
         jQ('#id_properties_container')
           .append(template(context)).find('.js-prop-name').on('click', function () {
-            Nitrate.Management.Environment.Property.selectEnvProperty(
+            self.selectEnvProperty(
               parseInt(jQ(this).parent().data('param'))
             );
           })
           .end().find('.js-rename-prop').on('click', function () {
-            Nitrate.Management.Environment.Property.editEnvProperty(
+            self.editEnvProperty(
               parseInt(jQ(this).parent().data('param'))
             );
           });
 
-        Nitrate.Management.Environment.Property.selectEnvProperty(data.id);
+        self.selectEnvProperty(data.id);
       },
     });
   },
@@ -253,7 +259,7 @@ Nitrate.Management.Environment.Property = {
     }
 
     postRequest({
-      url: MgtEnv.Property.URLs.set_property_status,
+      url: this.URLs.set_property_status,
       data: {id: selectedPropertyIds, status: status},
       traditional: true,
       success: function (data) {
@@ -319,7 +325,7 @@ Nitrate.Management.Environment.PropertyValue = {
       url: MgtEnv.Property.URL.edit_property_value.replace('$id', valueId.toString()),
       data: {value: newValueName},
       container: jQ('#id_values_container'),
-      callbackAfterFillIn: MgtEnv.PropertyValue.bindPropertyValueActions,
+      callbackAfterFillIn: this.bindPropertyValueActions,
       forbiddenMessage: 'You are not allowed to change environment property status.',
     });
   },
@@ -344,7 +350,7 @@ Nitrate.Management.Environment.PropertyValue = {
       data: {status: status, id: selectedPropertyValues},
       traditional: true,
       container: jQ('#id_values_container'),
-      callbackAfterFillIn: MgtEnv.PropertyValue.bindPropertyValueActions,
+      callbackAfterFillIn: this.bindPropertyValueActions,
       forbiddenMessage: 'You are not allowed to change environment property status.',
     });
   },
@@ -357,23 +363,23 @@ Nitrate.Management.Environment.PropertyValue = {
       return false;
     });
 
-    const PropertyValue = MgtEnv.PropertyValue;
+    let self = this;
 
     jQ('#js-add-prop-value').on('click', function () {
-      PropertyValue.add(propId);
+      self.add(propId);
     });
 
     jQ('#js-disable-prop-value').on('click', function () {
-      PropertyValue.setStatus(0);
+      self.setStatus(0);
     });
 
     jQ('#js-enable-prop-value').on('click', function () {
-      PropertyValue.setStatus(1);
+      self.setStatus(1);
     });
 
     jQ('.js-edit-prop-value').on('click', function () {
       let valueId = parseInt(jQ(this).data('param'));
-      PropertyValue.edit(propId, valueId);
+      self.edit(propId, valueId);
     });
 
     jQ('#property_values_form input[name=value_name]').focus();
