@@ -78,7 +78,7 @@ QUnit.module('testplan_action.js', function () {
     let done = assert.async();
     jQ('#treeview .js-plans-treeview')
       .jstree(jsTreeConfig)
-      .on('ready.jstree', function (e, data) {
+      .on('ready.jstree', function () {
         document.getElementById('treeview-current-plan-id').value = '3';
         let directDescendants = Nitrate.TestPlans.TreeView.getDescendants(true);
         assert.deepEqual(directDescendants, [4, 7]);
@@ -90,7 +90,7 @@ QUnit.module('testplan_action.js', function () {
     let done = assert.async();
     jQ('#treeview .js-plans-treeview')
       .jstree(jsTreeConfig)
-      .on('ready.jstree', function (e, data) {
+      .on('ready.jstree', function () {
         document.getElementById('treeview-current-plan-id').value = '3';
         let descendants = Nitrate.TestPlans.TreeView.getDescendants();
         assert.deepEqual(descendants, [4, 5, 6, 7]);
@@ -102,7 +102,7 @@ QUnit.module('testplan_action.js', function () {
     let done = assert.async();
     jQ('#treeview .js-plans-treeview')
       .jstree(jsTreeConfig)
-      .on('ready.jstree', function (e, data) {
+      .on('ready.jstree', function () {
         document.getElementById('treeview-current-plan-id').value = '7';
         let ancestors = Nitrate.TestPlans.TreeView.getAncestors();
         assert.deepEqual(ancestors.sort(), [1, 2, 3]);
