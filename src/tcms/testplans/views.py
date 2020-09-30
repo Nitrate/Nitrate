@@ -18,12 +18,10 @@ from django.urls import reverse
 from django.http import Http404, HttpResponsePermanentRedirect, HttpRequest
 from django.http import HttpResponse, HttpResponseRedirect
 from django.http import HttpResponseBadRequest, JsonResponse
-from django.views.decorators.http import require_GET, require_POST
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import get_template
 from django.views.decorators.csrf import csrf_protect
-from django.views.decorators.http import require_GET
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_GET, require_POST
 from django.views.generic import View
 from django.views.generic.base import TemplateView
 from uuslug import slugify
