@@ -481,17 +481,6 @@ Nitrate.TestPlans.Details = {
     'tag': 'tag'
   },
 
-  // TODO: remove !!!
-  'getTabContentContainer': function (options) {
-    let constants = Nitrate.TestPlans.Details.tabContentContainerIds;
-    let id = constants[options.containerId];
-    if (id === undefined) {
-      return undefined;
-    } else {
-      return jQ('#' + id);
-    }
-  },
-
   /**
    * Open a specific tab in a plan page
    *
@@ -559,14 +548,6 @@ Nitrate.TestPlans.Details = {
       'template_type': 'review_case',
       'from_plan': planId
     });
-  },
-
-  // TODO: remove !!! Unused.
-  'bindEventsOnLoadedCases': function (container) {
-    let elem = typeof container === 'string' ? jQ('#' + container) : jQ(container);
-    let form = elem.children()[0];
-    let table = elem.children()[1];
-    Nitrate.TestPlans.Details._bindEventsOnLoadedCases(table, form);
   },
 
   'observeEvents': function (planId) {
@@ -1925,32 +1906,6 @@ function FocusTabOnPlanPage(element) {
   jQ('#treeview').hide();
   jQ('#tab_' + tabName).addClass('tab_focus').children('a').click();
   jQ('#' + tabName).show();
-}
-
-// TODO: remove !!!
-function expandCurrentPlan(element) {
-  let tree = Nitrate.TestPlans.TreeView;
-
-  if (jQ(element).find('.collapse_icon').length) {
-    let eContainer = jQ(element).find('.collapse_icon');
-    let liContainer = eContainer.parent().parent();
-    let ePk = eContainer.next('a').html();
-    let obj = tree.traverse(tree.data, ePk);
-
-    if (typeof obj.children !== 'object' || obj.children === []) {
-      tree.filter({parent__pk: ePk}, function (responseData) {
-        let objs = Nitrate.Utils.convert('obj_to_list', responseData);
-        tree.insert(obj, objs);
-        liContainer.append(tree.render(objs));
-      });
-    }
-
-    liContainer.find('ul').first().show();
-    eContainer
-      .prop('src', '/static/images/t2.gif')
-      .removeClass('collapse_icon')
-      .addClass('expand_icon');
-  }
 }
 
 /*
