@@ -11,6 +11,9 @@ const SHORT_STRING_LENGTH = 100;
 /**
  * Utility function.
  * Set up a function callback for after the page has loaded
+ *
+ * @param {Function} callback - a callback function that will be called at
+ *                              window.load event.
  */
 Nitrate.Utils.after_page_load = function (callback) {
   jQ(window).on('load', callback);

@@ -492,6 +492,7 @@ Nitrate.TestPlans.Details = {
 
   /**
    * Open a specific tab in a plan page
+   *
    * @param {string} tabHash - the hash of a specific tab to be opened. For example, #testcases.
    */
   openTab: function (tabHash) {
