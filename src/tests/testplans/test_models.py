@@ -184,27 +184,31 @@ class TestPlanTreeView(BasePlanCase):
         cls.create_treeview_data()
 
     def test_get_ancestor_ids(self):
-        expected = [1, 2, 3]
+        expected = [self.plan.pk, self.plan_2.pk, self.plan_3.pk]
         plan: TestPlan = TestPlan.objects.get(pk=self.plan_4.pk)
         self.assertListEqual(expected, sorted(plan.get_ancestor_ids()))
 
     def test_get_ancestors(self):
+        ancestor_ids = [self.plan.pk, self.plan_2.pk, self.plan_3.pk]
         expected = [
             repr(item) for item in
-            TestPlan.objects.filter(pk__in=[1, 2, 3]).order_by('pk')
+            TestPlan.objects.filter(pk__in=ancestor_ids).order_by('pk')
         ]
         plan: TestPlan = TestPlan.objects.get(pk=self.plan_4.pk)
         self.assertQuerysetEqual(plan.get_ancestors().order_by('pk'), expected)
 
     def test_get_descendant_ids(self):
-        expected = [4, 5, 6, 7]
+        expected = [self.plan_4.pk, self.plan_5.pk, self.plan_6.pk, self.plan_7.pk]
         plan: TestPlan = TestPlan.objects.get(pk=self.plan_3.pk)
         self.assertListEqual(expected, sorted(plan.get_descendant_ids()))
 
     def test_get_descendants(self):
+        descendant_ids = [
+            self.plan_4.pk, self.plan_5.pk, self.plan_6.pk, self.plan_7.pk
+        ]
         expected = [
             repr(item) for item in
-            TestPlan.objects.filter(pk__in=[4, 5, 6, 7]).order_by('pk')
+            TestPlan.objects.filter(pk__in=descendant_ids).order_by('pk')
         ]
         plan: TestPlan = TestPlan.objects.get(pk=self.plan_3.pk)
         self.assertQuerysetEqual(
@@ -219,4 +223,4 @@ class TestPlanTreeView(BasePlanCase):
 
         for parent_plan, expected in test_data:
             plan: TestPlan = TestPlan.objects.get(pk=parent_plan)
-            self.assertListEqual(expected, plan.get_descendant_ids(True))
+            self.assertListEqual(expected, sorted(plan.get_descendant_ids(True)))
