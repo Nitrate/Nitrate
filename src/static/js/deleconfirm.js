@@ -1,5 +1,4 @@
 /* eslint no-redeclare: "off" */
-/* eslint no-unused-vars: "off" */
 
 function deleConfirm(attachmentId, home, planId) {
   confirmDialog({

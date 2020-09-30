@@ -1,5 +1,4 @@
 /* eslint no-redeclare: "off" */
-/* eslint no-unused-vars: "off" */
 
 function removeComment(form, callback) {
   let parameters = Nitrate.Utils.formSerialize(form);

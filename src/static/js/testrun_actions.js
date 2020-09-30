@@ -1496,7 +1496,6 @@ function addLinkToCaseRun(sender, caseId, caseRunId) {
   dialog.dialog('open');
 }
 
-/* eslint no-unused-vars: off */
 /**
  * Initialize dialog for getting information about new link, which is attached
  * to an arbitrary instance of TestCaseRun

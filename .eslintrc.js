@@ -81,6 +81,7 @@ module.exports = {
     'linebreak-style': ['error', 'unix'],
     'max-len': ['error', {'code': 120, 'ignoreUrls': true}],
     'no-trailing-spaces': 'error',
+    'no-unused-vars': ['error', {'caughtErrors': 'none', 'vars': 'local', 'args': 'none'}],
     'no-var': 'error',
     'object-curly-spacing': 'error',
     'operator-linebreak': ['error', 'after'],
