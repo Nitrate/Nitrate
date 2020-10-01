@@ -632,8 +632,8 @@ Nitrate.TestPlans.Details = {
     constructTagZone(jQ('#tag')[0], {plan: planId});
     constructPlanComponentsZone('components');
 
-    this.observeEvents(planId);
-    this.initTabs();
+    Nitrate.TestPlans.Details.observeEvents(planId);
+    Nitrate.TestPlans.Details.initTabs();
 
     // Make the import case dialog draggable.
     jQ('#id_import_case_zone').draggable({containment: '#content'});
