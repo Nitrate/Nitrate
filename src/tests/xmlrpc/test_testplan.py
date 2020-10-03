@@ -432,7 +432,7 @@ class TestGet(test.TestCase):
             'type': self.type.name,
             'parent_id': None,
             'parent': None,
-            'attachment': [],
+            'attachments': [],
             'component': [],
             'env_group': [],
             'tag': ['centos', 'fedora']

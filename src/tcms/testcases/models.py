@@ -126,8 +126,10 @@ class TestCase(TCMSActionModel):
         'auth.User', blank=True, null=True,
         related_name='cases_as_reviewer', on_delete=models.SET_NULL)
 
-    attachment = models.ManyToManyField('management.TestAttachment', related_name='cases',
-                                        through='testcases.TestCaseAttachment')
+    attachments = models.ManyToManyField(
+        'management.TestAttachment',
+        related_name='cases',
+        through='testcases.TestCaseAttachment')
 
     # FIXME: related_name should be cases instead of case. But now keep it
     # named case due to historical reason.
@@ -674,7 +676,7 @@ class TestCase(TCMSActionModel):
         if copy_attachment:
             TestCaseAttachment.objects.bulk_create([
                 TestCaseAttachment(case=cloned_case, attachment=item)
-                for item in self.attachment.all()
+                for item in self.attachments.all()
             ])
 
         rel = TestCasePlan.objects.filter(plan=source_plan, case=self).first()

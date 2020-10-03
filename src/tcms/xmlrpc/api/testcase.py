@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import itertools
-
 from django.contrib.auth.decorators import permission_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms import EmailField
@@ -15,7 +14,7 @@ from tcms.testcases.models import TestCase
 from tcms.testcases.models import TestCasePlan
 from tcms.testplans.models import TestPlan
 from tcms.xmlrpc.decorators import log_call
-from tcms.xmlrpc.utils import distinct_count
+from tcms.xmlrpc.utils import deprecate_critetion_attachment, distinct_count
 from tcms.xmlrpc.utils import pre_process_estimated_time
 from tcms.xmlrpc.utils import pre_process_ids
 from tcms.testcases.forms import CaseIssueForm
@@ -500,7 +499,7 @@ def filter(request, query):
     :param dict query: a mapping containing these criteria.
 
         * author: A Bugzilla login (email address)
-        * attachment: ForeignKey: Attachment
+        * attachments: ForeignKey: Attachment
         * alias: (str)
         * case_id: (int)
         * case_status: ForeignKey: Case Stat
@@ -539,7 +538,7 @@ def filter(request, query):
         query['estimated_time'] = timedelta2int(
             pre_process_estimated_time(query.get('estimated_time'))
         )
-
+    deprecate_critetion_attachment(query)
     return TestCase.to_xmlrpc(query)
 
 
