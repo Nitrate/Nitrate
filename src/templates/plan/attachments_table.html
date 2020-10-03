@@ -1,0 +1,37 @@
+{% comment %}
+Arguments:
+attachments: a list of attachments to display.
+from: a string to indicate the object type, from_case or from_plan.
+object_id: the object id the attachments are associated with.
+{% endcomment %}
+<table id="attachments" class="list" cellspacing="0" cellspan="0">
+	<thead>
+	<tr>
+		<th align="left">File name</th>
+		<th align="left" width="10%">Submitter</th>
+		<th align="left" width="20%">Create date</th>
+		<th align="left" width="20%">Mimetype</th>
+		<th align="left" width="10%">Action</th>
+	</tr>
+	</thead>
+	<tbody>
+	{% for attachment in attachments %}
+		<tr id="{{ attachment.pk }}" class="{% cycle 'odd' 'even' %}">
+			<td><a href="{% url "check-file" attachment.pk %}">{{ attachment.file_name }}</a></td>
+			<td>{{ attachment.submitter }}</td>
+			<td>{{ attachment.create_date }}</td>
+			<td>{{ attachment.mime_type }}</td>
+			<td>
+				<a href="{% url "check-file" attachment.pk %}">View</a>
+				{% if perms.management.delete_testattachment %}
+				|
+				<a class="js-remove" data-params='[{{ attachment.pk }}, "{{ from }}", {{ object_id }}]'
+				   href="javascript:void(0)">Delete</a>
+				{% endif %}
+			</td>
+		</tr>
+		{% empty %}
+		<tr><td colspan="5" align="center"><span class="grey">No attachments</span></td></tr>
+	{% endfor %}
+	</tbody>
+</table>

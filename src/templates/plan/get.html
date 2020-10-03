@@ -16,8 +16,9 @@
 <script type="text/javascript" src="{% static "js/comment.js" %}"></script>
 <script type="text/javascript" src="{% static "js/testplan_actions.js" %}"></script>
 <script type="text/javascript" src="{% static "js/testcase_actions.js" %}"></script>
-<script type="text/javascript" src="/jsi18n/"></script>
 <script type="text/javascript" src="{% static "js/deleconfirm.js" %}"></script>
+<script type="text/javascript" src="{% static "js/nitrate.attachments.js" %}"></script>
+<script type="text/javascript" src="/jsi18n/"></script>
 <script type="text/javascript" src="{% static "admin/js/jquery.init.js" %}"></script>
 <script type="text/javascript" src="{% static "admin/js/core.js" %}"></script>
 <script type="text/javascript" src="{% static "admin/js/SelectFilter2.js" %}"></script>
@@ -27,6 +28,7 @@
 
 <script type="text/javascript">
 Nitrate.Utils.after_page_load(Nitrate.TestPlans.Details.on_load);
+Nitrate.Utils.after_page_load(Nitrate.Attachments.on_load);
 
 Nitrate.TestPlans.Instance = {
 	pk: {{ test_plan.pk }},
@@ -203,7 +205,13 @@ Nitrate.TestPlans.Instance = {
 				{% include "plan/get_docs.html" %}
 			</div>
 			<div id="attachment" class="tab_list" style="display:none">
-				{% include "plan/get_attachments.html" %}
+				{% if perms.management.add_testattachment %}
+				<div class="mixbar">
+					<span class="tit">Add attachment</span>
+					<a href="{% url "plan-attachment" test_plan.pk %}" class="addlink">add</a>
+				</div>
+				{% endif %}
+				{% include "plan/attachments_table.html" with attachments=test_plan.attachment.all from="from_plan" object_id=test_plan.pk %}
 			</div>
 			<div id="testruns" class="tab_list" style="display:none;">
 				{% include "plan/get_runs.html" %}
