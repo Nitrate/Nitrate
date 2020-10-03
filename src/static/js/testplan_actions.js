@@ -662,10 +662,6 @@ Nitrate.TestPlans.Details = {
       jQ('#id_import_case_zone').hide();
       jQ('#import-error').empty();
     });
-    jQ('.js-del-attach').on('click', function () {
-      let params = jQ(this).data('params');
-      deleConfirm(params[0], 'from_plan', params[1]);
-    });
   }
 };
 
@@ -803,12 +799,6 @@ Nitrate.TestPlans.Attachment.on_load = function () {
     jQ('.js-back-button').on('click', function () {
       window.history.go(-1);
     });
-
-    jQ('.js-del-attach').on('click', function () {
-      let params = jQ(this).data('params');
-      deleConfirm(params[0], params[1], params[2]);
-    });
-
   });
 };
 

@@ -11,8 +11,10 @@
 <script type="text/javascript" src="{% static "js/testplan_actions.js" %}"></script>
 <script type="text/javascript" src="{% static "js/testcase_actions.js" %}"></script>
 <script type="text/javascript" src="{% static "js/deleconfirm.js" %}"></script>
+<script type="text/javascript" src="{% static "js/nitrate.attachments.js" %}"></script>
 <script type="text/javascript">
 Nitrate.Utils.after_page_load(Nitrate.TestPlans.Attachment.on_load);
+Nitrate.Utils.after_page_load(Nitrate.Attachments.on_load);
 </script>
 {% endblock %}
 
@@ -25,47 +27,20 @@ Nitrate.Utils.after_page_load(Nitrate.TestPlans.Attachment.on_load);
 		>> <a href="{{ test_plan.get_absolute_url }}">{{ test_plan.name }}</a>
 		>> Add Attachment
 	</div>
-	<input id="id_plan_id" type="hidden" name="plan_id" value="{{ test_plan.plan_id }}">
-	<div id="" class="planDetail">
-		<h2 id="display_title" style="line-height:1.2em;">{{ test_plan.name }}</h2>
-		</div><!-- plan detail end-->
-			<div class="Detailform border-1">
-			<form action="{% url "upload-file" %}" method="POST" enctype="multipart/form-data">{% csrf_token %}
-				<div class="mixbar">
-					<span class="tit">Upload New Attachment</span>
-					<input type="hidden" name="to_plan_id" value="{{ test_plan.plan_id }}" />
-					<input type="file" name="upload_file" id="upload_file" limit="{{ limit }}"/>
-					<input type="submit" value="Upload" />
-					<input type="button" value="Back" class="js-back-button" />
-
-				<span class="right-action">
-					Note: Each attachment size limit is {{ limit_readable }}.
-				</span>
+	<h2 id="display_title" style="line-height:1.2em;">{{ test_plan.name }}</h2>
+	<div class="Detailform border-1">
+		<form action="{% url "upload-file" %}" method="POST" enctype="multipart/form-data">{% csrf_token %}
+			<div class="mixbar">
+				<span class="tit">Upload New Attachment</span>
+				<input type="hidden" name="to_plan_id" value="{{ test_plan.pk }}" />
+				<input type="file" name="upload_file" id="upload_file" limit="{{ limit }}"/>
+				<input type="submit" value="Upload" />
+				<input type="button" class="js-back-button" value="Back" />
+				<span class="right-action">Note: Each attachment size limit is {{ limit_readable }}.</span>
 			</div>
-			</form>
-			<table class="list" cellspacing="0" cellspan="0">
-				<thead>
-					<tr class="titlelink">
-						<th align="left">File name</th>
-						<th align="left" width="10%">Submitter</th>
-						<th align="left" width="20%">Create date</th>
-						<th align="left" width="20%">Mimetype</th>
-						<th align="left" width="10%">Action</th>
-					</tr>
-				</thead>
-				<tbody>
-					{% for attachment in test_plan.attachment.all %}
-					<tr id="{{ attachment.attachment_id }}"  class="{% cycle 'odd' 'even' %}">
-						<td><a href="{% url "check-file" attachment.attachment_id %}">{{ attachment.file_name }}</a></td>
-						<td>{{ attachment.submitter }}</td>
-						<td>{{ attachment.create_date }}</td>
-						<td>{{ attachment.mime_type }}</td>
-                        <td><a href="{% url "check-file" attachment.attachment_id %}">View</a> | <a class="js-del-attach" data-params='[{{attachment.attachment_id}}, "from_plan",{{test_plan.plan_id}}]' href="#">Delete</a> </td>
-                    </tr>
-					{% endfor %}
-				</tbody>
-			</table>
-		</div>
+		</form>
+
+		{% include "plan/attachments_table.html" with attachments=test_plan.attachment.all from="from_plan" object_id=test_plan.pk %}
 	</div>
 </div>
 

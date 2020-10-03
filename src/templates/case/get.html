@@ -13,8 +13,10 @@
 <script type="text/javascript" src="{% static "js/lib/dataTables.numHTML.js" %}"></script>
 <script type="text/javascript" src="{% static "js/testcase_actions.js" %}"></script>
 <script type="text/javascript" src="{% static "js/deleconfirm.js" %}"></script>
+<script type="text/javascript" src="{% static "js/nitrate.attachments.js" %}"></script>
 <script type="text/javascript">
 Nitrate.Utils.after_page_load(Nitrate.TestCases.Details.on_load);
+Nitrate.Utils.after_page_load(Nitrate.Attachments.on_load);
 
 Nitrate.TestCases.Instance = {
 	pk: {{ test_case.pk }},
@@ -203,7 +205,13 @@ Nitrate.TestCases.Instance = {
 			{% include "case/get_text.html" %}
 		</div>
 		<div id="attachment" class="tab_list"  style="display:none">
-			{% include "case/get_attachment.html" %}
+			{% if perms.management.add_testattachment %}
+			<div class="mixbar">
+				<span class="tit">Add attachment</span>
+				<a href="{% url "case-attachment" test_case.pk %}?from_plan={{ test_plan.pk }}" class="addlink">add</a>
+			</div>
+			{% endif %}
+			{% include 'plan/attachments_table.html' with attachments=test_case.attachment.all from='from_case' object_id=test_case.pk %}
 		</div>
 		<div id="plan" style="display:none" class="tab_list">
 			{% include "case/get_plan.html" %}
