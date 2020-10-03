@@ -49,7 +49,6 @@ module.exports = {
     'constructForm': 'readonly',
     'constructTagZone': 'readonly',
     'defaultMessages': 'readonly',
-    'deleConfirm': 'readonly',
     'emptySelect': 'readonly',
     'getDialog': 'readonly',
     'getSelectedCaseIDs': 'readonly',
