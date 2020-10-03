@@ -41,7 +41,7 @@ Nitrate.Utils.after_page_load(Nitrate.Attachments.on_load);
 			</div>
 		</form>
 
-		{% include "plan/attachments_table.html" with attachments=testcase.attachment.all from="from_case" object_id=testcase.pk %}
+		{% include "plan/attachments_table.html" with attachments=testcase.attachments.all from="from_case" object_id=testcase.pk %}
 	</div>
 </div>
 

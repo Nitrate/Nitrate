@@ -178,7 +178,7 @@
 								]</span>
 							</h4>
 							<ul class="ul-no-format">
-								{% for attachment_file in test_case.attachment.all %}
+								{% for attachment_file in test_case.attachments.all %}
 								<li>
 									<a href="{% url "check-file" attachment_file.attachment_id %}">
 										{{ attachment_file.file_name }}

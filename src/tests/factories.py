@@ -260,7 +260,7 @@ class TestPlanFactory(DjangoModelFactory):
     # FIXME: How to create field for field parent
 
     @factory.post_generation
-    def attachment(self, create, extracted, **kwargs):
+    def attachments(self, create, extracted, **kwargs):
         if not create:
             return
         if extracted:
@@ -378,7 +378,7 @@ class TestCaseFactory(DjangoModelFactory):
     reviewer = factory.SubFactory(UserFactory)
 
     @factory.post_generation
-    def attachment(self, create, extracted, **kwargs):
+    def attachments(self, create, extracted, **kwargs):
         if not create:
             return
         if extracted:

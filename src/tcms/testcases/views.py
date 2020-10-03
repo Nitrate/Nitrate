@@ -575,7 +575,7 @@ class SimpleTestCaseView(TemplateView, data.TestCaseViewDataMixin):
         if case is not None:
             data.update({
                 'test_case_text': case.get_text_with_version(),
-                'attachments': case.attachment.only('file_name'),
+                'attachments': case.attachments.only('file_name'),
                 'components': case.component.only('name'),
                 'tags': case.tag.only('name'),
                 'case_comments': self.get_case_comments(case),

@@ -254,7 +254,7 @@ class TestDeleteFileAuthorization(BasePlanCase):
         unlink.assert_called_once_with(stored_filename)
 
         self.assertEqual(HTTPStatus.OK, response.status_code)
-        still_has = self.plan.attachment.filter(pk=self.plan_attachment.pk).exists()
+        still_has = self.plan.attachments.filter(pk=self.plan_attachment.pk).exists()
         self.assertFalse(still_has)
         self.assertFalse(TestAttachment.objects.filter(pk=self.plan_attachment.pk).exists())
 
@@ -273,7 +273,7 @@ class TestDeleteFileAuthorization(BasePlanCase):
         unlink.assert_called_once_with(stored_filename)
 
         self.assertEqual(HTTPStatus.OK, response.status_code)
-        still_has = self.case_1.attachment.filter(pk=self.case_attachment.pk).exists()
+        still_has = self.case_1.attachments.filter(pk=self.case_attachment.pk).exists()
         self.assertFalse(still_has)
         self.assertFalse(TestAttachment.objects.filter(pk=self.case_attachment.pk).exists())
 

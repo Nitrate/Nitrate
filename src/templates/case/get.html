@@ -179,7 +179,7 @@ Nitrate.TestCases.Instance = {
 				<a href="#document" title="document">Document</a>
 			</li>
 			<li id="tab_attachment" class="tab">
-				<a href="#attachment" title="attachment">Attachments (<span id='attachment_count'>{{ test_case.attachment.count }}</span>)</a>
+				<a href="#attachment" title="attachment">Attachments (<span id='attachment_count'>{{ test_case.attachments.count }}</span>)</a>
 			</li>
 			<li id="tab_case_plan" class="tab">
 				<a href="#plan" title="plan">Test plans (<span id='plan_count'>{{ test_case.plan.count }}</span>)</a>
@@ -210,7 +210,7 @@ Nitrate.TestCases.Instance = {
 				<a href="{% url "case-attachment" test_case.pk %}?from_plan={{ test_plan.pk }}" class="addlink">add</a>
 			</div>
 			{% endif %}
-			{% include 'plan/attachments_table.html' with attachments=test_case.attachment.all from='from_case' object_id=test_case.pk %}
+			{% include 'plan/attachments_table.html' with attachments=test_case.attachments.all from='from_case' object_id=test_case.pk %}
 		</div>
 		<div id="plan" style="display:none" class="tab_list">
 			{% include "case/get_plan.html" %}

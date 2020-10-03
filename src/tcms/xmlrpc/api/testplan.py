@@ -9,7 +9,9 @@ from tcms.management.models import TestTag
 from tcms.testplans.importer import clean_xml_file
 from tcms.testplans.models import TestPlan, TestPlanType, TCMSEnvPlanMap
 from tcms.xmlrpc.decorators import log_call
-from tcms.xmlrpc.utils import pre_process_ids, distinct_count
+from tcms.xmlrpc.utils import (
+    deprecate_critetion_attachment, pre_process_ids, distinct_count
+)
 
 __all__ = (
     'add_tag',
@@ -208,7 +210,7 @@ def filter(request, values={}):
     :param dict values: a mapping containing these criteira.
 
         * author: ForeignKey: Auth.User
-        * attachment: ForeignKey: Attachment
+        * attachments: ForeignKey: Attachment
         * case: ForeignKey: TestCase
         * create_date: DateTime
         * env_group: ForeignKey: Environment Group
@@ -234,6 +236,7 @@ def filter(request, values={}):
         # Get plans contain the case ID 1, 2, 3
         TestPlan.filter({'case__case_id__in': [1, 2, 3]})
     """
+    deprecate_critetion_attachment(values)
     return TestPlan.to_xmlrpc(values)
 
 

@@ -208,7 +208,7 @@ class TestGet(test.TestCase):
             'reviewer': self.reviewer.username,
             'text': {},
             'tag': ['fedora', 'python'],
-            'attachment': [],
+            'attachments': [],
             'plan': [self.plan_1.pk, self.plan_2.pk],
             'component': [],
         }
@@ -1850,6 +1850,17 @@ class TestFilterCases(XmlrpcAPIBaseTest):
             self.request, {'category': self.category.pk})
         self.assertEqual(1, len(result))
         self.assertEqual(self.case_3.pk, result[0]['case_id'])
+
+    def test_deprecate_attachment(self):
+        """!!! remove this test when the deprecation warning is removed
+
+        When criterion with the old relationship name is passed, the query
+        should be performed successfully and warning the deprecation message.
+        """
+        query = {
+            'attachment__stored_name__startswith': 'filename'
+        }
+        self.assertListEqual([], XmlrpcTestCase.filter(self.request, query))
 
 
 class TestGetIssueTracker(XmlrpcAPIBaseTest):

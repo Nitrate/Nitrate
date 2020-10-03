@@ -65,8 +65,10 @@ class TestPlan(TCMSActionModel):
                                related_name='child_set',
                                on_delete=models.SET_NULL)
 
-    attachment = models.ManyToManyField('management.TestAttachment',
-                                        through='testplans.TestPlanAttachment')
+    attachments = models.ManyToManyField(
+        'management.TestAttachment',
+        through='testplans.TestPlanAttachment')
+
     component = models.ManyToManyField('management.Component',
                                        through='testplans.TestPlanComponent')
     env_group = models.ManyToManyField('management.TCMSEnvGroup',
@@ -346,7 +348,7 @@ class TestPlan(TCMSActionModel):
 
         # Copy the plan attachments
         if copy_attachments:
-            for tp_attach_src in self.attachment.all():
+            for tp_attach_src in self.attachments.all():
                 tp_dest.add_attachment(attachment=tp_attach_src)
 
         # Copy the environment group

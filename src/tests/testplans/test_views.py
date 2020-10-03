@@ -463,7 +463,7 @@ class TestCloneView(BasePlanCase):
             self.assertEqual(copied_text.plan_text, original_text.plan_text)
 
         # Verify option copy_attachments
-        for attachment in original_plan.attachment.all():
+        for attachment in original_plan.attachments.all():
             added = TestPlanAttachment.objects.filter(
                 plan=cloned_plan, attachment=attachment).exists()
             self.assertTrue(added)

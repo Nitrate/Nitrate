@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import re
+import warnings
+
 from django.db.models import Count, FieldDoesNotExist
 from tcms.management.models import Product
+from typing import Any, Dict
 
 
 COUNT_DISTINCT = 0
@@ -177,3 +180,38 @@ def pre_process_estimated_time(value):
                 return '{}h{}m{}s'.format(*match.groups())
     else:
         raise ValueError('Invaild estimated_time format.')
+
+
+def deprecate_critetion_attachment(query: Dict[str, Any]):
+    """Deprecate filter criterion attachment
+
+    If there is a filter criterion on the attachments relationship but it
+    starts with old relationship name ``attachment``, a deprecation message
+    will be displayed and it will be replaced with the new name in the query
+    mapping in place.
+
+    :param dict query: the input query mapping to the plan and case filter API.
+    """
+    attachment_criterion = None
+    attachments_critesion = None
+
+    for key in query:
+        if key.startswith('attachment__'):
+            attachment_criterion = key
+        elif key.startswith('attachments__'):
+            attachments_critesion = key
+
+    if attachment_criterion and attachments_critesion:
+        raise ValueError(
+            'Filter criterion attachment and attachments cannot be used '
+            'together. Please use attachments.')
+
+    if attachment_criterion:
+        warnings.warn(
+            'Filter criterion attachment is deprecated. Please use '
+            'attachments.', DeprecationWarning)
+
+        new_key = attachment_criterion.replace('attachment', 'attachments')
+        query[new_key] = query[attachment_criterion]
+        # The old one is useless, so remove it.
+        del query[attachment_criterion]

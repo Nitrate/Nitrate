@@ -77,7 +77,7 @@ class MockTestPlanSerializer(QuerySetBasedXMLRPCSerializer):
         'alias': {'product_version': 'default_product_version'},
     }
 
-    m2m_fields = ('attachment', 'case')
+    m2m_fields = ('attachments', 'case')
 
 
 class MockTestCaseSerializer(QuerySetBasedXMLRPCSerializer):
@@ -111,14 +111,14 @@ class TestQuerySetBasedSerializer(test.TestCase):
         cls.case_author = f.UserFactory()
 
         cls.plans = [
-            f.TestPlanFactory(attachment=[
+            f.TestPlanFactory(attachments=[
                 f.TestAttachmentFactory(),
                 f.TestAttachmentFactory()
             ]),
-            f.TestPlanFactory(attachment=[
+            f.TestPlanFactory(attachments=[
                 f.TestAttachmentFactory()
             ]),
-            f.TestPlanFactory(attachment=[
+            f.TestPlanFactory(attachments=[
                 f.TestAttachmentFactory(),
                 f.TestAttachmentFactory(),
                 f.TestAttachmentFactory()

@@ -1256,8 +1256,8 @@ class TestCloneCase(BasePlanCase):
 
             # Assert attachments
             if copy_attachment:
-                orig_attachments = orig_case.attachment.order_by('pk')
-                cloned_attachments = cloned_case.attachment.order_by('pk')
+                orig_attachments = orig_case.attachments.order_by('pk')
+                cloned_attachments = cloned_case.attachments.order_by('pk')
                 self.assertListEqual(list(orig_attachments),
                                      list(cloned_attachments))
 
