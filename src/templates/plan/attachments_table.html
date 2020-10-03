@@ -25,8 +25,9 @@ object_id: the object id the attachments are associated with.
 				<a href="{% url "check-file" attachment.pk %}">View</a>
 				{% if perms.management.delete_testattachment %}
 				|
-				<a class="js-remove" data-params='[{{ attachment.pk }}, "{{ from }}", {{ object_id }}]'
-				   href="javascript:void(0)">Delete</a>
+				<a class="js-remove" href="javascript:void(0)"
+					data-attachment-id="{{ attachment.pk }}" data-from="{{ from }}" data-object-id="{{ object_id }}"
+				>Delete</a>
 				{% endif %}
 			</td>
 		</tr>
