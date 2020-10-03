@@ -615,12 +615,13 @@ Nitrate.TestPlans.Details = {
    *              Id is used to select the reopen operations.
    */
   'reopenTabHelper': function (container) {
+    let self = this;
     let switchMap = {
       'testcases': function () {
-        this.reopenReviewingCasesTabThen();
+        self.reopenReviewingCasesTabThen();
       },
       'reviewcases': function () {
-        this.reopenCasesTabThen();
+        self.reopenCasesTabThen();
       }
     };
     switchMap[container.prop('id')]();
