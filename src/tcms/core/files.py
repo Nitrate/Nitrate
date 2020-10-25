@@ -2,6 +2,7 @@
 
 import os
 import logging
+import urllib.parse
 
 from datetime import datetime
 from http import HTTPStatus
@@ -17,7 +18,6 @@ from django.utils.encoding import smart_str
 from django.views import generic
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_GET, require_POST
-from six.moves.urllib_parse import unquote
 
 from tcms.core.views import prompt
 from tcms.testcases.models import TestCase, TestCaseAttachment
@@ -125,7 +125,7 @@ def check_file(request, file_id):
         # system.
         stored_file_name = os.path.join(
             settings.FILE_UPLOAD_DIR,
-            unquote(attachment.stored_name or attachment.file_name)
+            urllib.parse.unquote(attachment.stored_name or attachment.file_name)
         ).replace('\\', '/')
 
         if not os.path.exists(stored_file_name):
