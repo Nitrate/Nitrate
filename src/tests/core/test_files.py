@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import shutil
 import tempfile
 
 from datetime import datetime
@@ -40,23 +41,27 @@ class TestUploadFile(BasePlanCase):
     def setUp(self):
         super().setUp()
 
-        file_content: bytes = b'abc' * 100
         klass_name = self.__class__.__name__
+        self.working_dir = tempfile.mkdtemp(prefix=klass_name)
+
+        file_content: bytes = b'abc' * 100
 
         fd, self.upload_filename = tempfile.mkstemp(
-            suffix=f'{klass_name}-upload-file.txt')
+            suffix=f'{klass_name}-upload-file.txt',
+            dir=self.working_dir
+        )
         os.write(fd, file_content)
         os.close(fd)
 
         fd, self.another_filename = tempfile.mkstemp(
             suffix=f'{klass_name}-another-file.txt',
+            dir=self.working_dir
         )
         os.write(fd, file_content)
         os.close(fd)
 
     def tearDown(self):
-        os.remove(self.another_filename)
-        os.remove(self.upload_filename)
+        shutil.rmtree(self.working_dir)
         super().tearDown()
 
     def test_no_file_is_posted(self):
@@ -84,17 +89,19 @@ class TestUploadFile(BasePlanCase):
                            endpoint: str,
                            to_case: Optional[TestCase] = None,
                            to_plan: Optional[TestPlan] = None):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            with patch('tcms.core.files.settings.FILE_UPLOAD_DIR', new=tmpdir):
-                with open(filename, 'r') as upload_file:
-                    post_data = {'upload_file': upload_file}
-                    if to_plan:
-                        post_data['to_plan_id'] = to_plan.pk
-                    elif to_case:
-                        post_data['to_case_id'] = to_case.pk
-                    else:
-                        raise ValueError('Missing value from both argument to_plan and to_case.')
-                    return self.client.post(endpoint, post_data)
+        with patch('tcms.core.files.settings.FILE_UPLOAD_DIR',
+                   new=self.working_dir):
+            with open(filename, 'r') as upload_file:
+                post_data = {'upload_file': upload_file}
+                if to_plan:
+                    post_data['to_plan_id'] = to_plan.pk
+                elif to_case:
+                    post_data['to_case_id'] = to_case.pk
+                else:
+                    raise ValueError(
+                        'Missing value from both argument to_plan and to_case.'
+                    )
+                return self.client.post(endpoint, post_data)
 
     def test_upload_file_to_plan(self):
         response = self._upload_attachment(self.upload_filename,
