@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
-
+import hashlib
 import os
 import logging
+import time
 import urllib.parse
 
-from datetime import datetime
 from http import HTTPStatus
 
 from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.core.files.uploadedfile import UploadedFile
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
@@ -25,6 +26,13 @@ from tcms.testplans.models import TestPlan, TestPlanAttachment
 from tcms.management.models import TestAttachment, TestAttachmentData
 
 log = logging.getLogger(__name__)
+
+
+def calculate_checksum(uploaded_file: UploadedFile) -> str:
+    md5 = hashlib.md5()
+    for chunk in uploaded_file.chunks():
+        md5.update(chunk)
+    return md5.hexdigest()
 
 
 class UploadFileView(PermissionRequiredMixin, generic.View):
@@ -58,7 +66,7 @@ class UploadFileView(PermissionRequiredMixin, generic.View):
         if not upload_file:
             return HttpResponseRedirect(redirect_url)
 
-        upload_file = request.FILES['upload_file']
+        upload_file: UploadedFile = request.FILES['upload_file']
 
         if upload_file.size > settings.MAX_UPLOAD_SIZE:
             return prompt.alert(
@@ -67,8 +75,9 @@ class UploadFileView(PermissionRequiredMixin, generic.View):
                 f'is less than {settings.MAX_UPLOAD_SIZE} bytes.'
             )
 
+        uploaded_filename = upload_file.name
         try:
-            upload_file.name.encode('utf8')
+            uploaded_filename.encode()
         except UnicodeEncodeError:
             return prompt.alert(request, 'Upload File name is not legal.')
 
@@ -76,23 +85,33 @@ class UploadFileView(PermissionRequiredMixin, generic.View):
         if not os.path.exists(settings.FILE_UPLOAD_DIR):
             os.mkdir(settings.FILE_UPLOAD_DIR)
 
-        now = datetime.now()  # FIXME: use utcnow()?
+        checksum = calculate_checksum(upload_file)
+        attachment = TestAttachment.objects.filter(checksum=checksum).first()
 
+        if attachment is not None:
+            if attachment.file_name == uploaded_filename:
+                return prompt.alert(
+                    request,
+                    f'File {uploaded_filename} has been uploaded already.'
+                )
+            else:
+                return prompt.alert(
+                    request,
+                    f'A file {attachment.file_name} having same content has '
+                    f'been uploaded previously.'
+                )
+
+        stored_name = '{}-{}-{}'.format(request.user.username,
+                                        time.time(),
+                                        uploaded_filename)
         attachment = TestAttachment(
             submitter_id=request.user.id,
             description=request.POST.get('description', None),
-            file_name=upload_file.name,
-            stored_name=f'{request.user.username}-{now}-{upload_file.name}',
-            create_date=now,
-            mime_type=upload_file.content_type
+            file_name=uploaded_filename,
+            stored_name=stored_name,
+            mime_type=upload_file.content_type,
+            checksum=checksum
         )
-
-        if attachment.exists:
-            return prompt.alert(
-                request,
-                f"File named '{upload_file.name}' already exists in upload"
-                f" folder, please rename to another name for solve conflict.",
-            )
 
         with open(attachment.stored_filename, 'wb+') as f:
             for chunk in upload_file.chunks():
