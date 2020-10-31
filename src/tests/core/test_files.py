@@ -5,6 +5,7 @@ import tempfile
 
 from datetime import datetime
 from http import HTTPStatus
+from typing import Optional
 from unittest.mock import patch
 
 from django.db.models import Max
@@ -15,8 +16,8 @@ from django.conf import settings
 
 from tcms.core.files import able_to_delete_attachment
 from tcms.management.models import TestAttachment
-from tcms.testcases.models import TestCaseAttachment
-from tcms.testplans.models import TestPlanAttachment
+from tcms.testcases.models import TestCaseAttachment, TestCase
+from tcms.testplans.models import TestPlanAttachment, TestPlan
 from tests import factories as f
 from tests import BasePlanCase
 from tests import user_should_have_perm
@@ -39,12 +40,22 @@ class TestUploadFile(BasePlanCase):
     def setUp(self):
         super().setUp()
 
+        file_content: bytes = b'abc' * 100
+        klass_name = self.__class__.__name__
+
         fd, self.upload_filename = tempfile.mkstemp(
-            prefix=f'{self.__class__.__name__}-upload-file.txt')
-        os.write(fd, b'abc' * 100)
+            suffix=f'{klass_name}-upload-file.txt')
+        os.write(fd, file_content)
+        os.close(fd)
+
+        fd, self.another_filename = tempfile.mkstemp(
+            suffix=f'{klass_name}-another-file.txt',
+        )
+        os.write(fd, file_content)
         os.close(fd)
 
     def tearDown(self):
+        os.remove(self.another_filename)
         os.remove(self.upload_filename)
         super().tearDown()
 
@@ -63,21 +74,32 @@ class TestUploadFile(BasePlanCase):
 
     @patch('tcms.core.files.settings.MAX_UPLOAD_SIZE', new=10)
     def test_refuse_if_file_is_too_big(self):
-        with open(self.upload_filename, 'r') as upload_file:
-            response = self.client.post(self.upload_file_url,
-                                        {'to_plan_id': self.plan.pk,
-                                         'upload_file': upload_file})
-
+        response = self._upload_attachment(self.upload_filename,
+                                           self.upload_file_url,
+                                           to_plan=self.plan)
         self.assertContains(response, 'You upload entity is too large')
 
-    def test_upload_file_to_plan(self):
+    def _upload_attachment(self,
+                           filename: str,
+                           endpoint: str,
+                           to_case: Optional[TestCase] = None,
+                           to_plan: Optional[TestPlan] = None):
         with tempfile.TemporaryDirectory() as tmpdir:
             with patch('tcms.core.files.settings.FILE_UPLOAD_DIR', new=tmpdir):
-                with open(self.upload_filename, 'r') as upload_file:
-                    response = self.client.post(self.upload_file_url, {
-                        'to_plan_id': self.plan.pk,
-                        'upload_file': upload_file
-                    })
+                with open(filename, 'r') as upload_file:
+                    post_data = {'upload_file': upload_file}
+                    if to_plan:
+                        post_data['to_plan_id'] = to_plan.pk
+                    elif to_case:
+                        post_data['to_case_id'] = to_case.pk
+                    else:
+                        raise ValueError('Missing value from both argument to_plan and to_case.')
+                    return self.client.post(endpoint, post_data)
+
+    def test_upload_file_to_plan(self):
+        response = self._upload_attachment(self.upload_filename,
+                                           self.upload_file_url,
+                                           to_plan=self.plan)
 
         self.assertRedirects(
             response,
@@ -95,13 +117,9 @@ class TestUploadFile(BasePlanCase):
         self.assertTrue(plan_attachment_rel_exists)
 
     def test_upload_file_to_case(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            with patch('tcms.core.files.settings.FILE_UPLOAD_DIR', new=tmpdir):
-                with open(self.upload_filename, 'r') as upload_file:
-                    response = self.client.post(self.upload_file_url, {
-                        'to_case_id': self.case_1.pk,
-                        'upload_file': upload_file
-                    })
+        response = self._upload_attachment(self.upload_filename,
+                                           self.upload_file_url,
+                                           to_case=self.case_1)
 
         self.assertRedirects(
             response,
@@ -126,6 +144,35 @@ class TestUploadFile(BasePlanCase):
 
         self.assertContains(
             response, 'Nitrate cannot proceed without plan or case ID')
+
+    def test_file_is_uploaded_already(self):
+        self._upload_attachment(self.upload_filename,
+                                self.upload_file_url,
+                                to_case=self.case_1)
+        response = self._upload_attachment(self.upload_filename,
+                                           self.upload_file_url,
+                                           to_case=self.case_1)
+
+        filename = os.path.basename(self.upload_filename)
+        self.assertContains(
+            response,
+            f'File {filename} has been uploaded already'
+        )
+
+    def test_another_file_with_same_content_is_uploaded_already(self):
+        self._upload_attachment(self.upload_filename,
+                                self.upload_file_url,
+                                to_case=self.case_1)
+
+        response = self._upload_attachment(self.another_filename,
+                                           self.upload_file_url,
+                                           to_case=self.case_1)
+
+        filename = os.path.basename(self.upload_filename)
+        self.assertContains(
+            response,
+            f'A file {filename} having same content has been uploaded previously'
+        )
 
 
 class TestAbleToDeleteFile(BasePlanCase):

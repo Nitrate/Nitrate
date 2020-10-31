@@ -418,9 +418,16 @@ class TestAttachment(models.Model):
     description = models.CharField(max_length=1024, blank=True, null=True)
     file_name = models.CharField(db_column='filename', max_length=255, unique=True, blank=True)
     stored_name = models.CharField(max_length=128, unique=True, blank=True, null=True)
-    create_date = models.DateTimeField(db_column='creation_ts')
+    create_date = models.DateTimeField(
+        db_column='creation_ts',
+        auto_now_add=True
+    )
     mime_type = models.CharField(max_length=100)
-    # checksum = models.CharField(max_length=128, unique=True)
+    checksum = models.CharField(
+        max_length=32,
+        unique=True,
+        help_text='MD5 checksum of this uploaded file.'
+    )
 
     submitter = models.ForeignKey('auth.User',
                                   blank=True, null=True,
@@ -440,10 +447,6 @@ class TestAttachment(models.Model):
             .join(settings.FILE_UPLOAD_DIR, self.stored_name)
             .replace('\\', '/')
         )
-
-    @property
-    def exists(self):
-        return os.path.exists(self.stored_filename)
 
 
 class TestAttachmentData(models.Model):

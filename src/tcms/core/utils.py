@@ -4,7 +4,7 @@ import functools
 import hashlib
 import operator
 import re
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Union
 
 from django.apps import apps
 from django.db.models import QuerySet
@@ -255,11 +255,14 @@ class EnumLike:
         return obj.name
 
 
-def checksum(value):
-    if value is None:
+def checksum(value: Union[str, bytes]) -> str:
+    if not value:
         return ''
     md5 = hashlib.md5()
-    md5.update(value.encode("UTF-8"))
+    if type(value) == bytes:
+        md5.update(value)
+    else:
+        md5.update(value.encode())
     return md5.hexdigest()
 
 
