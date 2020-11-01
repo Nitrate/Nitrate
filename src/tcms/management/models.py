@@ -413,6 +413,12 @@ class TestTag(TCMSActionModel):
 # Test attachements file zone
 
 
+def attachment_stored_filename(stored_name: str) -> str:
+    return (os.path
+            .join(settings.FILE_UPLOAD_DIR, stored_name)
+            .replace('\\', '/'))
+
+
 class TestAttachment(models.Model):
     attachment_id = models.AutoField(primary_key=True)
     description = models.CharField(max_length=1024, blank=True, null=True)
@@ -441,12 +447,8 @@ class TestAttachment(models.Model):
         db_table = 'test_attachments'
 
     @property
-    def stored_filename(self):
-        return (
-            os.path
-            .join(settings.FILE_UPLOAD_DIR, self.stored_name)
-            .replace('\\', '/')
-        )
+    def stored_filename(self) -> str:
+        return attachment_stored_filename(self.stored_name)
 
 
 class TestAttachmentData(models.Model):
