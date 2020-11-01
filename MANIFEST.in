@@ -2,6 +2,10 @@ include AUTHORS CHANGELOG.rst README.rst LICENSE VERSION.txt
 include nitrate.spec Makefile requirements.txt
 include src/manage.py
 
+include .coveragerc .eslintrc.js .dockerignore .gitignore
+include docker-compose.yml docker-compose-dev.yml
+include tox.ini
+
 graft contrib
 graft src/locale
 graft src/static
