@@ -16,6 +16,7 @@ from django.urls import reverse
 from django.conf import settings
 
 from tcms.core.files import able_to_delete_attachment
+from tcms.core.utils import checksum
 from tcms.management.models import TestAttachment
 from tcms.testcases.models import TestCaseAttachment, TestCase
 from tcms.testplans.models import TestPlanAttachment, TestPlan
@@ -373,7 +374,8 @@ class TestCheckFile(BasePlanCase):
             file_name='a.txt',
             stored_name='a-1.txt',
             create_date=datetime.now(),
-            mime_type='text/plain'
+            mime_type='text/plain',
+            checksum=checksum(cls.text_file_content)
         )
         cls.binary_file = TestAttachment.objects.create(
             submitter_id=cls.tester.id,
@@ -381,7 +383,8 @@ class TestCheckFile(BasePlanCase):
             file_name='b.txt',
             stored_name='b.bin',
             create_date=datetime.now(),
-            mime_type='application/x-binary'
+            mime_type='application/x-binary',
+            checksum=checksum(cls.binary_file_content)
         )
         cls.logo_png = TestAttachment.objects.create(
             submitter_id=cls.tester.id,
@@ -390,7 +393,8 @@ class TestCheckFile(BasePlanCase):
             # stored_name is not set, use file_name to find out attachment instead.
             stored_name=None,
             create_date=datetime.now(),
-            mime_type='image/png'
+            mime_type='image/png',
+            checksum=checksum(cls.logo_png_content)
         )
         cls.file_deleted = TestAttachment.objects.create(
             submitter_id=cls.tester.id,
@@ -398,7 +402,8 @@ class TestCheckFile(BasePlanCase):
             file_name='case-plan.txt',
             stored_name=None,
             create_date=datetime.now(),
-            mime_type='text/plain'
+            mime_type='text/plain',
+            checksum='1234567'
         )
 
     def test_file_id_does_not_exist(self):
