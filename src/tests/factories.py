@@ -179,6 +179,7 @@ class TestAttachmentFactory(DjangoModelFactory):
     submitter = factory.SubFactory(UserFactory)
     create_date = factory.LazyFunction(datetime.now)
     description = factory.Sequence(lambda n: 'Attachment Image %d' % n)
+    checksum = factory.sequence(lambda n: f'12ac3b{n}')
 
 
 class TestAttachmentDataFactory(DjangoModelFactory):
