@@ -6,15 +6,15 @@ import os
 from django.db import migrations, models
 
 from tcms.core.utils import checksum
-from tcms.management.models import TestAttachment
+from tcms.management.models import attachment_stored_filename
 
 logger = logging.getLogger(__name__)
 
 
 def calculate_uploaded_files_checksum(apps, schema_editor):
-    attachment: TestAttachment
+    TestAttachment = apps.get_model('management', 'TestAttachment')
     for attachment in TestAttachment.objects.all():
-        stored_filename = attachment.stored_filename
+        stored_filename = attachment_stored_filename(attachment.stored_name)
         if not os.path.exists(stored_filename):
             logger.info('Server side stored file %s does not exist.',
                         stored_filename)
