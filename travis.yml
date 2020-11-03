@@ -54,10 +54,10 @@ jobs:
           cd /code
           tox -e jslint
         "
-    - name: Check Python code style
-      install: pip install tox
-      before_script: echo "No need of testbox image. Skip building the image."
-      script: tox -e flake8
+    # - name: Check Python code style
+    #   install: pip install tox
+    #   before_script: echo "No need of testbox image. Skip building the image."
+    #   script: tox -e flake8
     - name: Test build docs
       install: pip install tox
       before_script: echo "No need of testbox image. Skip building the image."

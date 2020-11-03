@@ -1,0 +1,29 @@
+name: Linter
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  build:
+    name: Run flake8 checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python environment
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Install tox
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install tox
+
+      - name: Run flake8 checks
+        run: tox -e flake8
