@@ -6,6 +6,7 @@ include .coveragerc .eslintrc.js .dockerignore .gitignore
 include docker-compose.yml docker-compose-dev.yml
 include tox.ini
 
+graft .github
 graft contrib
 graft src/locale
 graft src/static
