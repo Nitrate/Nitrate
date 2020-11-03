@@ -1,0 +1,33 @@
+name: Package build test
+
+on:
+  push:
+    branches:
+      - develop
+      - master
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  build-f32-rpm:
+    name: Test Fedora 32 RPM build
+    runs-on: ubuntu-latest
+    container: registry.fedoraproject.org/fedora:32
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Start to build Fedora 32 RPM package
+        run: /bin/bash contrib/travis-ci/build-rpm.sh
+
+  build-f31-rpm:
+    name: Test Fedora 31 RPM build
+    runs-on: ubuntu-latest
+    container: registry.fedoraproject.org/fedora:31
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Start to build Fedora 31 RPM package
+        run: /bin/bash contrib/travis-ci/build-rpm.sh

@@ -1,0 +1,72 @@
+language: python
+dist: xenial
+services:
+- docker
+python:
+  - "3.6"
+  - "3.7"
+  - "3.8"
+env:
+  # jobs running with older Django versions and SQLite
+  - DJANGO_REL="django>=2.1,<2.2"
+  - DJANGO_REL="django>=2.2,<2.3"
+  # jobs running with dependent latest version and specific non-SQLite
+  - DJANGO_REL="django>=3.0,<3.1" NITRATE_DB=sqlite
+  - DJANGO_REL="django>=3.0,<3.1" NITRATE_DB=mysql
+  - DJANGO_REL="django>=3.0,<3.1" NITRATE_DB=mariadb
+  - DJANGO_REL="django>=3.0,<3.1" NITRATE_DB=postgres
+install: pip install coveralls
+before_script: |
+  docker pull quay.io/nitrate/testbox:latest || \
+    docker build -t quay.io/nitrate/testbox:latest -f contrib/travis-ci/Dockerfile .
+script: |
+  contrib/travis-ci/testrunner.py \
+    --python-ver $TRAVIS_PYTHON_VERSION \
+    --django-ver "$DJANGO_REL" \
+    --nitrate-db ${NITRATE_DB:-sqlite} \
+    src/tests
+after_success: |
+  [ -e .coverage ] && sudo chown travis:travis .coverage && \
+    sqlite3 .coverage "UPDATE file SET path = REPLACE(path, '/code', '"$(pwd)"')" && \
+    coveralls
+jobs:
+  exclude:
+    - python: "3.6"
+      env: DJANGO_REL="django>=3.0,<3.1" NITRATE_DB=mysql
+    - python: "3.6"
+      env: DJANGO_REL="django>=3.0,<3.1" NITRATE_DB=mariadb
+    - python: "3.6"
+      env: DJANGO_REL="django>=3.0,<3.1" NITRATE_DB=postgres
+#  include:
+#    - stage: Misc tests
+#      name: Lint JavaScript code
+#      install: pip install tox
+#      before_script: echo "No need of testbox image. Skip building the image."
+#      script: |
+#        docker run --rm -v $PWD:/code:Z -it fedora:32 /bin/bash -c "
+#          set -ex
+#          dnf \
+#            --disablerepo=fedora-modular --disablerepo=updates-modular --disablerepo=fedora-cisco-openh264 \
+#            install -y node npm python3-tox
+#          npm install eslint@7.1.0
+#          npm install eslint-plugin-jsdoc@30.3.0
+#          export PATH=/node_modules/.bin:$PATH
+#          cd /code
+#          tox -e jslint
+#        "
+    # - name: Check Python code style
+    #   install: pip install tox
+    #   before_script: echo "No need of testbox image. Skip building the image."
+    #   script: tox -e flake8
+#    - name: Test build docs
+#      install: pip install tox
+#      before_script: echo "No need of testbox image. Skip building the image."
+#      script: tox -e docs
+#    - name: Build RPM (f32)
+#      before_script: echo "No need of testbox image. Skip building the image."
+#      script: |
+#        docker run --name build_rpm -v $(pwd):/code:Z --rm -it registry.fedoraproject.org/fedora:32 /bin/bash /code/contrib/travis-ci/build-rpm.sh
+#    - name: Build RPM (f31)
+#      before_script: echo "No need of testbox image. Skip building the image."
+#      script: |
+#        docker run --name build_rpm -v $(pwd):/code:Z --rm -it registry.fedoraproject.org/fedora:31 /bin/bash /code/contrib/travis-ci/build-rpm.sh

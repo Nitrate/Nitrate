@@ -1,0 +1,105 @@
+name: Unit Tests
+
+on:
+  push:
+    branches:
+      - develop
+      - master
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  unittests:
+    name: Test suite
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        suite:
+          - name: py36-django-2-1-sqlite
+            python-version: 3.6
+            django-version: "django>=2.1,<2.2"
+            db: sqlite
+
+          - name: py36-django-2-2-sqlite
+            python-version: 3.6
+            django-version: "django>=2.2,<2.3"
+            db: sqlite
+
+          - name: py36-django-3-0-sqlite
+            python-version: 3.6
+            django-version: "django>=3.0,<3.1"
+            db: sqlite
+
+          - name: py37-django-2-1-sqlite
+            python-version: 3.7
+            django-version: "django>=2.1,<2.2"
+            db: sqlite
+
+          - name: py37-django-2-2-sqlite
+            python-version: 3.7
+            django-version: "django>=2.2,<2.3"
+            db: sqlite
+
+          - name: py37-django-3-0-sqlite
+            python-version: 3.7
+            django-version: "django>=3.0,<3.1"
+            db: sqlite
+
+          - name: py38-django-2-1-sqlite
+            python-version: 3.8
+            django-version: "django>=2.1,<2.2"
+            db: sqlite
+
+          - name: py38-django-2-2-sqlite
+            python-version: 3.8
+            django-version: "django>=2.2,<2.3"
+            db: sqlite
+
+          - name: py38-django-3-0-sqlite
+            python-version: 3.8
+            django-version: "django>=3.0,<3.1"
+            db: sqlite
+
+          - name: py38-django-3-0-mysql
+            python-version: 3.8
+            django-version: "django>=3.0,<3.1"
+            db: mysql
+
+          - name: py38-django-3-0-mariadb
+            python-version: 3.8
+            django-version: "django>=3.0,<3.1"
+            db: mariadb
+
+          - name: py38-django-3-0-postgres
+            python-version: 3.8
+            django-version: "django>=3.0,<3.1"
+            db: postgres
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - run: |
+          contrib/travis-ci/testrunner.py \
+            --python-ver ${{ matrix.suite.python-version }} \
+            --django-ver "${{ matrix.suite.django-version }}" \
+            --nitrate-db ${{ matrix.suite.db }} \
+            src/tests
+      - run: sqlite3 .coverage "UPDATE file SET path = REPLACE(path, '/code', '"$(pwd)"')"
+      - run: coverall
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_FLAG_NAME: ${{ matrix.suite.name }}
+          COVERALLS_PARALLEL: true
+
+  coveralls:
+    name: Finish Coveralls
+    runs-on: ubuntu-latest
+    steps:
+      - name: Finished
+        run: |
+          pip3 install --upgrade coveralls
+          coveralls --finish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

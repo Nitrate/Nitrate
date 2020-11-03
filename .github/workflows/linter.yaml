@@ -1,0 +1,60 @@
+name: Linter
+
+on:
+  push:
+    branches:
+      - develop
+      - master
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  flake8:
+    name: Run flake8 checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install tox
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install tox
+      - run: tox -e flake8
+
+  docs:
+    name: Test documentation build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install tox
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install tox
+      - run: tox -e docs
+
+  eslint:
+    name: Lint JavaScript code
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          docker run --rm -v $PWD:/code:Z registry.fedoraproject.org/fedora:32 /bin/bash -c "
+            set -ex
+            dnf \
+              --disablerepo=fedora-modular --disablerepo=updates-modular --disablerepo=fedora-cisco-openh264 \
+              install -y node npm python3-tox
+            npm install eslint@7.1.0
+            npm install eslint-plugin-jsdoc@30.3.0
+            export PATH=/node_modules/.bin:$PATH
+            cd /code
+            tox -e jslint
+          "

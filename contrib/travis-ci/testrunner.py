@@ -233,8 +233,8 @@ def main():
     test_box_container_name = f'nitrate-testbox-py{args.python_ver.replace(".", "")}'
     test_box_run_opts.update({
         'rm': True,
-        'interactive': True,
-        'tty': True,
+        'interactive': False,
+        'tty': False,
         'name': test_box_container_name,
         'volumes': [f'{args.project_dir}:/code:Z'],
     })
