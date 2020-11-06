@@ -49,6 +49,7 @@ extras_require = {
         'pytest',
         'pytest-cov',
         'pytest-django',
+        'sqlparse'
     ],
 
     # Contain tools that assists the development

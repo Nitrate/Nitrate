@@ -4,13 +4,22 @@ from tcms.settings.common import *
 
 DB_ENGINE = env.get('NITRATE_DB_ENGINE', 'sqlite')
 
+db_host = (
+    env.get('NITRATE_DB_HOST', '') or
+    # These three variables will be set by tox-docker if use to run tests with
+    # specific database engine.
+    env.get('MYSQL_HOST', '') or
+    env.get('MARIADB_HOST', '') or
+    env.get('POSTGRES_HOST', '')
+)
+
 DATABASES = {
     'default': {
         'ENGINE': SUPPORTED_DB_ENGINES[DB_ENGINE],
         'NAME': env.get('NITRATE_DB_NAME', ''),
         'USER': env.get('NITRATE_DB_USER', ''),
         'PASSWORD': env.get('NITRATE_DB_PASSWORD', ''),
-        'HOST': env.get('NITRATE_DB_HOST', ''),
+        'HOST': db_host,
         'PORT': env.get('NITRATE_DB_PORT', ''),
     },
 }
