@@ -1,0 +1,14 @@
+name: try get host ip
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  build:
+    name: try get host ip
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: hostname -i
