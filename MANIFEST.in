@@ -7,6 +7,7 @@ include docker-compose.yml docker-compose-dev.yml
 include tox.ini
 
 graft .github
+graft docker
 graft contrib
 graft src/locale
 graft src/static
