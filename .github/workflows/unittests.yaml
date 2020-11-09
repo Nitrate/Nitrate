@@ -56,10 +56,11 @@ jobs:
         run: |
           tox -e py$tox_pyver-${{ matrix.django-version }}-${{ matrix.db }}
 
-      - run: coveralls
+      - name: Report coverage
+        run: coveralls
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COVERALLS_FLAG_NAME: testenv-py$tox_pyver-${{ matrix.django-version }}-${{ matrix.db }}
+          COVERALLS_FLAG_NAME: testenv-py$pyver-${{ matrix.django-version }}-${{ matrix.db }}
           COVERALLS_PARALLEL: true
 
   coveralls:
