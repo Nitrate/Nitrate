@@ -13,8 +13,8 @@ Nitrate - Test Case Management System
 .. image:: https://img.shields.io/github/issues-raw/Nitrate/Nitrate
    :alt: GitHub issues
    :target: https://github.com/Nitrate/Nitrate/issues/
-.. image:: https://travis-ci.org/Nitrate/Nitrate.svg?branch=develop
-   :target: https://travis-ci.org/Nitrate/Nitrate
+.. image:: https://img.shields.io/github/workflow/status/Nitrate/Nitrate/Unit%20Tests
+   :alt: GitHub Workflow Status
 .. image:: https://coveralls.io/repos/github/Nitrate/Nitrate/badge.svg?branch=develop
    :target: https://coveralls.io/github/Nitrate/Nitrate?branch=develop
 .. image:: https://badges.gitter.im/Nitrate/Nitrate.svg
