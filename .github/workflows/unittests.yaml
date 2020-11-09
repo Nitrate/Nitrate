@@ -69,7 +69,7 @@ jobs:
         run: coveralls
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COVERALLS_FLAG_NAME: testenv-py$pyver-${{ matrix.django-version }}-${{ matrix.db }}
+          COVERALLS_FLAG_NAME: testenv-py${{ matrix.python-version }}-${{ matrix.django-version }}-${{ matrix.db }}
           COVERALLS_PARALLEL: true
 
   coveralls:
