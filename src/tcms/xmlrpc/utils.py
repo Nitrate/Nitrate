@@ -3,7 +3,8 @@
 import re
 import warnings
 
-from django.db.models import Count, FieldDoesNotExist
+from django.core.exceptions import FieldDoesNotExist
+from django.db.models import Count
 from tcms.management.models import Product
 from typing import Any, Dict
 

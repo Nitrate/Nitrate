@@ -14,7 +14,7 @@ def get_long_description():
 
 install_requires = [
     'beautifulsoup4 >= 4.1.1',
-    'django >= 2.1,<3.1',
+    'django >= 2.1,<3.2',
     'django-contrib-comments',
     'django-tinymce',
     'django-uuslug',
@@ -93,6 +93,7 @@ setup(
         'Framework :: Django :: 2.1',
         'Framework :: Django :: 2.2',
         'Framework :: Django :: 3.0',
+        'Framework :: Django :: 3.1',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)',
         'Programming Language :: Python :: 3',

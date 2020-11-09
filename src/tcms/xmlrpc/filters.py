@@ -104,7 +104,7 @@ def wrap_exceptions(func):
             # 404 Not Found
             fault_code = HTTPStatus.NOT_FOUND
             fault_string = str(e)
-        except (django.db.models.FieldDoesNotExist,
+        except (django.core.exceptions.FieldDoesNotExist,
                 django.core.exceptions.FieldError,
                 django.core.exceptions.ValidationError,
                 django.core.exceptions.MultipleObjectsReturned,
