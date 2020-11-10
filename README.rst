@@ -10,11 +10,13 @@ Nitrate - Test Case Management System
    :target: http://nitrate.readthedocs.io/en/latest/
 .. image:: https://img.shields.io/pypi/l/nitrate-tcms
    :alt: PyPI - License
+   :target: https://pypi.org/project/nitrate-tcms/
 .. image:: https://img.shields.io/github/issues-raw/Nitrate/Nitrate
    :alt: GitHub issues
    :target: https://github.com/Nitrate/Nitrate/issues/
 .. image:: https://img.shields.io/github/workflow/status/Nitrate/Nitrate/Unit%20Tests
    :alt: GitHub Workflow Status
+   :target: https://github.com/Nitrate/Nitrate/
 .. image:: https://coveralls.io/repos/github/Nitrate/Nitrate/badge.svg?branch=develop
    :target: https://coveralls.io/github/Nitrate/Nitrate?branch=develop
 .. image:: https://badges.gitter.im/Nitrate/Nitrate.svg
