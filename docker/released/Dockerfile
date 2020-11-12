@@ -29,7 +29,7 @@ RUN dnf update -y \
  && dnf clean all
 
 # Hack: easier to set database password via environment variable
-COPY ./docker/released/product.py /usr/lib/python3.7/site-packages/tcms/settings/product.py
+COPY ./docker/released/product.py /usr/lib/python3.8/site-packages/tcms/settings/product.py
 
 # Disable event module and enable prefork module
 RUN sed -i -e 's/^#\(LoadModule mpm_prefork_module .\+\.so\)$/\1/' \
