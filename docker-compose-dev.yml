@@ -2,7 +2,7 @@ version: '2'
 
 services:
   db:
-    image: 'mariadb'
+    image: 'mariadb:10.4.14'
     environment:
     - MYSQL_ALLOW_EMPTY_PASSWORD=yes
     volumes:
