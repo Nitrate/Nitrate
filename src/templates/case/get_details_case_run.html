@@ -83,7 +83,7 @@
 						[ <a href="{% url "run-caserun-file-issue" run_id=test_case_run.run.pk case_run_id=test_case_run.pk %}" target="_blank" class="buglink" title="File a bug on bugzilla">File</a>&nbsp;|&nbsp;
 						{% if perms.issuetracker.add_issue %}
 						<a href="javascript:void(0);" title="Add an issue" class="js-add-caserun-issue"
-							data-params='{"runId": {{ test_case_run.run_id }}, "caseId": {{ test_case_run.case_id }}, "caseRunIds": [{{ test_case_run.pk }}]}'>Add</a>
+							data-params='{"runId": {{ test_case_run.run_id }}, "caseRunIds": [{{ test_case_run.pk }}]}'>Add</a>
 						{% endif %} ]
 					</span>
 				</h4>
@@ -218,7 +218,7 @@
 				<table cellpadding="0" cellspacing="0" border="0" width="98%;" style="margin:0 auto;">
 					<tr>
 						<td>
-							<h4 class="borderB">Test Log <span>[<a href="javascript:void(0);" class="js-add-testlog" data-params='[{{ test_case_run.case_id }}, {{ test_case_run.pk }}]'>Add</a>]</span></h4>
+							<h4 class="borderB">Test Log <span>[<a href="javascript:void(0);" class="js-add-testlog">Add</a>]</span></h4>
 							<div class="content">
 									<ul class="ul-format">
 										{% for link in test_case_run.links.all %}

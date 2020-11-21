@@ -14,6 +14,8 @@ const SHORT_STRING_LENGTH = 100;
  * @param {Function} callback - a callback function that will be called at
  *                              window.load event.
  */
+// FIXME: the callback should not be registered to window.on_load event directly.
+// By doing that, the callback's this is modified that brings extra effort to handle the this object.
 Nitrate.Utils.after_page_load = function (callback) {
   jQ(window).on('load', callback);
 };

@@ -10,6 +10,24 @@ Nitrate.TestRuns.ChooseRuns = {};
 Nitrate.TestRuns.AssignCase = {};
 Nitrate.TestRuns.AdvancedSearch = {};
 
+/**
+ * Data object containing necessary information to load a case run's detail pane.
+ *
+ * @typedef {object} CaseRunDetailLoadData
+ * @property {number} caseId
+ *  the case id used to construct the request endpoint and passed to the backend to get associated
+ *  case information.
+ * @property {number} caseRunId
+ *  the case run id being loaded.
+ * @property {number} caseTextVersion
+ *  the case text version passed to the backend in order to retrieve the specific case text content.
+ * @property {jQuery} caseRunRow
+ *  the container containing the shown case run. It is used with the case run detail container
+ *  together to register event handlers.
+ * @property {jQuery} caseRunDetailRow
+ *  the pane to display the case run detail.
+ */
+
 
 function toggleDiv(link, divId) {
   link = jQ(link);
@@ -284,30 +302,29 @@ function AddIssueDialog() {
           data: data,
           traditional: true,
 
-          // After adding an issue successfully, number of issues inside the run
-          // page has to be updated and reload case run detail content eventually.
+          /**
+           * After adding an issue successfully, number of issues inside the run page has to be updated
+           * and reload case run detail content eventually.
+           *
+           * @param {object} data - server response data
+           * @param {object} data.caserun_issues_count - a mapping from case run id to the number of issues it has.
+           * @param {number} data.run_issues_count - the total number of issues of the test run.
+           */
           success: function (data) {
             // After succeeding to add issue, we close the add dialog.
             dialog.dialog('close');
 
-            let reloadInfo = dialog.dialog('option', 'reloadInfo');
+            let reloadPage = dialog.dialog('option', 'reloadPage');
 
-            // TODO: consider now to reload whole page.
-            //       consider with the else section to update partial page
-            //       content and reload expanded case run details.
-
-            if (reloadInfo.reloadPage) {
+            if (reloadPage) {
               window.location.reload();
             } else {
-              // When add issue to a case run, only need to reload the updated case run.
-              // Update issues count associated with just updated case run
-              for (let caseRunId in addIssueInfo.caseRunIds) {
-                let caseRunIssuesCount = data.caserun_issues_count[caseRunId];
-                updateIssuesCountInCaseRunRow(reloadInfo.caseRunRow, caseRunIssuesCount);
-              }
+              let loadData = dialog.dialog('option', 'caseRunDetailLoadData')
+                , caseRunId = addIssueInfo.caseRunIds[0]
+                , caseRunIssuesCount = data.caserun_issues_count[caseRunId];
+              updateIssuesCountInCaseRunRow(loadData.caseRunRow, caseRunIssuesCount);
               showTheNumberOfCaseRunIssues(data.run_issues_count, addIssueInfo.runId);
-              constructCaseRunZone(
-                reloadInfo.caseRunDetailRow, reloadInfo.caseRunRow, addIssueInfo.caseId);
+              Nitrate.TestRuns.Details.loadCaseRunDetail(loadData);
             }
           },
         });
@@ -320,7 +337,18 @@ function AddIssueDialog() {
   });
 }
 
-AddIssueDialog.prototype.open = function (addIssueInfo, reloadInfo) {
+/**
+ * Open the dialog
+ *
+ * @param {object} addIssueInfo - object containing data for adding an issue to case run(s).
+ * @param {number[]} addIssueInfo.caseRunIds - an array of case run ids.
+ * @param {number} addIssueInfo.runId - the run id.
+ * @param {CaseRunDetailLoadData} [loadData]
+ *  object providing necessary data to reload the case run's detail and refresh the pane, and only
+ *  required for refresh the a single case run.
+ *  This data also contains Web page object to update relative issue information.
+ */
+AddIssueDialog.prototype.open = function (addIssueInfo, loadData) {
   if (addIssueInfo.caseRunIds === undefined || !Array.isArray(addIssueInfo.caseRunIds)) {
     throw new Error('addIssueInfo.caseRunIDs must be an array including case run IDs.');
   }
@@ -328,8 +356,10 @@ AddIssueDialog.prototype.open = function (addIssueInfo, reloadInfo) {
   let dialog = this.dialog;
 
   dialog.dialog('option', 'title', 'Add issue to case run');
-  dialog.dialog('option', 'reloadInfo', reloadInfo);
   dialog.dialog('option', 'addIssueInfo', addIssueInfo);
+  if (loadData) {
+    dialog.dialog('option', 'caseRunDetailLoadData', loadData);
+  }
 
   // Switch issue tracker tab
   dialog.find('#issue_tracker_id').change(function () {
@@ -428,9 +458,130 @@ AddEnvPropertyDialog.prototype.open = function () {
   this.dialog.dialog('open');
 }
 
-Nitrate.TestRuns.Details.on_load = function () {
-  let addIssueDialog = new AddIssueDialog();
+/**
+ * Register event handlers for the elements inside case run detail row.
+ *
+ * @param {CaseRunDetailLoadData} loadData - registering event handlers requires some data in this object.
+ */
+Nitrate.TestRuns.Details.registerEventHandlersForCaseRunDetail = function (loadData) {
+  let self = Nitrate.TestRuns.Details
+    , caseRunDetailRow = loadData.caseRunDetailRow
+    ;
 
+  // Observe the update case run status/comment form
+  caseRunDetailRow.parent()
+    .find('.update_form')
+    .off('submit')
+    .on('submit', updateCaseRunStatus);
+
+  caseRunDetailRow.parent()
+    .find('.form_comment')
+    .off('submit')
+    .on('submit', function (e) {
+      e.stopPropagation();
+      e.preventDefault();
+      if (!window.confirm(defaultMessages.confirm.remove_comment)) {
+        return false;
+      }
+      removeComment(this, function () {
+        updateCommentsCount(loadData.caseId, false);
+        Nitrate.TestRuns.Details.loadCaseRunDetail(loadData);
+      });
+    });
+
+  caseRunDetailRow.find('.js-status-button').on('click', function () {
+    this.form.value.value = jQ(this).data('formvalue');
+  });
+
+  caseRunDetailRow.find('.js-show-comments').on('click', function () {
+    toggleDiv(this, jQ(this).data('param'));
+  });
+
+  caseRunDetailRow.find('.js-show-changelog').on('click', function () {
+    toggleDiv(this, jQ(this).data('param'));
+  });
+
+  caseRunDetailRow.find('.js-add-caserun-issue').on('click', function () {
+    if (self.addIssueDialog === undefined) {
+      self.addIssueDialog = new AddIssueDialog();
+    }
+    let addIssueInfo = jQ(this).data('params');
+    self.addIssueDialog.open(addIssueInfo, loadData);
+  });
+
+  caseRunDetailRow.find('.js-remove-caserun-issue').on('click', function () {
+    removeIssueFromCaseRuns(jQ(this).data('params'), loadData);
+  });
+
+  caseRunDetailRow.find('.js-add-testlog').on('click', function () {
+    let dialog = getAddLinkDialog();
+    dialog.dialog('option', 'target_id', loadData.caseRunId);
+    dialog.dialog('option', 'loadData', loadData);
+    dialog.dialog('open');
+  });
+
+  caseRunDetailRow.find('.js-remove-testlog').on('click', function () {
+    let self = this
+      , linkId = window.parseInt(jQ(this).data('param'))
+      , url = '/linkref/remove/' + linkId + '/'
+      ;
+    postRequest({
+      url: url,
+      success: function () {
+        let li = self.parentNode
+          , ul = li.parentNode;
+        ul.removeChild(li);
+      }
+    });
+  });
+};
+
+/**
+ * Load the case run detail and fill in the pane.
+ *
+ * @param {CaseRunDetailLoadData} loadData - object containing loading information.
+ * @param {boolean} [showLoading=true] - whether to show loading animation.
+ */
+Nitrate.TestRuns.Details.loadCaseRunDetail = function (loadData, showLoading) {
+  let showLoadingAnimation = showLoading === undefined ? true : showLoading;
+  if (showLoadingAnimation) {
+    loadData.caseRunDetailRow.html(
+      jQ('<td colspan="14"></td>').html(constructAjaxLoading())
+    );
+  }
+
+  sendHTMLRequest({
+    url: '/case/' + loadData.caseId.toString() + '/caserun-detail-pane/',
+    container: loadData.caseRunDetailRow[0],
+    callbackAfterFillIn: function () {
+      Nitrate.TestRuns.Details.registerEventHandlersForCaseRunDetail(loadData);
+    },
+    data: {
+      case_run_id: loadData.caseRunId,
+      case_text_version: loadData.caseTextVersion
+    }
+  });
+};
+
+/**
+ * Get information to load a case run's detail.
+ *
+ * @param {jQuery} caseRunRow
+ *  the container containing the specific case run, from where the related event is triggered to
+ *  load associated case run's detail.
+ * @returns {CaseRunDetailLoadData} an object containing the relative data.
+ */
+Nitrate.TestRuns.Details.getCaseRunDetailLoadData = function (caseRunRow) {
+  return {
+    caseId: window.parseInt(caseRunRow.find('input[name="case"]')[0].value),
+    caseRunId: window.parseInt(caseRunRow.find('input[name="case_run"]')[0].value),
+    caseTextVersion: window.parseInt(caseRunRow.find('input[name="case_text_version"]')[0].value),
+    caseRunRow: caseRunRow,
+    caseRunDetailRow: caseRunRow.next(),
+  };
+};
+
+Nitrate.TestRuns.Details.on_load = function () {
   jQ('.js-add-property').on('click', function () {
     let params = jQ(this).data('params');
     new AddEnvPropertyDialog(params[0], params[1]).open();
@@ -476,68 +627,17 @@ Nitrate.TestRuns.Details.on_load = function () {
 
   // Observe the case run toggle and the comment form
   jQ('.expandable').on('click', function () {
-    let c = jQ(this).parent(); // Case run row
-    let cContainer = c.next(); // Next row to show case run details
-    let caseId = c.find('input[name="case"]')[0].value;
+    let caseRunRow = jQ(this).parent()
+    let loadData = Nitrate.TestRuns.Details.getCaseRunDetailLoadData(caseRunRow);
+    loadData.caseRunDetailRow.toggle();
 
-    /* eslint func-style:off */
-    // FIXME: move this function outside of this callback
-    let callback = function () {
-      // Observe the update case run status/comment form
-      cContainer.parent().find('.update_form').off('submit').on('submit', updateCaseRunStatus);
+    if (loadData.caseRunDetailRow.find('.ajax_loading').length) {
+      Nitrate.TestRuns.Details.loadCaseRunDetail(loadData, false);
+    }
 
-      cContainer.parent().find('.form_comment').off('submit').on('submit', function (e) {
-        e.stopPropagation();
-        e.preventDefault();
-        if (!window.confirm(defaultMessages.confirm.remove_comment)) {
-          return false;
-        }
-        removeComment(this, function () {
-          updateCommentsCount(c.find(':hidden[name=case]').val(), false);
-          constructCaseRunZone(cContainer[0], c[0], caseId);
-        });
-      });
-
-      cContainer.find('.js-status-button').on('click', function () {
-        this.form.value.value = jQ(this).data('formvalue');
-      });
-      cContainer.find('.js-show-comments').on('click', function () {
-        toggleDiv(this, jQ(this).data('param'));
-      });
-      cContainer.find('.js-show-changelog').on('click', function () {
-        toggleDiv(this, jQ(this).data('param'));
-      });
-      cContainer.find('.js-add-caserun-issue').on('click', function () {
-        addIssueDialog.open(jQ(this).data('params'), {
-          caseRunRow: c[0],
-          caseRunDetailRow: cContainer[0]
-        });
-      });
-      cContainer.find('.js-remove-caserun-issue').on('click', function (){
-        removeIssueFromCaseRuns(jQ(this).data('params'), {
-          caseRunRow: c[0],
-          caseRunDetailRow: cContainer[0]
-        });
-      });
-      cContainer.find('.js-add-testlog').on('click', function (){
-        let params = jQ(this).data('params');
-        addLinkToCaseRun(this, params[0], params[1]);
-      });
-      cContainer.find('.js-remove-testlog').on('click', function (){
-        removeLink(this, window.parseInt(jQ(this).data('param')));
-      });
-    };
-
-    let caseRunId = c.find('input[name="case_run"]')[0].value;
-    let caseTextVersion = c.find('input[name="case_text_version"]')[0].value;
-
-    toggleTestCaseRunPane({
-      'callback': callback,
-      'caseId': caseId,
-      'caserunId': caseRunId,
-      'caseTextVersion': caseTextVersion,
-      'caserunRowContainer': c,
-      'expandPaneContainer': cContainer
+    toggleExpandArrow({
+      caseRowContainer: loadData.caseRunRow,
+      expandPaneContainer: loadData.caseRunDetailRow
     });
   });
 
@@ -833,55 +933,51 @@ Nitrate.TestRuns.AssignCase.on_load = function () {
 };
 
 /**
- * A callback called after a comment is added to a case run or a case run status is updated with a
- * short comment.
+ * Show the case run next to the specified case run row.
  *
- * @param {jQuery} caseRunRow - the container representing the case run table row.
- * @param {jQuery} expandedCaseRunDetailRow - the container representing the expanded table row
- *                                            containing case run details.
- * @param {string} caseRunStatusId - case run status ID.
+ * @param {jQuery} caseRunRow
+ *  find the case run next to this case run and expand it. If the next one is expanded already, do nothing.
  */
-function updateCaseRunDetailAfterCommentIsAdded(caseRunRow, expandedCaseRunDetailRow, caseRunStatusId) {
-  // Update the contents
-  if (caseRunStatusId !== '') {
-    // Update the case run status icon
-    let crs = Nitrate.TestRuns.CaseRunStatus;
-    caseRunRow.find('.icon_status').each(function () {
-      for (let i in crs) {
-        if (typeof crs[i] === 'string' && jQ(this).is('.btn_' + crs[i])) {
-          jQ(this).removeClass('btn_' + crs[i]);
-        }
-      }
-      jQ(this).addClass('btn_' + Nitrate.TestRuns.CaseRunStatus[parseInt(caseRunStatusId) - 1]);
-    });
+Nitrate.TestRuns.Details.expandNextCaseRunDetail = function (caseRunRow) {
+  // The first next is the case run's detail row
+  let nextCaseRunRow = caseRunRow.next().next();
+  Nitrate.TestRuns.Details.expandCaseRunDetail(nextCaseRunRow);
+};
 
-    // Update related people
-    caseRunRow.find('.link_tested_by').each(function () {
-      this.href = 'mailto:' + Nitrate.User.email;
-      jQ(this).html(Nitrate.User.username);
-    });
+/**
+ * Expand the case run detail pane.
+ *
+ * @param {jQuery} caseRunRow - expand this case run's detail pane.
+ */
+Nitrate.TestRuns.Details.expandCaseRunDetail = function (caseRunRow) {
+  let blindIcon = caseRunRow.find('img.blind_icon.expand');
+  if (blindIcon.length) {
+    blindIcon.trigger('click');
   }
+};
 
-  // Mark the case run to mine
-  if (!caseRunRow.is('.mine')) {
-    caseRunRow.addClass('mine');
+/**
+ * Collapse the case run detail pane.
+ *
+ * @param {jQuery} caseRunRow - collapse this case run's detail pane.
+ */
+Nitrate.TestRuns.Details.collapseCaseRunDetail = function (caseRunRow) {
+  let blindIcon = caseRunRow.find('img.blind_icon.collapse');
+  if (blindIcon.length) {
+    blindIcon.trigger('click');
   }
+};
 
-  // Blind down next case
-  let expandableElem = caseRunRow.find('.expandable');
-  expandableElem.trigger('click');
-  if (jQ('#id_check_box_auto_blinddown').prop('checked') && caseRunStatusId !== '') {
-    let nextTitle = expandedCaseRunDetailRow.next();
-    if (!nextTitle.length) {
-      return;
-    }
-    if (nextTitle.next().is(':hidden')) {
-      nextTitle.find('.expandable').trigger('click');
-    }
-  } else {
-    expandableElem.trigger('click');
-  }
-}
+/**
+ * Show AJAX loading animation inside the case run detail pane.
+ *
+ * @param {jQuery} caseRunDetailRow - show the AJAX loading animation inside this container.
+ */
+Nitrate.TestRuns.Details.showCaseRunDetailAjaxLoading = function (caseRunDetailRow) {
+  caseRunDetailRow.html(
+    jQ('<td colspan="14"></td>').html(constructAjaxLoading())
+  );
+};
 
 /**
  * A function registered to the form submit event, from where to add comment to or change status for a case run.
@@ -892,31 +988,20 @@ function updateCaseRunStatus(e) {
   e.stopPropagation();
   e.preventDefault();
 
-  let caseRunDetailCell = jQ(this).parents().eq(3);
-  let expandedCaseRunDetailRow = caseRunDetailCell.parent();
-  let caseRunRow = expandedCaseRunDetailRow.prev();
+  let caseRunDetailRow = jQ(this).parents('tr:first')
+    , caseRunRow = caseRunDetailRow.prev();
 
   let formData = Nitrate.Utils.formSerialize(this);
   let caseRunStatusId = formData.value;
 
-  // Add comment
   if (formData.comment !== '') {
-    // Reset the content to loading
-    caseRunDetailCell.html(constructAjaxLoading('id_loading_' + formData.case_id));
-
     submitComment(jQ('<div>')[0], formData, function () {
       updateCommentsCount(caseRunRow.find(':hidden[name=case]').val(), true);
-      if (caseRunStatusId === '') {
-        updateCaseRunDetailAfterCommentIsAdded(caseRunRow, expandedCaseRunDetailRow, caseRunStatusId);
-      }
     });
   }
 
   // Update the object when changing the status
   if (caseRunStatusId !== '') {
-    // Reset the content to loading
-    caseRunDetailCell.html(constructAjaxLoading('id_loading_' + formData.case_id));
-
     updateObject({
       url: '/ajax/update/case-run-status',
       contentType: formData.content_type,
@@ -925,9 +1010,43 @@ function updateCaseRunStatus(e) {
       value: caseRunStatusId,
       valueType: 'int',
       callback: function () {
-        updateCaseRunDetailAfterCommentIsAdded(caseRunRow, expandedCaseRunDetailRow, caseRunStatusId);
+        // Update the case run status icon
+        let crs = Nitrate.TestRuns.CaseRunStatus;
+        caseRunRow.find('.icon_status').each(function () {
+          for (let i in crs) {
+            if (typeof crs[i] === 'string' && jQ(this).is('.btn_' + crs[i])) {
+              jQ(this).removeClass('btn_' + crs[i]);
+            }
+          }
+          jQ(this).addClass('btn_' + Nitrate.TestRuns.CaseRunStatus[parseInt(caseRunStatusId) - 1]);
+        });
+
+        // Update related people
+        caseRunRow.find('.link_tested_by').each(function () {
+          this.href = 'mailto:' + Nitrate.User.email;
+          jQ(this).html(Nitrate.User.username);
+        });
+
+        // Mark the case run to mine
+        if (!caseRunRow.is('.mine')) {
+          caseRunRow.addClass('mine');
+        }
       }
     });
+  }
+
+  let expandNext = jQ('#id_check_box_auto_blinddown').prop('checked') && caseRunStatusId !== ''
+    , loadData = Nitrate.TestRuns.Details.getCaseRunDetailLoadData(caseRunRow);
+
+  if (expandNext) {
+    Nitrate.TestRuns.Details.collapseCaseRunDetail(caseRunRow);
+    Nitrate.TestRuns.Details.loadCaseRunDetail(loadData, false);
+    Nitrate.TestRuns.Details.expandNextCaseRunDetail(caseRunRow);
+  } else {
+    Nitrate.TestRuns.Details.showCaseRunDetailAjaxLoading(caseRunDetailRow);
+    window.setTimeout(function () {
+      Nitrate.TestRuns.Details.loadCaseRunDetail(loadData, false);
+    }, 1000);
   }
 }
 
@@ -999,45 +1118,49 @@ function taggleSortCaseRun(event) {
   }
 }
 
-function constructCaseRunZone(container, titleContainer, caseId) {
-  if (container) {
-    let td = jQ('<td>', {'id': 'id_loading_' + caseId, 'colspan': 12});
-    td.html(constructAjaxLoading());
-    jQ(container).html(td);
-  }
 
-  if (titleContainer) {
-    let link = jQ(titleContainer).find('.expandable');
-    link.trigger('click');
-    link.trigger('click');
-  }
-}
-
-
-function removeIssueFromCaseRuns(removeIssueInfo, reloadInfo) {
+/**
+ * Remove issue from selected case runs
+ *
+ * @param {object} removeIssueInfo - object containing data for removing an issue from case run(s).
+ * @param {number[]} removeIssueInfo.caseRunIds - an array of case runs from which to remove the issue.
+ * @param {string} removeIssueInfo.issueKey - the issue to remove.
+ * @param {number} removeIssueInfo.runId - the run id.
+ * @param {CaseRunDetailLoadData|object} loadData
+ *  after adding the issue, the case run or the whole test run page has to be loaded again in order
+ *  to show the new issue. This data also contains Web page object to update relative issue information.
+ */
+function removeIssueFromCaseRuns(removeIssueInfo, loadData) {
   if (removeIssueInfo.issueKey === undefined || removeIssueInfo.issueKey === '') {
     throw new Error('Missing issue key to remove.');
   }
 
   getRequest({
-    url: '/run/' + removeIssueInfo.runId + '/issues/',
+    url: '/run/' + removeIssueInfo.runId.toString() + '/issues/',
     data: {
       a: 'remove',
       case_run: removeIssueInfo.caseRunIds,
       issue_key: removeIssueInfo.issueKey
     },
     traditional: true,
+
+    /**
+     * Refresh the page or case run to show the result of removing issue(s)
+     *
+     * @param {object} data - server response data
+     * @param {object} data.caserun_issues_count - a mapping from case run id to the number of issues it has.
+     * @param {number} data.run_issues_count - the total number of issues of the test run.
+     */
     success: function (data) {
-      if (reloadInfo.reloadPage) {
+      if (loadData.reloadPage) {
         window.location.reload();
       } else {
-        let caseRunIssuesCount = data.caserun_issues_count[removeIssueInfo.caseRunId];
-        updateIssuesCountInCaseRunRow(reloadInfo.caseRunRow, caseRunIssuesCount);
+        let caseRunIssuesCount = data.caserun_issues_count[removeIssueInfo.caseRunIds[0]];
+        updateIssuesCountInCaseRunRow(loadData.caseRunRow, caseRunIssuesCount);
         showTheNumberOfCaseRunIssues(data.run_issues_count, removeIssueInfo.runId);
-        constructCaseRunZone(
-          reloadInfo.caseRunDetailRow, reloadInfo.caseRunRow, removeIssueInfo.caseId);
+        Nitrate.TestRuns.Details.loadCaseRunDetail(loadData);
       }
-    },
+    }
   });
 }
 
@@ -1337,9 +1460,9 @@ function addIssueToBatchCaseRunsHandler() {
   } else {
     let addIssueInfo = jQ(this).data('addIssueInfo');
     addIssueInfo.caseRunIds = caseRunIds;
-    let reloadInfo = jQ(this).data('reloadInfo');
     let dialog = new AddIssueDialog();
-    dialog.open(addIssueInfo, reloadInfo);
+    dialog.dialog.dialog('option', 'reloadPage', true);
+    dialog.open(addIssueInfo);
   }
 }
 
@@ -1355,7 +1478,6 @@ function removeIssueFromBatchCaseRunsHandler() {
   if (caseRunIds.length === 0) {
     showModal(defaultMessages.alert.no_case_selected, 'Missing something?');
   } else {
-    let reloadInfo = jQ(this).data('reloadInfo');
     let removeIssueInfo = jQ(this).data('removeIssueInfo');
     removeIssueInfo.caseRunIds = caseRunIds;
 
@@ -1368,7 +1490,7 @@ function removeIssueFromBatchCaseRunsHandler() {
           // Don't care about closing or destroying current dialog.
           // Whole page will be reloaded.
           removeIssueInfo.issueKey = jQ(this).find('input[id=issueKeyToRemove]').val();
-          removeIssueFromCaseRuns(removeIssueInfo, reloadInfo);
+          removeIssueFromCaseRuns(removeIssueInfo, {'reloadPage': true});
         },
         Cancel: function () {
           jQ(this).dialog('close');
@@ -1463,40 +1585,6 @@ function getAddLinkDialog() {
 }
 
 /**
- * Do AJAX request to backend to remove a link
- *
- * @param {HTMLElement} sender - the HTML element triggering the event to remove a link.
- * @param {number} linkId - the ID of an arbitrary link.
- */
-function removeLink(sender, linkId) {
-  let url = '/linkref/remove/' + linkId + '/';
-  postRequest({url: url, success: function () {
-    let liNode = sender.parentNode;
-    liNode.parentNode.removeChild(liNode);
-  }});
-}
-
-/**
- * Add link to case run
- *
- * @param {HTMLElement} sender - the Add link button, which is pressed to fire this event.
- * @param {number} caseId - the test case ID.
- * @param {number} caseRunId - the test case run ID.
- */
-function addLinkToCaseRun(sender, caseId, caseRunId) {
-  let dialog = getAddLinkDialog();
-
-  dialog.dialog('option', 'target_id', caseRunId);
-  // These two options are used for reloading TestCaseRun when successfully.
-  let container = jQ(sender).parents('.case_content.hide')[0];
-  dialog.dialog('option', 'container', container);
-  let titleContainer = jQ(container).prev()[0];
-  dialog.dialog('option', 'title_container', titleContainer);
-  dialog.dialog('option', 'case_id', caseId);
-  dialog.dialog('open');
-}
-
-/**
  * Initialize dialog for getting information about new link, which is attached
  * to an arbitrary instance of TestCaseRun
  *
@@ -1531,13 +1619,8 @@ function initializeAddLinkDialog(linkTarget) {
           },
           success: function () {
             dialog.dialog('close');
-
-            // Begin to construct case run area
-            constructCaseRunZone(
-              dialog.dialog('option', 'container'),
-              dialog.dialog('option', 'title_container'),
-              dialog.dialog('option', 'case_id')
-            );
+            let loadData = dialog.dialog('option', 'loadData');
+            Nitrate.TestRuns.Details.loadCaseRunDetail(loadData);
           },
         });
       },
@@ -1559,40 +1642,5 @@ function initializeAddLinkDialog(linkTarget) {
      * this must be set
      */
     target_id: null
-  });
-}
-
-
-/**
- * Toggle TestCaseRun panel to edit a case run in run page.
- *
- * @param {object} options - options for toggling the test case run pane.
- * @param {HTMLElement} options.caserunRowContainer - the container element containing the test case run row.
- * @param {HTMLElement} options.expandPaneContainer - the container element to be expanded for the associated test case
- *                                                    run.
- * @param {number} options.caseId - the associated test case ID.
- * @param {number} options.caserunId - the test case run ID.
- * @param {number} options.caseTextVersion - the test case' text version.
- * @param {Function} options.callback - a function called after the content is filled in the expanded container.
- */
-function toggleTestCaseRunPane(options) {
-  let container = options.expandPaneContainer;
-  container.toggle();
-
-  if (container.find('.ajax_loading').length) {
-    sendHTMLRequest({
-      url: '/case/' + options.caseId + '/caserun-detail-pane/',
-      container: container,
-      callbackAfterFillIn: options.callback,
-      data: {
-        case_run_id: options.caserunId,
-        case_text_version: options.caseTextVersion
-      },
-    });
-  }
-
-  toggleExpandArrow({
-    caseRowContainer: options.caserunRowContainer,
-    expandPaneContainer: container
   });
 }

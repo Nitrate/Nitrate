@@ -2468,11 +2468,10 @@ class TestCaseCaseRunDetailPanelView(BaseCaseRun):
             '<ul class="ul-no-format"><li class="grey">No component found</li></ul>',
             '<ul class="ul-no-format"><li class="grey">No tag found</li></ul>',
 
-            f'<h4 class="borderB">Test Log <span>'
-            f'[<a href="javascript:void(0);" class="js-add-testlog" '
-            f'data-params="[{case_run.case_id}, {case_run.pk}]">Add</a>]'
-            f'</span></h4>'
-            f'<div class="content"><ul class="ul-format"></ul></div>',
+            '<h4 class="borderB">Test Log <span>'
+            '[<a href="javascript:void(0);" class="js-add-testlog">Add</a>]'
+            '</span></h4>'
+            '<div class="content"><ul class="ul-format"></ul></div>',
 
             '<h4>Actions</h4><div class="content"></div>',
             '<h4>Breakdown</h4><div class="content"></div>',
