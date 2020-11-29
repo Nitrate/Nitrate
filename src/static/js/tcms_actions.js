@@ -751,12 +751,19 @@ function updateObject(options) {
   });
 }
 
+/**
+ * Create an AJAX loading element.
+ *
+ * @param {string} id - the new element id.
+ * @returns {HTMLElement} the new element.
+ */
 function constructAjaxLoading(id) {
-  let props = {'class': 'ajax_loading'};
-  if (id !== undefined) {
-    props.id = id;
+  let div = document.createElement('div');
+  div.setAttribute('class', 'ajax_loading');
+  if (id !== undefined && id.length) {
+    div.id = id;
   }
-  return jQ('<div>', props)[0];
+  return div;
 }
 
 /**

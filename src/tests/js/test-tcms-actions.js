@@ -111,7 +111,6 @@ QUnit.module('tcms_actions.js', function () {
   });
 
   QUnit.module('Test updateObject', function () {
-
     QUnit.testDone(function () {
       jQ.mockjax.clear();
     });
@@ -196,6 +195,19 @@ QUnit.module('tcms_actions.js', function () {
         value: '1', valueType: 'int'
       });
     });
+  });
 
+  QUnit.module('Test constructAjaxLoading', function () {
+    QUnit.test('create without id', function (assert) {
+      let elem = constructAjaxLoading();
+      assert.ok(elem.hasAttribute('class'));
+      assert.equal(elem.getAttribute('class'), 'ajax_loading');
+    });
+
+    QUnit.test('create with id', function (assert) {
+      let id = 'id_loading';
+      let elem = constructAjaxLoading(id);
+      assert.equal(elem.id, id);
+    });
   });
 });
