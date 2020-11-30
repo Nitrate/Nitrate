@@ -243,9 +243,15 @@ function showTheNumberOfCaseRunIssues(newIssuesCount, runId) {
 }
 
 
+/**
+ * Update the number of a case run's issues.
+ *
+ * @param {jQuery} caseRunRow - the container containing case run.
+ * @param {number} caseRunIssuesCount - the number of issues.
+ */
 function updateIssuesCountInCaseRunRow(caseRunRow, caseRunIssuesCount) {
   let caseRunIssuesCountSpan = jQ(caseRunRow).find('span[id$="_case_issues_count"]');
-  caseRunIssuesCountSpan.text(caseRunIssuesCount);
+  caseRunIssuesCountSpan.text(caseRunIssuesCount.toString());
   if (caseRunIssuesCount > 0) {
     caseRunIssuesCountSpan.addClass('have_issue');
   } else {
@@ -1155,7 +1161,7 @@ function removeIssueFromCaseRuns(removeIssueInfo, loadData) {
       if (loadData.reloadPage) {
         window.location.reload();
       } else {
-        let caseRunIssuesCount = data.caserun_issues_count[removeIssueInfo.caseRunIds[0]];
+        let caseRunIssuesCount = data.caserun_issues_count[removeIssueInfo.caseRunIds[0]] || 0;
         updateIssuesCountInCaseRunRow(loadData.caseRunRow, caseRunIssuesCount);
         showTheNumberOfCaseRunIssues(data.run_issues_count, removeIssueInfo.runId);
         Nitrate.TestRuns.Details.loadCaseRunDetail(loadData);
