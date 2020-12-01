@@ -13,10 +13,9 @@ Nitrate.Management.Environment.Edit = {
 
     jQ('#js-edit-group').submit(function (e) {
       e.preventDefault();
-      let form = jQ(this);
       postHTMLRequest({
-        url: form.prop('action'),
-        data: form.serialize(),
+        url: this.getAttribute('action'),
+        data: jQ(this).serialize(),
         success: function () {
           window.location = '/environment/groups/';
         },
