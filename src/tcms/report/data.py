@@ -93,7 +93,7 @@ def subtotal_case_run_status(filter_=None, by=None):
     })
 
 
-def subtotal_plans(filter_=None, by=None):
+def subtotal_plans(filter_=None, by=None) -> GroupByResult:
     group_by = by or 'product'
     stats = TestPlan.objects
     if filter_:

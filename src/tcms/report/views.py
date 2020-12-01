@@ -42,10 +42,8 @@ MODULE_NAME = "report"
 REPORT_VIEW_CACHE_DURATION = 0  # 60 * 10
 
 
-def overall(request, template_name='report/list.html'):
+def overall(request):
     """Overall of products report"""
-    SUB_MODULE_NAME = 'overall'
-
     products = {
         item['pk']: item['name'] for item in
         Product.objects.values('pk', 'name')
@@ -59,17 +57,17 @@ def overall(request, template_name='report/list.html'):
             yield (
                 product_id,
                 product_name,
-                plans_count[product_id],
-                runs_count[product_id],
-                cases_count[product_id],
+                plans_count.get(product_id, 0),
+                runs_count.get(product_id, 0),
+                cases_count.get(product_id, 0),
             )
 
     context_data = {
         'module': MODULE_NAME,
-        'sub_module': SUB_MODULE_NAME,
+        'sub_module': 'overall',
         'products': generate_product_stats(),
     }
-    return render(request, template_name, context=context_data)
+    return render(request, 'report/list.html', context=context_data)
 
 
 @cache_page(REPORT_VIEW_CACHE_DURATION)

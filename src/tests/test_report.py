@@ -3,11 +3,43 @@
 from datetime import datetime
 from django.db.models import Max
 from django.urls import reverse
+from tcms.testcases.models import TestCase
+
+from tcms.testplans.models import TestPlan
 
 from tcms.management.models import Product
 from tcms.management.models import TestBuild
-from tcms.testruns.models import TestCaseRunStatus
-from tests import BaseCaseRun
+from tcms.testruns.models import TestCaseRunStatus, TestRun
+from tests import BaseCaseRun, factories as f
+
+
+class TestReportOverall(BaseCaseRun):
+    """Test /report/overall/"""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+
+        cls.product_a = f.ProductFactory(name='producta')
+        cls.product_b = f.ProductFactory(name='productb')
+
+    def test_overall(self):
+        response = self.client.get(reverse('report-overall'))
+
+        content = [
+            '<td><a href="{}">{}</a></td><td>{}</td><td>{}</td><td>{}</td>'.format(
+                reverse('report-overview', args=[self.product.pk]),
+                self.product.name,
+                TestPlan.objects.filter(product=self.product).count(),
+                TestRun.objects.filter(plan__product=self.product).count(),
+                TestCase.objects.filter(plan__product=self.product).count()
+            ),
+            '<td>producta</td><td>0</td><td>0</td><td>0</td>',
+            '<td>productb</td><td>0</td><td>0</td><td>0</td>',
+        ]
+
+        for item in content:
+            self.assertContains(response, item, html=True)
 
 
 class TestProductOverview(BaseCaseRun):
