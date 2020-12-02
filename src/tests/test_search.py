@@ -103,10 +103,9 @@ class TestAdvancedSearch(BaseCaseRun):
         self.client.get(self.url)
 
     def test_basic_search_plans(self):
-        # Note that, asc is not passed, which means to sort by desc order.
+        # Note that, asc is not passed, which means to sort by pk in desc order.
         resp = self.client.get(self.url, {
             'pl_product': self.product.pk,
-            'order_by': 'name',
             'target': 'plan',
         })
 
@@ -124,9 +123,7 @@ class TestAdvancedSearch(BaseCaseRun):
             # The 3rd td contains name
             plan_names.append(tr.find_all('td')[2].a.text.strip())
 
-        self.assertListEqual(
-            sorted([self.plan_02.name, self.plan.name], reverse=True),
-            plan_names)
+        self.assertListEqual([self.plan_02.name, self.plan.name], plan_names)
 
     def test_basic_search_cases(self):
         resp = self.client.get(self.url, {
