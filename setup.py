@@ -49,7 +49,9 @@ extras_require = {
         'pytest',
         'pytest-cov',
         'pytest-django',
-        'sqlparse'
+        'sqlparse',
+        'tox',
+        'tox-docker==1.7.0'
     ],
 
     # Contain tools that assists the development
