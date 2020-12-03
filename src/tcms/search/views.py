@@ -115,7 +115,7 @@ def advance_search(request, tmpl='search/advanced_search.html'):
             'queries': queries,
             # FIXME: choose another name rather than this_page
             'object_list': response_data['querySet'],
-            'total_count': results.count(),
+            'total_count': response_data['iTotalRecords'],
         })
 
 
@@ -178,7 +178,11 @@ def sum_orm_queries(plans: SmartDjangoQuery,
         runs = runs.extra(select={
             'cases_count': RawSQL.total_num_caseruns
         })
-        return runs
+        return (runs
+                .select_related('manager', 'default_tester', 'build__product', 'product_version')
+                .only('pk', 'summary', 'stop_date',
+                      'manager__username', 'default_tester__username',
+                      'build__product__name', 'product_version__value'))
 
     if target == 'plan':
         if cases is None and runs is None:
@@ -190,7 +194,11 @@ def sum_orm_queries(plans: SmartDjangoQuery,
             plans = plans.filter(case__in=cases).distinct()
         if runs is not None:
             plans = plans.filter(run__in=runs).distinct()
-        return TestPlan.apply_subtotal(plans, cases_count=True, runs_count=True)
+        return (TestPlan
+                .apply_subtotal(plans, cases_count=True, runs_count=True)
+                .select_related('author', 'owner', 'type', 'product')
+                .only('pk', 'name', 'is_active', 'author__username',
+                      'owner__username', 'product__name', 'type__name'))
 
     if target == 'case':
         if plans is None and runs is None:
@@ -202,7 +210,13 @@ def sum_orm_queries(plans: SmartDjangoQuery,
             cases = cases.filter(case_run__run__in=runs).distinct()
         if plans is not None:
             cases = cases.filter(plan__in=plans).distinct()
-        return cases
+        return (cases
+                .select_related('author', 'default_tester', 'case_status',
+                                'category', 'priority')
+                .only('pk', 'summary', 'create_date', 'is_automated',
+                      'is_automated_proposed',
+                      'author__username', 'default_tester__username',
+                      'case_status__name', 'category__name', 'priority__value'))
 
 
 def remove_from_request_path(request: Union[HttpRequest, str],
