@@ -390,7 +390,7 @@ Nitrate.TestPlans.AdvancedSearch.on_load = function () {
 
   jQ('#testplans_table').dataTable(
     Object.assign({}, Nitrate.TestPlans.SearchResultTableSettings, {
-      iDeferLoading: this.numberOfPlans,
+      iDeferLoading: Nitrate.TestPlans.AdvancedSearch.numberOfPlans,
       sAjaxSource: '/advance-search/' + this.window.location.search,
     })
   );
