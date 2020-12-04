@@ -496,6 +496,7 @@ Nitrate.TestRuns.Details.registerEventHandlersForCaseRunDetail = function (loadD
     });
 
   caseRunDetailRow.find('.js-status-button').on('click', function () {
+    this.form.comment.required = false;
     this.form.value.value = jQ(this).data('formvalue');
   });
 
