@@ -497,22 +497,26 @@ Nitrate.TestRuns.Details.registerEventHandlersForCaseRunDetail = function (loadD
 
   caseRunDetailRow.find('.js-status-button').on('click', function () {
     this.form.comment.required = false;
-    this.form.value.value = jQ(this).data('formvalue');
+    this.form.value.value = this.dataset.statusId;
   });
 
   caseRunDetailRow.find('.js-show-comments').on('click', function () {
-    toggleDiv(this, jQ(this).data('param'));
+    toggleDiv(this, this.dataset.commentsElementId);
   });
 
   caseRunDetailRow.find('.js-show-changelog').on('click', function () {
-    toggleDiv(this, jQ(this).data('param'));
+    toggleDiv(this, this.dataset.changelogsElementId);
   });
 
   caseRunDetailRow.find('.js-add-caserun-issue').on('click', function () {
     if (self.addIssueDialog === undefined) {
       self.addIssueDialog = new AddIssueDialog();
     }
-    let addIssueInfo = jQ(this).data('params');
+    let dataset = this.dataset;
+    let addIssueInfo = {
+      runId: dataset.runId,
+      caseRunIds: [dataset.caseRunId]
+    };
     self.addIssueDialog.open(addIssueInfo, loadData);
   });
 
@@ -529,7 +533,7 @@ Nitrate.TestRuns.Details.registerEventHandlersForCaseRunDetail = function (loadD
 
   caseRunDetailRow.find('.js-remove-testlog').on('click', function () {
     let self = this
-      , linkId = window.parseInt(jQ(this).data('param'))
+      , linkId = window.parseInt(this.dataset.linkId)
       , url = '/linkref/remove/' + linkId + '/'
       ;
     postRequest({

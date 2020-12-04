@@ -32,7 +32,7 @@
 								<input type="hidden" name="value" value="" />
 								{% if perms.testruns.change_testcaserun %}
 								{% for status in test_case_run_status %}
-								<input type="submit" class="btn btn_{{ status.name.lower }} btn_status js-status-button" title="{{ status.name }}" value="" crs_id="{{ status.pk }}"{% if status.pk == test_case_run.case_run_status_id %} disabled{% endif %} data-formvalue="{{ status.pk }}" />
+								<input type="submit" class="btn btn_{{ status.name.lower }} btn_status js-status-button" title="{{ status.name }}" value="" crs_id="{{ status.pk }}"{% if status.pk == test_case_run.case_run_status_id %} disabled{% endif %} data-status-id="{{ status.pk }}" />
 								{% endfor %}
 								{% endif %}
 								<input type="submit" class="submit-post" value="Submit">
@@ -45,7 +45,7 @@
 				{% if comments_count == 0 %}
 					<span>[ <a id="showText" href="javascript:void(0);">Show All</a> ]</span>
 				{% else %}
-					<span>[ <a id="showText" class="js-show-comments" data-param="comment{{ test_case_run.pk }}" href="javascript:void(0);">Show All</a> ]</span>
+					<span>[ <a id="showText" class="js-show-comments" data-comments-element-id="comment{{ test_case_run.pk }}" href="javascript:void(0);">Show All</a> ]</span>
 				{% endif %}
 				</h4>
 				<ul class="comment" id="comment{{ test_case_run.pk }}" style="display:none;">
@@ -83,7 +83,7 @@
 						[ <a href="{% url "run-caserun-file-issue" run_id=test_case_run.run.pk case_run_id=test_case_run.pk %}" target="_blank" class="buglink" title="File a bug on bugzilla">File</a>&nbsp;|&nbsp;
 						{% if perms.issuetracker.add_issue %}
 						<a href="javascript:void(0);" title="Add an issue" class="js-add-caserun-issue"
-							data-params='{"runId": {{ test_case_run.run_id }}, "caseRunIds": [{{ test_case_run.pk }}]}'>Add</a>
+							data-run-id="{{ test_case_run.run_id }}" data-case-run-id="{{ test_case_run.pk }}">Add</a>
 						{% endif %} ]
 					</span>
 				</h4>
@@ -119,7 +119,7 @@
 			</div>
 			<div class="container" style="min-height:50px;">
 				{% if caserun_logs %}
-				<h4 class="borderB">Change Log<span>[ <a href="javascript:void(0);" class="js-show-changelog" data-param="changeLog{{ test_case_run.pk }}">Show All</a> ]</span></h4>
+				<h4 class="borderB">Change Log<span>[ <a href="javascript:void(0);" class="js-show-changelog" data-changelogs-element-id="changeLog{{ test_case_run.pk }}">Show All</a> ]</span></h4>
 				<ul id="changeLog{{test_case_run.pk}}" style="display:none;">
 					{% for log in caserun_logs %}
 					<li><span>{{ log.date }}</span><span>{{ log.who__username }}</span><br />Field {{ log.field }} changed from {{ log.original_value }} to {{ log.new_value }}</li>
@@ -225,7 +225,7 @@
 										<li>
 											<a href="{{ link.url }}" target="_blank" title="{{ link.url }}">{{ link.name|escape }}</a>
 											<span class="grey">{{ link.created_on|date:"N d, Y" }}</span>
-											<a href="javascript:void(0);" class="js-remove-testlog" data-param="{{ link.pk }}">
+											<a href="javascript:void(0);" class="js-remove-testlog" data-link-id="{{ link.pk }}">
 												<img title="Remove this log" src="{% static "images/remove_small.png" %}" />
 											</a>
 										</li>
