@@ -1046,7 +1046,8 @@ function updateCaseRunStatus(e) {
     });
   }
 
-  let expandNext = jQ('#id_check_box_auto_blinddown').prop('checked') && caseRunStatusId !== ''
+  let atLastRow = caseRunRow.next().next().length === 0
+    , expandNext = jQ('#id_check_box_auto_blinddown').prop('checked') && caseRunStatusId !== '' && !atLastRow
     , loadData = Nitrate.TestRuns.Details.getCaseRunDetailLoadData(caseRunRow);
 
   if (expandNext) {
