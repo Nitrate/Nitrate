@@ -61,8 +61,6 @@ module.exports = {
     'showModal': 'readonly',
     'SHORT_STRING_LENGTH': 'readonly',
     'splitString': 'readonly',
-    'toggleExpandArrow': 'readonly',
-    'toggleTestCasePane': 'readonly',
     'updateObject': 'readonly',
   },
   'parserOptions': {

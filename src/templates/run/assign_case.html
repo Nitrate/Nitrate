@@ -11,6 +11,7 @@
 <script type="text/javascript" src="{% static "js/testrun_actions.js" %}"></script>
 <script type="text/javascript" src="{% static "js/testcase_actions.js" %}"></script>
 <script type="text/javascript" src="{% static "js/testplan_actions.js" %}"></script>
+<script type="text/javascript" src="{% static "js/nitrate.toggledetail.js" %}"></script>
 <script type="text/javascript">
 Nitrate.Utils.after_page_load(Nitrate.TestRuns.AssignCase.on_load);
 </script>
@@ -92,7 +93,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.AssignCase.on_load);
 						</td>
 						<td>
 							<a id="blind_link_{{ forloop.counter }}" class="blind_link js-toggle-button" data-param="{{ forloop.counter }}" href="javascript:void(0);">
-								<img id="blind_icon_{{ forloop.counter }}" src="{% static "images/t1.gif" %}" border="0" alt="">
+								<img class="blind_icon" src="{% static "images/t1.gif" %}" border="0" alt="">
 							</a>
 						</td>
 						<td>
@@ -109,7 +110,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.AssignCase.on_load);
 						<td>{{ test_case.priority__value }}</td>
 					</tr>
 					<tr class="hide"  id="hidenRow_{{ forloop.counter }}" class="Detailform border-1" style="display: none;">
-						<td colspan="9" id="id_case_text_{{ forloop.counter }}">
+						<td colspan="8" id="id_case_text_{{ forloop.counter }}">
 							<div class="ajax_loading"></div>
 						</td>
 					</tr>

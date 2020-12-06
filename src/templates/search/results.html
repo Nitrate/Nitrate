@@ -42,6 +42,7 @@
 	{% elif search_target == "case" %}
 
 	<script type="text/javascript" src="{% static "js/testcase_actions.js" %}"></script>
+	<script type="text/javascript" src="{% static "js/nitrate.toggledetail.js" %}"></script>
 	<script type="text/javascript">
 	  Nitrate.TestCases.Search.ActionUrls = {
 		printableCasesUrl: '{% url "cases-printable" %}',

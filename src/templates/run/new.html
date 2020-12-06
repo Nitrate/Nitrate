@@ -15,6 +15,7 @@
 <script type="text/javascript" src="{% static "js/testrun_actions.js" %}"></script>
 <script type="text/javascript" src="{% static "js/testcase_actions.js" %}"></script>
 <script type="text/javascript" src="{% static "js/testplan_actions.js" %}"></script>
+<script type="text/javascript" src="{% static "js/nitrate.toggledetail.js" %}"></script>
 <script type="text/javascript" src="{% static "admin/js/admin/RelatedObjectLookups.js" %}"></script>
 
 <script type="text/javascript">
@@ -145,7 +146,8 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.New.on_load);
 			<table id="testcases" class="list" cellpadding="0" cellspacing="0" border="0" >
 				<thead>
 					<tr>
-						<th  class="widthID" align="left" width="4%" >ID</th>
+						<th align="left" width="2%"></th>
+						<th class="widthID" align="left" width="4%" >ID</th>
 						<th align="left" width="26%" >Test Case Summary</th>
 						<th align="left" width="20%">Author</th>
 						<th align="left" width="20%">Created Date</th>
@@ -157,7 +159,12 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.New.on_load);
 				<tbody>
 					{% for test_case in test_cases %}
 					<tr class="{% cycle 'odd' 'even' %}" id="row_{{ forloop.counter }}" >
-						<td >
+						<td>
+							<a id="blind_link_{{ forloop.counter }}" class="blind_link" href="javascript:void(0)">
+								<img id="blind_icon_{{ forloop.counter }}" class="blind_icon" src="{% static "images/t1.gif" %}" border="0" alt="">
+							</a>
+						</td>
+						<td>
 							<a href="/case/{{ test_case.case_id }}/">{{ test_case.case_id }}</a>
 							{% if test_case.case_status.name == 'CONFIRMED' %}
 							<input type="hidden" name="case" value="{{ test_case.case_id }}">
@@ -172,9 +179,14 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.New.on_load);
 						<td>{{ test_case.author.email }}</td>
 						<td>{{ test_case.create_date }}</td>
 						<td>{{ test_case.category }}</td>
-						<td >{{ test_case.priority }}</td>
+						<td>{{ test_case.priority }}</td>
 						<td>
 							<a class="deletelink js-remove-case" data-params='["row_{{ forloop.counter }}", {{ test_case.estimated_time|timedelta2seconds }}]'>Remove</a>
+						</td>
+					</tr>
+					<tr id="hidenRow_{{ forloop.counter }}" class="Detailform border-1 hide" style="display: none;">
+						<td id="ajax_loading_{{ forloop.counter }}" colspan="8">
+							<div class="ajax_loading"></div>
 						</td>
 					</tr>
 					{% endfor %}

@@ -7,6 +7,9 @@ window.Nitrate = Nitrate;
 Nitrate.Utils = {};
 const SHORT_STRING_LENGTH = 100;
 
+const RIGHT_ARROW = '/static/images/t1.gif';
+const DOWN_ARROW = '/static/images/t2.gif';
+
 /**
  * Utility function.
  * Set up a function callback for after the page has loaded
@@ -754,7 +757,7 @@ function updateObject(options) {
 /**
  * Create an AJAX loading element.
  *
- * @param {string} id - the new element id.
+ * @param {string} [id] - the new element id.
  * @returns {HTMLElement} the new element.
  */
 function constructAjaxLoading(id) {
@@ -829,26 +832,6 @@ function popupAddAnotherWindow(triggeringLink, parameters) {
   return false;
 }
 
-/**
- * Used for expanding test case in test plan page specifically
- *
- * @param {object} options - options to update the icon of expand/collapse.
- * @param {jQuery} options.caseRowContainer
- *  a jQuery object referring to the container of the test case that is being
- *  expanded to show more information.
- * @param {jQuery} options.expandPaneContainer
- *  a jQuery object referring to the container of the expanded pane showing
- *  test case detail information.
- */
-function toggleExpandArrow(options) {
-  let blindIcon = options.caseRowContainer.find('img.blind_icon');
-  if (options.expandPaneContainer.is(':hidden')) {
-    blindIcon.removeClass('collapse').addClass('expand').prop('src', '/static/images/t1.gif');
-  } else {
-    blindIcon.removeClass('expand').addClass('collapse').prop('src', '/static/images/t2.gif');
-  }
-}
-
 function blinddownAllCases(element) {
   jQ('img.expand').each(function () {
     jQ(this).trigger('click');
@@ -856,7 +839,7 @@ function blinddownAllCases(element) {
   if (element) {
     jQ(element)
       .removeClass('collapse-all').addClass('expand-all')
-      .prop('src', '/static/images/t2.gif');
+      .prop('src', DOWN_ARROW);
   }
 }
 
@@ -868,37 +851,7 @@ function blindupAllCases(element) {
   if (element) {
     jQ(element)
       .removeClass('expand-all').addClass('collapse-all')
-      .prop('src', '/static/images/t1.gif');
-  }
-}
-
-/**
- * Toggle a test case detail pane.
- *
- * @param {object} options - options to toggle test case pane.
- * @param {string|number} options.case_id - the case id.
- * @param {object} options.casePaneContainer - the pane container jQuery object.
- * @param {boolean} options.reviewing - indicate whether to toggle the pane containing reviewing
- *                                      cases.
- * @param {Function} [callback] - a function called when pane content is returned from the server.
- */
-function toggleTestCasePane(options, callback) {
-  let casePaneContainer = options.casePaneContainer;
-
-  // If any of these is invalid, just keep quiet and don't display anything.
-  if (options.case_id === undefined || casePaneContainer === undefined) {
-    return;
-  }
-
-  casePaneContainer.toggle();
-
-  if (casePaneContainer.find('.ajax_loading').length) {
-    let endpoint = options.reviewing ? '/review-pane/' : '/readonly-pane/'
-    sendHTMLRequest({
-      url: '/case/' + options.case_id + endpoint,
-      container: casePaneContainer,
-      callbackAfterFillIn: callback
-    });
+      .prop('src', RIGHT_ARROW);
   }
 }
 

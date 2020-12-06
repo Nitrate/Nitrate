@@ -1,3 +1,6 @@
+/* global caseDetailExpansionHandler, SimpleCaseRunDetailExpansion, PlanCaseRunsExpansion */
+/* global RIGHT_ARROW, DOWN_ARROW */
+
 Nitrate.TestCases = {};
 Nitrate.TestCases.Search = {};
 Nitrate.TestCases.List = {};
@@ -55,20 +58,7 @@ Nitrate.TestCases.SearchResultTableSettings = Object.assign({}, Nitrate.DataTabl
       );
     });
 
-    jQ('.expandable').on('click', function () {
-      let c = jQ(this).parent()[0]; // Container
-      let cContainer = jQ(c).next()[0]; // Content Containers
-      let caseId = parseInt(jQ(c).find(':checkbox').prop('value'));
-
-      toggleTestCasePane({
-        case_id: caseId,
-        casePaneContainer: jQ(cContainer)
-      });
-      toggleExpandArrow({
-        caseRowContainer: jQ(c),
-        expandPaneContainer: jQ(cContainer)
-      });
-    });
+    jQ('.expandable').on('click', caseDetailExpansionHandler);
   },
 
   fnInfoCallback: function (oSettings, iStart, iEnd, iMax, iTotal, sPre) {
@@ -247,28 +237,11 @@ Nitrate.TestCases.Details.on_load = function () {
   });
 
   jQ('.plan_expandable').on('click', function () {
-    let c = jQ(this).parent();
-    toggleCaseRunsByPlan(
-      {
-        'type' : 'case_run_list',
-        'container': c[0],
-        'c_container': c.next()[0],
-        'case_id': c.find('input').first().val(),
-        'case_run_plan_id': c[0].id
-      },
-      function () {
-        jQ('#table_case_runs_by_plan .expandable').on('click', function () {
-          let c = jQ(this).parent(); // Container
-          // FIXME: case_text_version is not used in the backend to show caserun
-          //        information, notes, logs, and comments.
-          toggleSimpleCaseRunPane({
-            caserunRowContainer: c,
-            expandPaneContainer: c.next(),
-            caseId: c.find('input[name="case"]')[0].value,
-            caserunId: c.find('input[name="case_run"]')[0].value
-          });
-        });
+    new PlanCaseRunsExpansion(this).toggle(function () {
+      jQ('#table_case_runs_by_plan .expandable').on('click', function () {
+        new SimpleCaseRunDetailExpansion(this).toggle();
       });
+    });
   });
 
   jQ('#btn_edit,#btn_clone').on('click', function () {
@@ -408,27 +381,6 @@ Nitrate.TestCases.Clone.on_load = function () {
   });
 
 };
-
-
-/*
- * Toggle simple caserun pane in Case Runs tab in case page.
- */
-function toggleSimpleCaseRunPane(options) {
-  options.expandPaneContainer.toggle();
-
-  if (options.caserunRowContainer.next().find('.ajax_loading').length) {
-    sendHTMLRequest({
-      url: '/case/' + options.caseId + '/caserun-simple-pane/',
-      data: {case_run_id: options.caserunId},
-      container: options.expandPaneContainer
-    })
-  }
-
-  toggleExpandArrow({
-    caseRowContainer: options.caserunRowContainer,
-    expandPaneContainer: options.expandPaneContainer
-  });
-}
 
 /**
  * A function bound to AJAX request success event to add or remove issue to and from a case. It
@@ -597,8 +549,8 @@ function toggleCaseRunsByPlan(params, callback) {
 
   let blindIcon = container.find('img').first();
   if (contentContainer.is(':hidden')) {
-    blindIcon.removeClass('collapse').addClass('expand').prop('src', '/static/images/t1.gif');
+    blindIcon.removeClass('collapse').addClass('expand').prop('src', RIGHT_ARROW);
   } else {
-    blindIcon.removeClass('expand').addClass('collapse').prop('src', '/static/images/t2.gif');
+    blindIcon.removeClass('expand').addClass('collapse').prop('src', DOWN_ARROW);
   }
 }

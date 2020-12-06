@@ -1,3 +1,6 @@
+/* global CaseDetailExpansion */
+/* global RIGHT_ARROW, DOWN_ARROW */
+
 Nitrate.TestPlans = {};
 Nitrate.TestPlans.Create = {};
 Nitrate.TestPlans.List = {};
@@ -996,23 +999,15 @@ function bindEventsOnLoadedCases(options) {
     // Expand/collapse case details pane
     jQ(container).parent().find('.expandable.js-just-loaded').on('click', function () {
       let btn = this
-        , title = jQ(this).parent() // Container
-        , content = jQ(this).parent().next() // Content Containers
+        , caseDetailRow = jQ(this).parent().next() // Content Containers
         , inReviewingCasesTab = form.type.value === 'review_case';
 
-      toggleTestCasePane(
-        {
-          case_id: title.prop('id'),
-          casePaneContainer: content,
-          reviewing: inReviewingCasesTab
-        },
-        inReviewingCasesTab ? reviewCaseContentCallback(jQ(btn), content) : function () {}
+      new CaseDetailExpansion(this, inReviewingCasesTab).toggle(
+        inReviewingCasesTab ? reviewCaseContentCallback(jQ(btn), caseDetailRow) : function () {}
       );
 
-      toggleExpandArrow({caseRowContainer: title, expandPaneContainer: content});
-
-      let iconFile = areAllCasesCollapsed(inReviewingCasesTab, container) ? 't1.gif' : 't2.gif';
-      jQ(container).find('img.js-expand-collapse-cases').prop('src', '/static/images/' + iconFile);
+      let iconFile = areAllCasesCollapsed(inReviewingCasesTab, container) ? RIGHT_ARROW : DOWN_ARROW;
+      jQ(container).find('img.js-expand-collapse-cases').prop('src', iconFile);
     });
 
     /*
@@ -1117,28 +1112,6 @@ function changeCaseOrder2(parameters, callback) {
     traditional: true,
     success: callback
   });
-}
-
-// TODO: here
-function toggleAllCases(element) {
-  // FIXME: what does this if do?
-  //If and only if both case length is 0, remove the lock.
-  if (jQ('div[id^="id_loading_"].normal_cases').length === 0 && jQ('div[id^="id_loading_"].review_cases').length === 0){
-    jQ(element).removeClass('locked');
-  }
-
-  if (jQ(element).is('.locked')) {
-    return false;
-  } else {
-    jQ(element).addClass('locked');
-    if (jQ(element).is('.collapse-all')) {
-      element.title = 'Collapse all cases';
-      blinddownAllCases(element);
-    } else {
-      element.title = 'Expand all cases';
-      blindupAllCases(element);
-    }
-  }
 }
 
 /**
@@ -1322,19 +1295,12 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
       let allCasesExpanded = false;
 
       jQ(casesTable).find('img.js-expand-collapse-cases').on('click', function () {
-        // let iconFile = allCasesExpanded ? 't1.gif' : 't2.gif';
-        // jQ(this).prop('src', '/static/images/' + iconFile);
-
         jQ(casesTable).find('img.js-expand-collapse-case').each(function () {
           let caseTr = jQ(this).parents('tr')
             , caseDetailsTr = caseTr.next();
 
           if (caseDetailsTr.is(allCasesExpanded ? ':visible' : ':hidden')) {
             jQ(this).trigger('click');
-            toggleExpandArrow({
-              caseRowContainer: caseTr,
-              expandPaneContainer: caseDetailsTr
-            });
           }
         });
 

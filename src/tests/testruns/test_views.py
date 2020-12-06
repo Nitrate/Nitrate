@@ -202,15 +202,9 @@ class CloneRunBaseTest(BaseCaseRun):
 
         for forloop_counter, case_run in enumerate((self.case_run_1, self.case_run_2), 1):
             self.assertContains(
-                response,
-                '<a href="/case/{0}/">{0}</a>'.format(case_run.case.pk),
-                html=True)
-            self.assertContains(
-                response,
-                '<a id="link_{0}" class="blind_title_link" '
-                'href="javascript:toggleTestCaseContents(\'{0}\')">{1}</a>'.format(
-                    forloop_counter, case_run.case.summary),
-                html=True)
+                response, '<a href="/case/{0}/">{0}</a>'.format(case_run.case.pk), html=True
+            )
+            self.assertContains(response, f'<td>{case_run.case.summary}</td>', html=True)
 
 
 class TestStartCloneRunFromRunPage(CloneRunBaseTest):
