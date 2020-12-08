@@ -585,6 +585,21 @@ def open_run_get_users(case_runs):
     return (dict(testers.iterator()), dict(assignees.iterator()))
 
 
+class RunStatisticsView(TemplateView):
+    """A simple view for refreshing the statistics by case run status in a test run page"""
+
+    template_name = 'run/status_statistics.html'
+
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data()
+        run_id = self.kwargs['run_id']
+        data.update({
+            'test_run': get_object_or_404(TestRun.objects.only('pk'), pk=run_id),
+            'status_stats': stats_case_runs_status([run_id])[run_id]
+        })
+        return data
+
+
 @require_GET
 def get(request, run_id, template_name='run/get.html'):
     """Display testrun's detail"""

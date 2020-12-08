@@ -853,6 +853,12 @@ function updateCaseRunStatus(expansion, form) {
       value: caseRunStatusId,
       valueType: 'int',
       callback: function () {
+        // Refresh the statistics section
+        sendHTMLRequest({
+          url: '/run/' + document.getElementById('value_run_id').value + '/statistics/',
+          container: document.getElementById('run-statistics')
+        })
+
         // Update the case run status icon
         let crs = Nitrate.TestRuns.CaseRunStatus;
         expansion.caseRunRow.find('.icon_status').each(function () {
