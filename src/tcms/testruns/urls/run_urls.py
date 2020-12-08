@@ -33,4 +33,6 @@ urlpatterns = [
          views.FileIssueForCaseRun.as_view(), name='run-caserun-file-issue'),
 
     path('<int:run_id>/issues/', ajax.manage_case_run_issues, name='run-issues'),
+
+    path('<int:run_id>/statistics/', views.RunStatisticsView.as_view(), name='run-statistics'),
 ]
