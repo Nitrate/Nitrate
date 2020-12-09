@@ -62,7 +62,7 @@ class TestCaseRunViewDataMixin:
             content_type=caserun_ct,
             object_pk=caserun.pk,
             site_id=settings.SITE_ID
-        ).order_by('pk').values(
+        ).order_by('pk').only(
             'date', 'who__username', 'field',
             'original_value', 'new_value'
         )

@@ -2344,7 +2344,7 @@ class TestCaseSimpleCaseRunView(BaseCaseRun):
             f'<p>{self.case_run_2.notes}</p>',
             '<li class="grey" style="border:none;margin:0px;padding:0px">'
             'No comments found.</li>',
-            '<li class="grey">No log found.</li>'
+            '<td colspan="5" class="empty-message-row">No logs.</td>'
         ]
         for item in expected_content:
             self.assertContains(resp, item, html=True)

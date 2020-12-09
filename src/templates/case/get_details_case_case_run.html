@@ -16,11 +16,5 @@
 	</ul>
 
 	<h4>Change Log:</h4>
-	<ul>
-		{% for log in logs %}
-		<li>[{{ log.date }}] - [{{ log.who__username }}] - {{ log.action }}</li>
-		{% empty %}
-		<li class="grey">No log found.</li>
-		{% endfor %}
-	</ul>
+	{% include 'case/get_log.html' %}
 </td>
