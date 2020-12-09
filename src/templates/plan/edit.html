@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block custom_stylesheet %}
-<link rel="stylesheet" type="text/css" href="{% static "style/print.css" %} media="print" %}" />
+<link rel="stylesheet" type="text/css" href="{% static "style/print.css" %}" media="print" />
 <style>
 .display_summary textarea{ background:red; }
 </style>
@@ -59,7 +59,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestPlans.Edit.on_load);
 				</tr>
 				<tr>
 					<td>
-						<label clas"strong">{{ form.is_active.label }}</label>
+						<label class="strong">{{ form.is_active.label }}</label>
 					</td>
 					<td>
 						<span>{{ form.is_active }}</span>
@@ -74,7 +74,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestPlans.Edit.on_load);
 				<tr>
 					<td><label class="lab">Owner</label></td>
 					<td>
-						<span class="name " />{{ form.owner }}</span>
+						<span class="name">{{ form.owner }}</span>
 						<span class="errors">{{ form.owner.errors }}</span>
 					</td>
 				</tr>
