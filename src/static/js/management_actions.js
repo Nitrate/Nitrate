@@ -6,6 +6,8 @@ Nitrate.Management.Environment.PropertyValue = {};
 
 const Environment = Nitrate.Management.Environment;
 
+// Will be set when select a property to show values
+Environment.Property.currentPropertyId = null;
 
 Nitrate.Management.Environment.Edit = {
   on_load: function () {
@@ -163,7 +165,10 @@ Nitrate.Management.Environment.Property.selectEnvProperty = function (propertyId
   sendHTMLRequest({
     url: Environment.Property.URLs.list_property_values.replace('$id', propertyId),
     container: jQ('#' + 'id_values_container'),
-    callbackAfterFillIn: Environment.PropertyValue.bindPropertyValueActions,
+    callbackAfterFillIn: function () {
+      Environment.PropertyValue.bindPropertyValueActions();
+      Environment.Property.currentPropertyId = propertyId;
+    },
     notFoundMessage: 'Cannot find environment property with id ' + propertyId.toString(),
   });
 };
@@ -273,7 +278,9 @@ Nitrate.Management.Environment.PropertyValue.add = function (propertyId) {
     traditional: true,
     data: {value: valuesToAdd},
     container: jQ('#id_values_container'),
-    callbackAfterFillIn: Environment.PropertyValue.bindPropertyValueActions,
+    callbackAfterFillIn: function () {
+      Environment.Property.selectEnvProperty(Environment.Property.currentPropertyId);
+    },
     forbiddenMessage: 'You are not allowed to change environment property status.',
   });
 };

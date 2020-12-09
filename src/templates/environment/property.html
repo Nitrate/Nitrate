@@ -73,18 +73,4 @@
 	</fielset>
 	</div>
 </div>
-{% verbatim %}
-	<script id="property_value_row_template" type="text/x-handlebars-template">
-		<li>
-			<input type="checkbox" name="id" value="{{ id }}">
-			<span style="width:50%;" id="id_value_{{ id }}">{{ value }}</span>
-			{% if perms.management.change_tcmsenvvalue %}
-				<span class="right-action">
-					<a href="javascript:void(0)" data-param="{{ id }}" class="editlink js-edit-prop-value">Rename</a>
-				</span>
-			{% endif %}
-		</li>
-	</script>
-{% endverbatim %}
-
 {% endblock %}
