@@ -58,7 +58,7 @@
 						</span>
 						{% if perms.management.change_tcmsenvproperty %}
 						<div class="right-action" >
-							<a class="editlink js-edit-prop" href="#" >Rename</a>
+							<a class="editlink js-edit-prop" href="javascript:void(0)" >Rename</a>
 						</div>
 						{% endif %}
 					</li>
@@ -73,17 +73,6 @@
 	</fielset>
 	</div>
 </div>
-{% verbatim %}
-	<script id="properties_container_template" type="text/x-handlebars-template">
-		<li id="id_property_{{ id }}" data-param="{{ id }}">
-			<input type="checkbox" name="id" value="{{ id }}">
-			<a id="id_property_name_{{ id }}" class="js-prop-name" >{{ name }}</a>
-			<span class="right-action">
-				<a class="editlink js-rename-prop">Rename</a>
-			</span>
-		</li>
-	</script>
-{% endverbatim %}
 {% verbatim %}
 	<script id="property_value_row_template" type="text/x-handlebars-template">
 		<li>

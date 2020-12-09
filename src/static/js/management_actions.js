@@ -202,25 +202,6 @@ Nitrate.Management.Environment.Property.addEnvProperty = function () {
     url: Nitrate.Management.Environment.Property.URLs.add_property,
     data: {name: propertyName},
     forbiddenMessage: 'You are not allowed to add environment property.',
-    success: function (data) {
-      jQ('#id_properties_container li.focus').removeClass('focus');
-
-      let template = Handlebars.compile(jQ('#properties_container_template').html());
-      let context = {'id': data.id, 'name': data.name};
-      jQ('#id_properties_container')
-        .append(template(context)).find('.js-prop-name').on('click', function () {
-          Environment.Property.selectEnvProperty(
-            parseInt(jQ(this).parent().data('param'))
-          );
-        })
-        .end().find('.js-rename-prop').on('click', function () {
-          Environment.Property.editEnvProperty(
-            parseInt(jQ(this).parent().data('param'))
-          );
-        });
-
-      Environment.Property.selectEnvProperty(data.id);
-    },
   });
 };
 
