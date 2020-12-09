@@ -199,7 +199,7 @@ Nitrate.Management.Environment.Property.addEnvProperty = function () {
   }
 
   postRequest({
-    url: Nitrate.Management.URLs.add_property,
+    url: Nitrate.Management.Environment.Property.URLs.add_property,
     data: {name: propertyName},
     forbiddenMessage: 'You are not allowed to add environment property.',
     success: function (data) {
