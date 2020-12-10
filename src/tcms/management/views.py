@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from itertools import groupby
-from operator import itemgetter
+from operator import itemgetter, attrgetter
 
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.contenttypes.models import ContentType
@@ -137,19 +137,16 @@ class EnvironmentGroupsListView(TemplateView):
         # Get logs for each group
         env_group_ct = ContentType.objects.get_for_model(TCMSEnvGroup)
         qs = (
-            TCMSLogModel.objects.filter(content_type=env_group_ct,
-                                        object_pk__in=env_groups)
-            .values('object_pk', 'who__username', 'date', 'field',
-                    'original_value', 'new_value')
+            TCMSLogModel.objects.filter(content_type=env_group_ct, object_pk__in=env_groups)
+            .only('object_pk', 'who__username', 'date', 'field', 'original_value', 'new_value')
             .order_by('object_pk')
-            .iterator()
         )
 
         # we have to convert object_pk to an integer due to it's a string stored in
         # database.
         logs = {
             int(key): list(value) for key, value in
-            groupby(qs, itemgetter('object_pk'))
+            groupby(qs, attrgetter('object_pk'))
         }
 
         env_groups = (

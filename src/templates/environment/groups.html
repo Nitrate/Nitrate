@@ -89,32 +89,8 @@
 				</td>
 			</tr>
 			<tr style="display:none">
-				<td colspan="5">
-					<table class="env_groups_history">
-						<colgroup>
-							<col><col><col><col><col>
-						</colgroup>
-						<thead>
-							<tr>
-								<th>When</th>
-								<th>Who</th>
-								<th>Field</th>
-								<th>Original Value</th>
-								<th>New Value</th>
-							</tr>
-						</thead>
-						<tbody>
-							{% for log in env.another_logs %}
-							<tr class="{% cycle 'even' 'odd'%}">
-								<td>{{ log.date }}</td>
-								<td>{{ log.who__username }}</td>
-								<td>{{ log.field }}</td>
-								<td>{{ log.original_value }}</td>
-								<td>{{ log.new_value }}</td>
-							</tr>
-							{% endfor %}
-						</tbody>
-					</table>
+				<td colspan="5" style="padding: 6px">
+					{% include "logs_table.html" with logs=env.another_logs %}
 					<div class="clear"></div>
 				</td>
 			</tr>
