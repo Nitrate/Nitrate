@@ -49,8 +49,6 @@ from tcms.core.utils import DataTableResult
 from tcms.core.utils import format_timedelta
 from tcms.core.views import prompt
 from tcms.management.models import Priority, TestTag, TCMSEnvGroup
-from tcms.search.forms import RunForm
-from tcms.search.query import SmartDjangoQuery
 from tcms.testcases.models import TestCase
 from tcms.testcases.models import TestCasePlan, TestCaseStatus
 from tcms.testcases.views import get_selected_testcases
@@ -1349,49 +1347,6 @@ class ChangeRunEnvValueView(PermissionRequiredMixin, FormView):
         return JsonResponseBadRequest({
             'message': form_error_messages_to_list(form.errors)
         })
-
-
-def caseruns(request, templ='report/caseruns.html'):
-    """View that search caseruns."""
-    queries = request.GET
-    r_form = RunForm(queries)
-    r_form.populate(queries)
-    context = {}
-    if r_form.is_valid():
-        runs = SmartDjangoQuery(r_form.cleaned_data, TestRun.__name__)
-        runs = runs.evaluate()
-        caseruns = get_caseruns_of_runs(runs, queries)
-        context['test_case_runs'] = caseruns
-        context['runs'] = runs
-    return render(request, templ, context=context)
-
-
-def get_caseruns_of_runs(runs, kwargs=None):
-    """
-    Filtering argument -
-        priority
-        tester
-        plan tag
-    """
-
-    if kwargs is None:
-        kwargs = {}
-    plan_tag = kwargs.get('plan_tag', None)
-    if plan_tag:
-        runs = runs.filter(plan__tag__name=plan_tag)
-    caseruns = TestCaseRun.objects.filter(run__in=runs)
-    priority = kwargs.get('priority', None)
-    if priority:
-        caseruns = caseruns.filter(case__priority__pk=priority)
-    tester = kwargs.get('tester', None)
-    if not tester:
-        caseruns = caseruns.filter(tested_by=None)
-    if tester:
-        caseruns = caseruns.filter(tested_by__pk=tester)
-    status = kwargs.get('status', None)
-    if status:
-        caseruns = caseruns.filter(case_run_status__name__iexact=status)
-    return caseruns
 
 
 class FileIssueForCaseRun(RedirectView):

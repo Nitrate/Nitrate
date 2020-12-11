@@ -31,8 +31,6 @@ urlpatterns = [
     path('run/', include('tcms.testruns.urls.run_urls')),
     path('runs/', include('tcms.testruns.urls.runs_urls')),
 
-    path('caseruns/', testruns_views.caseruns),
-
     path('caserun/comment-many/', tcms_core_ajax.comment_case_runs,
          name='caserun-comment-caseruns'),
 
