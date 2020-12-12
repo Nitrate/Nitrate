@@ -38,10 +38,9 @@
 			<td class="case_title expandable">
 				<a href="#caserun_{{ test_case_run.pk }}">#{{ test_case_run.pk }}</a>
 			</td>
-			<td "{{ test_case_run.case_id }}" class="case_title expandable">
+			<td class="case_title expandable">
 				<a href="{% url "case-get" test_case_run.case_id %}?from_plan={{ test_case_run.run.plan_id }}">{{ test_case_run.case_id }}</a>
 			</td>
-
 			<td class="expandable">
 				<a id="link_{{ forloop.counter }}" href="#caserun_{{ test_case_run.pk }}" title="Expand test case">{{ test_case_run.case.summary }}</a>
 			</td>
