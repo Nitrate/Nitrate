@@ -458,7 +458,7 @@ class BaseAddIssueForm(forms.Form):
         ]
     )
     tracker = forms.ModelChoiceField(
-        queryset=IssueTracker.objects.all(),
+        queryset=IssueTracker.objects.only('pk', 'enabled', 'name'),
         error_messages={
             'required': 'Issue tracker is missed.',
             'invalid_choice': 'Invalid issue tracker that does not exist.'

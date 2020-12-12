@@ -1494,11 +1494,16 @@ class AddIssueToCases(CasesIssueActionBaseView):
     permission_required = 'issuetracker.add_issue'
 
     def do(self, form):
+        tracker = form.cleaned_data['tracker']
+        if not tracker.enabled:
+            return JsonResponseBadRequest({
+                'message': f'Issue tracker "{tracker.name}" is not enabled.'
+            })
         case = form.cleaned_data['case']
         try:
             case.add_issue(
                 issue_key=form.cleaned_data['issue_key'],
-                issue_tracker=form.cleaned_data['tracker'],
+                issue_tracker=tracker,
                 summary=form.cleaned_data['summary'],
                 description=form.cleaned_data['description'],
             )

@@ -1695,6 +1695,14 @@ class TestIssueManagement(BaseCaseRun):
             validate_regex=r'^\d+$',
         )
 
+        cls.disabled_tracker = f.IssueTrackerFactory(
+            service_url='http://bz1.localhost/',
+            issue_report_endpoint='/enter_bug.cgi',
+            tracker_product=cls.tracker_product,
+            validate_regex=r'^\d+$',
+            enabled=False
+        )
+
         # Used for testing removing issue from test case.
         cls.case_2_delete_issue_url = reverse('cases-delete-issue', args=[cls.case_2.pk])
         cls.case_2.add_issue('67890', cls.issue_tracker)
@@ -1873,6 +1881,22 @@ class TestIssueManagement(BaseCaseRun):
 
         self.assert400(resp)
         self.assertIn(f'Test case {case_id} does not exist.', resp.json()['message'])
+
+    def test_bad_request_if_an_issue_tracker_is_not_enabled(self):
+        user_should_have_perm(self.tester, self.perm_add_issue)
+
+        url = reverse('cases-add-issue', args=[self.case_1.pk])
+
+        resp = self.client.post(url, data={
+            'issue_key': self.fake_issue_key,
+            'tracker': self.disabled_tracker.pk,
+        })
+
+        self.assert400(resp)
+        self.assertIn(
+            f'Issue tracker "{self.disabled_tracker.name}" is not enabled',
+            resp.json()['message']
+        )
 
 
 class TestNewCase(BasePlanCase):

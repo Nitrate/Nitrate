@@ -24,7 +24,7 @@
 		<td colspan="4" align="center" class="grey">No issues related to this case.</td>
 	</tr>
 	{% endfor %}
-	{% if perms.issuetracker.add_issue %}
+	{% if perms.issuetracker.add_issue and issue_trackers %}
 	<tr>
 		<td colspan="4" style="padding:0;">
 			<form id="id_case_issue_form" action="{% url "cases-add-issue" test_case.case_id %}" method="post">
