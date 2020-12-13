@@ -757,7 +757,11 @@ class TestCaseCaseRunDetailPanelView(TemplateView,
 
         caserun_status = TestCaseRunStatus.objects.values('pk', 'name')
         caserun_status = caserun_status.order_by('sortkey')
-        issues = group_case_issues(case_run.case.get_issues().order_by('issue_key'))
+        issues = group_case_issues(case_run.case
+                                   .get_issues()
+                                   .order_by('issue_key')
+                                   .only('issue_key', 'tracker__name',
+                                         'tracker__issue_url_fmt', 'case_run__run'))
         has_issue_trackers = case_run.run.get_issue_trackers().exists()
 
         data.update({

@@ -468,9 +468,7 @@ class TestCase(TCMSActionModel):
         return format_timedelta(self.estimated_time)
 
     def get_issues(self):
-        return (Issue.objects.filter(case__pk=self.pk)
-                             .select_related('tracker')
-                             .order_by('pk'))
+        return Issue.objects.filter(case__pk=self.pk).select_related('tracker', 'case_run')
 
     def get_choiced(self, obj_value, choices):
         for x in choices:

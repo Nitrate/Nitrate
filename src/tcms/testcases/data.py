@@ -58,14 +58,13 @@ class TestCaseRunViewDataMixin:
 
     def get_caserun_logs(self, caserun):
         caserun_ct = self.get_caserun_contenttype()
-        return TCMSLogModel.objects.filter(
-            content_type=caserun_ct,
-            object_pk=caserun.pk,
-            site_id=settings.SITE_ID
-        ).order_by('pk').only(
-            'date', 'who__username', 'field',
-            'original_value', 'new_value'
-        )
+        return (TCMSLogModel.objects
+                .filter(content_type=caserun_ct,
+                        object_pk=caserun.pk,
+                        site_id=settings.SITE_ID)
+                .order_by('pk')
+                .select_related('who')
+                .only('date', 'who__username', 'field', 'original_value', 'new_value'))
 
     def get_caserun_comments(self, caserun):
         caserun_ct = self.get_caserun_contenttype()
