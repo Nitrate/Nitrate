@@ -128,7 +128,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.New.on_load);
 			</table>
 			<div class="submit-row ">
 				<input type="submit" name="" value="Save">
-				<input type="button" name="cancel" value="cancel" class="js-cancel-button" >
+				<input type="button" name="cancel" value="cancel" class="js-cancel-button">
 			</div>
 		</div>
 	{% if test_cases %}
@@ -143,22 +143,22 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.New.on_load);
 					{% endif %}
 				</span>
 			</div>
-			<table id="testcases" class="list" cellpadding="0" cellspacing="0" border="0" >
+			<table id="testcases" class="list" cellpadding="0" cellspacing="0" border="0">
 				<thead>
 					<tr>
 						<th align="left" width="2%"></th>
-						<th class="widthID" align="left" width="4%" >ID</th>
-						<th align="left" width="26%" >Test Case Summary</th>
+						<th class="widthID" align="left" width="4%">ID</th>
+						<th align="left" width="26%">Test Case Summary</th>
 						<th align="left" width="20%">Author</th>
 						<th align="left" width="20%">Created Date</th>
 						<th align="left" width="8%">Category</th>
-						<th align="left"  width="8%" >Priority</th>
+						<th align="left"  width="8%">Priority</th>
 						<th align="left" width="10%">Action</th>
 					</tr>
 				</thead>
 				<tbody>
 					{% for test_case in test_cases %}
-					<tr class="{% cycle 'odd' 'even' %}" id="row_{{ forloop.counter }}" >
+					<tr class="{% cycle 'odd' 'even' %}" id="row_{{ forloop.counter }}">
 						<td>
 							<a id="blind_link_{{ forloop.counter }}" class="blind_link" href="javascript:void(0)">
 								<img id="blind_icon_{{ forloop.counter }}" class="blind_icon" src="{% static "images/t1.gif" %}" border="0" alt="">
@@ -172,7 +172,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.New.on_load);
 						</td>
 						<td{% if not test_case.case_status.name == 'CONFIRMED' %} style='text-decoration: line-through'{% endif %}>
 							{% if not test_case.case_status.name == 'CONFIRMED' %} <img src="{% static "images/warning.png" %}"/>{% endif %}
-							<a id="link_{{ forloop.counter }}" class="blind_title_link js-case-summary" data-param="{{ forloop.counter }}" >
+							<a id="link_{{ forloop.counter }}" class="blind_title_link js-case-summary" data-param="{{ forloop.counter }}">
 								{{ test_case.summary }}
 							</a>
 						</td>

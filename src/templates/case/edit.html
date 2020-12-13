@@ -53,7 +53,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestCases.Edit.on_load);
 	</span>
 	<form action="{% url "case-edit" test_case.case_id %}" method="post">{% csrf_token %}
 		<input type="hidden" name="from_plan" value="{{ test_plan.plan_id }}">
-		<div class="Detailform border-1" >
+		<div class="Detailform border-1">
 			<fieldset class="no-border background-light-grey">
 				<div class="editor-side">
 					<div class="data_row">
@@ -66,7 +66,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestCases.Edit.on_load);
 					</div>
 					<div class="data_row">
 						<label>Category</label>
-						<span id="form_category" >{{ form.category }}</span><a href="{% url "admin:testcases_testcasecategory_add" %}" class="addlink" id="id_addt_product_casecategory" target="_blank">Add Category</a><span class="grey">After Add and Refresh page</span>
+						<span id="form_category">{{ form.category }}</span><a href="{% url "admin:testcases_testcasecategory_add" %}" class="addlink" id="id_addt_product_casecategory" target="_blank">Add Category</a><span class="grey">After Add and Refresh page</span>
 					</div>
 					<div class="data_row">
 						<label>Default Tester</label>
@@ -76,7 +76,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestCases.Edit.on_load);
 
 					<div class="data_row">
 						<label>Estimated Time</label>
-						<div id="form_estimated_time" >
+						<div id="form_estimated_time">
 							<span id="form_estimated_time">{{ form.estimated_time }}</span>
 							<span class="grey">(eg. 3d 4h 30m)</span>
 							<div class="errors">{{ form.estimated_time.errors }}</div>
@@ -84,20 +84,20 @@ Nitrate.Utils.after_page_load(Nitrate.TestCases.Edit.on_load);
 					</div>
 					<div class="data_row">
 						<label >Status</label>
-						<span id="form_status" >{{ form.case_status }}</span>
+						<span id="form_status">{{ form.case_status }}</span>
 					</div>
 					<div class="data_row">
 						<label >Arguments</label>
-						<span id="form_arguments" >{{ form.arguments }}</span>
+						<span id="form_arguments">{{ form.arguments }}</span>
 						<div class="errors">{{ form.arguments.errors }}</div>
 					</div>
 					<div class="data_row">
                         <label >Reference Link</label>
-                        <span id="form_extra_link" >{{ form.extra_link }}</span>
+                        <span id="form_extra_link">{{ form.extra_link }}</span>
                     </div>
 					<div class="data_row">
 						<label >Notes</label>
-						<span id="form_notes" >{{ form.notes }}</span>
+						<span id="form_notes">{{ form.notes }}</span>
 						<div class="errors">{{ form.notes.errors }}</div>
 					</div>
 
@@ -127,7 +127,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestCases.Edit.on_load);
 					</div>
 					<div class="data_row">
 						<label >Last Modified</label>
-						<div id="display_modify_date" >{{ test_case.latest_text.create_date }}</div>
+						<div id="display_modify_date">{{ test_case.latest_text.create_date }}</div>
 					</div>
 
 
@@ -145,19 +145,19 @@ Nitrate.Utils.after_page_load(Nitrate.TestCases.Edit.on_load);
 					</div>
 					<div class="data_row">
 						<label >Requirement</label>
-						<div id="form_requirement"  >{{ form.requirement }}</div>
+						<div id="form_requirement">{{ form.requirement }}</div>
 					</div>
 					<div class="data_row">
 						<label >Script</label>
-						<div id="form_script" >{{ form.script }}</div>
+						<div id="form_script">{{ form.script }}</div>
 					</div>
 					<div class="data_row">
 						<label >Alias</label>
-						<div  >{{ form.alias }}</div>
+						<div>{{ form.alias }}</div>
 					</div>
 					<div class="data_row">
 						<label>Priority</label>
-						<span id="form_priority" >{{ form.priority }}</span>
+						<span id="form_priority">{{ form.priority }}</span>
 					</div>
 					<div class="data_row">
 						<label>Tags</label>

@@ -10,7 +10,7 @@
 
 {% block contents %}
 <div id="content">
-	<div id="index" >
+	<div id="index">
 		<br clear="all">
 		<div class="login radius">
 			<form id="id_register_form" action="{% url "nitrate-register" %}" method="POST">{% csrf_token %}
@@ -24,7 +24,7 @@
 						<td id="login_info" colspan="2" style="display:none;"></td>
 					</tr>
 					<tr><td></td>
-						<td  class="submit">
+						<td class="submit">
 							<input type="hidden" name="next" value="{{ REQUEST_CONTENTS.next }}" />
 							<input type="submit" value="Register" class="loginbutton sprites"/>
 							<!--<input type="reset" />-->

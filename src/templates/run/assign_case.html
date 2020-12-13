@@ -66,12 +66,12 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.AssignCase.on_load);
 					<p>
 						The table below list all the confirmed test cases of plan {{ test_run.plan }}, check the checkbox to add cases into test run. Remember to update at last. 
 						<span class="right-action">
-							<a href="#" class="js-close-how-assign" >X</a>
+							<a href="#" class="js-close-how-assign">X</a>
 						</span>
 					</p>
 				</div>
 			</div>
-			<table id="id_table_cases" class="list" cellpadding="0" cellspacing="0" border="0" >
+			<table id="id_table_cases" class="list" cellpadding="0" cellspacing="0" border="0">
 				<thead>
 					<tr>
 						<th class="nosort" align="left" width="20px"><input id="id_check_all_button" type="checkbox" /></th>
@@ -99,7 +99,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.AssignCase.on_load);
 						<td>
 							<a href="{% url "case-get" test_case.case_id %}">{{ test_case.case_id }}</a>
 						</td>
-						<td class="js-case-summary" data-param="{{ forloop.counter }}" >
+						<td class="js-case-summary" data-param="{{ forloop.counter }}">
 							<a id="link_{{ forloop.counter }}" class="blind_title_link" href="javascript:void(0);">
 								{{ test_case.summary }}
 							</a>

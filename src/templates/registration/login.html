@@ -10,7 +10,7 @@
 
 {% block contents %}
 <div id="content">
-	<div id="index" >
+	<div id="index">
 		<br clear="all">
 		{% if 'USERPWD' in SETTINGS.ENABLED_AUTH_BACKENDS %}
 		<div class="login radius">
@@ -37,7 +37,7 @@
 					{% endif %}
 					<tr>
                     	<td>&nbsp;</td>
-						<td  class="submit">
+						<td class="submit">
 							<input type="hidden" name="next" value="{{ next }}" />
 							<input type="submit" value="Login" class="loginbutton sprites" />
 						</td>

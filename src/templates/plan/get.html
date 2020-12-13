@@ -93,7 +93,7 @@ Nitrate.TestPlans.Instance = {
 		<div class="leftlistinfo">
 			<div class="listinfo">
 				<div class="title grey">Author&nbsp;:</div>
-				<div id="display_author"  class="name " > <a href="{% url "user-profile" test_plan.author.username %}">{{ test_plan.author }}</a></div>
+				<div id="display_author" class="name"> <a href="{% url "user-profile" test_plan.author.username %}">{{ test_plan.author }}</a></div>
 			</div>
 			{% comment %}
             <div class="listinfo">
@@ -103,7 +103,7 @@ Nitrate.TestPlans.Instance = {
             {% endcomment %}
 			<div class="listinfo">
 				<div class="title grey">Owner&nbsp;:</div>
-				<div id="display_author"  class="name" >
+				<div id="display_author" class="name">
 				{% if test_plan.owner %}
 				<a href="{% url "user-profile" test_plan.owner.username|default:"unknown" %}">{{ test_plan.owner }}</a>
 				{% else %}
@@ -113,15 +113,15 @@ Nitrate.TestPlans.Instance = {
 			</div>
 			<div class="listinfo">
 				<div class="title grey">Product&nbsp;:</div>
-				<div id="display_product"  class="name "><a href="{% url "plans-all" %}?action=search&name__icontains=&author__email__startswith=&owner__username__startswith=&type=&tag__name__in=&case__default_tester__username__startswith=&is_active=on&product={{ test_plan.product_id }}&product_version=&env_group=&create_date__gte=&create_date__lte=" title="Search plans of {{ test_plan.product }} ">{{ test_plan.product }}</a></div>
+				<div id="display_product" class="name "><a href="{% url "plans-all" %}?action=search&name__icontains=&author__email__startswith=&owner__username__startswith=&type=&tag__name__in=&case__default_tester__username__startswith=&is_active=on&product={{ test_plan.product_id }}&product_version=&env_group=&create_date__gte=&create_date__lte=" title="Search plans of {{ test_plan.product }} ">{{ test_plan.product }}</a></div>
 			</div>
 			<div class="listinfo">
 				<div class="title grey">Version&nbsp;:</div>
-				<div id="display_product_version"  class="name ">{{ test_plan.product_version.value }}</div>
+				<div id="display_product_version" class="name ">{{ test_plan.product_version.value }}</div>
 			</div>
 			<div class="listinfo">
 				<div class="title grey">Plan Type&nbsp;:</div>
-				<div id="display_type"  class="name ">{{ test_plan.type.name }}</div>
+				<div id="display_type" class="name ">{{ test_plan.type.name }}</div>
 			</div>
 		</div>
 		<div class="rightlistinfo">
@@ -132,7 +132,7 @@ Nitrate.TestPlans.Instance = {
 					<span class="blue strong"><a href="{% url "plans-all" %}?action=search&name__icontains=&author__email__startswith=&owner__username__startswith=&type=&tag__name__in=&case__default_tester__username__startswith=&product=&product_version=&env_group={{ env_group.id }}&create_date__gte=&create_date__lte=" title="Search plans of use {{ env_group.name }} ">{{ env_group.name }}</a></span>
 					{% endfor %}
 				</div>
-				<div id="display_summary" >
+				<div id="display_summary">
 					{% for env_property in env_properties %}
 					{{ env_property.property.name }},
 					{% endfor %}
@@ -182,10 +182,10 @@ Nitrate.TestPlans.Instance = {
 						Reviewing Cases (<span id='review_case_count' class="js-reviewcases-count">{{ test_plan.review_case.count }}</span>)
 					</a>
 				</li>
-				<li id="tab_testruns"  class="tab">
+				<li id="tab_testruns" class="tab">
 					<a href="#testruns" title="testruns">Runs (<span id='run_count'>{{ test_plan.run.count }}</span>)</a>
 				</li>
-				<li id="tab_components"	 class="tab">
+				<li id="tab_components" class="tab">
 					<a href="#components" title="components">Default Components (<span id='component_count'>{{ test_plan.component.count }}</span>)</a>
 				</li>
 				<li id="tab_attachment" class="tab">
@@ -238,10 +238,10 @@ Nitrate.TestPlans.Instance = {
 	</div>
 	<div class="popup" id="id_import_case_zone" {% if xml_form.xml_file.errors %}{% else %}style="display:none;"{% endif %}>
 		<div class="submit-row">
-			<input type="button" value="x" class="js-close-zone" >
+			<input type="button" value="x" class="js-close-zone">
 		</div>
 		<form action="{% url "plan-import-cases" test_plan.plan_id %}" method="POST" enctype="multipart/form-data">
-			<div  class="right-bar" >
+			<div class="right-bar">
 				<label class="errors" id="import-error">{{ xml_form.xml_file.errors }}</label>
 				{{ xml_form.a }}
 				<label><b>Import XML File:</b></label>

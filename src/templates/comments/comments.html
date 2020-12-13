@@ -9,7 +9,7 @@
 			{% if comment.user == user %}
 			<form action="{% url "comments-delete" %}" method="get">
 				<input type="hidden" name="comment_id" value="{{ comment.id }}" />
-				<a class="commentdelete sprites" href="javascript:void(0)" ></a>
+				<a class="commentdelete sprites" href="javascript:void(0)"></a>
 			</form>
 			{% endif %}
 			<br/>

@@ -40,7 +40,7 @@
 		<a href="#" class="addlink js-add-env-group">Add new group</a>
 	</div>
 	{% endif %}
-	<table cellspan="0" cellspacing="0" border="0"  class="manage" width="98%">
+	<table cellspan="0" cellspacing="0" border="0" class="manage" width="98%">
 		<thead>
 			<tr class="titlelink">
 				<th width="15%">Groups</th>
@@ -56,7 +56,7 @@
 				<th align="center" height="26px">
 					<label class=" {% if env.is_active %}{% else %}disable line-through{% endif %}">
 						{% if perms.management.change_tcmsenvgroup %}
-						<a href="{% url "management-env-group-edit" env.id %}" >
+						<a href="{% url "management-env-group-edit" env.id %}">
 							{{ env.name }}
 						</a>
 						{% else %}

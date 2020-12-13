@@ -58,7 +58,7 @@ Nitrate.TestCases.Instance = {
 	{% endif %}
 	<div class="control">
 		{% if perms.testcases.change_testcase %}
-		<span id="id_buttons" ><input id="btn_edit" type="button" value="Edit" data-link="{% url "case-edit" test_case.case_id %}?from_plan={{ test_plan.plan_id }}"/></span>
+		<span id="id_buttons"><input id="btn_edit" type="button" value="Edit" data-link="{% url "case-edit" test_case.case_id %}?from_plan={{ test_plan.plan_id }}"/></span>
 		{% endif %}
 		{% if perms.testcases.add_testcaseplan %}
 		<span id=""><input type="button" id="btn_clone" value="Clone case" data-link="{% url "cases-clone" %}?from_plan={{ test_plan.plan_id }}&case={{ test_case.case_id }}"/></span>
@@ -93,7 +93,7 @@ Nitrate.TestCases.Instance = {
 				<div class="listinfo">
 					<div class="title grey">Category&nbsp;:</div>
 					<div class="name">
-						<span id="display_category" >{{ test_case.category }}</span>
+						<span id="display_category">{{ test_case.category }}</span>
 					</div>
 				</div>
 				<div class="listinfo">
@@ -102,16 +102,16 @@ Nitrate.TestCases.Instance = {
 				</div>
 				<div class="listinfo">
 					<div class="title grey">Priority&nbsp;:</div>
-					<div class="name"><span id="display_priority" >{{ test_case.priority }}</span></div>
+					<div class="name"><span id="display_priority">{{ test_case.priority }}</span></div>
 				</div>
 				<div class="listinfo">
 					<div class="title grey">Status&nbsp;:</div>
-					<div class="name"><span id="display_priority" >{{ test_case.case_status }}</span></div>
+					<div class="name"><span id="display_priority">{{ test_case.case_status }}</span></div>
 				</div>
 				<div class="listinfo">
 					<div class="title grey"><span>Alias&nbsp;:</span></div>
 					<div class="name {% if not test_case.alias %}grey{% endif %}">
-						<span id="display_script" >{{ test_case.alias|default:'None' }}</span>
+						<span id="display_script">{{ test_case.alias|default:'None' }}</span>
 					</div>
 				</div>
 
@@ -136,13 +136,13 @@ Nitrate.TestCases.Instance = {
 				<div class="listinfo">
 					<div class="title grey">Requirement&nbsp;:</div>
 					<div class="name {% if not test_case.requirement %}grey{% endif %}">
-						<span id="display_requirement" >{{ test_case.requirement|default:'None' }}</span>
+						<span id="display_requirement">{{ test_case.requirement|default:'None' }}</span>
 					</div>
 				</div>
 				<div class="listinfo">
 					<div class="title grey">Script&nbsp;:</div>
 					<div class="name {% if not test_case.script %}grey{% endif %}">
-						<span id="display_script" >{{ test_case.script|default:'None' }}</span>
+						<span id="display_script">{{ test_case.script|default:'None' }}</span>
 					</div>
 				</div>
 
@@ -169,13 +169,13 @@ Nitrate.TestCases.Instance = {
 			<div class="clear"></div>
 			<div class="listinfo">
 				<div class="title grey">Notes&nbsp;:</div>
-				<div class="name" style="max-width:800px;"><span id="display_priority" >{{ test_case.notes|urlize|linebreaksbr }}</span></div>
+				<div class="name" style="max-width:800px;"><span id="display_priority">{{ test_case.notes|urlize|linebreaksbr }}</span></div>
 			</div>
 		</fieldset>
 	</div>
 
 	<div class="Detailform border-1">
-		<ul id="contentTab" class="content_tab" >
+		<ul id="contentTab" class="content_tab">
 			<li id="tab_document" class="tab tab_focus">
 				<a href="#document" title="document">Document</a>
 			</li>
@@ -204,7 +204,7 @@ Nitrate.TestCases.Instance = {
 		<div  id="document" class="Detailform-variety_2 tab_list" style="clear:left;">
 			{% include "case/get_text.html" %}
 		</div>
-		<div id="attachment" class="tab_list"  style="display:none">
+		<div id="attachment" class="tab_list" style="display:none">
 			{% if perms.management.add_testattachment %}
 			<div class="mixbar">
 				<span class="tit">Add attachment</span>
@@ -228,7 +228,7 @@ Nitrate.TestCases.Instance = {
 		 <div id="case_run" class="tab_list" style="display:none">
 			{% include "case/get_case_run.html" %}
 		</div>
-		<div id="log" class="tab_list"	style="display:none">
+		<div id="log" class="tab_list" style="display:none">
 			{% include "logs_table.html" %}
 		</div>
 	</div>

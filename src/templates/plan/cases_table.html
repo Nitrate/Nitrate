@@ -119,7 +119,7 @@
 				<a href="javascript:void(0);" class="mark case_sortkey js-just-loaded">{{ test_case.cal_sortkey }}</a>
 				<span style="display:none">{{ test_case.cal_testcaseplan_pk }}</span>
 			</td>
-			<td align="center" >
+			<td align="center">
 				{% if perms.testcases.change_testcase %}
 				<a class="editlink" href="{% url "case-edit" test_case.case_id %}?from_plan={{ test_plan.plan_id }}">Edit</a>
 				{% else %}

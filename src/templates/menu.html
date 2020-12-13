@@ -48,7 +48,7 @@
 		<li class="sprites menuline"></li>
 		<li class="nav_li{% if module == 'env' %} current{% endif %}">
 			<a href="{% url "management-env-groups" %}">{% trans "ENVIRONMENT" %}</a>
-			<ul	 id="submenu_environment" class="nav_sub"  style="display:none;">
+			<ul	 id="submenu_environment" class="nav_sub" style="display:none;">
 				<li>
 					<a href="{% url "management-env-groups" %}">Groups</a>
 				</li>
@@ -60,7 +60,7 @@
 		<li class="sprites menuline"></li>
 		<li class="nav_li {% if module == 'report' %} current{% endif %}">
 		<a href="{% url "report-overall" %}">{% trans "REPORTING" %}</a>
-			<ul	 id="submenu_report" class="nav_sub"  style="display:none;">
+			<ul	 id="submenu_report" class="nav_sub" style="display:none;">
 				<li>
 					<a href="{% url "report-overall" %}">Overall</a>
 				</li>
@@ -74,9 +74,9 @@
 		</li>
 		<li class="sprites menuline"></li>
 		{% if user.is_staff %}
-		<li	 class="nav_li{% if not module %} current{% endif %}" >
+		<li class="nav_li{% if not module %} current{% endif %}">
 			<a href="{% url "admin:index" %}">{% trans "ADMIN" %}</a>
-			<ul id="submenu_admin" class="nav_sub"	style="display:none;">
+			<ul id="submenu_admin" class="nav_sub" style="display:none;">
 				{% if perms.auth.change_user %}
 				<li {% if sub_module == 'products' %}class="subcurrent"{% endif %}>
 					<a href="{% url "admin:app_list" "auth" %}">Auth</a>

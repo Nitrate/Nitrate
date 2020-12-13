@@ -65,8 +65,8 @@ jQ(function() {
 		{% elif test_run.plan.author == user %}
 		<input id="btn_delete" type="button" value="Delete" title="Delete the run" data-param="{% url "run-delete" test_run.pk %}">
 		{% endif %}
-		<input id="btn_export_csv" type="button" value="Export To CSV" title="Export cases in this run" data-param="{% url "run-export" test_run.pk %}" >
-		<input id="btn_export_xml" type="button" value="Export To XML" title="Export cases in this run" data-param="{% url "run-export" test_run.pk %}" >
+		<input id="btn_export_csv" type="button" value="Export To CSV" title="Export cases in this run" data-param="{% url "run-export" test_run.pk %}">
+		<input id="btn_export_xml" type="button" value="Export To XML" title="Export cases in this run" data-param="{% url "run-export" test_run.pk %}">
 		{% endif %}
 	</div>
 	<h2 id="display_title">{{ test_run.summary }}</h2>
@@ -103,7 +103,7 @@ jQ(function() {
 				{{ test_run.start_date|date:"Y-m-d H:i:s" }}
 				</div>
 			</div>
-			<div class="listinfo" >
+			<div class="listinfo">
 				<div class="title grey">Tags&nbsp;:</div>
 				<div class="name linotype">
 					<ul class="js-tag-ul">
@@ -165,12 +165,12 @@ jQ(function() {
 					{% if test_run.stop_date %}
 					<span class="pauselink"> Finished </span>
 					{% if perms.testruns.change_testrun %}
-					<input type="button"  class="spadelink js-set-running" value="Set to Running" data-param="{% url "run-change-status" test_run.run_id %}">
+					<input type="button" class="spadelink js-set-running" value="Set to Running" data-param="{% url "run-change-status" test_run.run_id %}">
 					{% endif %}
 					{% else %}
 					<span class="runninglink">Running</span>
 					{% if perms.testruns.change_testrun %}
-					<input type="button"class="spadelink js-set-finished" value="Set to Finished" data-param="{% url "run-change-status" test_run.run_id %}">
+					<input type="button" class="spadelink js-set-finished" value="Set to Finished" data-param="{% url "run-change-status" test_run.run_id %}">
 					{% endif %}
 					{% endif %}
 				</div>
@@ -203,7 +203,7 @@ jQ(function() {
 		<div class="clear"></div>
 	</div>
 
-	<div id="run-statistics" class="statu" style="float:left;" >
+	<div id="run-statistics" class="statu" style="float:left;">
 	{% include 'run/status_statistics.html' %}
 	</div>
 

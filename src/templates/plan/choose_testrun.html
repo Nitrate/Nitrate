@@ -25,7 +25,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.ChooseRuns.on_load);
 	</div>
 	<h2 id="display_title"><a href="{{ plan.get_absolute_url }}">Plan:{{ plan.name }}</a></h2>
 	<form action="" method="post">
-		<table id="id_table_runs" class="list" cellpadding="0" cellspacing="0" border="0" >
+		<table id="id_table_runs" class="list" cellpadding="0" cellspacing="0" border="0">
 			<thead>
 				<tr>
 					<th class="nosort" align="left" width="20px"><input id="id_check_all_button" type="checkbox" /></th>
@@ -41,7 +41,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.ChooseRuns.on_load);
 				<tr id="row_{{ forloop.counter }}" class="{% cycle 'odd' 'even' %} selection_row">
 					<td align="center">
 						{# Hide the check box when it is in the exist_case_runs, and remove it from form submitation #}
-						<input type="checkbox" name="run"  value="{{ test_run.pk }}"/>
+						<input type="checkbox" name="run" value="{{ test_run.pk }}"/>
 					</td>
 					<td>
 						<a href="{% url "run-get" test_run.pk %}">{{ test_run.pk }}</a>
@@ -72,12 +72,12 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.ChooseRuns.on_load);
 					<p>
 						The table below list all the confirmed test case of plan {{ test_run.plan }}, check the checkbox to add the case into the test run, uncheck it to remove from the test run, remember to update at last. 
 						<span class="right-action">
-							<a href="#" class="js-close-help" >X</a>
+							<a href="#" class="js-close-help">X</a>
 						</span>
 					</p>
 				</div>
 			</div>
-			<table id="id_table_cases" class="list" cellpadding="0" cellspacing="0" border="0" >
+			<table id="id_table_cases" class="list" cellpadding="0" cellspacing="0" border="0">
 				<thead>
 					<tr>
 						<th class="nosort" align="left" width="20px"></th>

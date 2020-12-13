@@ -39,14 +39,14 @@ Nitrate.Utils.after_page_load(Nitrate.TestPlans.Clone.on_load);
 			<table	class="editor" cellspacing="0" cellspan="0">
 				<tr>
 					{% if testplans|length == 1 %}
-					<td width="20%" ><label class="strong" for="id_name">New Plan Name</label> </td>
-					<td class="name" >{{ clone_form.name }}</td>
+					<td width="20%"><label class="strong" for="id_name">New Plan Name</label> </td>
+					<td class="name">{{ clone_form.name }}</td>
 					{% else %}
-					<td width="20%" >
+					<td width="20%">
 						<label class="strong">Plans</label>
 						<span class="help">Note:Can't change plan name when clone multiple plans, you can edit them after cloned.</span>
 					 </td>
-					<td class="name" >
+					<td class="name">
 						<ul class="ul-no-format">
 							{% for testplan in testplans %}
 							<li>
