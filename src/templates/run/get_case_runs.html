@@ -183,6 +183,20 @@ no need to render this dialog for adding an issue.
 </div>
 {% endif %}
 
+{# Dialog for selecting an issue tracker to file an issue. #}
+{% if issue_trackers %}
+<div id="select-tracker-dialog" title="Select an issue tracker" style="display: none">
+	<form name="issueTrackerSelectionForm" target="_blank">
+		<label for="issueTrackersForFileIssue">Issue Tracker</label>
+		<select name="issueTrackers" id="issueTrackersForFileIssue" style="width: 100%">
+		{% for tracker in issue_trackers %}
+			<option{% if forloop.counter == 1 %} selected{% endif %} value="{{ tracker.pk }}">{{ tracker.name }}</option>
+		{% endfor %}
+		</select>
+	</form>
+</div>
+{% endif %}
+
 <div id="addCommentDialog" title="Add Comment" style="display:none">
 	<textarea name="newCommnentText" id="newCommentText" style="width:100%;height:100%;"></textarea>
 </div>

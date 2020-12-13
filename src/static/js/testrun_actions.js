@@ -469,6 +469,33 @@ Nitrate.TestRuns.Details.registerEventHandlersForCaseRunDetail = function (expan
     self.addIssueDialog.open(addIssueInfo, expansion);
   });
 
+  caseRunDetailRow.find('.js-file-issue').on('click', function () {
+    let dialogDiv = jQ('#select-tracker-dialog')
+      , form = document.forms['issueTrackerSelectionForm']
+      , fileDirectly = form.issueTrackers.options.length === 1;
+    form.action = this.dataset.action;
+    if (fileDirectly) {
+      form.submit();
+    } else {
+      // Show the dialog to select an issue tracker
+      let dialog = dialogDiv.dialog({
+        autoOpen: false,
+        resizable: false,
+        modal: true,
+        buttons: {
+          Ok: function () {
+            form.submit();
+            jQ(this).dialog('destroy');
+          },
+          Cancel: function () {
+            jQ(this).dialog('destroy');
+          }
+        }
+      });
+      dialog.dialog('open');
+    }
+  });
+
   caseRunDetailRow.find('.js-remove-caserun-issue').on('click', function () {
     let removeIssueInfo = jQ(this).data('params');
     removeIssueFromCaseRuns(removeIssueInfo, function (data) {

@@ -1349,12 +1349,8 @@ class FileIssueForCaseRun(RedirectView):
     """Construct an issue report URL and redirect to it"""
 
     def get_redirect_url(self, *args, **kwargs):
-        _, case_run_id = self.args
+        case_run_id = self.kwargs['case_run_id']
+        tracker_id = int(self.request.GET['issueTrackers'])
         case_run = get_object_or_404(TestCaseRun, pk=case_run_id)
-        # This name should be get from rendered webpage dynamically.
-        # It is hardcoded as a temporary solution right now.
-        # FIXME: name here should be RHBugzilla in final solution.
-        bz_model = IssueTracker.objects.get(name='Bugzilla')
-        # An eventual solution would be to just call this method
-        # and pass loaded issue tracker name.
+        bz_model = IssueTracker.objects.get(pk=tracker_id)
         return find_service(bz_model).make_issue_report_url(case_run)

@@ -80,11 +80,14 @@
 			<div class="container">
 				<h4 class="borderB">Issues
 					{% if has_issue_trackers %}<span>
-						[ <a href="{% url "run-caserun-file-issue" run_id=test_case_run.run.pk case_run_id=test_case_run.pk %}" target="_blank" class="buglink" title="File a bug on bugzilla">File</a>&nbsp;|&nbsp;
+						[
+						<a href="javascript:void(0)" data-action="{% url "run-caserun-file-issue" run_id=test_case_run.run.pk case_run_id=test_case_run.pk %}" class="buglink js-file-issue" title="File an issue for this case run">File</a>
+						|
 						{% if perms.issuetracker.add_issue %}
 						<a href="javascript:void(0);" title="Add an issue" class="js-add-caserun-issue"
 							data-run-id="{{ test_case_run.run_id }}" data-case-run-id="{{ test_case_run.pk }}">Add</a>
-						{% endif %} ]
+						{% endif %}
+						]
 					</span>{% endif %}
 				</h4>
 				<ul class="ul-no-format">
