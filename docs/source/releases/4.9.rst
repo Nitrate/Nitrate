@@ -1,0 +1,172 @@
+.. _4.9:
+
+4.9
+===
+
+*Dec 13, 2020*
+
+Django 3.1 and Python 3.9 are added to test environment.
+
+Fedora 31 buildroot is removed from CI and Copr, and no f31 package will be
+available.
+
+Fedora 33 buildroot is added to CI and Copr. Since this release, f33 package
+will be built in `Fedora Copr`_.
+
+The CI has been migrated to GitHub workflow. The whole CI related stuff are
+simplified a lot. Now, the tox is the unified way to run tests from either local
+development environment or the GitHub workflow.
+
+Many bugs are fixed in the JavaScript codebase and the issue tracker, one big
+issue is that it is unusable to file an issue from a case run detail pane.
+
+.. _Fedora Copr: https://copr.fedorainfracloud.org/coprs/cqi/python-nitrate-tcms/
+
+Get and install
+---------------
+
+From PyPI::
+
+    pip install nitrate-tcms
+
+From image registry::
+
+    docker pull quay.io/nitrate/nitrate:4.9
+
+Refer to :ref:`how_to_run` for details of installation.
+
+Database Migration
+------------------
+
+``TestAttachment`` has a new field ``checksum``.
+
+Run migrations::
+
+    django-admin --settings=tcms.settings.produce migrate
+
+Change Log
+----------
+
+* Remove duplicate SQL queries during loading case run detail pane (Chenxiong Qi)
+* Fix wrong issue link in case run detail pane (Chenxiong Qi)
+* Massive cleanup by removing extra whitespaces from templates (Chenxiong Qi)
+* Fix urllib.parse import (Chenxiong Qi)
+* Fix filing issue from a case run (Chenxiong Qi)
+* Do not allow adding issue to disabled issue tracker for a case run (Chenxiong Qi)
+* Remove incorrect attribute from case run's case id cell (Chenxiong Qi)
+* Do not allow adding issue to test case to disabled issue tracker (Chenxiong Qi)
+* Remove unused code from testruns app (Chenxiong Qi)
+* Remove duplicate logs table templates (Chenxiong Qi)
+* Case run change logs are shown correctly under Case Runs tab (Chenxiong Qi)
+* JS: refresh the whole property values list after adding a value (Chenxiong Qi)
+* JS: avoid registering event handler multiple times after adding a new property (Chenxiong Qi)
+* Fix incorrect add_property URL reference (Chenxiong Qi)
+* Fix template plan/edit.html (Chenxiong Qi)
+* Refresh run statistics after changing case run status (Chenxiong Qi)
+* JS: refactor detail expansion (Chenxiong Qi)
+* Do not expand next if the last case run is updated (Chenxiong Qi)
+* JS: use meaningful data attribute names in case run detail pane (Chenxiong Qi)
+* JS: allow to change case run status without comment (Chenxiong Qi)
+* JS: fix wrong plan advanced search pagination info (Chenxiong Qi)
+* Add tox and tox-docker extra deps list (Chenxiong Qi)
+* Remove f31 from GH action workflow (Chenxiong Qi)
+* Reduce lots of SQL queries in advanced search (Chenxiong Qi)
+* Fix test_basic_search_plans (Chenxiong Qi)
+* Fix report overall (Chenxiong Qi)
+* JS: fix error when save an environment group (Chenxiong Qi)
+* JS: fix wrong use of this keyword management_actions (Chenxiong Qi)
+* JS: update issues number correctly after the last issue is removed from a case run (Chenxiong Qi)
+* Fix case run status button CSS style for disabled (Chenxiong Qi)
+* JS: rewrite constructAjaxLoading using DOM API (Chenxiong Qi)
+* JS: reload case run detail pane only once (Chenxiong Qi)
+* Fix package installation in unittests workflow (Chenxiong Qi)
+* Revert "Fix 'px' is redundant for value 0px" (Chenxiong Qi)
+* Unify mariadb version in docker-compose config file (Chenxiong Qi)
+* Housekeeping on Makefile (Chenxiong Qi)
+* Add release workflow (Chenxiong Qi)
+* Clean release image Dockerfile (Chenxiong Qi)
+* Let docker-build ignore .venv/ (Chenxiong Qi)
+* Fix python version in the site-packages path (Chenxiong Qi)
+* Add py39 to testenv (`#806`_) (Chenxiong Qi)
+* Adjust badges rendering for GitHub (Chenxiong Qi)
+* Fix coveralls unique flag name (Chenxiong Qi)
+* Replace CI badge with GitHub workflow status (Chenxiong Qi)
+* Upgrade database engine in testenv (`#805`_) (Chenxiong Qi)
+* Test f33 package build (`#804`_) (Chenxiong Qi)
+* Add Django 3.1 to testenv (`#800`_) (Chenxiong Qi)
+* Add docker/ to sdist (Chenxiong Qi)
+* Fix coveralls step name and wrong env var name (Chenxiong Qi)
+* Migrate CI to GitHub action (`#803`_) (Chenxiong Qi)
+* Be able to run tests with specific db engines in tox.ini (Chenxiong Qi)
+* Remove executable bit from files (`#788`_) (Chenxiong Qi)
+* Use apps.get_model to get TestAttachment model (Chenxiong Qi)
+* Fix SPEC file name in MANIFEST.in (Chenxiong Qi)
+* Add missing source files to sdist (`#790`_) (Chenxiong Qi)
+* Fix tests related to attachments (Chenxiong Qi)
+* Move all artifacts into a working dir for TestUploadFile (Chenxiong Qi)
+* Use checksum to check whether an attachment exists (Chenxiong Qi)
+* Add missing csrf_token to user registration form (`#792`_) (Chenxiong Qi)
+* Remove six module from files.py (Chenxiong Qi)
+* Update eslint check list in tox.ini (Chenxiong Qi)
+* Use plural of attachment relationship name (Chenxiong Qi)
+* JS: new place of deleConfirm and rename (Chenxiong Qi)
+* Simplify data access from attachment delete button (Chenxiong Qi)
+* Remove duplicated HTML of attachments table (Chenxiong Qi)
+* JS: fix incorrect data passed to attachment deletion view (Chenxiong Qi)
+* JS: fix cases tab can't reload after case status is changed (Chenxiong Qi)
+* Fix 'px' is redundant for value 0px (Chenxiong Qi)
+* JS: fix incorrect use of keyword this (Chenxiong Qi)
+* JS: remove unused functions (Chenxiong Qi)
+* Add eslint rule no-unused-vars (Chenxiong Qi)
+* Use single quote in .eslintrc.js (Chenxiong Qi)
+* JS: use this properly to shorten lines (Chenxiong Qi)
+* Remove redefinition of unused 'require_GET' (Chenxiong Qi)
+* Fix test data for tree view (Chenxiong Qi)
+* Fix eslint errors (Chenxiong Qi)
+* Modularize tree view JS code (Chenxiong Qi)
+* Restrict GET request to view construct_plans_treeview (Chenxiong Qi)
+* Abstract subtotal associated with test plans (Chenxiong Qi)
+* Adding child plan should be restricted to authenticated user (Chenxiong Qi)
+* Remove unused tree view JS code (Chenxiong Qi)
+* Removing child plans works with the tree view (Chenxiong Qi)
+* Check existing ancestor or descendant in client side firstly (Chenxiong Qi)
+* Enable/disable button to remove child plans (Chenxiong Qi)
+* Adding children plan to tree view works (Chenxiong Qi)
+* Adding parent plan works with the tree view (Chenxiong Qi)
+* Plans treeview works now with jstree (Chenxiong Qi)
+* JS: revert wrong change in tcms_action.js (Chenxiong Qi)
+* Fix flake8 errors (Chenxiong Qi)
+* Give base class to HelperAssertions (Chenxiong Qi)
+* Rewrite test data to make it easier to read (Chenxiong Qi)
+* Declarative auto login for tests (Chenxiong Qi)
+* Pass missing request argument to backend.authentication (`#498`_) (Chenxiong Qi)
+* Encode author email in My Plans querystring (`#262`_) (Chenxiong Qi)
+* Reduce SQL queries count in recent page (`#754`_) (Chenxiong Qi)
+* Allow to query case runs subtotal by status for multiple runs (Chenxiong Qi)
+* Make case runs search again with status name (Chenxiong Qi)
+* Rename stats_caseruns_status (Chenxiong Qi)
+* Reuse GroupByResult in stats_caseruns_status (Chenxiong Qi)
+* Fix GroupByResult.__getitem__ (`#772`_) (Chenxiong Qi)
+* Remove commented lines from testplans view (Chenxiong Qi)
+* Add missing csrf_token for multiple runs clone (`#765`_) (Chenxiong Qi)
+* Remove executable bit from template files (`#767`_) (Chenxiong Qi)
+* JS: reuse datatable common settings (`#755`_) (Chenxiong Qi)
+* Fix Makefile (Chenxiong Qi)
+* Add new deploy script (Chenxiong Qi)
+* Remove deploy stage from travis config (Chenxiong Qi)
+
+.. _#806: https://github.com/Nitrate/Nitrate/issues/806
+.. _#805: https://github.com/Nitrate/Nitrate/issues/805
+.. _#804: https://github.com/Nitrate/Nitrate/issues/804
+.. _#800: https://github.com/Nitrate/Nitrate/issues/800
+.. _#803: https://github.com/Nitrate/Nitrate/issues/803
+.. _#788: https://github.com/Nitrate/Nitrate/issues/788
+.. _#790: https://github.com/Nitrate/Nitrate/issues/790
+.. _#792: https://github.com/Nitrate/Nitrate/issues/792
+.. _#498: https://github.com/Nitrate/Nitrate/issues/498
+.. _#262: https://github.com/Nitrate/Nitrate/issues/262
+.. _#754: https://github.com/Nitrate/Nitrate/issues/754
+.. _#772: https://github.com/Nitrate/Nitrate/issues/772
+.. _#765: https://github.com/Nitrate/Nitrate/issues/765
+.. _#767: https://github.com/Nitrate/Nitrate/issues/767
+.. _#755: https://github.com/Nitrate/Nitrate/issues/755

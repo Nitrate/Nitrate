@@ -4,7 +4,7 @@
 %global egginfo_name %{codename}_tcms
 
 Name:           python-%{pkgname}
-Version:        4.8
+Version:        4.9
 Release:        1%{?dist}
 Summary:        Test Case Management System
 
@@ -130,6 +130,9 @@ cp -r src/templates/* $templates_root
 %license LICENSE
 
 %changelog
+* Sun Dec 13 2020 Chenxiong Qi <qcxhome@gmail.com> - 4.9-1
+- Built for version 4.9
+
 * Sun Aug 30 2020 Chenxiong Qi <qcxhome@gmail.com> - 4.8-1
 - Built for version 4.8
 
