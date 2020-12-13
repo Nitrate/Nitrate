@@ -311,6 +311,12 @@ class TestRun(TCMSActionModel):
         ).values('case_run').annotate(issues_count=Count('pk'))
         return {item['case_run']: item['issues_count'] for item in q}
 
+    def get_issue_trackers(self) -> QuerySet:
+        """Get enabled issue trackers in order to add issues to case runs of this run"""
+        return (self.plan.product.issue_trackers
+                .filter(enabled=True)
+                .only('pk', 'name', 'validate_regex'))
+
 
 # FIXME: replace TestCaseRunStatus' internal cache with Django's cache
 # machanism
@@ -461,7 +467,7 @@ class TestCaseRun(TCMSActionModel):
     def is_finished(self):
         return self.case_run_status.is_finished()
 
-    def get_issues(self):
+    def get_issues(self) -> QuerySet:
         """Get issues added to this case run
 
         :return: a queryset of the issues.

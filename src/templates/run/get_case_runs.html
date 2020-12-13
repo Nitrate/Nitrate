@@ -150,6 +150,11 @@
 	</form>
 </div>
 
+{% comment %}
+If no issue tracker is associated with the product, or no issue tracker is enabled,
+no need to render this dialog for adding an issue.
+{% endcomment %}
+{% if issue_trackers %}
 <div id="add-issue-dialog" title="Add issue to case run" style="display: none">
 	<form onsubmit="return false">
 	<fieldset>
@@ -176,6 +181,7 @@
 	</fieldset>
 	</form>
 </div>
+{% endif %}
 
 <div id="addCommentDialog" title="Add Comment" style="display:none">
 	<textarea name="newCommnentText" id="newCommentText" style="width:100%;height:100%;"></textarea>

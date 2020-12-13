@@ -247,14 +247,19 @@ class IssueTracker(TCMSActionModel):
         return self.name.replace(' ', '_')
 
     @classmethod
-    def get_by_case(cls, case):
+    def get_by_case(cls, case, enabled=True):
         """Find out issue trackers for a case
 
+        :param case: to get related issue trackers for this test case.
+        :type case: :class:`TestCase`
+        :param bool enabled: whether to get enabled issue trackers. If omitted, defaults to True.
         :return: a queryset of matched issue trackers
         :rtype: QuerySet
         """
-        return cls.objects.filter(
-            products__in=case.plan.values('product'))
+        criteria = {'products__in': case.plan.values('product')}
+        if enabled is not None:
+            criteria['enabled'] = enabled
+        return cls.objects.filter(**criteria)
 
     @property
     def credential(self):

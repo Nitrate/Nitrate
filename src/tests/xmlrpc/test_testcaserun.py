@@ -283,6 +283,11 @@ class TestCaseRunAttachIssue(XmlrpcAPIBaseTest):
             issue_report_endpoint='/enter_bug.cgi',
             tracker_product=cls.tracker_product)
 
+        f.ProductIssueTrackerRelationshipFactory(
+            product=cls.case_run.run.plan.product,
+            issue_tracker=cls.tracker
+        )
+
     def test_attach_issue_with_no_perm(self):
         self.assertXmlrpcFaultForbidden(
             testcaserun.attach_issue, self.staff_request, {})
@@ -486,6 +491,8 @@ class TestCaseRunDetachIssue(XmlrpcAPIBaseTest):
         cls.staff_request = make_http_request(user=cls.staff,
                                               user_perm='issuetracker.add_issue')
 
+        cls.case_run = f.TestCaseRunFactory()
+
         cls.tracker_product = f.IssueTrackerProductFactory(name='MyBZ')
         cls.bz_tracker = f.IssueTrackerFactory(
             service_url='http://localhost/',
@@ -497,7 +504,10 @@ class TestCaseRunDetachIssue(XmlrpcAPIBaseTest):
             issue_report_endpoint='/enter_bug.cgi',
             tracker_product=cls.tracker_product,
             validate_regex=r'^[A-Z]+-\d+$')
-        cls.case_run = f.TestCaseRunFactory()
+
+        product = cls.case_run.run.plan.product
+        f.ProductIssueTrackerRelationshipFactory(product=product, issue_tracker=cls.bz_tracker)
+        f.ProductIssueTrackerRelationshipFactory(product=product, issue_tracker=cls.jira_tracker)
 
     def setUp(self):
         self.bz_bug = '67890'
@@ -750,6 +760,10 @@ class TestCaseRunGetIssues(XmlrpcAPIBaseTest):
 
         cls.case_run = f.TestCaseRunFactory()
         cls.bz_tracker = f.IssueTrackerFactory(name='MyBZ')
+        f.ProductIssueTrackerRelationshipFactory(
+            product=cls.case_run.run.plan.product,
+            issue_tracker=cls.bz_tracker,
+        )
         testcaserun.attach_issue(cls.admin_request, {
             'case_run': [cls.case_run.pk],
             'issue_key': '67890',
@@ -795,6 +809,10 @@ class TestCaseRunGetIssuesSet(XmlrpcAPIBaseTest):
 
         cls.case_run = f.TestCaseRunFactory()
         cls.bz_tracker = f.IssueTrackerFactory(name='MyBugzilla')
+        f.ProductIssueTrackerRelationshipFactory(
+            product=cls.case_run.run.plan.product,
+            issue_tracker=cls.bz_tracker,
+        )
         testcaserun.attach_issue(cls.admin_request, {
             'case_run': [cls.case_run.pk],
             'issue_key': '67890',

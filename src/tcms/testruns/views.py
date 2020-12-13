@@ -605,11 +605,7 @@ def get(request, run_id, template_name='run/get.html'):
     SUB_MODULE_NAME = "runs"
 
     # Get the test run
-    try:
-        # 1. get test run itself
-        tr = TestRun.objects.select_related().get(run_id=run_id)
-    except ObjectDoesNotExist:
-        raise Http404
+    tr: TestRun = get_object_or_404(TestRun.objects.select_related(), pk=run_id)
 
     # Get the test case runs belong to the run
     # 2. get test run's all case runs
@@ -667,7 +663,7 @@ def get(request, run_id, template_name='run/get.html'):
         'test_case_run_status': case_run_statuss,
         'priorities': Priority.objects.all(),
         'case_own_tags': ttags,
-        'issue_trackers': tr.plan.product.issue_trackers.all(),
+        'issue_trackers': tr.get_issue_trackers(),
     }
     return render(request, template_name, context=context_data)
 

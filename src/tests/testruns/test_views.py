@@ -1030,21 +1030,46 @@ class TestIssueActions(BaseCaseRun):
         super().setUpTestData()
 
         user_should_have_perm(cls.tester, 'testruns.change_testrun')
+        user_should_have_perm(cls.tester, 'issuetracker.add_issue')
         user_should_have_perm(cls.tester, 'issuetracker.delete_issue')
 
         cls.bz_tracker_product = f.IssueTrackerProductFactory(name='BZ')
         cls.bugzilla = f.IssueTrackerFactory(
+            name='simplebz',
             service_url='http://localhost/',
             tracker_product=cls.bz_tracker_product,
             validate_regex=r'^\d+$',
-            issue_report_endpoint='/enter_bug.cgi')
+            issue_report_endpoint='/enter_bug.cgi',
+        )
+        f.ProductIssueTrackerRelationshipFactory(product=cls.product, issue_tracker=cls.bugzilla)
+
+        cls.mybz = f.IssueTrackerFactory(
+            name='mybz',
+            service_url='http://mybz.localhost/',
+            tracker_product=cls.bz_tracker_product,
+            validate_regex=r'^\d+$',
+            issue_report_endpoint='/enter_bug.cgi',
+        )
+
+        cls.disabled_old_bz = f.IssueTrackerFactory(
+            enabled=False,
+            name='disabled_old_bz',
+            service_url='http://old-bz.localhost/',
+            tracker_product=cls.bz_tracker_product,
+            validate_regex=r'^\d+$',
+            issue_report_endpoint='/enter_bug.cgi',
+        )
+        f.ProductIssueTrackerRelationshipFactory(product=cls.product, issue_tracker=cls.disabled_old_bz)
 
         cls.jira_tracker_product = f.IssueTrackerProductFactory(name='ORGJIRA')
         cls.orgjira = f.IssueTrackerFactory(
+            name='orgjira',
             service_url='http://localhost/',
             tracker_product=cls.jira_tracker_product,
             validate_regex=r'^[A-Z]+-\d+$',
-            issue_report_endpoint='/createissue')
+            issue_report_endpoint='/createissue',
+        )
+        f.ProductIssueTrackerRelationshipFactory(product=cls.product, issue_tracker=cls.orgjira)
 
         cls.run_issues_url = reverse('run-issues', args=[cls.test_run.pk])
 
@@ -1095,6 +1120,53 @@ class TestIssueActions(BaseCaseRun):
                 'run_issues_count': 1,
                 'caserun_issues_count': {str(self.case_run_1.pk): 1}
             }
+        )
+
+    def test_add_issue_to_case_run(self):
+        issue_key = '12000'
+        resp = self.client.get(self.run_issues_url, data={
+            'a': 'add',
+            'case_run': [self.case_run_1.pk],
+            'issue_key': [issue_key],
+            'tracker': self.bugzilla.pk,
+        })
+
+        self.assert200(resp)
+        self.assertTrue(
+            self.case_run_1.get_issues().filter(issue_key=issue_key).exists()
+        )
+
+    def test_refuse_adding_issue_if_tracker_is_not_relative(self):
+        resp = self.client.get(self.run_issues_url, data={
+            'a': 'add',
+            'case_run': [self.case_run_1.pk],
+            'issue_key': ['12000'],
+            'tracker': self.mybz.pk,
+        })
+
+        self.assertJsonResponse(
+            resp,
+            {
+                'message': [
+                    f'Issue tracker "{self.mybz.name}" is not relative to the '
+                    f'case run via product "{self.product.name}".'
+                ]
+            },
+            status_code=HTTPStatus.BAD_REQUEST
+        )
+
+    def test_refuse_adding_issue_if_tracker_is_disabled(self):
+        resp = self.client.get(self.run_issues_url, data={
+            'a': 'add',
+            'case_run': [self.case_run_1.pk],
+            'issue_key': ['12000'],
+            'tracker': self.disabled_old_bz.pk,
+        })
+
+        self.assertJsonResponse(
+            resp,
+            {'message': [f'Issue tracker "{self.disabled_old_bz.name}" is not enabled.']},
+            status_code=HTTPStatus.BAD_REQUEST
         )
 
 

@@ -42,14 +42,14 @@ def manage_case_run_issues(request, run_id):
         def add(self):
             # TODO: make a migration for the permission
             if not self.request.user.has_perm('issuetracker.add_issue'):
-                return JsonResponseForbidden(
-                    {'message': 'Permission denied.'})
+                return JsonResponseForbidden({'message': 'Permission denied.'})
 
             form = CaseRunIssueForm(request.GET)
 
             if not form.is_valid():
-                return JsonResponseBadRequest(
-                    {'message': form_error_messages_to_list(form)})
+                return JsonResponseBadRequest({
+                    'message': form_error_messages_to_list(form)
+                })
 
             service = find_service(form.cleaned_data['tracker'])
             issue_key = form.cleaned_data['issue_key']

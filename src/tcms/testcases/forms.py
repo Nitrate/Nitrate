@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
+from typing import List
 
 from django import forms
 from django.core.validators import MaxLengthValidator
@@ -493,6 +494,39 @@ class CaseRunIssueForm(BaseAddIssueForm):
         }
     )
     link_external_tracker = forms.BooleanField(required=False)
+
+    def validate_issue_tracker(self) -> None:
+        if 'tracker' not in self.cleaned_data:
+            return
+        if 'case_run' not in self.cleaned_data:
+            return
+
+        tracker: IssueTracker = self.cleaned_data['tracker']
+
+        if not tracker.enabled:
+            raise forms.ValidationError(
+                'Issue tracker "%(tracker_name)s" is not enabled.',
+                params={'tracker_name': tracker.name},
+                code='invalid'
+            )
+
+        case_runs: List[TestCaseRun] = self.cleaned_data['case_run']
+
+        for case_run in case_runs:
+            is_tracker_relative = (case_run.run
+                                   .get_issue_trackers()
+                                   .filter(pk=tracker.pk)
+                                   .exists())
+            if not is_tracker_relative:
+                raise forms.ValidationError(
+                    'Issue tracker "%(tracker_name)s" is not relative to the case run via product "%(product_name)s".',
+                    params={'tracker_name': tracker.name, 'product_name': case_run.run.plan.product},
+                    code='invalid'
+                )
+
+    def clean(self):
+        super().clean()
+        self.validate_issue_tracker()
 
 
 class CaseRemoveIssueForm(forms.Form):

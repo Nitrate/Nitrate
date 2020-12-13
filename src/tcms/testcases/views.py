@@ -758,6 +758,7 @@ class TestCaseCaseRunDetailPanelView(TemplateView,
         caserun_status = TestCaseRunStatus.objects.values('pk', 'name')
         caserun_status = caserun_status.order_by('sortkey')
         issues = group_case_issues(case_run.case.get_issues().order_by('issue_key'))
+        has_issue_trackers = case_run.run.get_issue_trackers().exists()
 
         data.update({
             'test_case': case,
@@ -769,6 +770,7 @@ class TestCaseCaseRunDetailPanelView(TemplateView,
             'caserun_logs': caserun_logs,
             'test_case_run_status': caserun_status,
             'grouped_case_issues': issues,
+            'has_issue_trackers': has_issue_trackers,
         })
 
         return data

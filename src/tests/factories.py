@@ -633,6 +633,7 @@ class IssueTrackerProductFactory(DjangoModelFactory):
 class IssueTrackerFactory(DjangoModelFactory):
     """Factory to create model IssueTracker"""
 
+    enabled = True
     name = factory.Sequence(lambda n: f'Cool Issue Tracker {n}')
     issue_url_fmt = 'http://localhost/%{issue_key}s'
     validate_regex = r'^\d+$'
