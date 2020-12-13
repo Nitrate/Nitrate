@@ -95,7 +95,7 @@
 						<li>
 							<table cellpadding="3" cellspacing="0" border="0">
 								<tr>
-									<td><a href="{{ issues.0.get_full_url }}">{{ issue_key }}</a></td>
+									<td><a href="{{ issues.0.get_absolute_url }}">{{ issue_key }}</a></td>
 								<td>
 								{% for issue in issues %}
 								    {% if issue.case_run_id %}
