@@ -5,9 +5,11 @@ on:
     branches:
       - develop
       - master
+      - release-*.*
   pull_request:
     branches:
       - develop
+      - release-*.*
 
 jobs:
   flake8:
