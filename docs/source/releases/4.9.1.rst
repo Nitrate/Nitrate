@@ -1,0 +1,34 @@
+.. _4.9.1:
+
+4.9.1
+=====
+
+*Dec 15, 2020*
+
+This release has a bugfix that is, under a test plan's reviewing cases tab, the
+add tag dialog cannot not be shown for user to add tags.
+
+Get and install
+---------------
+
+From PyPI::
+
+    pip install nitrate-tcms
+
+From image registry::
+
+    docker pull quay.io/nitrate/nitrate:4.9.1
+
+Refer to :ref:`how_to_run` for details of installation.
+
+Database Migration
+------------------
+
+No database migration.
+
+Change Log
+----------
+
+* Trigger CI workflow from release-* branch (Chenxiong Qi)
+* Fix the unusable add tag dialog under reviewing cases tab (Chenxiong Qi)
+
