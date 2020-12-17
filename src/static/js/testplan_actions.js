@@ -1461,70 +1461,113 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
           return false;
         }
 
-        constructBatchTagProcessDialog(planId);
-
-        // Observe the batch tag form submit
-        jQ('#id_batch_tag_form').on('submit', function (e) {
-          e.stopPropagation();
-          e.preventDefault();
-
-          let tagData = Nitrate.Utils.formSerialize(this);
-          if (! tagData.tags) {
-            return false;
-          }
-
-          let params = Object.assign(
-            serializeFormData({
-              'form': navForm[0],
-              'selectedCaseIDs': selectedCaseIDs,
-              'hashable': true
-            }),
-            {
-              tags: tagData.tags, a: 'add', t: 'json', f: 'serialized'
+        let dialog = Nitrate.TestPlans.Details.addTagDialog;
+        if (! dialog) {
+          dialog = jQ('#addTagDialog').dialog({
+            autoOpen: false,
+            resizable: false,
+            modal: true,
+            height: 200,
+            close: function (event, ui) {
+              jQ(this).find('input[type=text]').prop('value', '');
+            },
+            open: function (event, ui) {
+              jQ(this).find('input[type=text]').focus();
+            },
+            buttons: {
+              Add: function () {
+                dialog.find('#addTagForm').trigger('submit');
+                dialog.dialog('close');
+              },
+              Cancel: function () {
+                dialog.dialog('close');
+              }
             }
-          );
+          });
+          Nitrate.TestPlans.Details.addTagDialog = dialog;
 
-          /*
-           * Two reasons to force to remove plan from parameters here.
-           * 1. plan is added in previous cases filter. As the design
-           *    of Show More, previous filter criteria is added for
-           *    selecting all cases with same filter criteria.
-           * 2. existing plan confuses tag view method due to it
-           *    applies to both plan and case to add tag. Thus, the
-           *    existing plan will cause it to add tag to all cases of
-           *    that plan always.
-           *
-           * Placing this line of code is not a good idea. But, it
-           * works well for the current implementation. Possible
-           * solution to avoid this might to split the tag view method
-           * to add tags to plans and cases, respectively. Why to make
-           * change to tag view method? That is, according to the
-           * cases filter implementation, plan must exist in the
-           * filter criteria as a parameter.
-           */
-          delete params.plan;
-
-          sendHTMLRequest({
-            url: '/management/tags/',
-            data: params,
-            traditional: true,
-            success: function (data, textStatus, xhr) {
-              let dialog = getDialog();
-              clearDialog(dialog);
-
-              let template = Handlebars.compile(jQ('#batch_tag_summary_template').html());
-              jQ(dialog)
-                .html(template({'tags': jQ.parseJSON(xhr.responseText)}))
-                .find('.js-close-button')
-                .on('click', function () {
-                  jQ(dialog).hide();
-                })
-                .end().show();
-
-              reloadCases();
+          dialog.find('#add_tag_plan').autocomplete({
+            'minLength': 2,
+            'appendTo': '#id_batch_add_tags_autocomplete',
+            'source': function (request, response) {
+              sendHTMLRequest({
+                url: '/management/getinfo/',
+                data: {
+                  'name__startswith': request.term,
+                  'info_type': 'tags',
+                  'format': 'ulli',
+                  'cases__plan__pk': planId,
+                  'field': 'name'
+                },
+                success: function (data) {
+                  let processedData = [];
+                  if (data.indexOf('<li>') > -1) {
+                    processedData = data
+                      .slice(data.indexOf('<li>') + 4, data.lastIndexOf('</li>'))
+                      .split('<li>')
+                      .join('')
+                      .split('</li>');
+                  }
+                  response(processedData);
+                }
+              });
             },
           });
-        });
+
+          // Observe the batch tag form submit
+          dialog.find('#addTagForm').on('submit', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            let tagData = Nitrate.Utils.formSerialize(this);
+            if (! tagData.tags) {
+              return false;
+            }
+
+            let params = Object.assign(
+              serializeFormData({
+                'form': navForm[0],
+                'selectedCaseIDs': selectedCaseIDs,
+                'hashable': true
+              }),
+              {
+                tags: tagData.tags, a: 'add', t: 'json', f: 'serialized'
+              }
+            );
+
+            /*
+            * Two reasons to force to remove plan from parameters here.
+            * 1. plan is added in previous cases filter. As the design
+            *    of Show More, previous filter criteria is added for
+            *    selecting all cases with same filter criteria.
+            * 2. existing plan confuses tag view method due to it
+            *    applies to both plan and case to add tag. Thus, the
+            *    existing plan will cause it to add tag to all cases of
+            *    that plan always.
+            *
+            * Placing this line of code is not a good idea. But, it
+            * works well for the current implementation. Possible
+            * solution to avoid this might to split the tag view method
+            * to add tags to plans and cases, respectively. Why to make
+            * change to tag view method? That is, according to the
+            * cases filter implementation, plan must exist in the
+            * filter criteria as a parameter.
+            */
+            delete params.plan;
+
+            sendHTMLRequest({
+              url: '/management/tags/',
+              data: params,
+              traditional: true,
+              success: function (data, textStatus, xhr) {
+                clearDialog(getDialog());
+                reloadCases();
+              },
+            });
+          });
+        }
+
+        dialog.dialog('open');
       });
 
       navForm.find('input.btn_component').on('click', function () {
@@ -1768,43 +1811,6 @@ function renderCategoryForm(container, parameters, formObserve) {
         ]
       );
     }
-  });
-}
-
-function constructBatchTagProcessDialog(planId) {
-  let template = Handlebars.compile(jQ('#batch_tag_form_template').html());
-  jQ('#dialog').html(template())
-    .find('.js-cancel-button').on('click', function () {
-      jQ('#dialog').hide();
-    })
-    .end().show();
-  // Bind the autocomplete for tags
-  jQ('#add_tag_plan').autocomplete({
-    'minLength': 2,
-    'appendTo': '#id_batch_add_tags_autocomplete',
-    'source': function (request, response) {
-      sendHTMLRequest({
-        url: '/management/getinfo/',
-        data: {
-          'name__startswith': request.term,
-          'info_type': 'tags',
-          'format': 'ulli',
-          'cases__plan__pk': planId,
-          'field': 'name'
-        },
-        success: function (data) {
-          let processedData = [];
-          if (data.indexOf('<li>') > -1) {
-            processedData = data
-              .slice(data.indexOf('<li>') + 4, data.lastIndexOf('</li>'))
-              .split('<li>')
-              .join('')
-              .split('</li>');
-          }
-          response(processedData);
-        }
-      });
-    },
   });
 }
 
