@@ -642,17 +642,14 @@ Nitrate.TestRuns.Details.on_load = function () {
     jQ('div.progress-failed').prop('style', 'width:' + failedPercent + '%');
   });
 
-  jQ('#btn_edit').on('click', function () {
-    let params = jQ(this).data('params');
-    window.location.href = params[0] + '?from_plan=' + params[1];
+  jQ('#btn_edit, #btnDeleteRun, .js-set-run-status').on('click', function () {
+    window.location.assign(this.dataset.actionUrl);
   });
+
   jQ('#btn_clone').on('click', function () {
     postToURL(jQ(this).data('param'), {
       case_run: getSelectedCaseRunIDs()
     });
-  });
-  jQ('#btnDeleteRun').on('click', function () {
-    window.location.assign(this.dataset.actionUrl);
   });
 
   jQ('#btn_export_csv, #btn_export_xml').on('click', function () {
@@ -666,9 +663,6 @@ Nitrate.TestRuns.Details.on_load = function () {
   });
   jQ('.js-add-tag').on('click', function () {
     addRunTag(jQ('.js-tag-ul')[0], jQ(this).data('param'));
-  });
-  jQ('.js-set-run-status').on('click', function () {
-    window.location.assign(this.dataset.actionUrl);
   });
   jQ('.js-del-case').on('click', function () {
     delCaseRun();
