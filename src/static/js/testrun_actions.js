@@ -651,8 +651,8 @@ Nitrate.TestRuns.Details.on_load = function () {
       case_run: getSelectedCaseRunIDs()
     });
   });
-  jQ('#btn_delete').on('click', function () {
-    window.location.href = jQ(this).data('param');
+  jQ('#btnDeleteRun').on('click', function () {
+    window.location.assign(this.dataset.actionUrl);
   });
   jQ('#btn_export_csv').on('click', function () {
     window.location.href = jQ(this).data('param') + '?format=csv&' + jQ('#id_form_case_runs').serialize();
