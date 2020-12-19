@@ -667,11 +667,8 @@ Nitrate.TestRuns.Details.on_load = function () {
   jQ('.js-add-tag').on('click', function () {
     addRunTag(jQ('.js-tag-ul')[0], jQ(this).data('param'));
   });
-  jQ('.js-set-running').on('click', function () {
-    window.location.href = jQ(this).data('param') + '?finished=0';
-  });
-  jQ('.js-set-finished').on('click', function () {
-    window.location.href = jQ(this).data('param') + '?finished=1';
+  jQ('.js-set-run-status').on('click', function () {
+    window.location.assign(this.dataset.actionUrl);
   });
   jQ('.js-del-case').on('click', function () {
     delCaseRun();

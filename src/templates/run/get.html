@@ -165,12 +165,12 @@ jQ(function() {
 					{% if test_run.stop_date %}
 					<span class="pauselink"> Finished </span>
 					{% if perms.testruns.change_testrun %}
-					<input type="button" class="spadelink js-set-running" value="Set to Running" data-param="{% url "run-change-status" test_run.run_id %}">
+					<input type="button" class="spadelink js-set-run-status" value="Set to Running" data-action-url="{% url "run-change-status" test_run.run_id %}?finished=0">
 					{% endif %}
 					{% else %}
 					<span class="runninglink">Running</span>
 					{% if perms.testruns.change_testrun %}
-					<input type="button" class="spadelink js-set-finished" value="Set to Finished" data-param="{% url "run-change-status" test_run.run_id %}">
+					<input type="button" class="spadelink js-set-run-status" value="Set to Finished" data-action-url="{% url "run-change-status" test_run.run_id %}?finished=1">
 					{% endif %}
 					{% endif %}
 				</div>
