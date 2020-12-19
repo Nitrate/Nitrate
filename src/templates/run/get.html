@@ -63,8 +63,8 @@ jQ(function() {
 		{% if test_run.manager == user or test_run.plan.author == user %}
 		<input id="btnDeleteRun" type="button" value="Delete" title="Delete the run" data-action-url="{% url "run-delete" test_run.pk %}">
 		{% endif %}
-		<input id="btn_export_csv" type="button" value="Export To CSV" title="Export cases in this run" data-param="{% url "run-export" test_run.pk %}">
-		<input id="btn_export_xml" type="button" value="Export To XML" title="Export cases in this run" data-param="{% url "run-export" test_run.pk %}">
+		<input id="btn_export_csv" type="button" value="Export To CSV" title="Export cases in this run" data-action-url="{% url "run-export" test_run.pk %}?format=csv">
+		<input id="btn_export_xml" type="button" value="Export To XML" title="Export cases in this run" data-action-url="{% url "run-export" test_run.pk %}?format=xml">
 		{% endif %}
 	</div>
 	<h2 id="display_title">{{ test_run.summary }}</h2>
