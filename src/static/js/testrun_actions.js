@@ -497,14 +497,22 @@ Nitrate.TestRuns.Details.registerEventHandlersForCaseRunDetail = function (expan
   });
 
   caseRunDetailRow.find('.js-remove-caserun-issue').on('click', function () {
-    let removeIssueInfo = jQ(this).data('params');
-    removeIssueFromCaseRuns(removeIssueInfo, function (data) {
-      let caseRunIssuesCount = data.caserun_issues_count[removeIssueInfo.caseRunIds[0]] || 0;
-      updateIssuesCountInCaseRunRow(expansion.caseRunRow, caseRunIssuesCount);
-      showTheNumberOfCaseRunIssues(data.run_issues_count, removeIssueInfo.runId);
-      expansion.showLoadingAnimation = true;
-      expansion.expand();
-    });
+    let dataset = this.dataset;
+    removeIssueFromCaseRuns(
+      {
+        runId: dataset.runId,
+        caseId: dataset.caseId,
+        caseRunIds: [dataset.caseRunId],
+        issueKey: dataset.issueKey
+      },
+      function (data) {
+        let caseRunIssuesCount = data.caserun_issues_count[dataset.caseRunId] || 0;
+        updateIssuesCountInCaseRunRow(expansion.caseRunRow, caseRunIssuesCount);
+        showTheNumberOfCaseRunIssues(data.run_issues_count, dataset.runId);
+        expansion.showLoadingAnimation = true;
+        expansion.expand();
+      }
+    );
   });
 
   caseRunDetailRow.find('.js-add-testlog').on('click', function () {
