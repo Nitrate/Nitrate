@@ -98,18 +98,18 @@
 									<td><a href="{{ issues.0.get_absolute_url }}">{{ issue_key }}</a></td>
 								<td>
 								{% for issue in issues %}
-								    {% if issue.case_run_id %}
-								        <span class="grey">From Run</span><a href="{% url "run-get" issue.case_run.run_id %}">{{ issue.case_run.run_id }}</a>
-								        {% if issue.case_run_id == test_case_run.pk %}
-								        <a href="javascript:void(0);" title="Remove This Bug" class="js-remove-caserun-issue"
+									{% if issue.case_run_id %}
+										<span class="grey">From Run</span><a href="{% url "run-get" issue.case_run.run_id %}">{{ issue.case_run.run_id }}</a>
+										{% if issue.case_run_id == test_case_run.pk %}
+										<a href="javascript:void(0);" title="Remove This Bug" class="js-remove-caserun-issue"
 											data-params='{"runId": {{ test_case_run.run.pk }}, "issueKey": "{{ issue.issue_key }}", "caseId": {{ test_case_run.case_id }}, "caseRunIds": [{{ test_case_run.pk }}]}'>
-												<img width="9" height="9" title="Remove this issue" src="{% static "images/remove_small.png" %}" />
+											<img width="9" height="9" title="Remove this issue" src="{% static "images/remove_small.png" %}" />
 										</a>
-								        {% endif %}
-								    {% else %}
-								        <span class="grey">From Case</span>
-								        <a href="{% url "case-get" issue.case_id %}">{{ issue.case_id }}</a>
-								    {% endif %}
+										{% endif %}
+									{% else %}
+										<span class="grey">From Case</span>
+										<a href="{% url "case-get" issue.case_id %}">{{ issue.case_id }}</a>
+									{% endif %}
 								{% endfor %}
 								</td>
 								</tr>
@@ -234,7 +234,7 @@
 									</li>
 									{% endfor %}
 								</ul>
-							 </div>
+							</div>
 						</td>
 					</tr>
 				</table>
