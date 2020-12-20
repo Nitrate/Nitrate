@@ -22,7 +22,7 @@ For example to run Nitrate with a MariaDB:
 
 ```
 docker run --link nitrate_db:mariadb -p 80:80 -e NITRATE_DB_NAME=nitrate \
-    quay.io/nitrate/nitrate:4.9.1
+    quay.io/nitrate/nitrate:4.9.2
 ```
 
 ### Before Use
