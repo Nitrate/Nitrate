@@ -646,10 +646,12 @@ Nitrate.TestRuns.Details.on_load = function () {
     window.location.assign(this.dataset.actionUrl);
   });
 
-  jQ('#btn_clone').on('click', function () {
-    postToURL(jQ(this).data('param'), {
-      case_run: getSelectedCaseRunIDs()
-    });
+  jQ('#btn_clone, .js-update-case').on('click', function () {
+    let caseRunIds = getSelectedCaseRunIDs();
+    if (caseRunIds.length === 0) {
+      return;
+    }
+    postToURL(this.dataset.actionUrl, {case_run: caseRunIds});
   });
 
   jQ('#btn_export_csv, #btn_export_xml').on('click', function () {
@@ -666,11 +668,6 @@ Nitrate.TestRuns.Details.on_load = function () {
   });
   jQ('.js-del-case').on('click', function () {
     delCaseRun();
-  });
-  jQ('.js-update-case').on('click', function () {
-    postToURL(jQ(this).data('param'), {
-      case_run: getSelectedCaseRunIDs()
-    });
   });
   jQ('.js-change-assignee').on('click', function () {
     changeCaseRunAssignee();
