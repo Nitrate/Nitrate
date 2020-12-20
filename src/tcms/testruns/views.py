@@ -591,9 +591,11 @@ class RunStatisticsView(TemplateView):
     def get_context_data(self, **kwargs):
         data = super().get_context_data()
         run_id = self.kwargs['run_id']
+        run: TestRun = get_object_or_404(TestRun.objects.only('pk'), pk=run_id)
         data.update({
-            'test_run': get_object_or_404(TestRun.objects.only('pk'), pk=run_id),
-            'status_stats': stats_case_runs_status([run_id])[run_id]
+            'test_run': run,
+            'status_stats': stats_case_runs_status([run_id])[run_id],
+            'test_case_run_issues_count': run.get_issues_count()
         })
         return data
 
