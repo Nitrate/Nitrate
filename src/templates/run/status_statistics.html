@@ -10,7 +10,7 @@
 	<li>
 		<label>{{ status_name }}</label>
 		{% if count != 0 %}
-		<span id='{{ status_name }}'>[<a href="javascript:void(0)" class="js-status-subtotal" data-param="{{ status_name }}">{{ count }}</a>]</span>
+		<span id='{{ status_name }}'>[<a href="javascript:void(0)" class="js-status-subtotal" data-status-name="{{ status_name }}">{{ count }}</a>]</span>
 		{% else %}
 		<span id='{{ status_name }}'>[<a>{{ count }}</a>]</span>
 		{% endif %}
@@ -18,7 +18,7 @@
 	{% endfor %}
 	<li>
 		<label>TOTAL</label>
-		<span id="TOTAL">[</span><a href="javascript:void(0)" class="js-caserun-total">{{ status_stats.total }}</a><span>]</span>
+		<span id="TOTAL">[</span><a href="javascript:void(0)" class="js-caserun-total" data-status-name="">{{ status_stats.total }}</a><span>]</span>
 	</li>
 </ul>
 <div class="clear"></div>

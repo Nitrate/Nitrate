@@ -610,38 +610,6 @@ Nitrate.TestRuns.Details.on_load = function () {
     });
   }
 
-  //bind click to status btn
-  jQ('.btn_status').on('click', function () {
-    let from = jQ(this).siblings('.btn_status:disabled')[0].title;
-    let to = this.title;
-    if (jQ('span#' + to + ' a').text() === '0') {
-      let htmlstr =
-        '[<a href="javascript:void(0)" ' +
-        'onclick="showCaseRunsWithSelectedStatus(jQ(\'#id_filter\')[0], ' + jQ(this).prop('crs_id') + ')">0</a>]';
-      jQ('span#' + to).html(htmlstr);
-    }
-    if (jQ('span#' + from + ' a').text() === '1') {
-      jQ('span#' + from).html('[<a>1</a>]');
-    }
-    jQ('span#' + to + ' a').text(window.parseInt(jQ('span#' + to + ' a').text()) + 1);
-    jQ('span#' + from + ' a').text(window.parseInt(jQ('span#' + from + ' a').text()) - 1);
-
-    let caseRunCount = window.parseInt(jQ('span#TOTAL').next().text()) || 0;
-    let passedCaseRunCount = window.parseInt(jQ('span#PASSED a').text()) || 0;
-    let errorCaseRunCount = window.parseInt(jQ('span#ERROR a').text()) || 0;
-    let failedCaseRunCount = window.parseInt(jQ('span#FAILED a').text()) || 0;
-    let waivedCaseRunCount = window.parseInt(jQ('span#WAIVED a').text()) || 0;
-
-    let completedCasesCount = passedCaseRunCount + errorCaseRunCount + failedCaseRunCount + waivedCaseRunCount;
-    let completePercent = 100 * (completedCasesCount / caseRunCount).toFixed(2);
-    let unsuccessfulCasesCount = errorCaseRunCount + failedCaseRunCount;
-    let failedPercent = 100 * (unsuccessfulCasesCount / completedCasesCount).toFixed(2);
-
-    jQ('span#complete_percent').text(completePercent);
-    jQ('div.progress-inner').prop('style', 'width:' + completePercent + '%');
-    jQ('div.progress-failed').prop('style', 'width:' + failedPercent + '%');
-  });
-
   jQ('#btn_edit, #btnDeleteRun, .js-set-run-status').on('click', function () {
     window.location.assign(this.dataset.actionUrl);
   });
@@ -695,11 +663,10 @@ Nitrate.TestRuns.Details.on_load = function () {
     let params = jQ(this).data('params');
     submitValue(params[0], params[1], params[2], jQ(this).prev()[0], params[3]);
   });
-  jQ('.js-caserun-total').on('click', function () {
-    showCaseRunsWithSelectedStatus(jQ('#id_filter')[0], '');
-  });
-  jQ('.js-status-subtotal').on('click', function () {
-    showCaseRunsWithSelectedStatus(jQ('#id_filter')[0], jQ(this).data('param'));
+  jQ('.js-caserun-total, .js-status-subtotal').on('click', function () {
+    let form = document.forms['filterCaseRunsForm'];
+    form.case_run_status__name.value = this.dataset.statusName;
+    form.submit();
   });
   jQ('.js-change-order').on('click', function () {
     let params = jQ(this).data('params');
@@ -1270,11 +1237,6 @@ function getSelectedCaseRunIDs() {
     result.push(checkedCaseRuns[i].value);
   }
   return result;
-}
-
-function showCaseRunsWithSelectedStatus(form, statusName) {
-  form.case_run_status__name.value = statusName;
-  form.submit();
 }
 
 //Added for choose runs and add cases to those runs
