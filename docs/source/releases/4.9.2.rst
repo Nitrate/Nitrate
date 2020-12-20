@@ -1,0 +1,31 @@
+.. _4.9.2:
+
+4.9.2
+=====
+
+*Dec 20, 2020*
+
+Bugfixes
+--------
+
+* Fix incorrect test run issues count when refresh the statistics (`PR#857`_)
+
+Get and install
+---------------
+
+From PyPI::
+
+    pip install nitrate-tcms
+
+From image registry::
+
+    docker pull quay.io/nitrate/nitrate:4.9.2
+
+Refer to :ref:`how_to_run` for details of installation.
+
+Database Migration
+------------------
+
+No database migration.
+
+.. _PR#857: https://github.com/Nitrate/Nitrate/pull/857
