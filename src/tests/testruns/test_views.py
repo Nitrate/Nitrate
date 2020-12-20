@@ -1470,3 +1470,46 @@ class TestChangeRunStatus(BaseCaseRun):
 
         self.test_run_1.refresh_from_db()
         self.assertIsNone(self.test_run_1.stop_date)
+
+
+class TestRunStatisticsView(BaseCaseRun):
+    """Test the statistics in a test run page"""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+
+        status_passed = TestCaseRunStatus.objects.get(name='PASSED')
+        status_failed = TestCaseRunStatus.objects.get(name='FAILED')
+        status_error = TestCaseRunStatus.objects.get(name='ERROR')
+        cls.case_run_1.case_run_status = status_passed
+        cls.case_run_2.case_run_status = status_error
+        cls.case_run_3.case_run_status = status_failed
+
+        cls.case_run_1.save()
+        cls.case_run_2.save()
+        cls.case_run_3.save()
+
+    def test_get_the_statistics(self):
+        response = self.client.get(reverse('run-statistics', args=[self.test_run.pk]))
+
+        run_report_url = reverse("run-report", args=[self.test_run.pk])
+        attrs = 'href="javascript:void(0)" class="js-status-subtotal"'
+        content = [
+            '<span id="total_run_issues_count">No Issues</span>',
+            f'<a href="{run_report_url}" title="report of test caserun">Report</a>',
+
+            '<span id="BLOCKED">[<a>0</a>]</span>',
+            f'<span id="ERROR">[<a {attrs} data-param="ERROR">1</a>]</span>',
+            f'<span id="FAILED">[<a {attrs} data-param="FAILED">1</a>]</span>',
+            '<span id="IDLE">[<a>0</a>]</span>',
+            f'<span id="PASSED">[<a {attrs} data-param="PASSED">1</a>]</span>',
+            '<span id="PAUSED">[<a>0</a>]</span>',
+            '<span id="RUNNING">[<a>0</a>]</span>',
+            '<span id="WAIVED">[<a>0</a>]</span>',
+
+            '<a href="javascript:void(0)" class="js-caserun-total">3</a>'
+        ]
+
+        for item in content:
+            self.assertContains(response, item, html=True)
