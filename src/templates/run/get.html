@@ -109,7 +109,7 @@ jQ(function() {
 						<li>
 							{{ tag }}
 						{% if perms.testruns.delete_testruntag %}
-						<a href="javascript:void(0)" class="js-remove-tag" data-params='["{{ test_run.run_id }}", "{{ tag }}"]'>
+						<a href="javascript:void(0)" class="js-remove-tag" data-run-id="{{ test_run.pk }}" data-tag="{{ tag }}">
 							<img src="{% static "images/remove_small.png" %}" width="9" height="9" title="remove this tag" />
 						</a>
 						{% endif %}
@@ -117,7 +117,7 @@ jQ(function() {
 						{% endfor %}
 					</ul>
 					{% if perms.testruns.add_testruntag %}
-					<div><a class="addlink js-add-tag" href="javascript:void(0)" data-param="{{ test_run.run_id }}">Add Tag</a></div>
+					<div><a class="addlink js-add-tag" href="javascript:void(0)" data-run-id="{{ test_run.run_id }}">Add Tag</a></div>
 					{% endif %}
 				</div>
 			</div>

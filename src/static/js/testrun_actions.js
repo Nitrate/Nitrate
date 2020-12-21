@@ -538,6 +538,12 @@ Nitrate.TestRuns.Details.registerEventHandlersForCaseRunDetail = function (expan
   });
 };
 
+function bindRemoveTagHandler() {
+  jQ('.js-remove-tag').on('click', function () {
+    operateTagOnRun(jQ('.js-tag-ul')[0], this.dataset.runId, this.dataset.tag, 'remove');
+  });
+}
+
 Nitrate.TestRuns.Details.on_load = function () {
   jQ('.js-add-property').on('click', function () {
     let params = jQ(this).data('params');
@@ -627,13 +633,14 @@ Nitrate.TestRuns.Details.on_load = function () {
     window.location.assign(url);
   });
 
-  jQ('.js-remove-tag').on('click', function () {
-    let params = jQ(this).data('params');
-    removeRuntag(jQ('.js-tag-ul')[0], params[0], params[1]);
-  });
+  bindRemoveTagHandler();
   jQ('.js-add-tag').on('click', function () {
-    addRunTag(jQ('.js-tag-ul')[0], jQ(this).data('param'));
+    let tag = window.prompt('Please type new tag.');
+    if (tag.length > 0) {
+      operateTagOnRun(jQ('.js-tag-ul')[0], this.dataset.runId, tag, 'add');
+    }
   });
+
   jQ('.js-del-case').on('click', function () {
     delCaseRun();
   });
@@ -1114,37 +1121,19 @@ function addPropertyToEnv(runId, envValueId) {
   });
 }
 
-function addRunTag(container, runId) {
-  let tag = window.prompt('Please type new tag.');
-  if (!tag) {
-    return false;
-  }
-
-  // FIXME: should be a POST request
+/**
+ * @param {HTMLElement} container
+ * @param {string|number} runId
+ * @param {string} tag
+ * @param {string} action
+ */
+function operateTagOnRun(container, runId, tag, action) {
   sendHTMLRequest({
     url: '/management/tags/',
-    data: {a: 'add', run: runId, tags: tag},
+    data: {a: action, run: runId, tags: tag},
     container: container,
     callbackAfterFillIn: function () {
-      jQ('.js-remove-tag').on('click', function () {
-        let params = jQ(this).data('params');
-        removeRuntag(jQ('.js-tag-ul')[0], params[0], params[1]);
-      });
-    }
-  });
-}
-
-function removeRuntag(container, runId, tag) {
-  // FIXME: should be a POST request
-  sendHTMLRequest({
-    url: '/management/tags/',
-    data: {a: 'remove', run: runId, tags: tag},
-    container: container,
-    callbackAfterFillIn: function () {
-      jQ('.js-remove-tag').on('click', function () {
-        let params = jQ(this).data('params');
-        removeRuntag(jQ('.js-tag-ul')[0], params[0], params[1]);
-      });
+      bindRemoveTagHandler();
     }
   });
 }
