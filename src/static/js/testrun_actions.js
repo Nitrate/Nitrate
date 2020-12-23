@@ -643,6 +643,21 @@ function bindEnvPropertyHandlers() {
   });
 }
 
+function bindRemoveCCHandler() {
+  jQ('.js-remove-cc').on('click', function () {
+    let self = this;
+    confirmDialog({
+      message: 'Are you sure to delete this user from CC?',
+      yesFunc: function () {
+        constructRunCC(self.dataset.actionUrl, jQ('.js-cc-ul')[0], self.dataset.runId, {
+          'do': 'remove',
+          'user': self.dataset.userName
+        });
+      }
+    });
+  });
+}
+
 Nitrate.TestRuns.Details.on_load = function () {
   jQ('.js-add-property').on('click', function () {
     let params = jQ(this).data('params');
@@ -751,13 +766,14 @@ Nitrate.TestRuns.Details.on_load = function () {
   jQ('.js-show-commentdialog').on('click', function () {
     showCommentForm();
   });
+
   jQ('.js-add-cc').on('click', function () {
-    addRunCC(jQ(this).data('param'), jQ('.js-cc-ul')[0]);
+    let user = window.prompt('Please type new email or username for CC.').trim();
+    if (user) {
+      constructRunCC(this.dataset.actionUrl, jQ('.js-cc-ul')[0], this.dataset.runId, {'do': 'add', 'user': user});
+    }
   });
-  jQ('.js-remove-cc').on('click', function () {
-    let params = jQ(this).data('params');
-    removeRunCC(params[0], params[1], jQ('.js-cc-ul')[0]);
-  });
+  bindRemoveCCHandler();
 
   bindEnvPropertyHandlers();
 
@@ -1132,37 +1148,17 @@ function operateTagOnRun(container, runId, tag, action) {
   });
 }
 
-function constructRunCC(container, runId, parameters) {
+function constructRunCC(url, container, runId, parameters) {
   sendHTMLRequest({
-    url: '/run/' + runId + '/cc/',
+    url: url,
     data: parameters,
     container: container,
     callbackAfterFillIn: function () {
-      jQ('.js-remove-cc').on('click', function () {
-        let params = jQ(this).data('params');
-        removeRunCC(params[0], params[1], jQ('.js-cc-ul')[0]);
-      });
+      bindRemoveCCHandler();
       if (jQ('#message').length) {
         showModal(jQ('#message').html());
         return false;
       }
-    }
-  });
-}
-
-function addRunCC(runId, container) {
-  let user = window.prompt('Please type new email or username for CC.');
-  if (!user) {
-    return false;
-  }
-  constructRunCC(container, runId, {'do': 'add', 'user': user});
-}
-
-function removeRunCC(runId, user, container) {
-  confirmDialog({
-    message: 'Are you sure to delete this user from CC?',
-    yesFunc: function () {
-      constructRunCC(container, runId, {'do': 'remove', 'user': user});
     }
   });
 }

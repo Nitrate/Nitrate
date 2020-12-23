@@ -5,7 +5,7 @@
 	<li>
 		<a href="mailto:{{ cc.email }}">{{ cc.email }}</a>
 		{% if perms.testruns.delete_testruncc %}
-		<a href="javascript:void(0)" class="js-remove-cc" data-params='[{{ test_run.run_id }}, "{{ cc.username }}"]'>
+		<a href="javascript:void(0)" class="js-remove-cc" data-run-id="{{ test_run.pk }}" data-user-name="{{ cc.username }}" data-action-url="{% url "run-cc" run_id=test_run.pk %}">
 			<img src="{% static "images/remove_small.png" %}" width="9" height="9" title="remove this tag" />
 		</a>
 		{% endif %}
@@ -13,7 +13,9 @@
 	{% endfor %}
 	</ul>
 
-	<div><a class="addlink js-add-cc" href="javascript:void(0)" data-param="{{ test_run.run_id }}">Add CC</a></div>
+	<div>
+		<a class="addlink js-add-cc" href="javascript:void(0)" data-run-id="{{ test_run.pk }}" data-action-url="{% url "run-cc" run_id=test_run.pk %}">Add CC</a>
+	</div>
 
 	{% if message %}
 		<div id="message" class="hidden">{{ message }}</div>
@@ -26,7 +28,7 @@
 	<li>
 		<a href="mailto:{{ cc.email }}">{{ cc.email }}</a>
 		{% if perms.testruns.delete_testruncc %}
-		<a href="javascript:void(0)" class="js-remove-cc" data-params='[{{ test_run.run_id }}, "{{ cc.username }}"]'>
+		<a href="javascript:void(0)" class="js-remove-cc" data-run-id="{{ test_run.pk }}" data-user-name="{{ cc.username }}" data-action-url="{% url "run-cc" run_id=test_run.pk %}">
 			<img src="{% static "images/remove_small.png" %}" width="9" height="9" title="remove this tag" />
 		</a>
 		{% endif %}
