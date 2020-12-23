@@ -782,9 +782,10 @@ Nitrate.TestRuns.Details.on_load = function () {
     form.case_run_status__name.value = this.dataset.statusName;
     form.submit();
   });
-  jQ('.js-change-order').on('click', function () {
-    let params = jQ(this).data('params');
-    changeCaseRunOrder(params[0], params[1], params[2]);
+
+  jQ('.js-change-order').on('click', function (e) {
+    changeCaseRunOrder(this.dataset.runId, this.dataset.caseRunId, this.dataset.sortKey);
+    return false;
   });
 };
 
