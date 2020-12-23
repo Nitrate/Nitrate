@@ -1133,10 +1133,12 @@ function addPropertyToEnv(runId, envValueId) {
 }
 
 /**
- * @param {HTMLElement} container
- * @param {string|number} runId
- * @param {string} tag
- * @param {string} action
+ * Operator tags on a test run.
+ *
+ * @param {HTMLElement} container - the element containing the tag list.
+ * @param {string|number} runId - the run id to update the associated tags.
+ * @param {string} tag - the tag name to operate on.
+ * @param {string} action - the operation, which should be add or remove.
  */
 function operateTagOnRun(container, runId, tag, action) {
   sendHTMLRequest({

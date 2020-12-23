@@ -105,16 +105,17 @@ jQ(function() {
 				<div class="title grey">Tags&nbsp;:</div>
 				<div class="name linotype">
 					<ul class="js-tag-ul">
-						{% for tag in test_run.tag.all %}
-						<li>
-							{{ tag }}
-						{% if perms.testruns.delete_testruntag %}
-						<a href="javascript:void(0)" class="js-remove-tag" data-run-id="{{ test_run.pk }}" data-tag="{{ tag }}">
-							<img src="{% static "images/remove_small.png" %}" width="9" height="9" title="remove this tag" />
-						</a>
-						{% endif %}
-						</li>
-						{% endfor %}
+						{% include "run/tag_list.html" with tags=test_run.tag.all object=test_run %}
+{#						{% for tag in test_run.tag.all %}#}
+{#						<li>#}
+{#							{{ tag }}#}
+{#							{% if perms.testruns.delete_testruntag %}#}
+{#							<a href="javascript:void(0)" class="js-remove-tag" data-run-id="{{ test_run.pk }}" data-tag="{{ tag }}">#}
+{#								<img src="{% static "images/remove_small.png" %}" width="9" height="9" title="remove this tag" />#}
+{#							</a>#}
+{#							{% endif %}#}
+{#						</li>#}
+{#						{% endfor %}#}
 					</ul>
 					{% if perms.testruns.add_testruntag %}
 					<div><a class="addlink js-add-tag" href="javascript:void(0)" data-run-id="{{ test_run.run_id }}">Add Tag</a></div>

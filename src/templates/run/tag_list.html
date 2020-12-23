@@ -1,5 +1,5 @@
 {% load static %}
-{% for tag in object.tag.all %}
+{% for tag in tags %}
 <li>
 	{{ tag }}
 	{% if perms.testruns.delete_testruntag %}

@@ -237,7 +237,7 @@ def tag(request, template_name="management/get_tag.html"):
             return self.template_name, get_selected_testcases(self.request)
 
         def run(self):
-            self.template_name = 'run/get_tag.html'
+            self.template_name = 'run/tag_list.html'
             return self.template_name, TestRun.objects.filter(
                 pk__in=self.object_pks)
 
