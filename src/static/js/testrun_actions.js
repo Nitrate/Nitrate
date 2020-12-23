@@ -544,6 +544,105 @@ function bindRemoveTagHandler() {
   });
 }
 
+function bindEnvPropertyHandlers() {
+  jQ('.js-edit-property').on('click', function () {
+    let dataset = this.dataset
+      , formName = 'id_form_value_' + dataset.runEnvValueId
+      , theEnvForm = document.forms[formName]
+      , envPropertyId = theEnvForm.env_property_id.value
+      ;
+
+    document.getElementById(dataset.envValueElemId).style.display = 'none';
+    document.getElementById(dataset.submitValueElemId).style.display = '';
+
+    let selectValueElem = document.getElementById(dataset.selectValueElemId);
+    selectValueElem.style.display = '';
+
+    getRequest({
+      url: dataset.actionUrl,
+      data: {info_type: 'env_values', env_property_id: envPropertyId},
+      errorMessage: 'Update values failed',
+      success: function (data) {
+        let currentValue = theEnvForm.current_run_env.value;
+        let excludeValues = [];
+
+        for (let i = 0; i < document.forms.length; i++) {
+          let form = document.forms[i];
+          if (form.current_run_env && form.current_run_env.value !== currentValue) {
+            excludeValues.push(window.parseInt(form.current_run_env.value));
+          }
+        }
+
+        let values = [];
+
+        for (let i = 0; i < data.length; i++) {
+          let envValue = data[i];
+          if (excludeValues.indexOf(envValue.pk) < 0) {
+            values.push([envValue.pk, envValue.fields.value]);
+          }
+        }
+
+        setUpChoices(selectValueElem, values, false);
+      },
+    });
+  });
+
+  jQ('.js-remove-property').on('click', function () {
+    let self = this;
+    confirmDialog({
+      message: 'Are you sure to remove this property?',
+      title: 'Manage Test Run\'s Environment',
+      yesFunc: function () {
+        let parent = jQ(self).closest('form');
+        let emptySelf = jQ(self).closest('li');
+        let envValueId = jQ('input[type=hidden][name=current_run_env]', parent).get(0).value;
+
+        postRequest({
+          url: self.dataset.actionUrl,  // '/runs/env_value/delete/',
+          data: {env_value: envValueId, runs: self.dataset.runId},
+          errorMessage: 'Deleting value failed',
+          success: function () { emptySelf.remove(); },
+        });
+      }
+    });
+  });
+
+  jQ('.js-env-submit').on('click', function () {
+    let dataset = this.dataset
+      , selectField = jQ(this).prev()[0];
+
+    let newValue = selectField.options[selectField.selectedIndex].innerHTML;
+    let oldValue = jQ(selectField).prev().prev().val();
+
+    let dupValues = [];
+    jQ('input[type=hidden][name=current_run_env]').each(function (index, element) {
+      if (element.value !== oldValue) {
+        dupValues.push(element.value);
+      }
+      return true;
+    });
+    if (jQ.inArray(selectField.value, dupValues) >= 0) {
+      showModal('The value is exist for this run');
+      return false;
+    }
+
+    postRequest({
+      url: dataset.actionUrl,
+      data: {
+        old_env_value: oldValue,
+        new_env_value: selectField.value,
+        runs: dataset.runId
+      },
+      success: function () {
+        jQ('#' + dataset.envValueElemId).html(newValue).show();
+        jQ(selectField).hide();
+        jQ('#' + dataset.submitValueElemId).hide();
+        jQ(selectField).prev().prev().val(selectField.value);
+      },
+    });
+  });
+}
+
 Nitrate.TestRuns.Details.on_load = function () {
   jQ('.js-add-property').on('click', function () {
     let params = jQ(this).data('params');
@@ -659,17 +758,9 @@ Nitrate.TestRuns.Details.on_load = function () {
     let params = jQ(this).data('params');
     removeRunCC(params[0], params[1], jQ('.js-cc-ul')[0]);
   });
-  jQ('.js-edit-property').on('click', function () {
-    let params = jQ(this).data('params');
-    editValue(jQ(this).parents('form.js-run-env')[0], params[0], params[1], params[2]);
-  });
-  jQ('.js-remove-property').on('click', function () {
-    removeProperty(jQ(this).data('param'), this);
-  });
-  jQ('.js-env-submit').on('click', function () {
-    let params = jQ(this).data('params');
-    submitValue(params[0], params[1], params[2], jQ(this).prev()[0], params[3]);
-  });
+
+  bindEnvPropertyHandlers();
+
   jQ('.js-caserun-total, .js-status-subtotal').on('click', function () {
     let form = document.forms['filterCaseRunsForm'];
     form.case_run_status__name.value = this.dataset.statusName;
@@ -1012,93 +1103,6 @@ function delCaseRun() {
   });
 }
 
-function editValue(form, hidebox, selectid, submitid) {
-  jQ('#' + hidebox).hide();
-  jQ('#' + selectid).show();
-  jQ('#' + submitid).show();
-
-  let data = Nitrate.Utils.formSerialize(form);
-  let envPropertyId = data.env_property_id;
-
-  getRequest({
-    url: '/management/getinfo/',
-    data: {info_type: 'env_values', env_property_id: envPropertyId},
-    errorMessage: 'Update values failed',
-    success: function (data) {
-      let currentValue = jQ('input[type=hidden][name=current_run_env]:eq(0)', form);
-      let excludeValues = [];
-
-      jQ('input[type=hidden][name=current_run_env]').each(function (index, element) {
-        if (element.value !== currentValue.val()) {
-          excludeValues.push(window.parseInt(element.value));
-        }
-        return true;
-      });
-
-      let values = [];
-      jQ.each(data, function (index, value) {
-        if (jQ.inArray(value.pk, excludeValues) < 0) {
-          values.push([value.pk, value.fields.value]);
-        }
-        return true;
-      });
-
-      setUpChoices(jQ('#' + selectid)[0], values, false);
-    },
-  });
-}
-
-function submitValue(runId, value, hidebox, selectField, submitid) {
-  let newValue = selectField.options[selectField.selectedIndex].innerHTML;
-  let oldValue = jQ(selectField).prev().prev().val();
-
-  let dupValues = [];
-  jQ('input[type=hidden][name=current_run_env]').each(function (index, element) {
-    if (element.value !== oldValue) {
-      dupValues.push(element.value);
-    }
-    return true;
-  });
-  if (jQ.inArray(selectField.value, dupValues) >= 0) {
-    showModal('The value is exist for this run');
-    return false;
-  }
-
-  postRequest({
-    url: '/runs/env_value/change/',
-    data: {
-      old_env_value: oldValue,
-      new_env_value: selectField.value,
-      runs: runId
-    },
-    success: function () {
-      jQ('#' + hidebox).html(newValue).show();
-      jQ(selectField).hide();
-      jQ('#' + submitid).hide();
-      jQ(selectField).prev().prev().val(selectField.value);
-    },
-  });
-}
-
-function removeProperty(runId, element) {
-  confirmDialog({
-    message: 'Are you sure to remove this porperty?',
-    title: 'Manage Test Run\'s Environment',
-    yesFunc: function () {
-      let parent = jQ(element).closest('form');
-      let emptySelf = jQ(element).closest('li');
-      let envValueId = jQ('input[type=hidden][name=current_run_env]', parent).get(0).value;
-
-      postRequest({
-        url: '/runs/env_value/delete/',
-        data: {env_value: envValueId, runs: runId},
-        errorMessage: 'Deleting value failed',
-        success: function () { emptySelf.remove(); },
-      });
-    }
-  });
-}
-
 function addPropertyToEnv(runId, envValueId) {
   postRequest({
     url: '/runs/env_value/add/',
@@ -1106,17 +1110,7 @@ function addPropertyToEnv(runId, envValueId) {
     success: function (data) {
       jQ('#dialog').hide();
       jQ('#env_area').html(data.fragment);
-      jQ('.js-edit-property').on('click', function () {
-        let params = jQ(this).data('params');
-        editValue(jQ(this).parents('form.js-run-env')[0], params[0], params[1], params[2]);
-      });
-      jQ('.js-remove-property').on('click', function () {
-        removeProperty(jQ(this).data('param'), this);
-      });
-      jQ('.js-env-submit').on('click', function () {
-        let params = jQ(this).data('params');
-        submitValue(params[0], params[1], params[2], jQ(this).prev()[0], params[3]);
-      });
+      bindEnvPropertyHandlers();
     },
   });
 }
