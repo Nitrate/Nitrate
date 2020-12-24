@@ -1500,15 +1500,15 @@ class TestRunStatisticsView(BaseCaseRun):
             f'<a href="{run_report_url}" title="report of test caserun">Report</a>',
 
             '<span id="BLOCKED">[<a>0</a>]</span>',
-            f'<span id="ERROR">[<a {attrs} data-param="ERROR">1</a>]</span>',
-            f'<span id="FAILED">[<a {attrs} data-param="FAILED">1</a>]</span>',
+            f'<span id="ERROR">[<a {attrs} data-status-name="ERROR">1</a>]</span>',
+            f'<span id="FAILED">[<a {attrs} data-status-name="FAILED">1</a>]</span>',
             '<span id="IDLE">[<a>0</a>]</span>',
-            f'<span id="PASSED">[<a {attrs} data-param="PASSED">1</a>]</span>',
+            f'<span id="PASSED">[<a {attrs} data-status-name="PASSED">1</a>]</span>',
             '<span id="PAUSED">[<a>0</a>]</span>',
             '<span id="RUNNING">[<a>0</a>]</span>',
             '<span id="WAIVED">[<a>0</a>]</span>',
 
-            '<a href="javascript:void(0)" class="js-caserun-total">3</a>'
+            '<a href="javascript:void(0)" class="js-caserun-total" data-status-name="">3</a>'
         ]
 
         for item in content:
