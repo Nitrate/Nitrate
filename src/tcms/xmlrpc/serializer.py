@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import operator
+from collections import OrderedDict
 
 from datetime import datetime
 from datetime import timedelta
@@ -278,10 +279,10 @@ class QuerySetBasedXMLRPCSerializer(XMLRPCSerializer):
         :rtype: dict
         """
         qs = self.queryset.values('pk', field_name).order_by('pk')
-        return {
+        return OrderedDict({
             pk: tuple(values) for pk, values in
             groupby(qs.iterator(), operator.itemgetter('pk'))
-        }
+        })
 
     def _query_m2m_fields(self):
         m2m_fields = self._get_m2m_fields()
