@@ -41,10 +41,12 @@ def form_error_messages_to_list(form):
 
 
 def get_string_combinations(s):
-    """
-    @param s: string
-    @return: a list containing s and the lowercase, uppercase
+    """Get the lower, upper, capitalized version of the given string
+
+    :param str s: string
+    :return: a list containing s and the lowercase, uppercase
             & first letter uppercase form of s.
+    :rtype: list[str]
     """
     return s, s.lower(), s.upper(), s.capitalize()
 

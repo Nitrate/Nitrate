@@ -408,10 +408,12 @@ def get_selected_cases_ids(request):
 def get_tags_from_cases(case_ids, plan_id=None):
     """Get all tags from test cases
 
-    @param cases: an iterable object containing test cases' ids
-    @type cases: list, tuple
-    @return: a list containing all found tags with id and name
-    @rtype: list
+    :param case_ids: an iterable object containing test cases' ids
+    :type case_ids: iterable[int]
+    :param plan_id: the plan id.
+    :type plan_id: int or None
+    :return: a list containing all found tags with id and name
+    :rtype: list[str]
     """
     case_id_list = ', '.join((str(item) for item in case_ids))
     if plan_id:

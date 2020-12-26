@@ -60,11 +60,11 @@ class TestCaseRunDataMixin:
     def stats_mode_caseruns(self, case_runs):
         """Statistics from case runs mode
 
-        @param case_runs: iteratable object to access each case run
-        @type case_runs: iterable, list, tuple
-        @return: mapping between mode and the count. Example return value is
-            { 'manual': I, 'automated': J, 'manual_automated': N }
-        @rtype: dict
+        :param case_runs: an iterable object to access each case run
+        :type case_runs: iterable[:class:`TestCaseRun`]
+        :return: mapping between mode and the count. Example return value is
+            ``{ 'manual': I, 'automated': J, 'manual_automated': N }``.
+        :rtype: dict[str, int]
         """
         manual_count = 0
         automated_count = 0
@@ -121,10 +121,10 @@ class TestCaseRunDataMixin:
         - the number of completed test case runs, whose status are PASSED,
           ERROR, FAILED, WAIVED
 
-        @param case_runs: iterable object containing case runs
-        @type case_runs: iterable
-        @return: a mapping between statistics target and its value
-        @rtype: dict
+        :param case_runs: iterable object containing case runs
+        :type case_runs: iterable[:class:`TestCaseRun`]
+        :return: a mapping between statistics target and its value
+        :rtype: dict[str, int]
         """
         idle_count = 0
         complete_count = 0

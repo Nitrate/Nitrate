@@ -71,13 +71,6 @@ def _lookup_fields_in_model(cls, fields):
     """Lookup ManyToMany fields in current table and related tables. For
     distinct duplicate rows when using inner join
 
-    @param cls: table model class
-    @type cls: subclass of django.db.models.Model
-    @param fields: fields in where condition.
-    @type fields: list
-    @return: whether use distinct or not
-    @rtype: bool
-
     Example:
         cls is TestRun (<class 'tcms.testruns.models.TestRun'>)
         fields is 'plan__case__is_automated'
@@ -93,7 +86,14 @@ def _lookup_fields_in_model(cls, fields):
     condition).
 
     So this method will find out that case is a m2m field and notice the
-    outter method use distinct to avoid duplicated rows.
+    outer method use distinct to avoid duplicated rows.
+
+    :param cls: table model class
+    :type cls: subclass of django.db.models.Model
+    :param fields: fields in where condition.
+    :type fields: list[str]
+    :return: whether use distinct or not
+    :rtype: iterable
     """
     for field in fields:
         try:
@@ -111,12 +111,12 @@ def _need_distinct_m2m_rows(cls, fields):
     """Check whether the query string has ManyToMany field or not, return
     False if the query string is empty.
 
-    @param cls: table model class
-    @type cls: subclass of django.db.models.Model
-    @param fields: fields in where condition.
-    @type fields: list
-    @return: whether use distinct or not
-    @rtype: bool
+    :param cls: table model class
+    :type cls: subclass of django.db.models.Model
+    :param fields: fields in where condition.
+    :type fields: list[str]
+    :return: whether use distinct or not
+    :rtype: bool
     """
     return next(_lookup_fields_in_model(cls, fields), False) if fields else False
 
@@ -125,12 +125,13 @@ def distinct_m2m_rows(cls, values, op_type):
     """By django model field looking up syntax, loop values and check the
     condition if there is a multi-tables query.
 
-    @param cls: table model class
-    @type cls: subclass of django.db.models.Model
-    @param values: fields in where condition.
-    @type values: dict
-    @return: QuerySet
-    @rtype: django.db.models.query.QuerySet
+    :param cls: table model class
+    :type cls: subclass of django.db.models.Model
+    :param values: fields in where condition.
+    :type values: dict
+    :param int op_type: the operation type.
+    :return: QuerySet
+    :rtype: django.db.models.query.QuerySet
     """
     flag = False
     for field in values.keys():
