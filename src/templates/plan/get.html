@@ -65,19 +65,21 @@ Nitrate.TestPlans.Instance = {
 	<input id="id_plan_id" type="hidden" name="plan_id" value="{{ test_plan.plan_id }}">
 	<div class="control">
 		<span id="id_buttons" class="button">
-			<input id="btn_edit" type="button" value="Edit Plan " title="Edit test plan" data-param="{% url "plan-edit" test_plan.plan_id %}" {% if perms.testplans.change_testplan %}{% else%}disabled{% endif %}>
-			<input id="btn_clone" type="button" value="Clone Plan" title="Clone this plan to other product" data-params='["{% url "plans-clone" %}", {{ test_plan.plan_id }}]' {% if perms.testplans.add_testplan %}{% else %}disabled{% endif %}>
+			<input id="btn_edit" type="button" value="Edit Plan " title="Edit test plan"
+				data-action-url="{% url "plan-edit" test_plan.plan_id %}"
+				{% if perms.testplans.change_testplan %}{% else%}disabled{% endif %} />
+			<input id="btn_clone" type="button" value="Clone Plan" title="Clone this plan to other product"
+				data-action-url="{% url "plans-clone" %}?plan={{ test_plan.pk }}"
+				{% if perms.testplans.add_testplan %}{% else %}disabled{% endif %} />
 			{% if test_plan.is_active %}
 			<input id="btn_disable" type="button" value="Disable Plan " title="Disabled this plan"{% if not perms.testplans.change_testplan %} disabled{% endif %}>
 			{% else %}
 			<input id="btn_enable" type="button" value="Enable Plan " title="Enabled this plan"{% if not perms.testplans.change_testplan %} disabled{% endif %}>
 			{% endif %}
-			<input id="btn_export" type="button" value="Export All Cases "
-                   title="Export all cases to XML file"
-                   data-params='["{% url "plans-export" %}", {{ test_plan.pk }}]'>
-			<input id="btn_print" type="button" value="Print Plan "
-                   title="Print Plan"
-                   data-params='["{% url "plans-printable" %}", {{ test_plan.pk }}]'>
+			<input id="btn_export" type="button" value="Export All Cases " title="Export all cases to XML file"
+				data-action-url="{% url "plans-export" %}?plan={{ test_plan.pk }}" />
+			<input id="btn_print" type="button" value="Print Plan " title="Print Plan"
+				data-action-url="{% url "plans-printable" %}?plan={{ test_plan.pk }}" />
 			{% comment %}
 			<span class="right-action">
 				<img src="{% static "images/icon_printer.png" %}" width="16px">

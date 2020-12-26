@@ -1,7 +1,7 @@
 {% load comments %}
 {% load static %}
 <table class="list js-cases-list" cellpadding="1" cellspacing="0" border="0">
-	<thead data-param="{{ test_plan.plan_id }}">
+	<thead data-plan-id="{{ test_plan.pk }}">
 		<tr>
 			<th class="nosort" align="left" width="18px">
 				<a class="js-expand-or-collapse-cases">
@@ -14,54 +14,54 @@
 				<input type="checkbox" class="js-select-all" value="all" checked />
 			</th>
 			<th align="left" class="widthID">
-				<a title="Sort by case ID" href="javascript:void(0)" class="js-table-header-sortable" data-param="case_id">
+				<a title="Sort by case ID" href="javascript:void(0)" class="js-table-header-sortable" data-order-by="case_id">
 					ID
 				</a>
 			</th>
 			<th align="left">
-				<a title="Sort by Summary" href="javascript:void(0)" class="js-table-header-sortable" data-param="summary">
+				<a title="Sort by Summary" href="javascript:void(0)" class="js-table-header-sortable" data-order-by="summary">
 					Test Case Summary
 				</a>
 			</th>
 			<th align="left" width="90px">
-				<a title="Sort by Author" href="javascript:void(0)" class="js-table-header-sortable" data-param="author">
+				<a title="Sort by Author" href="javascript:void(0)" class="js-table-header-sortable" data-order-by="author">
 					Author
 				</a>
 			</th>
 			<th align="left" width="110px">
 				{% if show_confirmed_cases %}
-				<a title="Sort by default tester" href="javascript:void(0)" class="js-table-header-sortable" data-param="default_tester">
+				<a title="Sort by default tester" href="javascript:void(0)" class="js-table-header-sortable" data-order-by="default_tester">
 					Default Tester
 				</a>
 				{% else %}
-				<a title="Sort by Reviewer" href="javascript:void(0)" class="js-table-header-sortable" data-param="reviewer">
+				<a title="Sort by Reviewer" href="javascript:void(0)" class="js-table-header-sortable" data-order-by="reviewer">
 					Reviewer
 				</a>
 				{% endif %}
 			</th>
 			<th align="left" width="160px">
-				<a title="Sort by automated" href="javascript:void(0)" class="js-table-header-sortable" data-param="is_automated">
+				<a title="Sort by automated" href="javascript:void(0)" class="js-table-header-sortable" data-order-by="is_automated">
 					Automated
 				</a>
 			</th>
 			<th align="left" width="130px">
-				<a title="Sort by status" href="javascript:void(0)" class="js-table-header-sortable" data-param="case_status">
+				<a title="Sort by status" href="javascript:void(0)" class="js-table-header-sortable" data-order-by="case_status">
 					Status
 				</a>
 			</th>
 			<th align="left" width="100px">
-				<a title="Sort by categoty" href="javascript:void(0)" class="js-table-header-sortable" data-param="category__name">
+				<a title="Sort by categoty" href="javascript:void(0)" class="js-table-header-sortable" data-order-by="category__name">
 					Category
 				</a>
 			</th>
 			<th align="left" width="60px">
-				<a title="Sort by prority" href="javascript:void(0)" class="js-table-header-sortable" data-param="priority">
+				<a title="Sort by prority" href="javascript:void(0)" class="js-table-header-sortable" data-order-by="priority">
 					Priority
 				</a>
 			</th>
 			<th align="left" width="80px" style="display:none">Text version</th>
 			<th align="left" width="40px">
-				<a title="Sort by sortkey" href="javascript:void(0)" class="js-table-header-sortable" data-param="sortkey">
+				<a title="Sort by sortkey" href="javascript:void(0)" class="js-table-header-sortable" data-order-by="sortkey">
 					Sort
 				</a>
 			</th>

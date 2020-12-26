@@ -25,7 +25,7 @@
 						</li>
 						<li>
 							<input type="button" class="search icon_plan js-add-case-to-plan" value="Add cases from other plans"
-								data-param="{% url "plan-search-cases-for-link" test_plan.plan_id %}" />
+								data-action-url="{% url "plan-search-cases-for-link" test_plan.plan_id %}" />
 						</li>
 						{% else %}
 						<li><input type="button" class="add_new icon_plan" disabled value="Write new case" /></li>
@@ -34,16 +34,16 @@
 						{% endif %}
 						<li>
 							<input type="button" class="export icon_plan js-export-cases" value="Export"
-								title="Export selected cases into XML file" data-param="{% url "cases-export" %}" />
+								title="Export selected cases into XML file" data-action-url="{% url "cases-export" %}" />
 						</li>
 						<li>
 							<input type="button" class="print_view icon_plan js-print-cases" value="Print"
-								title="print view of selected cases" data-param="{% url "cases-printable" %}" />
+								title="print view of selected cases" data-action-url="{% url "cases-printable" %}" />
 						</li>
 						{% if perms.testcases.add_testcase %}
 						<li>
 							<input type="button" class="clone icon_plan js-clone-cases" value="Clone"
-								title="Clone selected cases to another test plan" data-param="{% url "cases-clone" %}" />
+								title="Clone selected cases to another test plan" data-action-url="{% url "cases-clone" %}" />
 						</li>
 						{% else %}
 						<li>
@@ -82,12 +82,10 @@
 					<ul>
 						{% if perms.testruns.add_testrun %}
 						<li>
-							<input type="button" class="new_run icon_plan js-new-run" value="Write a new run"
-								data-param="{% url "run-new" %}" />
+							<input type="button" class="new_run icon_plan js-new-run" value="Write a new run" data-action-url="{% url "run-new" %}" />
 						</li>
 						<li>
-							<input type="button" class="search icon_plan js-add-case-to-run" value="Add cases to run"
-								data-param="{% url "plan-choose-run" test_plan.plan_id %}" />
+							<input type="button" class="search icon_plan js-add-case-to-run" value="Add cases to run" data-action-url="{% url "plan-choose-run" test_plan.plan_id %}" />
 						</li>
 						{% else %}
 						<li>
@@ -136,8 +134,7 @@
 					<ul>
 						{% for cs in case_status %}
 						<li>
-							<input type='button' value='Set {{ cs }}' class='btn_case_status {{ cs|lower }} icon_plan js-status-item'
-								data-param="{{ cs.pk }}" />
+							<input type='button' value='Set {{ cs }}' class='btn_case_status {{ cs|lower }} icon_plan js-status-item' data-status-id="{{ cs.pk }}" />
 						</li>
 						{% endfor %}
 					</ul>
@@ -150,8 +147,7 @@
 					<ul>
 						{% for priority in priorities %}
 						<li>
-							<input type='button' value='Set {{ priority }}' class='btn_case_priority {{ priority|lower }} icon_plan js-priority-item'
-								data-param="{{ priority.pk }}" />
+							<input type='button' value='Set {{ priority }}' class='btn_case_priority {{ priority|lower }} icon_plan js-priority-item' data-priority-id="{{ priority.pk }}" />
 						</li>
 						{% endfor %}
 					</ul>
