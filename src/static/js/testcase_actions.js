@@ -303,11 +303,11 @@ Nitrate.TestCases.Create.on_load = function () {
   jQ('.js-case-cancel').on('click', function () {
     window.history.go(-1);
   });
-  if (jQ('.js-plan-cancel').length) {
-    jQ('.js-plan-cancel').on('click', function () {
-      window.location.href = jQ(this).data('param');
-    });
-  }
+
+  jQ('.js-case-cancel').on('click', function () {
+    window.location.assign(this.dataset.actionUrl);
+  });
+
 };
 
 Nitrate.TestCases.Edit.on_load = function () {

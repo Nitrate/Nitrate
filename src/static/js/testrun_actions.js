@@ -59,10 +59,6 @@ function removeItem(item, caseEstimatedTime) {
   jQ('#' + item).remove();
 }
 
-function cloneRunsClickHandler() {
-  postToURL(jQ(this).data('param'), Nitrate.Utils.formSerialize(this.form), 'get');
-}
-
 
 /**
  * Initialize the test runs search result table and associated action buttons.
@@ -95,7 +91,10 @@ Nitrate.TestRuns.Search.initializeSearchResult = function (searchEndpoint) {
     },
 
     fnInitComplete: function () {
-      jQ('.js-clone-testruns').on('click', cloneRunsClickHandler);
+      jQ('.js-clone-testruns').on('click', function () {
+        let params = Nitrate.Utils.formSerialize(this.form);
+        postToURL(this.dataset.actionUrl, params, 'get');
+      });
     },
 
     fnDrawCallback: function () {

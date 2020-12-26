@@ -9,9 +9,8 @@
 {% block custom_javascript %}
 <script type="text/javascript" src="{% static "js/testplan_actions.js" %}"></script>
 <script type="text/javascript">
-	jQ('.js-one-record').live('click',function() {
-		var param = jQ(this).data('param');
-		window.location.href='{% url "case-text-history" testcase.case_id %}?from_plan={{ testplan.plan_id }}&case_text_version=' + param;
+	jQ('.js-one-record').on('click', function() {
+		window.location.href = '{% url "case-text-history" testcase.case_id %}?from_plan={{ testplan.plan_id }}&case_text_version=' + this.dataset.textVersion;
   });
 </script>
 {% endblock %}
@@ -36,7 +35,7 @@
 			<th>Changed By</th>
 		</tr>
 		{% for text in test_case_texts %}
-		<tr class="{% cycle 'odd' 'even' %} js-one-record" data-param="{{ text.case_text_version }}">
+		<tr class="{% cycle 'odd' 'even' %} js-one-record" data-text-version="{{ text.case_text_version }}">
 			<td><a href="{% url "case-text-history" testcase.case_id %}?from_plan={{ testplan.plan_id }}&case_text_version={{ text.case_text_version }}">{{ text.case_text_version }}</a></td>
 			<td>{{ text.create_date }}</td>
 			<td>{{ text.author__email }}</td>

@@ -141,12 +141,12 @@ Nitrate.Management.Environment.Property.on_load = function () {
   });
   jQ('.js-prop-name').on('click', function () {
     Environment.Property.selectEnvProperty(
-      parseInt(jQ(this).parents('.js-one-prop').data('param'))
+      parseInt(jQ(this).parents('.js-one-prop').data('propertyId'))
     );
   });
   jQ('.js-edit-prop').on('click', function () {
     Environment.Property.editEnvProperty(
-      parseInt(jQ(this).parents('.js-one-prop').data('param'))
+      parseInt(jQ(this).parents('.js-one-prop').data('propertyId'))
     );
   });
 
@@ -334,7 +334,7 @@ Nitrate.Management.Environment.PropertyValue.setStatus = function (status) {
 };
 
 Nitrate.Management.Environment.PropertyValue.bindPropertyValueActions = function () {
-  let propId = parseInt(jQ('.js-prop-value-action').data('param'));
+  let propId = parseInt(jQ('.js-prop-value-action').data('propertyId'));
 
   jQ('#property_values_form').on('submit', function () {
     // Disable form submit. Please press the Add button.
@@ -354,7 +354,7 @@ Nitrate.Management.Environment.PropertyValue.bindPropertyValueActions = function
   });
 
   jQ('.js-edit-prop-value').on('click', function () {
-    let valueId = parseInt(jQ(this).data('param'));
+    let valueId = parseInt(this.dataset.valueId);
     Environment.PropertyValue.edit(propId, valueId);
   });
 

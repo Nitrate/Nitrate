@@ -1,7 +1,7 @@
 <form id="property_values_form">
 	<div class="mixbar">
 		<span class="strong">Values</span>
-		<div class="right-action js-prop-value-action" data-param="{{ property.id }}">
+		<div class="right-action js-prop-value-action" data-property-id="{{ property.id }}">
 			{% if perms.management.add_tcmsenvvalue %}
 			<input id="id_value_name" type="text" name="value_name" />
 			<a id="js-add-prop-value" class="addlink " href="javascript:void(0)">Add Value</a>
@@ -21,7 +21,7 @@
 			</label>
 			{% if perms.management.change_tcmsenvvalue %}
 			<span class="right-action">
-				<a href="javascript:void(0)" data-param="{{ value.id }}" class="editlink js-edit-prop-value">Rename</a>
+				<a href="javascript:void(0)" data-value-id="{{ value.id }}" class="editlink js-edit-prop-value">Rename</a>
 			</span>
 			{% endif %}
 		</li>

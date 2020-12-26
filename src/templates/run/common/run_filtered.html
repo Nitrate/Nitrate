@@ -2,7 +2,7 @@
 	<div id="contentTab" class="mixbar">
 		<span class="tit"><a href="{% url "runs-all" %}?case_run__assignee={{ user.email }}">View My Assigned Runs</a></span>
 		<input type="button" value="Clone" title="clone selected test runs"
-			class="js-clone-testruns" data-param="{% url "runs-clone" %}" disabled />
+			class="js-clone-testruns" data-action-url="{% url "runs-clone" %}" disabled />
 	</div>
 	<table id="testruns_table" class="list border-bottom" cellpadding="0" cellspacing="0" border="0">
 		<thead>
