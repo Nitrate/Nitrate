@@ -36,6 +36,8 @@ class TestFilter(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
+        super().setUpTestData()
+
         cls.product = f.ProductFactory()
         cls.version = f.VersionFactory(product=cls.product)
         cls.tester = f.UserFactory()
@@ -62,7 +64,7 @@ class TestFilter(XmlrpcAPIBaseTest):
             plan=[cls.plan_1])
 
     def test_filter_plans(self):
-        plans = XmlrpcTestPlan.filter(None, {'pk__in': [self.plan_1.pk, self.plan_2.pk]})
+        plans = XmlrpcTestPlan.filter(self.request, {'pk__in': [self.plan_1.pk, self.plan_2.pk]})
         plan = plans[0]
         self.assertEqual(self.plan_1.name, plan['name'])
         self.assertEqual(self.plan_1.product_version.pk, plan['product_version_id'])
