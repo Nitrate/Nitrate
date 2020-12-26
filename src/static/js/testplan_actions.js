@@ -117,7 +117,7 @@ Nitrate.TestPlans.TreeView = {
       url: '/plan/' + planId + '/treeview/',
       container: treeViewContainer,
       callbackAfterFillIn: function (xhr) {
-        let planPK = parseInt(jQ('#id_tree_container').data('param'));
+        let planPK = parseInt(document.getElementById('id_tree_container').dataset.planId);
 
         jQ('#js-change-parent-node').on('click', function () {
           thisView.changeParentPlan(planPK);
@@ -344,7 +344,7 @@ Nitrate.TestPlans.Edit.on_load = function () {
   });
 
   jQ('.js-back-button').on('click', function () {
-    window.location.href = jQ(this).data('param');
+    window.location.assign(this.dataset.actionUrl);
   });
 };
 
@@ -354,25 +354,11 @@ Nitrate.TestPlans.Edit.on_load = function () {
  */
 function bindSearchResultActionEventHandlers() {
   jQ('.js-new-plan').on('click', function () {
-    window.location = jQ(this).data('param');
+    window.location.assign(this.dataset.actionUrl);
   });
-  jQ('.js-clone-plans').on('click', function () {
-    let params = {
-      plan: Nitrate.Utils.formSerialize(this.form).plan
-    };
-    postToURL(jQ(this).data('param'), params, 'get');
-  });
-  jQ('.js-export-plans').on('click', function () {
-    let params = {
-      plan: Nitrate.Utils.formSerialize(this.form).plan
-    };
-    postToURL(jQ(this).data('param'), params, 'get');
-  });
-  jQ('.js-printable-plans').on('click', function () {
-    let params = {
-      plan: Nitrate.Utils.formSerialize(this.form).plan
-    };
-    postToURL(jQ(this).data('param'), params, 'get');
+  jQ('.js-clone-plans, .js-export-plans, .js-printable-plans').on('click', function () {
+    let params = {plan: Nitrate.Utils.formSerialize(this.form).plan};
+    postToURL(this.dataset.actionUrl, params, 'get');
   });
 }
 
@@ -654,13 +640,10 @@ Nitrate.TestPlans.Details = {
     Nitrate.TestPlans.Runs.initializeRunTab();
     Nitrate.TestPlans.Runs.bind();
 
-    jQ('#btn_edit').on('click', function () {
-      window.location.href = jQ(this).data('param');
+    jQ('#btn_edit, #btn_clone, #btn_export, #btn_print').on('click', function () {
+      window.location.assign(this.dataset.actionUrl);
     });
-    jQ('#btn_clone, #btn_export, #btn_print').on('click', function () {
-      let params = jQ(this).data('params');
-      window.location.href = params[0] + '?plan=' + params[1];
-    });
+
     jQ('#id_import_case_zone').find('.js-close-zone').on('click', function () {
       jQ('#id_import_case_zone').hide();
       jQ('#import-error').empty();
@@ -1194,20 +1177,19 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
       });
 
       navForm.find('.js-add-case-to-plan').on('click', function () {
-        window.location.href = jQ(this).data('param');
+        window.location.assign(this.dataset.actionUrl);
       });
 
-      navForm.find('.js-export-cases').on('click', function () {
-        submitSelectedCaseIDs(jQ(this).data('param'), casesTable);
-      });
-
-      navForm.find('.js-print-cases').on('click', function () {
-        submitSelectedCaseIDs(jQ(this).data('param'), casesTable);
+      navForm.find('.js-export-cases, .js-print-cases').on('click', function () {
+        submitSelectedCaseIDs(this.dataset.actionUrl, casesTable);
       });
 
       navForm.find('.js-clone-cases').on('click', function () {
-        let params = {from_plan: planId, case: getSelectedCaseIDs(casesTable)};
-        postToURL(jQ(this).data('param'), params, 'get');
+        let params = {
+          from_plan: planId,
+          case: getSelectedCaseIDs(casesTable)
+        };
+        postToURL(this.dataset.actionUrl, params, 'get');
       });
 
       navForm.find('.js-remove-cases').on('click', function () {
@@ -1223,15 +1205,16 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
       });
 
       navForm.find('.js-new-run').on('click', function () {
-        postToURL(jQ(this).data('param'), {
+        let params = {
           from_plan: planId,
           case: getSelectedCaseIDs(casesTable)
-        });
+        };
+        postToURL(this.dataset.actionUrl, params);
       });
 
       navForm.find('.js-add-case-to-run').on('click', function () {
         let params = {case: getSelectedCaseIDs(casesTable)};
-        postToURL(jQ(this).data('param'), params, 'get');
+        postToURL(this.dataset.actionUrl, params, 'get');
       });
 
       navForm.find('.js-status-item').on('click', function () {
@@ -1241,7 +1224,7 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
           return false;
         }
 
-        let newStatusId = parseInt(jQ(this).data('param'));
+        let newStatusId = parseInt(this.dataset.statusId);
         confirmDialog({
           message: defaultMessages.confirm.change_case_status,
           title: 'Manage Test Case Status',
@@ -1276,7 +1259,7 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
           return false;
         }
 
-        let newValue = jQ(this).data('param');
+        let newValue = this.dataset.priorityId;
 
         confirmDialog({
           message: defaultMessages.confirm.change_case_priority,
@@ -1310,7 +1293,7 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
       if (jQ(casesTable).find('tbody tr:visible').length > 1) {
         // Only make sense to sort rows when there are more than one cases
         jQ(casesTable).find('.js-table-header-sortable').on('click', function () {
-          sortCase(container, jQ(this).parents('thead').data('param'), jQ(this).data('param'));
+          sortCase(container, jQ(this).parents('thead').data('planId'), this.dataset.orderBy);
         });
       }
 
@@ -1907,7 +1890,7 @@ Nitrate.TestPlans.Runs = {
     let that = Nitrate.TestPlans.Runs;
     if (jQ('#tab_testruns').hasClass('tab_focus')) {
       if (!jQ.fn.DataTable.fnIsDataTable(jQ('#testruns_table')[0])) {
-        let url = that.makeUrlFromPlanId(jQ('#testruns_table').data('param'));
+        let url = that.makeUrlFromPlanId(document.getElementById('testruns_table').dataset.planId);
         jQ('#testruns_table').dataTable(
           Object.assign({}, Nitrate.DataTable.commonSettings, {
             sAjaxSource: url,

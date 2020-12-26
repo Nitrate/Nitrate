@@ -1,13 +1,13 @@
 <form id="plans_form">
 	<div id="contentTab" class="mixbar">
 		{% if perms.testplans.add_testplan %}
-		<input type="button" title="Create new test plan" value="New Test Plan" class="js-new-plan" data-param="{% url "plans-new" %}" />
-		<input type="button" value="Clone" title="clone selected test plans." class="js-clone-plans" data-param="{% url "plans-clone" %}" disabled />
+		<input type="button" title="Create new test plan" value="New Test Plan" class="js-new-plan" data-action-url="{% url "plans-new" %}" />
+		<input type="button" value="Clone" title="clone selected test plans." class="js-clone-plans" data-action-url="{% url "plans-clone" %}" disabled />
 		{% endif %}
 		<input type="button" class="js-printable-plans" value="Printable copy" disabled
-			title="Create the printable copy for selected plans." data-param="{% url "plans-printable" %}" />
+			title="Create the printable copy for selected plans." data-action-url="{% url "plans-printable" %}" />
 		<input type="button" value="Export" title="Export the cases for selected plans." class="js-export-plans"
-			data-param="{% url "plans-export" %}" disabled />
+			data-action-url="{% url "plans-export" %}" disabled />
 	</div>
 	<table id="testplans_table" class="list border-bottom" cellpadding="0" cellspacing="0" border="0" style="table-layout:fixed;">
 		<thead>
