@@ -1,6 +1,6 @@
-Test Case [{{ case.summary}}] has been deleted.
+Test Case [{{ case.summary }}] has been deleted.
 
--- 
+--
 
 ------- You are receiving this mail because: -------
 You have subscribed to the changes of this TestCase

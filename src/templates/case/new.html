@@ -73,40 +73,39 @@ Nitrate.Utils.after_page_load(Nitrate.TestCases.Create.on_load);
 					<div class="data_row">
 						<label>Automated</label>
 						{{ form.is_automated }}
-                        <div class="automatedlist">
-						{{ form.is_automated_proposed }}
-						{{ form.is_automated_proposed.label }}
+						<div class="automatedlist">
+							{{ form.is_automated_proposed }}
+							{{ form.is_automated_proposed.label }}
 						</div>
-                        <div class="errors">
+						<div class="errors">
 							{{ form.is_automated.errors }}
 							{{ form.is_automated_proposed.errors }}
 						</div>
 					</div>
 					<div class="data_row">
-						<label >Requirement</label>
+						<label>Requirement</label>
 						{{ form.requirement }}
 						{{ form.requirement.errors }}
 					</div>
 					<div class="data_row">
-						<label >Script</label>
+						<label>Script</label>
 						{{ form.script }}
 						<div class="errors">{{ form.script.errors }}</div>
 					</div>
-                    <div class="data_row">
-						<label >Alias</label>
+					<div class="data_row">
+						<label>Alias</label>
 						{{ form.alias }}
 						<div class="errors">{{ form.alias.errors }}</div>
 					</div>
 					<div class="data_row">
-						<label >Default Tester:</label>
+						<label>Default Tester:</label>
 						{{ form.default_tester }}<div class="errors">{{ form.default_tester.errors }}</div>
 					</div>
-					
 					<div class="data_row">
-						<label >Estimated Time</label>
+						<label>Estimated Time</label>
 						<div class="time">
 							{{ form.estimated_time }}
-							<span class="grey">(eg. 3d 4h 30m)</span> 
+							<span class="grey">(eg. 3d 4h 30m)</span>
 							<div class="errors">{{ form.estimated_time.errors }}</div>
 						</div>
 					</div>
@@ -114,19 +113,19 @@ Nitrate.Utils.after_page_load(Nitrate.TestCases.Create.on_load);
 						<label>Priority</label>
 						{{ form.priority }}<div class="errors">{{ form.priority.errors }}</div>
 					</div>
-                    <div class="data_row">
+					<div class="data_row">
 						<label>Arguments</label>
 						{{ form.arguments }}<div class="errors">{{ form.arguments.errors }}</div>
 					</div>
-                    <div class="data_row">
-                        <label>Reference Link</label>
-                        {{ form.extra_link }}<div class="errors">{{ form.extra_link.errors }}</div>
-                    </div>
+					<div class="data_row">
+						<label>Reference Link</label>
+						{{ form.extra_link }}<div class="errors">{{ form.extra_link.errors }}</div>
+					</div>
 					<div class="data_row">
 						<label class="lab">Tags</label>
 						{{ form.tag }}
 					</div>
-                    <div class="data_row">
+					<div class="data_row">
 						<label>Notes</label>
 						{{ form.notes }}<div class="errors">{{ form.notes.errors }}</div>
 					</div>
@@ -160,7 +159,6 @@ Nitrate.Utils.after_page_load(Nitrate.TestCases.Create.on_load);
 				</div>
 			</fieldset>
 			<div id="submit" class="submit-row">
-				
 				<input type="submit" value="Save" />
 				<input type="submit" name="_continue" value="Save and continue editing" />
 				{% if test_plan %}

@@ -27,14 +27,14 @@
 	</tr>
 
 	{% if test_case_run.comments.all %}
-    <tr>
-        <td colspan="7">Comments:</td>
-    </tr>
-    {% for comment in test_case_run.comments.all %}
-    <tr class="border-bottom">
-        <td valign="top" colspan="7">{{ comment.comment|urlize|linebreaksbr }}<span class="grey">[{{ comment.username }} {{ comment.submit_date }}]</span></td>
-    </tr>
-    {% endfor %}
+	<tr>
+		<td colspan="7">Comments:</td>
+	</tr>
+	{% for comment in test_case_run.comments.all %}
+	<tr class="border-bottom">
+		<td valign="top" colspan="7">{{ comment.comment|urlize|linebreaksbr }}<span class="grey">[{{ comment.username }} {{ comment.submit_date }}]</span></td>
+	</tr>
+	{% endfor %}
 	{% endif %}
 
 	{% if test_case_run.issues.all %}

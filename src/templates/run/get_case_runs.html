@@ -161,10 +161,7 @@ no need to render this dialog for adding an issue.
 		<div class="bug_type" id="id_issue_tracker">Issue Tracker</div>
 		<select name="issue_tracker_id" id="issue_tracker_id">
 			{% for tracker in issue_trackers %}
-			<option {% if forloop.counter == 1 %}selected{% endif %}
-                    value="{{ tracker.pk }}"
-                    data-tab="issue-tracker-{{ tracker.code_name }}"
-                    data-validate-regex="{{ tracker.validate_regex }}">{{ tracker.name }}</option>
+			<option {% if forloop.counter == 1 %}selected{% endif %} value="{{ tracker.pk }}" data-tab="issue-tracker-{{ tracker.code_name }}" data-validate-regex="{{ tracker.validate_regex }}">{{ tracker.name }}</option>
 			{% endfor %}
 		</select>
 		{% for tracker in issue_trackers %}

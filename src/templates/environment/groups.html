@@ -9,14 +9,14 @@
 {% block custom_javascript %}
 <script type="text/javascript" src="{% static "js/management_actions.js" %}"></script>
 <script type="text/javascript">
-	Nitrate.Management.Environment.Groups.URLs = {
-      add_group: '{% url "management-add-env-group" %}',
-      set_group_status: '/environment/groups/$id/set-status/',
-	  edit_group: '/environment/groups/$id/edit/',
-	  delete_group: '/environment/groups/$id/delete/'
-	};
+Nitrate.Management.Environment.Groups.URLs = {
+	add_group: '{% url "management-add-env-group" %}',
+	set_group_status: '/environment/groups/$id/set-status/',
+	edit_group: '/environment/groups/$id/edit/',
+	delete_group: '/environment/groups/$id/delete/'
+};
 
-	Nitrate.Utils.after_page_load(Nitrate.Management.Environment.Groups.on_load);
+Nitrate.Utils.after_page_load(Nitrate.Management.Environment.Groups.on_load);
 </script>
 
 {% endblock %}
@@ -52,7 +52,7 @@
 		</thead>
 		<tbody>
 			{% for env in environments %}
-			<tr class="{% cycle odd even %} js-env-group" id="{{ env.id }}" data-params='[{{env.id}}, "{{env.name}}"]'>
+			<tr class="{% cycle odd even %} js-env-group" id="{{ env.id }}" data-params='[{{ env.id }}, "{{ env.name }}"]'>
 				<th align="center" height="26px">
 					<label class=" {% if env.is_active %}{% else %}disable line-through{% endif %}">
 						{% if perms.management.change_tcmsenvgroup %}

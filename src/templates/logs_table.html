@@ -3,17 +3,17 @@
 		<tr class="{% cycle 'even' 'odd'%}">
 			<th width="10%">Date</th>
 			<th width="10%">People</th>
-            <th width="10%">Field</th>
+			<th width="10%">Field</th>
 			<th width="35%">Original Value</th>
-            <th width="35%">New Value</th>
+			<th width="35%">New Value</th>
 		</tr>
 		{% for log in logs %}
 		<tr class="{% cycle 'odd' 'even'%}">
 			<td>{{ log.date|date:"Y-m-d H:i:s" }}</td>
 			<td>{{ log.who }}</td>
-            <td>{{ log.field }}</td>
+			<td>{{ log.field }}</td>
 			<td>{{ log.original_value }}</td>
-            <td>{{ log.new_value }}</td>
+			<td>{{ log.new_value }}</td>
 		</tr>
 		{% empty %}
 		<tr>

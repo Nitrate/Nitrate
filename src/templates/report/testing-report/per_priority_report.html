@@ -46,15 +46,15 @@
 			<td rowspan="{{ build.2 }}" class="bgRowspan"><span>{{ build.1 }}</span></td>
 			{% endif %}
 			<td><span>{{ priority.value }}</span></td>
-			<td><a href="{{ report_url }}{{path_without_build}}&r_build={{build.0}}&priority={{priority.pk}}&status=idle">{{ status_subtotal.IDLE|default:0 }}</a></td>
-			<td><a href="{{ report_url }}{{path_without_build}}&r_build={{build.0}}&priority={{priority.pk}}&status=running">{{ status_subtotal.RUNNING|default:0 }}</a></td>
-			<td><a href="{{ report_url }}{{path_without_build}}&r_build={{build.0}}&priority={{priority.pk}}&status=paused">{{ status_subtotal.PAUSED|default:0 }}</a></td>
-			<td><a href="{{ report_url }}{{path_without_build}}&r_build={{build.0}}&priority={{priority.pk}}&status=passed">{{ status_subtotal.PASSED|default:0 }}</a></td>
-			<td><a href="{{ report_url }}{{path_without_build}}&r_build={{build.0}}&priority={{priority.pk}}&status=failed">{{ status_subtotal.FAILED|default:0 }}</a></td>
-			<td><a href="{{ report_url }}{{path_without_build}}&r_build={{build.0}}&priority={{priority.pk}}&status=blocked">{{ status_subtotal.BLOCKED|default:0 }}</a></td>
-			<td><a href="{{ report_url }}{{path_without_build}}&r_build={{build.0}}&priority={{priority.pk}}&status=error">{{ status_subtotal.ERROR|default:0 }}</a></td>
-			<td><a href="{{ report_url }}{{path_without_build}}&r_build={{build.0}}&priority={{priority.pk}}&status=waived">{{ status_subtotal.WAIVED|default:0 }}</a></td>
-			<td><a href="{{ report_url }}{{path_without_build}}&r_build={{build.0}}&priority={{priority.pk}}">{{ status_subtotal.total }}</a></td>
+			<td><a href="{{ report_url }}{{ path_without_build }}&r_build={{ build.0 }}&priority={{ priority.pk }}&status=idle">{{ status_subtotal.IDLE|default:0 }}</a></td>
+			<td><a href="{{ report_url }}{{ path_without_build }}&r_build={{ build.0 }}&priority={{ priority.pk }}&status=running">{{ status_subtotal.RUNNING|default:0 }}</a></td>
+			<td><a href="{{ report_url }}{{ path_without_build }}&r_build={{ build.0 }}&priority={{ priority.pk }}&status=paused">{{ status_subtotal.PAUSED|default:0 }}</a></td>
+			<td><a href="{{ report_url }}{{ path_without_build }}&r_build={{ build.0 }}&priority={{ priority.pk }}&status=passed">{{ status_subtotal.PASSED|default:0 }}</a></td>
+			<td><a href="{{ report_url }}{{ path_without_build }}&r_build={{ build.0 }}&priority={{ priority.pk }}&status=failed">{{ status_subtotal.FAILED|default:0 }}</a></td>
+			<td><a href="{{ report_url }}{{ path_without_build }}&r_build={{ build.0 }}&priority={{ priority.pk }}&status=blocked">{{ status_subtotal.BLOCKED|default:0 }}</a></td>
+			<td><a href="{{ report_url }}{{ path_without_build }}&r_build={{ build.0 }}&priority={{ priority.pk }}&status=error">{{ status_subtotal.ERROR|default:0 }}</a></td>
+			<td><a href="{{ report_url }}{{ path_without_build }}&r_build={{ build.0 }}&priority={{ priority.pk }}&status=waived">{{ status_subtotal.WAIVED|default:0 }}</a></td>
+			<td><a href="{{ report_url }}{{ path_without_build }}&r_build={{ build.0 }}&priority={{ priority.pk }}">{{ status_subtotal.total }}</a></td>
 		</tr>
 		{% empty %}
 			<tr><td colspan="11" align="center">No report data.</td></tr>

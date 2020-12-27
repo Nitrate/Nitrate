@@ -14,11 +14,11 @@
 {% block contents %}
 <div id="content-main">
 
-    <div class="sprites crumble">
-        <a href="{% url "nitrate-index" %}">Home</a>
-        >> <a href="/admin/">Admin</a>
-        >>{{ title }}
-    </div>
+	<div class="sprites crumble">
+		<a href="{% url "nitrate-index" %}">Home</a>
+		>> <a href="/admin/">Admin</a>
+		>>{{ title }}
+	</div>
 
 <div class="module{% if cl.has_filters %} filtered{% endif %} wrap" id="changelist">
 {% block search %}{% search_form cl %}{% endblock %}
@@ -26,9 +26,9 @@
 {% if has_add_permission %}
 <h2>{% block subtitle %}{{ title }}{% endblock %}</h2>
 <ul class="object-tools">
-    <li>
-        <a href="add/{% if is_popup %}?_popup=1{% endif %}" class="addlink">{% blocktrans with cl.opts.verbose_name as name %}Add {{ name }}{% endblocktrans %}</a>
-    </li>
+	<li>
+		<a href="add/{% if is_popup %}?_popup=1{% endif %}" class="addlink">{% blocktrans with cl.opts.verbose_name as name %}Add {{ name }}{% endblocktrans %}</a>
+	</li>
 </ul>
 {% endif %}
 {% endblock %}
@@ -40,7 +40,7 @@
 <div id="changelist-filter">
 <h2>{% trans 'Filter' %}</h2>
 {% for spec in cl.filter_specs %}
-   {% admin_list_filter cl spec %}
+	{% admin_list_filter cl spec %}
 {% endfor %}
 </div>
 {% endif %}

@@ -90,7 +90,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.Clone.on_load);
 					<td>
 						<div class="time">
 							{{ clone_form.estimated_time }}
-						</div> 
+						</div>
 					</td>
 				</tr>
 				<tr>
@@ -105,7 +105,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.Clone.on_load);
 							<li style="clear:both">
 								<input class="lab-50" type="checkbox" name="select_property_id_{{ env_value.property_id }}" checked value="on">
 								<label class="lab-100">{{ env_value.property.name }}</label>
-                                <input type="hidden" name="env_property_id" value="{{ env_value.property_id }}">
+								<input type="hidden" name="env_property_id" value="{{ env_value.property_id }}">
 								<select name="select_property_value_{{ env_value.property_id }}">
 									{% for value in env_value.property.value.all %}
 									<option value="{{ value.id }}"{% if value.id == env_value.id %} selected{% endif %}>{{ value.value }}</option>
@@ -120,15 +120,15 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.Clone.on_load);
 						{% endfor %}
 					</td>
 				</tr>
-            <tr>
-                <td>
-                    <label>Clone Setting</label>
-                </td>
-                <td>
-                    {{ clone_form.keep_status }} {{ clone_form.keep_status.label }}&nbsp;&nbsp;&nbsp;&nbsp;
-                    {{ clone_form.keep_assignee }} {{ clone_form.keep_assignee.label }}
-                </td>
-            </tr>
+				<tr>
+					<td>
+						<label>Clone Setting</label>
+					</td>
+					<td>
+						{{ clone_form.keep_status }} {{ clone_form.keep_status.label }}&nbsp;&nbsp;&nbsp;&nbsp;
+						{{ clone_form.keep_assignee }} {{ clone_form.keep_assignee.label }}
+					</td>
+				</tr>
 			</table>
 			<div class="submit-row ">
 				{{ clone_form.errors }}
@@ -176,7 +176,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.Clone.on_load);
 							<td>{{ case_run.case.category }}</td>
 							<td>{{ case_run.case.priority }}</td>
 							<td>{{ case_run.sortkey }}</td>
-							<td> 
+							<td>
 								<a class="deletelink js-remove-button" href="javascript:void(0);">
 									remove
 								</a>

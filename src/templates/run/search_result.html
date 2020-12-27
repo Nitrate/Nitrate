@@ -6,7 +6,7 @@
 	</div>
 	<table id="testruns_table" class="list border-bottom js-advance-search-runs" cellpadding="0" cellspacing="0" border="0">
 		<thead>
-			<tr >
+			<tr>
 				<th width="30">
 					<input id='id_check_all_runs' class="js-select-all" type="checkbox" title="Select all/Select none" />
 				</th>
@@ -24,7 +24,7 @@
 		</thead>
 		<tbody>
 		{% for test_run in object_list %}
-			<tr id="run_{{test_run.run_id}}">
+			<tr id="run_{{ test_run.run_id }}">
 				<td><input type='checkbox' name="run" value="{{ test_run.pk }}" class="run_selector" /></td>
 				<td><a href="{% url "run-get" test_run.run_id %}">{{ test_run.run_id }}</a></td>
 				<td><a href="{% url "run-get" test_run.run_id %}">{{ test_run.summary }}</a></td>

@@ -11,7 +11,7 @@
 	<body style="font-size: small;">
 		<h1>Nitrate XML-RPC Service<sup><font size="3" color="grey">(Beta)</font></sup></h1>
 		<p>You need to invoke it using an XML-RPC Client!</p>
-        <p><a href="http://psss.fedorapeople.org/python-nitrate/">python-nitrate</a> is a Python interface to the Nitrate test case management system.</p>
+		<p><a href="http://psss.fedorapeople.org/python-nitrate/">python-nitrate</a> is a Python interface to the Nitrate test case management system.</p>
 		<h2>Changes from testopia</h2>
 		<ul>
 			<li>
@@ -64,7 +64,6 @@
 		<p>For all the XMLRPC API, we have listed the available ForeignKey, however, for the available foreignkey field names that can be used in a query, please check out Nitrate source code on <a href="https://fedorahosted.org/nitrate/browser/trunk/nitrate/tcms" target="_blank">fedora</a>. The definitions are located in files named 'models.py'; for a detailed query syntax documentation, please check out the Django documentation:</p>
 		<a href="https://docs.djangoproject.com/en/1.2/topics/db/queries/#field-lookups" target="_blank">https://docs.djangoproject.com/en/1.2/topics/db/queries/#field-lookups</a>
 
-		
 		<h2>Available methods</h2>
 		<ul>
 			{% for method in method_list %}
@@ -73,7 +72,7 @@
 			{% endif %}
 			{% endfor %}
 		</ul>
-		
+
 		<h2>Descriptions</h2>
 		{% for method in method_list %}
 		{% if method.name != 'system.multicall' %}

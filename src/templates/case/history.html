@@ -9,9 +9,9 @@
 {% block custom_javascript %}
 <script type="text/javascript" src="{% static "js/testplan_actions.js" %}"></script>
 <script type="text/javascript">
-	jQ('.js-one-record').on('click', function() {
-		window.location.href = '{% url "case-text-history" testcase.case_id %}?from_plan={{ testplan.plan_id }}&case_text_version=' + this.dataset.textVersion;
-  });
+jQ('.js-one-record').on('click', function() {
+	window.location.href = '{% url "case-text-history" testcase.case_id %}?from_plan={{ testplan.plan_id }}&case_text_version=' + this.dataset.textVersion;
+});
 </script>
 {% endblock %}
 

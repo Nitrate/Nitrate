@@ -16,8 +16,8 @@
 <script type="text/javascript" src="{% static "js/nitrate.toggledetail.js" %}"></script>
 <script type="text/javascript">
 Nitrate.TestCases.Search.ActionUrls = {
-  printableCasesUrl: '{% url "cases-printable" %}',
-  exportCasesUrl: '{% url "cases-export" %}'
+	printableCasesUrl: '{% url "cases-printable" %}',
+	exportCasesUrl: '{% url "cases-export" %}'
 };
 Nitrate.TestCases.Search.numberOfCases = {{ total_count }};
 Nitrate.Utils.after_page_load(Nitrate.TestCases.List.on_load);

@@ -24,10 +24,10 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.Clone.on_load);
 
 	<form action="{% url "runs-clone" %}" method="post">{% csrf_token %}
 		<div class="boxnotype">
-        	<div class="boxtitle">The runs you have choosed</div>
-            {{ clone_form.run }}
-        </div>
-        <div class="Detailform border-1">
+			<div class="boxtitle">The runs you have choosed</div>
+			{{ clone_form.run }}
+		</div>
+		<div class="Detailform border-1">
 			<table class="editor" cellspan="0" cellspacing="0">
 				<tr>
 					<td width="15%"><label for="">Product</label></td>
@@ -65,24 +65,24 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.Clone.on_load);
 					</td>
 				</tr>
 				<tr>
-                	<td colspan="2">
-                    	<ul class="clone_multiple_option">
-                        	<li>{{ clone_form.update_case_text }}{{ clone_form.update_case_text.label }}</li>
-                        	<li>{{ clone_form.clone_cc }}{{ clone_form.clone_cc.label }}</li>
-                        	<li>{{ clone_form.clone_tag }}{{ clone_form.clone_tag.label }}</li>
-                        </ul>
-                    </td>
-                </tr>
+					<td colspan="2">
+						<ul class="clone_multiple_option">
+							<li>{{ clone_form.update_case_text }}{{ clone_form.update_case_text.label }}</li>
+							<li>{{ clone_form.clone_cc }}{{ clone_form.clone_cc.label }}</li>
+							<li>{{ clone_form.clone_tag }}{{ clone_form.clone_tag.label }}</li>
+						</ul>
+					</td>
+				</tr>
 			</table>
 		</div>
 		<div class="errors">
 			{{ clone_form.errors }}
 		</div>
-        <div class="clone_multiple_button">
-		<input type="submit" name="submit" value="Clone" />
-		<input type="reset" value="Reset" />
-		<input type="button" value="Cancel" class="js-cancel-button"/>
-        </div>
+		<div class="clone_multiple_button">
+			<input type="submit" name="submit" value="Clone" />
+			<input type="reset" value="Reset" />
+			<input type="button" value="Cancel" class="js-cancel-button"/>
+		</div>
 	</form>
 </div>
 {% endblock %}

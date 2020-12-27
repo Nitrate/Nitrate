@@ -25,9 +25,9 @@
 					<tr style="display:none">
 						<td id="login_info" colspan="2"></td>
 					</tr>
-                    <tr>
-                    	<td></td>
-						<td ><a href="{% url "password_reset" %}">Forget the password</a></td>
+					<tr>
+						<td></td>
+						<td><a href="{% url "password_reset" %}">Forget the password</a></td>
 					</tr>
 					{% if SETTINGS.ENABLED_AUTH_BACKENDS.USERPWD.ALLOW_REGISTER %}
 					<tr>
@@ -36,7 +36,7 @@
 					</tr>
 					{% endif %}
 					<tr>
-                    	<td>&nbsp;</td>
+						<td>&nbsp;</td>
 						<td class="submit">
 							<input type="hidden" name="next" value="{{ next }}" />
 							<input type="submit" value="Login" class="loginbutton sprites" />

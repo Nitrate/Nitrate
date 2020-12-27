@@ -2,11 +2,11 @@
 {% load i18n %}
 {% load static %}
 {% block breadcrumbs %}
-    <div class="sprites crumble">
-        <a href="{% url "nitrate-index" %}">Home</a>
-        >> <a href="/admin/">Admin</a>
-        >>{{ title }}
-    </div>
+	<div class="sprites crumble">
+		<a href="{% url "nitrate-index" %}">Home</a>
+		>> <a href="/admin/">Admin</a>
+		>>{{ title }}
+	</div>
 {% endblock %}
 {% block subtitle %}{{ title }}{% endblock %}
 

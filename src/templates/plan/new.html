@@ -32,17 +32,17 @@ Nitrate.Utils.after_page_load(Nitrate.TestPlans.Create.on_load);
 		<div class="Detailform border-1">
 			<table class="editor" cellspan="0" cellspacing="0">
 				<tr>
-					<td width="20%" valign="top"><label class="lab strong" for="id_title">Plan Name</label><span >{{ form.attrib.errors }}</span></td>
+					<td width="20%" valign="top"><label class="lab strong" for="id_title">Plan Name</label><span>{{ form.attrib.errors }}</span></td>
 					<td width="80%">
 						<span class="name summary">{{ form.name }}</span>
-						<div >{{ form.name.errors }}</div>
+						<div>{{ form.name.errors }}</div>
 					</td>
 				</tr>
 				<tr>
 					<td width="20%" valign="top"><label class="lab strong" for="id_product_id">Product</label></td>
 					<td>
 						<span class="name">{{ form.product }}</span>
-						<span >{{ form.product.errors }}</span>
+						<span>{{ form.product.errors }}</span>
 						<a id="add_id_product" href="{% url "admin:management_product_add" %}" class="addlink">
 							Add Product
 						</a>
@@ -53,8 +53,8 @@ Nitrate.Utils.after_page_load(Nitrate.TestPlans.Create.on_load);
 					<td width="20%" valign="top"><label class="lab strong" for="id_version_id">Product Version</label></td>
 					<td>
 						<span>{{ form.product_version }}</span>
-						<span >{{ form.product_version.errors }}</span>
-                        <a id="add_id_product_version" href="{% url "admin:management_version_add" %}" class="addlink">
+						<span>{{ form.product_version.errors }}</span>
+						<a id="add_id_product_version" href="{% url "admin:management_version_add" %}" class="addlink">
 							Add Product Version
 						</a>
 						<span class="grey">After Add and Refresh page</span>
@@ -62,14 +62,14 @@ Nitrate.Utils.after_page_load(Nitrate.TestPlans.Create.on_load);
 				</tr>
 				<tr>
 					<td valign="top"><label class="lab strong" for="id_type_id">Type</label></td>
-					<td >
+					<td>
 						<span class="name"> {{ form.type }} </span>
-						<div > {{ form.type.errors }} </div>
+						<div> {{ form.type.errors }} </div>
 					</td>
 				</tr>
 				<tr>
 					<td valign="top"><label class="lab" for="id_parent">Parent ID</label></td>
-					<td >
+					<td>
 						<span class="name">{{ form.parent }}</span>
 						<div>{{ form.parent.errors }}</div>
 					</td>
@@ -78,11 +78,11 @@ Nitrate.Utils.after_page_load(Nitrate.TestPlans.Create.on_load);
 					<td valign="top"><label class="lab" for="id_summary">Plan Document: </label></td>
 					<td>
 						<div class="mec">{{ form.text }}</div>
-						<div >{{ form.text.errors }}</div>
+						<div>{{ form.text.errors }}</div>
 						<span>Or upload a plan document</span>
 						{{ form.upload_plan_text }}
 						<span class="grey">Html, Plain text or ODT is acceptable.</span>
-						<div >{{ form.upload_plan_text.errors }}</div>
+						<div>{{ form.upload_plan_text.errors }}</div>
 					</td>
 				</tr>
 				<tr>
@@ -109,7 +109,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestPlans.Create.on_load);
 					<td valign="top"><label class="lab" for="id_extra_link">Reference Link:</label></td>
 					<td>
 						<div class="name summary">{{ form.extra_link }}</div>
-						<div >{{ form.extra_link.errors }}</div>
+						<div>{{ form.extra_link.errors }}</div>
 					</td>
 				</tr>
 			</table>

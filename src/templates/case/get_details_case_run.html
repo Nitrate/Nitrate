@@ -124,7 +124,7 @@
 			<div class="container" style="min-height:50px;">
 				{% if caserun_logs %}
 				<h4 class="borderB">Change Log<span>[ <a href="javascript:void(0);" class="js-show-changelog" data-changelogs-element-id="changeLog{{ test_case_run.pk }}">Show All</a> ]</span></h4>
-				<ul id="changeLog{{test_case_run.pk}}" style="display:none;">
+				<ul id="changeLog{{ test_case_run.pk }}" style="display:none;">
 					{% for log in caserun_logs %}
 					<li><span>{{ log.date }}</span><span>{{ log.who.username }}</span><br />Field {{ log.field }} changed from {{ log.original_value }} to {{ log.new_value }}</li>
 					{% endfor %}

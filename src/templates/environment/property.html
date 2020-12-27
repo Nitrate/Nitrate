@@ -10,17 +10,18 @@
 {% block custom_javascript %}
 <script type="text/javascript" src="{% static "js/management_actions.js" %}"></script>
 <script type="text/javascript">
-	Nitrate.Management.Environment.Property.URLs = {
-      add_property: '{% url "management-add-env-property" %}',
-      edit_property: '/environment/properties/$id/edit/',
-      del_property: '{% url "management-env-properties" %}',
-	  set_property_status: '{% url "management-set-env-property-status" %}',
-      set_property_values_status: '{% url "management-set-env-property-values-status" %}',
-      list_property_values: '/environment/properties/$id/values/',
-      add_property_value: '/environment/properties/$id/values/add/',
-	  edit_property_value: '/environment/properties/values/$id/edit/',
-	};
-	Nitrate.Utils.after_page_load(Nitrate.Management.Environment.Property.on_load);
+Nitrate.Management.Environment.Property.URLs = {
+	add_property: '{% url "management-add-env-property" %}',
+	edit_property: '/environment/properties/$id/edit/',
+	del_property: '{% url "management-env-properties" %}',
+	set_property_status: '{% url "management-set-env-property-status" %}',
+	set_property_values_status: '{% url "management-set-env-property-values-status" %}',
+	list_property_values: '/environment/properties/$id/values/',
+	add_property_value: '/environment/properties/$id/values/add/',
+	edit_property_value: '/environment/properties/values/$id/edit/',
+};
+
+Nitrate.Utils.after_page_load(Nitrate.Management.Environment.Property.on_load);
 </script>
 {% endblock %}
 

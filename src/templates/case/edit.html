@@ -70,7 +70,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestCases.Edit.on_load);
 					</div>
 					<div class="data_row">
 						<label>Default Tester</label>
-						<span >{{ form.default_tester }}</span>
+						<span>{{ form.default_tester }}</span>
 						<div class="errors">{{ form.default_tester.errors }}</div>
 					</div>
 
@@ -83,20 +83,20 @@ Nitrate.Utils.after_page_load(Nitrate.TestCases.Edit.on_load);
 						</div>
 					</div>
 					<div class="data_row">
-						<label >Status</label>
+						<label>Status</label>
 						<span id="form_status">{{ form.case_status }}</span>
 					</div>
 					<div class="data_row">
-						<label >Arguments</label>
+						<label>Arguments</label>
 						<span id="form_arguments">{{ form.arguments }}</span>
 						<div class="errors">{{ form.arguments.errors }}</div>
 					</div>
 					<div class="data_row">
-                        <label >Reference Link</label>
-                        <span id="form_extra_link">{{ form.extra_link }}</span>
-                    </div>
+						<label>Reference Link</label>
+						<span id="form_extra_link">{{ form.extra_link }}</span>
+					</div>
 					<div class="data_row">
-						<label >Notes</label>
+						<label>Notes</label>
 						<span id="form_notes">{{ form.notes }}</span>
 						<div class="errors">{{ form.notes.errors }}</div>
 					</div>
@@ -105,7 +105,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestCases.Edit.on_load);
 				<div class="editor-side">
 					{% if testplan %}
 					<div class="data_row">
-						<label >Product </label>
+						<label>Product </label>
 						<div id="display_product">{{ testplan.product }}</div>
 					</div>
 					<div class="data_row">
@@ -118,15 +118,15 @@ Nitrate.Utils.after_page_load(Nitrate.TestCases.Edit.on_load);
 						<div class="name">{{ test_case.author }}</div>
 					</div>
 					<div class="data_row">
-						<label >Last Editor</label>
+						<label>Last Editor</label>
 						<div id="display_editor">{{ test_case.latest_text.author.email }}</div>
 					</div>
 					<div class="data_row">
-						<label >Created</label>
+						<label>Created</label>
 						<div class="name">{{ test_case.create_date }}</div>
 					</div>
 					<div class="data_row">
-						<label >Last Modified</label>
+						<label>Last Modified</label>
 						<div id="display_modify_date">{{ test_case.latest_text.create_date }}</div>
 					</div>
 
@@ -144,15 +144,15 @@ Nitrate.Utils.after_page_load(Nitrate.TestCases.Edit.on_load);
 						</div>
 					</div>
 					<div class="data_row">
-						<label >Requirement</label>
+						<label>Requirement</label>
 						<div id="form_requirement">{{ form.requirement }}</div>
 					</div>
 					<div class="data_row">
-						<label >Script</label>
+						<label>Script</label>
 						<div id="form_script">{{ form.script }}</div>
 					</div>
 					<div class="data_row">
-						<label >Alias</label>
+						<label>Alias</label>
 						<div>{{ form.alias }}</div>
 					</div>
 					<div class="data_row">

@@ -1,7 +1,7 @@
 {
-	"sEcho": {{sEcho}},
-	"iTotalRecords": {{iTotalRecords}},
-	"iTotalDisplayRecords": {{iTotalDisplayRecords}},
+	"sEcho": {{ sEcho }},
+	"iTotalRecords": {{ iTotalRecords }},
+	"iTotalDisplayRecords": {{ iTotalDisplayRecords }},
 	"aaData": [
 		{% for run in querySet %}
 		[
@@ -21,6 +21,6 @@
 			"<div style='width: 100px;' class='progress-bar'><div class='percent'>{{ run.nitrate_stats.failure_percent|floatformat:2 }}%</div><div class='progress-failed' style='width: {{ run.nitrate_stats.failure_percent|floatformat:2 }}px;'></div></div>",
 			"<div style='width: 100px;' class='progress-bar'><div class='percent'>{{ run.nitrate_stats.success_percent|floatformat:2 }}%</div><div class='progress-inner' style='width: {{ run.nitrate_stats.success_percent|floatformat:2 }}px;'></div></div>"
 		]{% if not forloop.last %},{% endif %}
-        {% endfor %}
+		{% endfor %}
 	]
 }

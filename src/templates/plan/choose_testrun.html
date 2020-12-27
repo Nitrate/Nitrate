@@ -20,7 +20,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.ChooseRuns.on_load);
 	<div class="sprites crumble">
 		<a href="{% url "nitrate-index" %}">Home</a>
 		&gt;&gt; <a href="{% url "plans-all" %}?is_active=on">...</a>
-		&gt;&gt; <a href="{{ plan.get_absolute_url }}">[{{plan.plan_id}}]{{ plan.name }}</a>
+		&gt;&gt; <a href="{{ plan.get_absolute_url }}">[{{ plan.plan_id }}]{{ plan.name }}</a>
 		&gt;&gt; Add test case to runs
 	</div>
 	<h2 id="display_title"><a href="{{ plan.get_absolute_url }}">Plan:{{ plan.name }}</a></h2>
@@ -46,7 +46,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.ChooseRuns.on_load);
 					<td>
 						<a href="{% url "run-get" test_run.pk %}">{{ test_run.pk }}</a>
 					</td>
-					<td >
+					<td>
 						{{ test_run.summary }}
 					</td>
 					<td>{{ test_run.build__name }}</td>
@@ -63,14 +63,14 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.ChooseRuns.on_load);
 				<span class="tit" width="150px"><b>Cases to be added: {{ test_cases|length }}</b></span>
 				<input type="button" value="Update" title="Update the cases in this run" class="js-update-button" />
 				<input type="reset" value="Reset" title="Reset to the original cases "/>
-				<span class="right-action">	
+				<span class="right-action">
 					<a class="helplink js-help-info" id="" title="view the help information about assigning case">How to Assign case?</a>
 				</span>
 			</div>
 			<div class="Detailform system_info border-1" id="help_assign" style="display:none">
 				<div class="Detailform-variety_1">
 					<p>
-						The table below list all the confirmed test case of plan {{ test_run.plan }}, check the checkbox to add the case into the test run, uncheck it to remove from the test run, remember to update at last. 
+						The table below list all the confirmed test case of plan {{ test_run.plan }}, check the checkbox to add the case into the test run, uncheck it to remove from the test run, remember to update at last.
 						<span class="right-action">
 							<a href="#" class="js-close-help">X</a>
 						</span>
@@ -128,7 +128,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.ChooseRuns.on_load);
 				</tbody>
 			</table>
 		</div>
-</form>	
+	</form>
 </div>
 
 {% endblock %}

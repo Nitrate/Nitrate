@@ -3,14 +3,14 @@
 		<th class="widthID">Case Run ID</th>
 		<th class="widthID">Run ID</th>
 		<th>Issue URL</th>
-        <th>Action</th>
+		<th>Action</th>
 	</tr>
 	{% for issue in test_case.get_issues %}
 	<tr class="{% cycle 'even' 'odd' %}">
 		<td>{{ issue.case_run_id }}</td>
 		<td>{% if issue.case_run_id %}<a href="{% url "run-get" issue.case_run.run_id %}">{{ issue.case_run.run_id }}</a>{% else %}None{% endif %}</td>
 		<td><a href="{{ issue.get_absolute_url }}">{{ issue.get_absolute_url }}</a></td>
-        <td>
+		<td>
 			{% if perms.issuetracker.delete_issue %}
 			<a href="javascript:void(0)" class="remove js-remove-issue"
 				data-params='{"issueKey": "{{ issue.issue_key }}", "caseId": "{{ test_case.pk }}", "caseRunId": "{{ issue.case_run_id|default:'' }}"}'>Remove</a>

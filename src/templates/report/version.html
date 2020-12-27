@@ -54,7 +54,7 @@ Nitrate.Utils.after_page_load(Nitrate.Report.List.on_load);
 					</div>
 				</td>
 				<td class="variety_4">
-					{% if version.failed_case_runs_count  %}					
+					{% if version.failed_case_runs_count  %}
 					<div class="strong emphasize">{{ version.failed_case_runs_count|default:'0' }} Failed</div>
 					{% endif %}
 				</td>

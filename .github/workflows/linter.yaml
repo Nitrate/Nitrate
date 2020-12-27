@@ -60,3 +60,11 @@ jobs:
             cd /code
             tox -e jslint
           "
+
+  templatelint:
+    name: Lint templates
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - run: bash ./contrib/scripts/templatelint.sh src/templates

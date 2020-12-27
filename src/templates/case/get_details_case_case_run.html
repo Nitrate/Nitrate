@@ -8,7 +8,7 @@
 			<span class="strong">#{{ forloop.counter }}</span>
 			<span class="strong">{{ comment.user__email }}</span>
 			<span class="grey">{{ comment.submit_date }}</span><br/>
-			{{ comment.comment|urlize|linebreaksbr }} 
+			{{ comment.comment|urlize|linebreaksbr }}
 		</li>
 		{% empty %}
 		<li class="grey" style="border:none;margin:0px;padding:0px">No comments found.</li>
