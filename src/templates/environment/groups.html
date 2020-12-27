@@ -52,7 +52,7 @@ Nitrate.Utils.after_page_load(Nitrate.Management.Environment.Groups.on_load);
 		</thead>
 		<tbody>
 			{% for env in environments %}
-			<tr class="{% cycle odd even %} js-env-group" id="{{ env.id }}" data-params='[{{ env.id }}, "{{ env.name }}"]'>
+			<tr class="{% cycle odd even %} js-env-group" id="{{ env.id }}" data-env-id="{{ env.id }}" data-env-name="{{ env.name }}">
 				<th align="center" height="26px">
 					<label class=" {% if env.is_active %}{% else %}disable line-through{% endif %}">
 						{% if perms.management.change_tcmsenvgroup %}
@@ -80,8 +80,8 @@ Nitrate.Utils.after_page_load(Nitrate.Management.Environment.Groups.on_load);
 				<td align="center">
 					{% if perms.management.change_tcmsenvgroup %}
 					<a href="{% url "management-env-group-edit" env.id %}" class="editlink">Edit</a>
-					<a href="javascript:void(0)" class="disablelink js-disable-env-group {% if env.is_active %}{% else %}hidden{% endif %}">Disable</a>
-					<a href="javascript:void(0)" class="enablelink js-enable-env-group {% if env.is_active %}hidden{% endif %} ">Enable</a>
+					<a href="javascript:void(0)" class="disablelink js-disable-env-group {% if env.is_active %}{% else %}hidden{% endif %}" data-set-status="0">Disable</a>
+					<a href="javascript:void(0)" class="enablelink js-enable-env-group {% if env.is_active %}hidden{% endif %}" data-set-status="1">Enable</a>
 					<a href="#" class="editlink js-del-env-group">Delete</a>
 					<a href="#viewhistroy{{ env.id }}" class="loglink" name="viewhistroy{{ env.id }}">View edit history</a>
 					{% else %}

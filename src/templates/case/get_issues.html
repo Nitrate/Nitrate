@@ -13,7 +13,9 @@
 		<td>
 			{% if perms.issuetracker.delete_issue %}
 			<a href="javascript:void(0)" class="remove js-remove-issue"
-				data-params='{"issueKey": "{{ issue.issue_key }}", "caseId": "{{ test_case.pk }}", "caseRunId": "{{ issue.case_run_id|default:'' }}"}'>Remove</a>
+				data-issue-key="{{ issue.issue_key }}"
+				data-case-id="{{ test_case.pk }}"
+				data-case-run-id="{{ issue.case_run_id|default:'' }}">Remove</a>
 			{% else %}
 			<label class="grey">None</label>
 			{% endif %}

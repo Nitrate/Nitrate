@@ -154,6 +154,16 @@ Nitrate.TestCases.AdvancedSearch.on_load = function () {
   Nitrate.TestCases.Search.initializeSearchResult('/advance-search/');
 };
 
+Nitrate.TestCases.Details.bindIssueOperationHandlers = function () {
+  jQ('.js-remove-issue').on('click', function (event) {
+    removeCaseIssue(this.dataset.issueKey, this.dataset.caseId, this.dataset.caseRunId);
+  });
+
+  jQ('.js-add-issue').on('click', function () {
+    addCaseIssue(document.getElementById('id_case_issue_form'));
+  });
+};
+
 Nitrate.TestCases.Details.on_load = function () {
   let caseId = Nitrate.TestCases.Instance.pk;
 
@@ -248,14 +258,15 @@ Nitrate.TestCases.Details.on_load = function () {
     window.location.href = jQ(this).data('link');
   });
 
-  jQ('.js-remove-issue').on('click', function (event) {
-    let params = jQ(event.target).data('params');
-    removeCaseIssue(params.issueKey, params.caseId, params.caseRunId);
-  });
+  // jQ('.js-remove-issue').on('click', function (event) {
+  //   removeCaseIssue(this.dataset.issueKey, this.dataset.caseId, this.dataset.caseRunId);
+  // });
+  //
+  // jQ('.js-add-issue').on('click', function () {
+  //   addCaseIssue(jQ('#id_case_issue_form')[0]);
+  // });
 
-  jQ('.js-add-issue').on('click', function () {
-    addCaseIssue(jQ('#id_case_issue_form')[0]);
-  });
+  Nitrate.TestCases.Details.bindIssueOperationHandlers();
 
   jQ('#issue_key').on('keydown', function (event) {
     addCaseIssueViaEnterKey(jQ('#id_case_issue_form')[0], event);
@@ -392,15 +403,8 @@ Nitrate.TestCases.Clone.on_load = function () {
  */
 function issueOperationSuccessCallback(data) {
   jQ('div#issues').html(data.html);
-
-  jQ('.js-add-issue').on('click', function () {
-    addCaseIssue(jQ('#id_case_issue_form')[0]);
-  });
-  jQ('.js-remove-issue').on('click', function (event) {
-    let params = jQ(event.target).data('params');
-    removeCaseIssue(params.issueKey, params.caseId, params.caseRunId);
-  });
   jQ('#case_issues_count').text(jQ('table#issues').prop('count'));
+  Nitrate.TestCases.Details.bindIssueOperationHandlers();
 }
 
 

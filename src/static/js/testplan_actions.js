@@ -1168,8 +1168,7 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
       });
 
       navForm.find('.js-new-case').on('click', function () {
-        let params = jQ(this).data('params');
-        window.location.href = params[0] + '?from_plan=' + params[1];
+        window.location.assign(this.dataset.actionUrl);
       });
 
       navForm.find('.js-import-cases').on('click', function () {

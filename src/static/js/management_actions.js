@@ -46,18 +46,13 @@ Nitrate.Management.Environment.Groups.on_load = function () {
   });
 
   jQ('.js-del-env-group').on('click', function () {
-    let params = jQ(this).parents('.js-env-group').data('params');
-    Environment.Groups.deleteEnvGroup(params[0], params[1]);
+    let elem = jQ(this).parents('.js-env-group');
+    Environment.Groups.deleteEnvGroup(elem.data('envId'), elem.data('envName'));
   });
 
-  jQ('.js-enable-env-group').on('click', function () {
-    let params = jQ(this).parents('.js-env-group').data('params');
-    Environment.Groups.setEnvGroupStatus(params[0], 1)
-  });
-
-  jQ('.js-disable-env-group').on('click', function () {
-    let params = jQ(this).parents('.js-env-group').data('params');
-    Environment.Groups.setEnvGroupStatus(params[0], 0)
+  jQ('.js-enable-env-group, .js-disable-env-group').on('click', function () {
+    let elem = jQ(this).parents('.js-env-group');
+    Environment.Groups.setEnvGroupStatus(elem.data('envId'), window.parseInt(this.dataset.setStatus))
   });
 };
 

@@ -17,8 +17,7 @@
 					<ul>
 						{% if perms.testcases.add_testcase %}
 						<li>
-							<input class="add_new icon_plan js-new-case" type="button" value="Write new case"
-								data-params='["{% url "cases-new" %}", {{ test_plan.plan_id }}]'/>
+							<input class="add_new icon_plan js-new-case" type="button" value="Write new case" data-action-url="{% url "cases-new" %}?from_plan={{ test_plan.plan_id }}" />
 						</li>
 						<li>
 							<input type="button" class="import icon_plan js-import-cases" value="Import cases from XML" />

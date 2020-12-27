@@ -659,8 +659,7 @@ function bindRemoveCCHandler() {
 
 Nitrate.TestRuns.Details.on_load = function () {
   jQ('.js-add-property').on('click', function () {
-    let params = jQ(this).data('params');
-    new AddEnvPropertyDialog(params[0], params[1]).open();
+    new AddEnvPropertyDialog(this.dataset.runId, this.dataset.envGroupId).open();
   });
 
   // Observe the interface buttons
@@ -814,8 +813,7 @@ Nitrate.TestRuns.New.on_load = function () {
   });
   jQ('img.blind_icon').on('click', caseDetailExpansionHandler);
   jQ('.js-remove-case').on('click', function () {
-    let params = jQ(this).data('params');
-    removeItem(params[0], params[1]);
+    removeItem(this.dataset.itemId, window.parseInt(this.dataset.estimatedTime));
   });
 };
 

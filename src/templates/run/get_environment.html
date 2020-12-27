@@ -43,7 +43,7 @@
 </ul>
 {% if perms.testruns.add_tcmsenvrunvaluemap %}
 <div>
-	<a class="addlink js-add-property" href="javascript:void(0)" data-params='["{{ test_run.run_id }}", "{{ env_group.id }}"]'>Add Property</a>
+	<a class="addlink js-add-property" href="javascript:void(0)" data-run-id="{{ test_run.pk }}" data-env-group-id="{{ env_group.id }}">Add Property</a>
 </div>
 {% endif %}
 {% for env_group in testplan.env_group.all %}
