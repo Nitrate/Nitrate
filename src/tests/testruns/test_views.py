@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
+
+import csv
 import json
 import os
+import tempfile
 
 from datetime import datetime, timedelta
 from http import HTTPStatus
@@ -17,6 +20,7 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 
 from tcms.issuetracker.models import Issue
+from tcms.linkreference.models import create_link
 from tcms.testruns.models import TCMSEnvRunValueMap
 from tcms.testruns.models import TestCaseRun
 from tcms.testruns.models import TestCaseRunStatus
@@ -991,6 +995,10 @@ class TestExportTestRunCases(BaseCaseRun):
     def setUpTestData(cls):
         super().setUpTestData()
         cls.export_url = reverse('run-export', args=[cls.test_run.pk])
+        cls.log_link1 = 'https://somewhere/log1.txt'
+        cls.log_link2 = 'https://somewhere/log2.txt'
+        create_link('Log1', cls.log_link1, link_to=cls.case_run_1)
+        create_link('一份很长的日志', cls.log_link2, link_to=cls.case_run_2)
 
     @patch('tcms.testruns.views.time.strftime', return_value='2017-06-17')
     def test_export_to_xml_file(self, strftime):
@@ -1008,10 +1016,26 @@ class TestExportTestRunCases(BaseCaseRun):
 
     def test_export_all_case_runs_to_csv_by_default(self):
         response = self.client.get(self.export_url, {'format': 'csv'})
-        self.assertEqual(
-            self.test_run.case_run.count(),
-            # Do not count header line
-            len(response.content.decode('utf-8').strip().split(os.linesep)) - 1)
+
+        actual_rows_count = 0
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            csv_file = os.path.join(tmpdir, 'file.csv')
+            with open(csv_file, 'w') as f:
+                f.write(response.content.decode())
+
+            with open(csv_file, 'r', newline='') as f:
+                reader = csv.reader(f)
+                next(reader)  # Skip the header line
+                for row in reader:
+                    actual_rows_count += 1
+                    if row[0] == self.case_run_1.pk:
+                        self.assertEqual(self.log_link1, row[-2])
+                    elif row[0] == self.case_run_2.pk:
+                        self.assertEqual(self.log_link2, row[-2])
+
+        self.assertEqual(self.test_run.case_run.count(), actual_rows_count,
+                         msg='Not all case runs are exported.')
 
     def test_export_all_case_runs_to_xml_by_default(self):
         response = self.client.get(self.export_url, {'format': 'xml'})

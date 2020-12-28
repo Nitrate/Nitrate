@@ -65,10 +65,7 @@ class TCR2File:
 
     def log_links(self, tcr):
         """Wrap log links into a single cell by joining log links"""
-        return '\n'.join(
-            (url.encode('utf-8')
-             for url in tcr.links.values_list('url', flat=True))
-        )
+        return '\n'.join(tcr.links.values_list('url', flat=True))
 
     def issue_keys(self, tcr):
         """Wrap issues into a single cell by joining issue keys"""
