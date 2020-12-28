@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testcaseruns>
+	{% for case_run in case_runs %}
+	<testcaserun case_run_id="{{ case_run.pk }}" case_id="{{ case_run.case_id }}" category="{{ case_run.case.category.name }}"
+				 status="{{ case_run.case_run_status.name }}" summary="{{ case_run.case.summary|escape }}" scripts="{{ case_run.case.script|escape }}"
+				 automated="{{ case_run.case.is_automated|default:"0" }}">
+		<loglinks>
+			{% for item in case_run.links.all %}
+			<loglink name="{{ item.name }}" url="{{ item.url }}" />
+			{% endfor %}
+		</loglinks>
+		<issues>
+			{% for item in case_run.issues.all %}
+			<issue key="{{ item.issue_key }}" />
+			{% endfor %}
+		</issues>
+	</testcaserun>
+	{% endfor %}
+</testcaseruns>

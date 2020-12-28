@@ -3,12 +3,23 @@
 import io
 
 from xml.etree import ElementTree
+from xml.sax.saxutils import escape
 
 from tcms.linkreference.models import create_link
-from tcms.testruns.helpers.serializer import escape_entities
 from tcms.testruns.helpers.serializer import TCR2File
 from tcms.testruns.models import TestCaseRun
 from tests import factories as f, BaseCaseRun
+
+
+def escape_entities(text):
+    """Convert all XML entities
+
+    :param text: a string containing entities possibly
+    :type text: str
+    :return: converted version of text
+    :rtype: str
+    """
+    return escape(text, {'"': '&quot;'}) if text else text
 
 
 class TestTCR2FileToExportToXML(BaseCaseRun):
@@ -66,12 +77,9 @@ class TestTCR2FileToExportToXML(BaseCaseRun):
             self.assertEqual(case_run.case.pk, int(elem.get('case_id')))
             self.assertEqual(case_run.case.category.name, elem.get('category'))
             self.assertEqual(case_run.case_run_status.name, elem.get('status'))
-            self.assertEqual(escape_entities(case_run.case.summary),
-                             elem.get('summary'))
-            self.assertEqual(escape_entities(case_run.case.script),
-                             elem.get('scripts'))
-            self.assertEqual(str(case_run.case.is_automated),
-                             elem.get('automated'))
+            self.assertEqual(escape_entities(case_run.case.summary), elem.get('summary'))
+            self.assertEqual(escape_entities(case_run.case.script), elem.get('scripts'))
+            self.assertEqual(str(case_run.case.is_automated), elem.get('automated'))
 
     def test_export_contains_issues(self):
         xml_doc = self._export_to_xml()
