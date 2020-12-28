@@ -124,9 +124,9 @@
 		</table>
 		{% endif %}
 
-		<h3>Total: {{ test_case_runs_count }}</h3>
-		<h3>Pending test cases: {{ summary_stats.idle }}</h3>
-		<h3>Test run completed: {{ summary_stats.complete|percentage:test_case_runs_count }}</h3>
+		<h3>Total: {{ test_run_stats.total }}</h3>
+		<h3>Pending test cases: {{ test_run_stats.IDLE }}</h3>
+		<h3>Test run completed: {{ test_run_stats.complete_percent }}%</h3>
 
 		{% if test_case_run_issues %}
 		<hr style="margin:40px auto 20px;"/>

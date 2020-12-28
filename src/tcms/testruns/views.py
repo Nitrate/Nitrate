@@ -774,26 +774,22 @@ class TestRunReportView(TemplateView, TestCaseRunDataMixin):
         4. Statistics
         5. Issues
         """
-        run = TestRun.objects.select_related('manager', 'plan').get(
-            pk=self.run_id)
+        run = TestRun.objects.select_related('manager', 'plan').get(pk=self.run_id)
 
-        case_runs = TestCaseRun.objects.filter(run=run).select_related(
-            'case_run_status', 'case', 'tested_by', 'case__category'
-        ).only(
-            'close_date',
-            'case_run_status__name',
-            'case__category__name',
-            'case__summary', 'case__is_automated',
-            'case__is_automated_proposed',
-            'tested_by__username')
+        case_runs = (TestCaseRun.objects
+                     .filter(run=run)
+                     .select_related('case_run_status', 'case', 'tested_by', 'case__category')
+                     .only('close_date', 'case_run_status__name', 'case__category__name',
+                           'case__summary', 'case__is_automated', 'case__is_automated_proposed',
+                           'tested_by__username'))
         mode_stats = self.stats_mode_caseruns(case_runs)
-        summary_stats = self.get_summary_stats(case_runs)
         comments = self.get_caseruns_comments(run.pk)
 
-        run_issues = (
-            Issue.objects.filter(case_run__run=self.run_id)
-                         .select_related('tracker')
-        )
+        run_stats = stats_case_runs_status([run.pk])[run.pk]
+
+        run_issues = (Issue.objects
+                      .filter(case_run__run=self.run_id)
+                      .select_related('tracker'))
 
         by_case_run_pk = attrgetter('case_run.pk')
         issues_by_case_run = {
@@ -830,7 +826,7 @@ class TestRunReportView(TemplateView, TestCaseRunDataMixin):
             'test_case_runs_count': len(case_runs),
             'test_case_run_issues': run_issues_display_info,
             'mode_stats': mode_stats,
-            'summary_stats': summary_stats,
+            'test_run_stats': run_stats,
             'display_issues_by_tracker': display_issues_by_tracker,
         })
 

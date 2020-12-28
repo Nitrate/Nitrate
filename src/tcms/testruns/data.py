@@ -112,30 +112,3 @@ class TestCaseRunDataMixin:
             case_run_id: list(comments) for case_run_id, comments in
             groupby(qs, itemgetter('case_run_id'))
         }
-
-    def get_summary_stats(self, case_runs):
-        """Get summary statistics from case runs
-
-        Statistics targets:
-        - the number of pending test case runs, whose status is IDLE
-        - the number of completed test case runs, whose status are PASSED,
-          ERROR, FAILED, WAIVED
-
-        :param case_runs: iterable object containing case runs
-        :type case_runs: iterable[:class:`TestCaseRun`]
-        :return: a mapping between statistics target and its value
-        :rtype: dict[str, int]
-        """
-        idle_count = 0
-        complete_count = 0
-        complete_status_names = TestCaseRunStatus.complete_status_names
-        idle_status_names = TestCaseRunStatus.idle_status_names
-
-        for case_run in case_runs:
-            status_name = case_run.case_run_status.name
-            if status_name in idle_status_names:
-                idle_count += 1
-            elif status_name in complete_status_names:
-                complete_count += 1
-
-        return {'idle': idle_count, 'complete': complete_count}
