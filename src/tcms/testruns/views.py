@@ -760,10 +760,6 @@ class TestRunReportView(TemplateView, TestCaseRunDataMixin):
 
     template_name = 'run/report.html'
 
-    def get(self, request, run_id):
-        self.run_id = run_id
-        return super().get(request, run_id)
-
     def get_context_data(self, **kwargs):
         """Generate report for specific TestRun
 
@@ -774,22 +770,19 @@ class TestRunReportView(TemplateView, TestCaseRunDataMixin):
         4. Statistics
         5. Issues
         """
-        run = TestRun.objects.select_related('manager', 'plan').get(pk=self.run_id)
-
+        run_id = int(self.kwargs['run_id'])
+        run = TestRun.objects.select_related('manager', 'plan').get(pk=run_id)
         case_runs = (TestCaseRun.objects
                      .filter(run=run)
                      .select_related('case_run_status', 'case', 'tested_by', 'case__category')
                      .only('close_date', 'case_run_status__name', 'case__category__name',
                            'case__summary', 'case__is_automated', 'case__is_automated_proposed',
                            'tested_by__username'))
-        mode_stats = self.stats_mode_caseruns(case_runs)
         comments = self.get_caseruns_comments(run.pk)
 
         run_stats = stats_case_runs_status([run.pk])[run.pk]
 
-        run_issues = (Issue.objects
-                      .filter(case_run__run=self.run_id)
-                      .select_related('tracker'))
+        run_issues = Issue.objects.filter(case_run__run=run_id).select_related('tracker')
 
         by_case_run_pk = attrgetter('case_run.pk')
         issues_by_case_run = {
@@ -800,10 +793,23 @@ class TestRunReportView(TemplateView, TestCaseRunDataMixin):
                 sorted(run_issues, key=by_case_run_pk), by_case_run_pk)
         }
 
+        manual_count = 0
+        automated_count = 0
+        manual_automated_count = 0
+
+        case_run: TestCaseRun
         for case_run in case_runs:
             case_run.display_issues = issues_by_case_run.get(case_run.pk, ())
             user_comments = comments.get(case_run.pk, [])
             case_run.user_comments = user_comments
+
+            is_automated = case_run.case.is_automated
+            if is_automated == 1:
+                automated_count += 1
+            elif is_automated == 0:
+                manual_count += 1
+            else:
+                manual_automated_count += 1
 
         display_issues_by_tracker = [
             (tracker.name, find_service(tracker).make_issues_display_url(
@@ -823,11 +829,15 @@ class TestRunReportView(TemplateView, TestCaseRunDataMixin):
         context.update({
             'test_run': run,
             'test_case_runs': case_runs,
+            'display_issues_by_tracker': display_issues_by_tracker,
             'test_case_runs_count': len(case_runs),
             'test_case_run_issues': run_issues_display_info,
-            'mode_stats': mode_stats,
+            'test_case_run_mode_stats': {
+                'manual': manual_count,
+                'automated': automated_count,
+                'manual_automated': manual_automated_count,
+            },
             'test_run_stats': run_stats,
-            'display_issues_by_tracker': display_issues_by_tracker,
         })
 
         return context

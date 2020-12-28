@@ -57,34 +57,6 @@ def stats_case_runs_status(run_ids: List[int]) -> Dict[int, CaseRunStatusGroupBy
 class TestCaseRunDataMixin:
     """Data for test case runs"""
 
-    def stats_mode_caseruns(self, case_runs):
-        """Statistics from case runs mode
-
-        :param case_runs: an iterable object to access each case run
-        :type case_runs: iterable[:class:`TestCaseRun`]
-        :return: mapping between mode and the count. Example return value is
-            ``{ 'manual': I, 'automated': J, 'manual_automated': N }``.
-        :rtype: dict[str, int]
-        """
-        manual_count = 0
-        automated_count = 0
-        manual_automated_count = 0
-
-        for case_run in case_runs:
-            is_automated = case_run.case.is_automated
-            if is_automated == 1:
-                automated_count += 1
-            elif is_automated == 0:
-                manual_count += 1
-            else:
-                manual_automated_count += 1
-
-        return {
-            'manual': manual_count,
-            'automated': automated_count,
-            'manual_automated': manual_automated_count,
-        }
-
     def get_caseruns_comments(self, run_pk):
         """Get case runs' comments
 

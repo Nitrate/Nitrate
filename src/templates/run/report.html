@@ -71,9 +71,9 @@
 		</div>
 		<div class="clear"></div>
 		<div class="table_noborder">
-			Manual Cases<span class="red">{{ mode_stats.manual|percentage:test_case_runs_count }}({{ mode_stats.manual }}/{{ test_case_runs_count }})</span>
-			Automated Cases<span class="red">{{ mode_stats.automated|percentage:test_case_runs_count }}({{ mode_stats.automated }}/{{ test_case_runs_count }})</span>
-			Manual/Automated Cases<span class="red">{{ mode_stats.manual_automated|percentage:test_case_runs_count }}({{ mode_stats.manual_automated }}/{{ test_case_runs_count }})</span>
+			Manual Cases<span class="red">{{ test_case_run_mode_stats.manual|percentage:test_case_runs_count }}({{ test_case_run_mode_stats.manual }}/{{ test_case_runs_count }})</span>
+			Automated Cases<span class="red">{{ test_case_run_mode_stats.automated|percentage:test_case_runs_count }}({{ test_case_run_mode_stats.automated }}/{{ test_case_runs_count }})</span>
+			Manual/Automated Cases<span class="red">{{ test_case_run_mode_stats.manual_automated|percentage:test_case_runs_count }}({{ test_case_run_mode_stats.manual_automated }}/{{ test_case_runs_count }})</span>
 		</div>
 
 		{% if test_case_runs %}

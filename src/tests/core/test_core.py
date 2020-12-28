@@ -193,6 +193,15 @@ class GroupByResultCalculationTest(unittest.TestCase):
         result = GroupByResult({})
         self.assertEqual(.0, result.PASSED_percent)
 
+    def test_arithmetic_operation(self):
+        result = GroupByResult({'IDLE': 1, 'RUNNING': 1, 'FAILED': 2})
+        result['IDLE'] += 1
+        result['RUNNING'] += 100
+        result['FAILED'] -= 2
+        self.assertEqual(2, result['IDLE'])
+        self.assertEqual(101, result['RUNNING'])
+        self.assertEqual(0, result['FAILED'])
+
 
 class GroupByResultLevelTest(unittest.TestCase):
     def setUp(self):
