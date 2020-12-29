@@ -65,5 +65,3 @@ DEFAULT_GROUPS = ['default']
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
 )
-
-DEFAULT_PAGE_SIZE = 100

@@ -299,96 +299,6 @@ EMAIL_PORT = 25
 EMAIL_FROM = 'noreply@foo.com'
 EMAIL_SUBJECT_PREFIX = '[TCMS] '
 
-EMAILS_FOR_DEBUG = []
-
-# Values: DISABLED, THREADING, CELERY
-ASYNC_TASK = 'DISABLED'
-
-CELERY_BROKER_URL = 'redis://'
-
-# Celery worker settings
-CELERY_TASK_RESULT_EXPIRES = 60 * 2
-CELERY_RESULT_BACKEND = 'db+sqlite:///celery-results.db'
-CELERYD_TIMER_PRECISION = 120
-CELERY_IGNORE_RESULT = True
-CELERY_MAX_CACHED_RESULTS = -1
-CELERY_DEFAULT_RATE_LIMIT = '250/m'
-
-# TCMS email behavior settings
-PLAN_EMAIL_TEMPLATE = 'mail/change_plan.txt'
-PLAN_DELELE_EMAIL_TEMPLATE = 'mail/delete_plan.txt'
-CASE_EMAIL_TEMPLATE = 'mail/edit_case.txt'
-CASE_DELETE_EMAIL_TEMPLATE = 'mail/delete_case.txt'
-
-# Maximum upload file size, default set to 5MB.
-# 2.5MB - 2621440
-# 5MB - 5242880
-# 10MB - 10485760
-# 20MB - 20971520
-# 50MB - 5242880
-# 100MB 104857600
-# 250MB - 214958080
-# 500MB - 429916160
-MAX_UPLOAD_SIZE = 5242880
-
-# Pagination
-PLAN_RUNS_PAGE_SIZE = 20
-
-# Site-specific messages
-
-# The site can supply optional "message of the day" style banners, similar to
-# /etc/motd. They are fragments of HTML.
-
-# This if set, is shown on the login/registration screens.
-# MOTD_LOGIN = ''
-
-# The URLS will be list in footer
-# Example:
-# FOOTER_LINKS = (
-#   ('mailto:nitrate-dev-list@example.com', 'Contact Us'),
-#   ('mailto:nitrate-admin@example.com', 'Request Permission'),
-#   ('http://foo.com', 'foo')
-# )
-FOOTER_LINKS = ()
-
-# Attachment file download path
-# it could be specified to a different out of MEDIA_URL
-# FILE_UPLOAD_DIR = path.join(MEDIA_DIR, 'uploads').replace('\\','/'),
-FILE_UPLOAD_DIR = '/var/nitrate/uploads'
-
-# Enable the administrator delete permission
-# In another word it's set the admin to super user or not.
-SET_ADMIN_AS_SUPERUSER = False
-
-#
-# Authentication backend settings
-#
-# Required by bugzilla authentication backend
-# BUGZILLA_XMLRPC_URL = 'https://bugzilla.example.com/xmlrpc.cgi'
-
-# JIRA URL
-JIRA_URL = ''
-
-# Turn on/off listening signals sent by models.
-LISTENING_MODEL_SIGNAL = True
-
-# Kerberos settings
-# Required by kerberos authentication backend
-KRB5_REALM = ''
-
-# user guide url:
-USER_GUIDE_URL = ''
-
-# Default page size for showing each possible query result. This provides a
-# consistent user experiece to users.
-DEFAULT_PAGE_SIZE = 20
-
-# Disable TCMS to produce test run progress info to consumers by qpid for
-# reducing unnecessary I/O access and errata does not subscribe tcms msg now.
-# If you want to continue sending msg to qpid, please overwrite it in product
-# .py and make sure qpid config is correct.
-ENABLE_QPID = False
-
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
 # the site admins on every HTTP 500 error when DEBUG=False.
@@ -444,31 +354,79 @@ LOGGING = {
     }
 }
 
-TINYMCE_DEFAULT_CONFIG = {
-    'branding': False,
-    'dialog_type': "modal",
-    'language': "en",
-    'menubar': False,
-    'mode': "exact",
-    'theme': "silver",
-
-    'height': 300,
-    'width': '100%',
-
-    'plugins':
-        'codesample link image hr table fullscreen visualchars paste media '
-        'template searchreplace lists',
-
-    'toolbar':
-        'undo redo | '
-        'formatselect bold italic underline | '
-        'bullist numlist outdent indent | '
-        'codesample table link unlink image search hr | '
-        'fullscreen',
-}
-
 LOCALE_PATHS = (
     os.path.join(TCMS_ROOT_PATH, 'locale'),
 )
+
+
+# Site-specific messages
+
+EMAILS_FOR_DEBUG = []
+
+# Values: DISABLED, THREADING, CELERY
+ASYNC_TASK = 'DISABLED'
+
+CELERY_BROKER_URL = 'redis://'
+
+# Celery worker settings
+CELERY_TASK_RESULT_EXPIRES = 60 * 2
+CELERY_RESULT_BACKEND = 'db+sqlite:///celery-results.db'
+CELERYD_TIMER_PRECISION = 120
+CELERY_IGNORE_RESULT = True
+CELERY_MAX_CACHED_RESULTS = -1
+CELERY_DEFAULT_RATE_LIMIT = '250/m'
+
+# TCMS email behavior settings
+PLAN_EMAIL_TEMPLATE = 'mail/change_plan.txt'
+PLAN_DELELE_EMAIL_TEMPLATE = 'mail/delete_plan.txt'
+CASE_EMAIL_TEMPLATE = 'mail/edit_case.txt'
+CASE_DELETE_EMAIL_TEMPLATE = 'mail/delete_case.txt'
+
+# Maximum upload file size, default set to 5MB.
+# 2.5MB - 2621440
+# 5MB - 5242880
+# 10MB - 10485760
+# 20MB - 20971520
+# 50MB - 5242880
+# 100MB 104857600
+# 250MB - 214958080
+# 500MB - 429916160
+MAX_UPLOAD_SIZE = 5242880
+
+# The site can supply optional "message of the day" style banners, similar to
+# /etc/motd. They are fragments of HTML.
+
+# This if set, is shown on the login/registration screens.
+# MOTD_LOGIN = ''
+
+# The URLS will be list in footer
+# Example:
+# FOOTER_LINKS = (
+#   ('mailto:nitrate-dev-list@example.com', 'Contact Us'),
+#   ('mailto:nitrate-admin@example.com', 'Request Permission'),
+#   ('http://foo.com', 'foo')
+# )
+FOOTER_LINKS = ()
+
+# Attachment file download path
+# it could be specified to a different out of MEDIA_URL
+# FILE_UPLOAD_DIR = path.join(MEDIA_DIR, 'uploads').replace('\\','/'),
+FILE_UPLOAD_DIR = '/var/nitrate/uploads'
+
+#
+# Authentication backend settings
+#
+# Required by bugzilla authentication backend
+# BUGZILLA_XMLRPC_URL = 'https://bugzilla.example.com/xmlrpc.cgi'
+
+# Turn on/off listening signals sent by models.
+LISTENING_MODEL_SIGNAL = True
+
+# Kerberos settings
+# Required by kerberos authentication backend
+KRB5_REALM = ''
+
+# user guide url:
+USER_GUIDE_URL = ''
 
 TESTOPIA_XML_VERSION = '1.1'
