@@ -77,6 +77,26 @@ There are a few of environment variables you can set to configure container.
   documentation. Generally, default port of MySQL and MariaDB is `3306`, and
   PostgreSQL's is `5432`.
 
+## Volumes
+
+### `/var/log/httpd`
+
+The directory to store the httpd log files. Ensure the write permission is
+granted properly.
+
+### `/var/nitrate/uploads`
+
+The directory to store the uploaded attachment files. Ensure the write
+permission is granted properly.
+
+### `/nitrate-config`
+
+The directory holding the custom config module. Mount this volume when default
+settings have to customized. For most of the cases running Nitrate in your cloud
+environment, customization should be required. To customize the settings, create
+a Python module `nitrate_custom_conf.py` inside a directory which will be
+mounted to this container volume.
+
 ## Report Issues
 
 Report issue here [https://github.com/Nitrate/Nitrate/issues/new](https://github.com/Nitrate/Nitrate/issues/new)

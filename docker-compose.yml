@@ -15,8 +15,8 @@ services:
     - "nitrate_db_data:/var/lib/mysql"
     restart: always
     environment:
-    - MYSQL_DATABASE=nitrate
-    - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+      MYSQL_DATABASE: nitrate
+      MYSQL_ROOT_PASSWORD: nitrate
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 
   web:

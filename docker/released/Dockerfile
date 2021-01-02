@@ -19,9 +19,6 @@ RUN dnf update -y && \
     dnf install -y httpd python3-mod_wsgi python3-nitrate-tcms && \
     dnf clean all
 
-# Hack: easier to set database password via environment variable
-COPY ./docker/released/product.py /usr/lib/python3.8/site-packages/tcms/settings/product.py
-
 # Disable event module and enable prefork module
 RUN sed -i -e 's/^#\(LoadModule mpm_prefork_module .\+\.so\)$/\1/' \
         /etc/httpd/conf.modules.d/00-mpm.conf && \
@@ -32,8 +29,11 @@ RUN sed -i -e 's/^#\(LoadModule mpm_prefork_module .\+\.so\)$/\1/' \
 RUN mkdir -p /var/nitrate/uploads && \
     chown apache:apache /var/nitrate/uploads
 
+# Directory holding customized settings module.
+RUN mkdir /nitrate-config
+
+VOLUME ["/var/log/httpd", "/var/nitrate/uploads", "/nitrate-config"]
+
+ENV PYTHONPATH=/nitrate-config
 EXPOSE 80
-
-VOLUME ["/var/log/httpd", "/var/nitrate/uploads"]
-
 CMD ["httpd", "-D", "FOREGROUND"]
