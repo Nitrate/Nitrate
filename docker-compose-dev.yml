@@ -29,6 +29,7 @@ services:
       NITRATE_DB_NAME: nitrate
       NITRATE_DB_USER: root
       NITRATE_DB_PASSWORD:
+      NITRATE_SECRET_KEY: do-not-use-this-key-for-production
 
 volumes:
   nitrate_db_data:

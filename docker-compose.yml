@@ -35,6 +35,7 @@ services:
       NITRATE_DB_PORT: 3306
       NITRATE_DB_NAME: nitrate
       NITRATE_DB_USER: root
+      NITRATE_SECRET_KEY: do-not-use-this-key-for-production
 
 # Run `docker inspect web` to see volume directory on host.
 

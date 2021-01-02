@@ -107,7 +107,9 @@ mkdir -p $static_root
 
 echo "STATIC_ROOT = '${static_root}'" >> src/tcms/settings/common.py
 
-NITRATE_DB_ENGINE=sqlite PYTHONPATH=src/ \
+NITRATE_DB_ENGINE=sqlite \
+PYTHONPATH=src/ \
+NITRATE_SECRET_KEY=key-for-running-tests \
 python3 src/manage.py collectstatic \
 	--settings=tcms.settings.product \
     --noinput

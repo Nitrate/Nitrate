@@ -1,6 +1,6 @@
 # Django settings for product env.
 
-import os
+from django.core.exceptions import ImproperlyConfigured
 
 from tcms.settings.common import *  # noqa
 
@@ -20,6 +20,14 @@ DATABASES = {
         'PORT': environ.get('NITRATE_DB_PORT', ''),
     },
 }
+
+SECRET_KEY = os.environ.get('NITRATE_SECRET_KEY', '')
+
+if not SECRET_KEY:
+    raise ImproperlyConfigured(
+        "Environment variable NITRATE_SECRET_KEY must be set to provide a "
+        "unique secret key to the Django's SECRET_KEY"
+    )
 
 AUTHENTICATION_BACKENDS = (
    'django.contrib.auth.backends.ModelBackend',
