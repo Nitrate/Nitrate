@@ -5,10 +5,9 @@ ARG vcs_url="https://github.com/Nitrate/Nitrate"
 
 LABEL version="${version}"
 LABEL maintainer="Chenxiong Qi <qcxhome@gmail.com>"
-LABEL description="Run Nitrate from a Python virtual environment behind \
-httpd. Authentication is not special. Common username and password \
-authentication is used by default. A default superuser is created, both \
-username and password are 'admin'."
+LABEL description="\
+Nitrate is a new test plan, test run and test case management system, which is \
+written in Python and Django (the Python web framework)."
 LABEL io.github.nitrate.url="https://nitrate.readthedocs.io/"
 LABEL io.github.nitrate.vcs-url="${vcs_url}"
 LABEL io.github.nitrate.issues-url="${vcs_url}/issues/"
@@ -34,6 +33,10 @@ RUN mkdir /nitrate-config
 
 VOLUME ["/var/log/httpd", "/var/nitrate/uploads", "/nitrate-config"]
 
-ENV PYTHONPATH=/nitrate-config
+# Prepare for running entrypoint script
+RUN mkdir /bootstrap
+ADD init.py entrypoint.sh /bootstrap/
+
+ENV PYTHONPATH=/nitrate-config DJANGO_SETTINGS_MODULE=tcms.settings.product
 EXPOSE 80
-CMD ["httpd", "-D", "FOREGROUND"]
+ENTRYPOINT "/bootstrap/entrypoint.sh"
