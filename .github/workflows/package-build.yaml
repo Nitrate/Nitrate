@@ -13,12 +13,12 @@ on:
 
 jobs:
   rpmbuild:
-    name: "f${{ matrix.dist }}"
+    name: Fedora ${{ matrix.dist }}
     runs-on: ubuntu-latest
     container: registry.fedoraproject.org/fedora:${{ matrix.dist }}
     strategy:
       matrix:
-        dist: [32, 33]
+        dist: [32, 33, rawhide]
 
     steps:
       - name: Checkout code
