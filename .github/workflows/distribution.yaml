@@ -56,4 +56,4 @@ jobs:
       run: |
         CONTAINER=docker RELEASE_VERSION=${RELEASE_VERSION} \
         QUAY_USER=${{ secrets.quay_username }} QUAY_PASSWORD=${{ secrets.quay_token }} \
-        make publish-release-image
+        make publish-image

@@ -37,14 +37,11 @@ IMAGE_TAG = $(DOCKER_ORG)/nitrate:$(RELEASE_VERSION)
 
 .PHONY: release-image
 release-image:
-	@$(CONTAINER) build -t $(IMAGE_TAG) \
-		-f ./docker/released/Dockerfile \
-		--build-arg version=$(RELEASE_VERSION) .
+	@cd docker && $(CONTAINER) build -t $(IMAGE_TAG) --build-arg version=$(RELEASE_VERSION) .
 
-.PHONY: dev-image
-dev-image:
-	@$(CONTAINER) build -t $(IMAGE_TAG:$(RELEASE_VERSION)=dev) \
-		-f ./docker/dev/Dockerfile .
+.PHONY: latest-image
+latest-image:
+	@cd docker && $(CONTAINER) build -t $(IMAGE_TAG) --build-arg build_latest=yes .
 
 .PHONY: login-registry
 login-registry:
@@ -55,38 +52,9 @@ login-registry:
 		$(CONTAINER) login quay.io; \
 	fi
 
-.PHONY: publish-release-image
-publish-release-image: login-registry
+.PHONY: publish-image
+publish-image: login-registry
 	$(CONTAINER) push $(IMAGE_TAG)
-
-# By default, released image is pulled from remote registry.
-# For the purpose of testing released image locally, execute target
-# `release-image' manually before this up.
-up-release-container: export IMAGE_VERSION = $(RELEASE_VERSION)
-up-release-container:
-	@docker-compose -f docker-compose.yml up
-
-clear-release-container:
-	@docker-compose -f docker-compose.yml rm
-
-# Depends on dev-image
-up-dev-container:
-	@docker-compose -f docker-compose-dev.yml up
-
-clear-dev-container:
-	@docker-compose -f docker-compose-dev.yml rm
-
-web-container-initconfig:
-	# Make sure web is up from docker-compose.yml already
-	# Database migrations
-	@$(CONTAINER) exec -i -t --env DJANGO_SETTINGS_MODULE=tcms.settings.product nitrate_web_1 \
-		/prodenv/bin/django-admin migrate
-	# Create superuser admin
-	@$(CONTAINER) exec -i -t --env DJANGO_SETTINGS_MODULE=tcms.settings.product nitrate_web_1 \
-		/prodenv/bin/django-admin createsuperuser --username admin --email admin@example.com
-	# Set permissions to default groups
-	@$(CONTAINER) exec -i -t --env DJANGO_SETTINGS_MODULE=tcms.settings.product nitrate_web_1 \
-		/prodenv/bin/django-admin setdefaultperms
 
 ifeq ($(strip $(DB)),)
 DB_ENVS=
