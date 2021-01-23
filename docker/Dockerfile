@@ -4,14 +4,18 @@ ARG version
 ARG vcs_url="https://github.com/Nitrate/Nitrate"
 ARG build_latest=no
 
-LABEL version="${version}"
-LABEL maintainer="Chenxiong Qi <qcxhome@gmail.com>"
-LABEL description="\
+LABEL \
+    name=Nitrate \
+    license=GPLv2+ \
+    version="${version}" \
+    maintainer="Chenxiong Qi <qcxhome@gmail.com>" \
+    vendor= \
+    io.github.nitrate.url="https://nitrate.readthedocs.io/" \
+    io.github.nitrate.vcs-url="${vcs_url}" \
+    io.github.nitrate.issues-url="${vcs_url}/issues/" \
+    description="\
 Nitrate is a new test plan, test run and test case management system, which is \
 written in Python and Django (the Python web framework)."
-LABEL io.github.nitrate.url="https://nitrate.readthedocs.io/"
-LABEL io.github.nitrate.vcs-url="${vcs_url}"
-LABEL io.github.nitrate.issues-url="${vcs_url}/issues/"
 
 RUN dnf update -y && \
     dnf install -y dnf-utils && \
