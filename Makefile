@@ -41,7 +41,9 @@ release-image:
 
 .PHONY: latest-image
 latest-image:
-	@cd docker && $(CONTAINER) build -t $(IMAGE_TAG) --build-arg build_latest=yes .
+	@cd docker && $(CONTAINER) build -t $(IMAGE_TAG) \
+		--build-arg version=$(RELEASE_VERSION) \
+		--build-arg build_latest=yes .
 
 .PHONY: login-registry
 login-registry:
