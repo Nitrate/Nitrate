@@ -1,6 +1,6 @@
 FROM registry.fedoraproject.org/fedora:32
 
-ARG version
+ARG version=latest
 ARG vcs_url="https://github.com/Nitrate/Nitrate"
 ARG build_latest=no
 
