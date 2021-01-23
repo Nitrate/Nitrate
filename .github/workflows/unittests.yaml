@@ -70,7 +70,7 @@ jobs:
           tox -e py$tox_pyver-${{ matrix.django-version }}-${{ matrix.db }}
 
       - name: Report coverage
-        run: coveralls
+        run: coveralls --service=github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COVERALLS_FLAG_NAME: testenv-py${{ matrix.python-version }}-${{ matrix.django-version }}-${{ matrix.db }}
@@ -88,6 +88,6 @@ jobs:
       - name: Finished
         run: |
           python -m pip install --upgrade coveralls
-          coveralls --finish
+          coveralls --finish --service=github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
