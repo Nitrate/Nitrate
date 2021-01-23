@@ -37,7 +37,7 @@ jobs:
     steps:
       - run: sudo apt-get install make
       - uses: actions/checkout@v2
-      - run: make latest-image
+      - run: CONTAINER=docker make latest-image
       - name: Publish image
         run: |
           QUAY_USER=${{ secrets.quay_username }} QUAY_PASSWORD=${{ secrets.quay_token }} \
