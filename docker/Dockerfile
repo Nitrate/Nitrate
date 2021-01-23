@@ -2,6 +2,7 @@ FROM registry.fedoraproject.org/fedora:32
 
 ARG version
 ARG vcs_url="https://github.com/Nitrate/Nitrate"
+ARG build_latest=no
 
 LABEL version="${version}"
 LABEL maintainer="Chenxiong Qi <qcxhome@gmail.com>"
@@ -15,6 +16,9 @@ LABEL io.github.nitrate.issues-url="${vcs_url}/issues/"
 RUN dnf update -y && \
     dnf install -y dnf-utils && \
     dnf copr enable -y cqi/python-nitrate-tcms && \
+    if [[ "${build_latest}" == "yes" ]]; then \
+        dnf copr enable -y cqi/python-nitrate-tcms-testing; \
+    fi && \
     dnf install -y httpd python3-mod_wsgi python3-nitrate-tcms && \
     dnf clean all
 
