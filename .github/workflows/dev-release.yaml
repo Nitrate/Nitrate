@@ -1,4 +1,4 @@
-name: Distribution
+name: Distribute latest image
 
 on:
   push:
