@@ -9,7 +9,7 @@ LABEL \
     license=GPLv2+ \
     version="${version}" \
     maintainer="Chenxiong Qi <qcxhome@gmail.com>" \
-    vendor= \
+    vendor="" \
     io.github.nitrate.url="https://nitrate.readthedocs.io/" \
     io.github.nitrate.vcs-url="${vcs_url}" \
     io.github.nitrate.issues-url="${vcs_url}/issues/" \
