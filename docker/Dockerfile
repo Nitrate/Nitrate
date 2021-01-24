@@ -17,14 +17,20 @@ LABEL \
 Nitrate is a new test plan, test run and test case management system, which is \
 written in Python and Django (the Python web framework)."
 
-RUN dnf update -y && \
-    dnf install -y dnf-utils && \
+RUN dnf --setopt=deltarpm=0 --setopt=install_weak_deps=false --nodocs \
+        install -y dnf-utils httpd python3-mod_wsgi && \
     dnf copr enable -y cqi/python-nitrate-tcms && \
     if [[ "${build_latest}" == "yes" ]]; then \
         dnf copr enable -y cqi/python-nitrate-tcms-testing; \
     fi && \
-    dnf install -y httpd python3-mod_wsgi python3-nitrate-tcms && \
-    dnf clean all
+    dnf --setopt=deltarpm=0 --setopt=install_weak_deps=false --nodocs \
+        install -y python3-nitrate-tcms && \
+    dnf copr remove -y cqi/python-nitrate-tcms && \
+    if [[ "${build_latest}" == "yes" ]]; then \
+        dnf copr remove -y cqi/python-nitrate-tcms-testing; \
+    fi && \
+    dnf clean all && \
+    rm -rf /var/cache/dnf
 
 # Disable event module and enable prefork module
 RUN sed -i -e 's/^#\(LoadModule mpm_prefork_module .\+\.so\)$/\1/' \
