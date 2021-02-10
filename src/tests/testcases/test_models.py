@@ -18,6 +18,7 @@ from tcms.testcases.models import TestCase, TestCasePlan
 from tcms.testcases.models import TestCaseCategory
 from tcms.testcases.models import TestCaseStatus
 from tcms.testcases.models import TestCaseText
+from tcms.testcases.models import TestCaseEmailSettings
 from tests import factories as f, BaseCaseRun, BasePlanCase
 
 
@@ -722,3 +723,44 @@ class TestTextExist(test.TestCase):
 
     def test_text_not_exist(self):
         self.assertFalse(self.case_2.text_exist())
+
+
+class TestDeleteCase(test.TestCase):
+    """
+    Test a or a set of test cases can be deleted correctly with email settings
+    set
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.case_1 = f.TestCaseFactory()
+        cls.case_1.emailing
+        cls.plan = f.TestPlanFactory()
+        cls.case_2 = f.TestCaseFactory(plan=[cls.plan])
+        cls.case_2.emailing
+        cls.case_3 = f.TestCaseFactory(plan=[cls.plan])
+        cls.case_3.emailing
+
+    def test_delete_a_case(self):
+        """Test delete a case by Model.delete()"""
+
+        self.case_1.delete()
+        self.assertFalse(TestCase.objects.filter(pk=self.case_1.pk).exists())
+        self.assertFalse(TestCaseEmailSettings.objects
+                         .filter(pk=self.case_1.emailing.pk)
+                         .exists())
+
+    def test_delete_a_set_of_cases(self):
+        """Test delete a case by QuerySet.delete()"""
+
+        TestCase.objects.filter(plan__in=[self.plan.pk]).delete()
+
+        self.assertFalse(TestCase.objects.filter(pk=self.case_2.pk).exists())
+        self.assertFalse(TestCaseEmailSettings.objects
+                         .filter(pk=self.case_2.emailing.pk)
+                         .exists())
+
+        self.assertFalse(TestCase.objects.filter(pk=self.case_3.pk).exists())
+        self.assertFalse(TestCaseEmailSettings.objects
+                         .filter(pk=self.case_3.emailing.pk)
+                         .exists())

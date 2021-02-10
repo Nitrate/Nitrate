@@ -949,6 +949,7 @@ def _listen():
     # case save/delete listen for email notify
     post_save.connect(case_watchers.on_case_save, TestCase)
     post_delete.connect(case_watchers.on_case_delete, TestCase)
+    post_delete.connect(case_watchers.remove_case_email_settings, TestCase)
     pre_save.connect(case_watchers.pre_save_clean, TestCase)
 
 
