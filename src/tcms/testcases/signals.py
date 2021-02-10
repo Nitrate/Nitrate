@@ -16,6 +16,11 @@ def on_case_delete(sender, instance, **kwags):
         email.email_case_deletion(instance)
 
 
+def remove_case_email_settings(sender, instance, **kwags):
+    from tcms.testcases.models import TestCaseEmailSettings
+    TestCaseEmailSettings.objects.filter(case=instance).delete()
+
+
 def pre_save_clean(sender, **kwargs):
     instance = kwargs['instance']
     instance.clean()
