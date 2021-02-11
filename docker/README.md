@@ -27,7 +27,7 @@ database container:
 
 ```
 docker run --link nitrate_db:mariadb -p 80:80 -e NITRATE_DB_NAME=nitrate \
-    quay.io/nitrate/nitrate:4.9.2
+    quay.io/nitrate/nitrate:4.10
 ```
 
 For launching the whole environment quickly and in an easier way than running
