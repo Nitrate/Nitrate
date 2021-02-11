@@ -11,10 +11,9 @@ from pygit2 import Commit, Repository
 
 def extract_short_log(commit: Commit) -> Tuple[str, None or str]:
     lines = commit.message.split('\n')
-    for line in lines:
-        if line.strip().startswith('Fixes '):
-            return lines[0], line.strip().split()[1]
-    return lines[0], None
+    subject = lines[0]
+    match = re.search(r'\((#\d+)\)$', subject)
+    return subject, match.groups()[0] if match else None
 
 
 def generate_changelog(args: argparse.Namespace):
@@ -33,8 +32,8 @@ def generate_changelog(args: argparse.Namespace):
         subject, issue_key = extract_short_log(commit)
         if issue_key is not None:
             found_issue_keys.append(issue_key)
-        issue_part = f'- `{issue_key}`_ ' if issue_key else ''
-        logs.append(f'* {subject} {issue_part}({commit.author.name})')
+            subject = subject.replace(issue_key, f'`{issue_key}`_')
+        logs.append(f'* {subject}')
 
     logs.append('')
     found_issue_keys.sort()
@@ -77,9 +76,9 @@ with open(f'docs/source/releases/{new_version}.rst', 'w+') as f:
         release_date=datetime.now().strftime('%b %d, %Y')
     ))
 
-with open('docker/released/README.md', 'r') as f:
+with open('docker/README.md', 'r') as f:
     content = f.read()
-with open('docker/released/README.md', 'w+') as f:
+with open('docker/README.md', 'w+') as f:
     f.write(
         re.sub(r'quay.io/nitrate/nitrate:\d+\.\d+(\.\d+)?',
                f'quay.io/nitrate/nitrate:{new_version}',
