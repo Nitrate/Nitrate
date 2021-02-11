@@ -1,0 +1,189 @@
+.. _4.10:
+
+====
+4.10
+====
+
+*Feb 11, 2021 除夕*
+
+I'm pleased to announce a new release 4.10 is available now.
+
+Happy Chinese New Year! 牛年大吉！🎆
+
+Highlights
+==========
+
+Bugfixes
+--------
+
+* The export from a test run is fixed. User is able to export selected case
+  runs (`PR#860`_).
+
+* Fix incorrect URL encode during exporting test case runs to a CSV file
+  (`#868`_).
+
+* Fix wrong Python version in WSGIScriptAlias path (`#872`_)
+
+* Add csrf_token to delete confirmation form (`#892`_)
+
+* Fix removing a case with its email settings together (`PR#893`_)
+
+.. _PR#860: https://github.com/Nitrate/Nitrate/pull/860
+.. _#868: https://github.com/Nitrate/Nitrate/issues/868
+.. _#872: https://github.com/Nitrate/Nitrate/issues/872
+.. _#892: https://github.com/Nitrate/Nitrate/issues/892
+.. _PR#893: https://github.com/Nitrate/Nitrate/pull/893
+
+JavaScript codebase cleanup
+---------------------------
+
+* No frontend feature depends on handlebars.js library now, it is removed from
+  ``static/js/lib/``.
+
+* JavaScript files ``hole.js``, ``validations.js``, ``detetmine_type.js`` and
+  ``scriptaculous-controls.js.patch`` are not used anymore. They are deleted
+  from the codebase.
+
+* Use ``HTMLOrForeignElement.dataset`` to refactor and simplify the code that
+  access ``data-*`` data in a test run page. Meanwhile, the ``data-param`` and
+  ``data-params`` attributes are also renamed to more meaningful word
+  accordingly.  For example to set a direct URL to change a test run's status,
+  the data attribute name is ``data-action-url``.
+
+Dependencies
+------------
+
+* Django 2.1 is dropped. (`#884`_)
+* django-tinymce is upgraded to version `3.2.0`_.
+
+.. _3.2.0: https://github.com/jazzband/django-tinymce/releases/tag/3.2.0
+.. _#884: https://github.com/Nitrate/Nitrate/issues/884
+
+Infrastructure improvements
+---------------------------
+
+* The latest image built based on the latest ``develop`` branch and the release
+  image shares a same Dockerfile to be built. Hence, when you pull the latest
+  image and run locally, you could have a same environment to try Nitrate.
+  Please note that, the latest image does not aim to be used in production.
+
+* The image size is reduced at least 30%.
+
+* SECRET_KEY must be set explicitly now during deployment to your own
+  environment. For the reason why this is required, please refer to Django's
+  `documentation`_ about the ``SECRET_KEY``.
+
+* A new entrypoint is added to the released container image. It is responsbile
+  for initializing the instance on-demand by defining specific environment
+  variables, for example, setting ``NITRATE_MIGRATE_DB`` to run database
+  migration. For full detailed information, please refer to the `image registry`_.
+  These variables are useful for the first run particularly, or make it easy
+  to initialize to run in a non-production environment. Be careful of setting
+  these variables, use them when you really know what you want to do and what
+  will happen.
+
+* Nitrate is able to be fully customized by mounting a container's volume and
+  provide a custom settings Python module.
+
+* New CI workflow is added to build RPM from latest ``develop`` branch, and
+  then build and push latest image to Quay.io registry. (`PR#883`_)
+
+.. _documentation: https://docs.djangoproject.com/en/3.1/ref/settings/#std:setting-SECRET_KEY
+.. _image registry: https://quay.io/repository/nitrate/nitrate
+.. _PR#883: https://github.com/Nitrate/Nitrate/pull/883
+
+Get and install
+===============
+
+From PyPI::
+
+    pip install nitrate-tcms
+
+From image registry::
+
+    docker pull quay.io/nitrate/nitrate:4.10
+
+Refer to :ref:`how_to_run` for details of installation.
+
+Database Migration
+==================
+
+No database migration.
+
+Change Log
+==========
+
+* Fix script make-release
+* Prevent Fedora rawhide from impacting CI
+* Fix removing a case with its email settings together
+* Add csrf_token to delete confirmation form (`#892`_)
+* Reduce image size
+* Quote empty value for vendor label properly
+* Upgrade celery to 5.0.5
+* Drop Django 2.1 (`#884`_)
+* Apply tag latest to latest image by default
+* Add more metadata to image (`#881`_)
+* Fetch all history in order to run git-describe
+* Add missed CONTAINER=docker to make latest-image
+* Give dev-release workflow a meaningful name
+* Use f33 to schedule latest RPM build
+* Fix coveralls 422 Client Error
+* Use single Dockerfile to build latest and release image
+* Test building Fedora rawhide package
+* Massiv update image README
+* Add entrypoint to release image (`#459`_)
+* SECRET_KEY must be set explicitly
+* Add Fedora Copr badge
+* Make it easier to customize the settings (`#815`_)
+* Fix wrong Python version in WSGIScriptAlias path (`#872`_)
+* Cleanup settings
+* Remove one for-loop through case runs for generating a test run report
+* Reuse CaseRunStatusGroupByResult to generate test run report
+* Simplify the code of exporting case runs
+* Fix incorrect log link url encode (`#868`_)
+* JS: use dataset to replace data-params
+* Remove unused templates
+* Add custom template linter and fix detected issues (`#859`_)
+* Fix docstrings using sphnix Python domain syntax
+* Remove unused src/templates/run/common/run_filtered.html
+* Set first request argument properly for test_filter_plans
+* Keep the order by pk during serializing m2m field for XMLRPC
+* JS: use dataset in case, plan, run, environment features
+* JS: use dataset in test plan features
+* Fix test on run statistics
+* Remove duplicate template of tag list in a test run
+* JS: use dataset to refactor setting case run sortkey
+* JS: use dataset to refactor adding and removing cc
+* JS: use dataset to refactor the environment values management
+* JS: use dataset to refactor adding and removing tags to and from a test run
+* JS: use dataset to refactor filtering case runs from run statistics
+* JS: remove duplicate event handlers based on selected case runs
+* JS: use dataset for editing a test run
+* JS: use dataset for exporting case runs
+* JS: use dataset for deleting a test run
+* JS: use dataset for setting a test run status
+* JS: use dataset for deleting issue from a case run
+* Replace 2 spaces with one tab
+* Merge branch 'release-4.9.x' into develop
+* JS: remove detetmine_type.js (`#852`_)
+* JS: remove validations.js (`#853`_)
+* JS: remove hole.js (`#854`_)
+* JS: remove scriptaculous-controls.js.patch (`#855`_)
+* Rewrite add tag dialog (`#848`_)
+* Merge branch 'release-4.9' into develop
+* Release 4.9.1
+* Declare HTML5 in base template
+
+.. _#459: https://github.com/Nitrate/Nitrate/issues/459
+.. _#815: https://github.com/Nitrate/Nitrate/issues/815
+.. _#848: https://github.com/Nitrate/Nitrate/issues/848
+.. _#852: https://github.com/Nitrate/Nitrate/issues/852
+.. _#853: https://github.com/Nitrate/Nitrate/issues/853
+.. _#854: https://github.com/Nitrate/Nitrate/issues/854
+.. _#855: https://github.com/Nitrate/Nitrate/issues/855
+.. _#859: https://github.com/Nitrate/Nitrate/issues/859
+.. _#868: https://github.com/Nitrate/Nitrate/issues/868
+.. _#872: https://github.com/Nitrate/Nitrate/issues/872
+.. _#881: https://github.com/Nitrate/Nitrate/issues/881
+.. _#884: https://github.com/Nitrate/Nitrate/issues/884
+.. _#892: https://github.com/Nitrate/Nitrate/issues/892
