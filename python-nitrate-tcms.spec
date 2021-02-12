@@ -2,6 +2,7 @@
 %global codename nitrate
 %global pkgname %{codename}-tcms
 %global egginfo_name %{codename}_tcms
+%global mainpkg python3-%{pkgname}
 
 Name:           python-%{pkgname}
 Version:        4.10
@@ -19,7 +20,7 @@ Nitrate is a tool for tracking testing being done on a product.
 It is a database-backed web application built on top of Django.
 
 
-%package -n python3-%{pkgname}
+%package -n %{mainpkg}
 Summary:        Test Case Management System
 
 BuildRequires:  python3-devel
@@ -50,21 +51,18 @@ BuildRequires:  python3dist(sqlparse)
 
 Requires:       python3-kobo-django
 Requires:       python3dist(beautifulsoup4)
-Requires:       python3dist(celery)
 Requires:       python3dist(django)
 Requires:       python3dist(django-contrib-comments)
 Requires:       python3dist(django-tinymce)
 Requires:       python3dist(django-uuslug)
 Requires:       python3dist(html2text)
-Requires:       python3dist(kerberos)
 Requires:       python3dist(odfpy)
-Requires:       python3dist(mysqlclient)
-Requires:       python3dist(python-bugzilla)
 Requires:       python3dist(xmltodict)
+
 
 %{?python_provide:%python_provide python3-%{pkgname}}
 
-%description -n python3-%{pkgname}
+%description -n %{mainpkg}
 Nitrate is a tool for tracking testing being done on a product.
 
 It is a database-backed web application built on top of Django.
@@ -130,6 +128,69 @@ cp -r src/templates/* $templates_root
 %files -n %{pkgname}-doc
 %doc docs/target/html
 %license LICENSE
+
+%package -n %{mainpkg}+mysql
+Summary: Metapackage for %{mainpkg} to install dependencies.
+Requires: %{mainpkg} = %{?epoch:%{epoch}:}%{version}-%{release}
+Requires: python3dist(mysqlclient)
+%description -n %{mainpkg}+mysql
+A metapackage for %{mainpkg} to install dependencies for running with MySQL or
+MariaDB. No code is included.
+%files -n %{mainpkg}+mysql
+%ghost %{python3_sitelib}/%{egginfo_name}-%{version}-py*.egg-info/
+
+%package -n %{mainpkg}+pgsql
+Summary: Metapackage for %{mainpkg} to install dependencies.
+Requires: %{mainpkg} = %{?epoch:%{epoch}:}%{version}-%{release}
+Requires: python3dist(psycopg2)
+%description -n %{mainpkg}+pgsql
+A metapackage for %{mainpkg} to install dependencies for running with
+PostgreSQL. No code is included.
+%files -n %{mainpkg}+pgsql
+%ghost %{python3_sitelib}/%{egginfo_name}-%{version}-py*.egg-info/
+
+%package -n %{mainpkg}+async
+Summary: Metapackage for %{mainpkg} to install dependencies.
+Requires: %{mainpkg} = %{?epoch:%{epoch}:}%{version}-%{release}
+Requires: python3dist(celery)
+%description -n %{mainpkg}+async
+A metapackage for %{mainpkg} to install dependencies for running asynchronous
+tasks in Celery. No code is included.
+%files -n %{mainpkg}+async
+%ghost %{python3_sitelib}/%{egginfo_name}-%{version}-py*.egg-info/
+
+%package -n %{mainpkg}+krbauth
+Summary: Metapackage for %{mainpkg} to install dependencies.
+Requires: %{mainpkg} = %{?epoch:%{epoch}:}%{version}-%{release}
+Requires: python3dist(kerberos)
+%description -n %{mainpkg}+krbauth
+A metapackage for %{mainpkg} to install dependencies for the authentication
+backend based on Kerberos username and password. No code is included.
+%files -n %{mainpkg}+krbauth
+%ghost %{python3_sitelib}/%{egginfo_name}-%{version}-py*.egg-info/
+
+%package -n %{mainpkg}+socialauth
+Summary: Metapackage for %{mainpkg} to install dependencies.
+Requires: %{mainpkg} = %{?epoch:%{epoch}:}%{version}-%{release}
+Requires: python3dist(social-auth-core)
+Requires: python3dist(social-auth-app-django) >= 3.4.0
+%description -n %{mainpkg}+socialauth
+A metapackage for %{mainpkg} to install dependencies in order to leverage
+various social-based authentications, e.g. Fedora account system (aka. FAS).
+No code is included.
+For detailed information, please refer to the package python-social-auth-core.
+%files -n %{mainpkg}+socialauth
+%ghost %{python3_sitelib}/%{egginfo_name}-%{version}-py*.egg-info/
+
+%package -n %{mainpkg}+bugzillaauth
+Summary: Metapackage for %{mainpkg} to install dependencies.
+Requires: %{mainpkg} = %{?epoch:%{epoch}:}%{version}-%{release}
+Requires: python3dist(python-bugzilla)
+%description -n %{mainpkg}+bugzillaauth
+A metapackage for %{mainpkg} to install dependencies for the authentication
+backend against a Bugzilla instance. No code is included.
+%files -n %{mainpkg}+bugzillaauth
+%ghost %{python3_sitelib}/%{egginfo_name}-%{version}-py*.egg-info/
 
 %changelog
 * Thu Feb 11 2021 Chenxiong Qi <qcxhome@gmail.com> - 4.10-1
