@@ -20,7 +20,6 @@ install_requires = [
     'django-uuslug',
     'html2text',
     'odfpy >= 0.9.6',
-    'python-bugzilla',
     'xmltodict',
     'kobo'
 ]
@@ -67,9 +66,11 @@ extras_require = {
         'celery == 5.0.5',
     ],
 
-    'multiauth': [
+    'socialauth': [
         'social-auth-app-django == 3.1.0',
-    ]
+    ],
+
+    'bugzillaauth': ['python-bugzilla'],
 }
 
 setup(
