@@ -6,7 +6,7 @@ import logging
 
 import urllib.parse
 from tcms.issuetracker.task import bugzilla_external_track
-from tcms.issuetracker.models import Issue
+from tcms.issuetracker.models import Issue, IssueTracker
 from tcms.issuetracker.models import ProductIssueTrackerRelationship
 
 
@@ -53,7 +53,7 @@ class IssueTrackerService:
         self._model = tracker_model
 
     @property
-    def tracker_model(self):
+    def tracker_model(self) -> IssueTracker:
         """Property to access issue tracker model"""
         return self._model
 
@@ -370,9 +370,12 @@ class RHBugzilla(IssueTrackerService):
         args['cf_build_id'] = case_run.run.build.name
         return args
 
-    def link_external_tracker(self, issue):
+    def link_external_tracker(self, issue: Issue) -> None:
         """Link case to issue's external tracker in remote Bugzilla service"""
-        bugzilla_external_track.delay(self.tracker_model, issue)
+        bugzilla_external_track(self.tracker_model.api_url,
+                                self.tracker_model.credential,
+                                issue.issue_key,
+                                issue.case.pk)
 
 
 class JIRA(IssueTrackerService):

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime, timedelta
-from typing import Dict
+from typing import Dict, Optional
 
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
@@ -151,7 +151,7 @@ class TestRun(TCMSActionModel):
     def get_absolute_url(self):
         return reverse('run-get', args=[self.pk])
 
-    def get_notify_addrs(self):
+    def get_notification_recipients(self):
         """
         Get the all related mails from the run
         """
@@ -231,12 +231,6 @@ class TestRun(TCMSActionModel):
             value=env_value,
         )
         run_env_value.delete()
-
-    def mail(self, template, subject, context, to=[], request=None):
-        from tcms.core.mailto import mailto
-
-        to = self.get_notify_addrs()
-        mailto(template, subject, to, context, request=request)
 
     def get_issues_count(self):
         """
@@ -414,19 +408,36 @@ class TestCaseRun(TCMSActionModel):
         s = TestCaseRunXMLRPCSerializer(model_class=cls, queryset=qs)
         return s.serialize_queryset()
 
-    @classmethod
-    def mail_scene(cls, objects, field=None, value=None, ctype=None,
-                   object_pk=None):
-        tr = objects[0].run
+    @staticmethod
+    def mail_scene(objects: QuerySet,
+                   field: Optional[str] = None,
+                   value=None, ctype=None, object_pk=None):
+        tr: TestRun = objects[0].run
         # scence_templates format:
         # template, subject, context
-        tcrs = objects.select_related()
+        tcrs = (objects
+                .select_related('case', 'assignee')
+                .only('case__summary', 'assignee__username')
+                .order_by('pk'))
+        tcr: TestCaseRun
         scence_templates = {
             'assignee': {
                 'template_name': 'mail/change_case_run_assignee.txt',
-                'subject': 'Assignee of run %s has been changed' % tr.run_id,
-                'recipients': tr.get_notify_addrs(),
-                'context': {'test_run': tr, 'test_case_runs': tcrs},
+                'subject': f'Assignee of run {tr.pk} has been changed',
+                'recipients': tr.get_notification_recipients(),
+                'context': {
+                    'run_id': tr.pk,
+                    'summary': tr.summary,
+                    'full_url': tr.get_full_url(),
+                    'test_case_runs': [
+                        {
+                            'pk': tcr.pk,
+                            'case_summary': tcr.case.summary,
+                            'assignee': tcr.assignee.username,
+                        }
+                        for tcr in tcrs
+                    ]
+                }
             }
         }
 
@@ -552,7 +563,8 @@ class TCMSEnvRunValueMap(models.Model):
 
 # Signals handler
 def _run_listen():
-    post_save.connect(run_watchers.post_run_saved, sender=TestRun)
+    post_save.connect(run_watchers.mail_notify_on_test_run_creation_or_update,
+                      sender=TestRun)
     post_save.connect(run_watchers.post_case_run_saved, sender=TestCaseRun,
                       dispatch_uid='tcms.testruns.models.TestCaseRun')
     post_delete.connect(run_watchers.post_case_run_deleted, sender=TestCaseRun,

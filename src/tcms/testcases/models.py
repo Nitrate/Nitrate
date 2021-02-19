@@ -4,11 +4,12 @@ import logging
 
 from datetime import datetime
 from html2text import html2text
+from typing import List, Optional
 
 from django.conf import settings
 from django.urls import reverse
 from django.db import models
-from django.db.models import Max, ObjectDoesNotExist
+from django.db.models import Max, ObjectDoesNotExist, QuerySet
 from django.db.models.signals import post_save, post_delete, pre_save
 from django.contrib.contenttypes.fields import GenericRelation
 from django.utils.encoding import smart_str
@@ -307,15 +308,26 @@ class TestCase(TCMSActionModel):
     def list_confirmed(cls):
         return cls.list({'case_status__name': 'CONFIRMED'})
 
-    @classmethod
-    def mail_scene(cls, objects, field=None, value=None, ctype=None, object_pk=None):
-        tcs = objects.select_related()
+    @staticmethod
+    def mail_scene(objects: QuerySet,
+                   field: Optional[str] = None,
+                   value=None, ctype=None, object_pk=None):
+        tcs = (objects
+               .select_related('reviewer')
+               .only('summary', 'reviewer__email')
+               .order_by('pk'))
+        tc: TestCase
         scence_templates = {
             'reviewer': {
                 'template_name': 'mail/change_case_reviewer.txt',
-                'subject': 'You have been speicific to be the reviewer of cases',
+                'subject': 'You have been the reviewer of cases',
                 'recipients': list(set(tcs.values_list('reviewer__email', flat=True))),
-                'context': {'test_cases': tcs},
+                'context': {
+                    'test_cases': [
+                        {'pk': tc.pk, 'summary': tc.summary, 'full_url': tc.get_full_url()}
+                        for tc in tcs
+                    ],
+                }
             }
         }
 
@@ -752,6 +764,24 @@ class TestCase(TCMSActionModel):
 
         return dest_case
 
+    def get_notification_recipients(self) -> List[str]:
+        recipients = set()
+        emailing = self.emailing
+        if emailing.auto_to_case_author:
+            recipients.add(self.author.email)
+        if emailing.auto_to_case_tester and self.default_tester:
+            recipients.add(self.default_tester.email)
+        if emailing.auto_to_run_manager:
+            managers = self.case_run.values_list('run__manager__email', flat=True)
+            recipients.update(managers)
+        if emailing.auto_to_run_tester:
+            run_testers = self.case_run.values_list('run__default_tester__email', flat=True)
+            recipients.update(run_testers)
+        if emailing.auto_to_case_run_assignee:
+            assignees = self.case_run.values_list('assignee__email', flat=True)
+            recipients.update(assignees)
+        return [item for item in recipients if item]
+
 
 class TestCaseText(TCMSActionModel):
     case = models.ForeignKey(TestCase, related_name='text', on_delete=models.CASCADE)
@@ -895,7 +925,7 @@ class TestCaseEmailSettings(models.Model):
         for email_addr in emailaddr_list:
             Contact.create(email=email_addr, content_object=self)
 
-    def get_cc_list(self):
+    def get_cc_list(self) -> List[str]:
         """Return the whole CC list"""
 
         return sorted(c.email for c in self.cc_list.all())

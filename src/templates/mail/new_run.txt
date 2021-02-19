@@ -1,28 +1,22 @@
-{% load extra_filters %}A new test run has been created for you.
+A new test run {{ run_id }} has been created for you.
 
 ### Links ###
-Test run: {{ test_run.get_url }}
-{# Test plan: {{ test_run.plan.get_url }} #}
+Test run: {{ full_url }}
 
 ### Basic run information ###
-Summary: {{ test_run.summary }}
+Summary: {{ summary }}
 
-Managed: {{ test_run.manager }}.
-Default tester: {{ test_run.default_tester }}.
+Managed: {{ manager }}.
+Default tester: {{ default_tester }}.
 
-Product: {{ test_run.build.product }}
-Product version: {{ test_run.product_version }}
-Build: {{ test_run.build }}
+Product: {{ product }}
+Product version: {{ product_version }}
+Build: {{ build }}
 
-Estimated time: {{ test_run.estimated_time }}
+Estimated time: {{ estimated_time }}
 
 Notes:
-{{ test_run.notes }}
+{{ notes }}
 
 ### Test plan information ###
-Test Plan: {{ test_run.plan }}
-{% comment %}
-### Test cases information ###
-{% for tcr in test_run.case_run.select_related.all %}* {{ tcr.case.summary }}
-{% endfor %}
-{% endcomment %}
+Test Plan: {{ plan_name }}

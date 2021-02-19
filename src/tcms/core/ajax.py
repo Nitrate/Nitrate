@@ -6,6 +6,7 @@ Most of these functions are use for Ajax.
 """
 import datetime
 import json
+import logging
 import operator
 import sys
 
@@ -39,6 +40,8 @@ from tcms.core.utils import get_string_combinations
 
 post_update = Signal(providing_args=["instances", "kwargs"])
 post_update.connect(run_watchers.post_update_handler)
+
+logger = logging.getLogger(__name__)
 
 
 def check_permission(request, ctype):

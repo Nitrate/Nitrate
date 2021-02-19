@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 
+from django import test
+from django.core import mail
+from django.db.models.signals import post_save
+
+from tcms.testruns.signals import mail_notify_on_test_run_creation_or_update
+from tcms.testruns.models import TestRun
 from tests import factories as f, BaseCaseRun
 
 
@@ -33,3 +39,60 @@ class TestRunGetIssuesCount(BaseCaseRun):
 
     def test_get_issues_count(self):
         self.assertEqual(3, self.test_run.get_issues_count())
+
+
+class TestSendMailNotifyOnTestRunCreation(test.TestCase):
+    """Test mail notification on new test run creation"""
+
+    def setUp(self):
+        mail.outbox = []
+        post_save.connect(mail_notify_on_test_run_creation_or_update,
+                          sender=TestRun)
+
+    def tearDown(self):
+        post_save.disconnect(mail_notify_on_test_run_creation_or_update,
+                             sender=TestRun)
+
+    def test_notify(self):
+        run = f.TestRunFactory()
+
+        out_mail = mail.outbox[0]
+
+        self.assertEqual(run.get_notification_recipients(), out_mail.recipients())
+        self.assertEqual(
+            f'A new test run is created from plan {run.plan.pk}: {run.summary}',
+            out_mail.subject
+        )
+        self.assertIn(f'A new test run {run.pk} has been created for you.',
+                      out_mail.body)
+
+
+class TestSendMailNotifyOnTestRunUpdate(test.TestCase):
+    """Test mail notification on a test run is updated"""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.test_run = f.TestRunFactory()
+
+    def setUp(self):
+        mail.outbox = []
+        post_save.connect(mail_notify_on_test_run_creation_or_update,
+                          sender=TestRun)
+
+    def tearDown(self):
+        post_save.disconnect(mail_notify_on_test_run_creation_or_update,
+                             sender=TestRun)
+
+    def test_notify(self):
+        self.test_run.summary = 'A new test run for mail notify'
+        self.test_run.save()
+
+        out_mail = mail.outbox[0]
+
+        self.assertEqual(self.test_run.get_notification_recipients(),
+                         out_mail.recipients())
+        self.assertEqual(f'Test Run {self.test_run.pk} - '
+                         f'{self.test_run.summary} has been updated',
+                         out_mail.subject)
+        self.assertIn(f'Test run {self.test_run.pk} has been updated for you.',
+                      out_mail.body)

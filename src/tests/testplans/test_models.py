@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
+from textwrap import dedent
 
-from django.conf import settings
+from django.core import mail
 from django import test
-from unittest.mock import patch
 
 from tcms.testplans.helpers import email
 from tcms.testplans.models import _disconnect_signals, TestPlan
@@ -17,6 +17,7 @@ class TestSendEmailOnPlanUpdated(test.TestCase):
     def setUpTestData(cls):
         cls.owner = f.UserFactory(username='owner', email='owner@example.com')
         cls.plan = f.TestPlanFactory(owner=cls.owner, author=cls.owner)
+        cls.plan.current_user = cls.owner
 
         cls.plan.email_settings.auto_to_plan_owner = True
         cls.plan.email_settings.auto_to_plan_author = True
@@ -29,16 +30,27 @@ class TestSendEmailOnPlanUpdated(test.TestCase):
     def tearDown(self):
         _disconnect_signals()
 
-    @patch('tcms.testplans.helpers.email.mailto')
-    def test_send_email(self, mailto):
+    def test_send_email(self):
         self.plan.name = 'Update to send email ...'
         self.plan.save()
 
-        mailto.assert_called_once_with(
-            settings.PLAN_EMAIL_TEMPLATE,
-            f'TestPlan {self.plan.pk} has been updated.',
-            ['owner@example.com'],
-            context={'plan': self.plan})
+        out_mail = mail.outbox[0]
+        self.assertEqual(f'TestPlan {self.plan.pk} has been updated.', out_mail.subject)
+        self.assertEqual(['owner@example.com'], out_mail.recipients())
+
+        body = dedent(f'''\
+            TestPlan [{self.plan.name}] has been updated by {self.owner.username}
+
+            Plan -
+            {self.plan.get_full_url()}
+
+            --
+            Configure mail: {self.plan.get_full_url()}/edit/
+            ------- You are receiving this mail because: -------
+            You have subscribed to the changes of this TestPlan
+            You are related to this TestPlan''')
+
+        self.assertEqual(body, out_mail.body)
 
 
 class TestSendEmailOnPlanDeleted(test.TestCase):
@@ -60,20 +72,28 @@ class TestSendEmailOnPlanDeleted(test.TestCase):
     def tearDown(self):
         _disconnect_signals()
 
-    @patch('tcms.testplans.helpers.email.mailto')
-    def test_send_email(self, mailto):
+    def test_send_email(self):
         plan_id = self.plan.pk
         self.plan.delete()
 
-        mailto.assert_called_once_with(
-            settings.PLAN_DELELE_EMAIL_TEMPLATE,
-            f'TestPlan {plan_id} has been deleted.',
-            ['owner@example.com'],
-            context={'plan': self.plan})
+        out_mail = mail.outbox[0]
+        self.assertEqual(f'TestPlan {plan_id} has been deleted.', out_mail.subject)
+        self.assertEqual(['owner@example.com'], out_mail.recipients())
+
+        body = dedent(f'''\
+            TestPlan [{self.plan.name}] has been deleted.
+
+            --
+
+            ------- You are receiving this mail because: -------
+            You have subscribed to the changes of this TestCase
+            You are related to this TestCase''')
+
+        self.assertEqual(body, out_mail.body)
 
 
 class TestGetPlanNotificationRecipients(test.TestCase):
-    """Test testplans.helpers.email.get_plan_notification_recipients"""
+    """Test TestPlan.get_notification_recipients"""
 
     @classmethod
     def setUpTestData(cls):
@@ -127,14 +147,14 @@ class TestGetPlanNotificationRecipients(test.TestCase):
             es.auto_to_case_default_tester = bool(auto_to_case_default_tester)
             es.save()
 
-            plan = TestPlan.objects.get(pk=self.plan.pk)
+            plan: TestPlan = TestPlan.objects.get(pk=self.plan.pk)
 
             # Since this test contains the case of plan.owner is None,
             # recover the plan's owner here.
             plan.owner = self.plan_owner
             plan.save(update_fields=['owner'])
 
-            recipients = email.get_plan_notification_recipients(plan)
+            recipients = plan.get_notification_recipients()
             self.assertListEqual(expected, sorted(recipients))
 
             # plan's owner could be put into the test data, but that would make
@@ -142,13 +162,12 @@ class TestGetPlanNotificationRecipients(test.TestCase):
             plan.owner = None
             plan.save(update_fields=['owner'])
 
-            recipients = sorted(email.get_plan_notification_recipients(plan))
+            recipients = sorted(plan.get_notification_recipients())
             if self.plan_owner.email in expected:
                 expected.remove(self.plan_owner.email)
             self.assertListEqual(expected, recipients)
 
-    @patch('tcms.testplans.helpers.email.mailto')
-    def test_no_recipients_for_email_plan_update(self, mailto):
+    def test_no_recipients_for_email_plan_update(self):
         es = self.plan.email_settings
         es.auto_to_plan_owner = False
         es.auto_to_plan_author = False
@@ -157,12 +176,12 @@ class TestGetPlanNotificationRecipients(test.TestCase):
         es.save()
 
         plan = TestPlan.objects.get(pk=self.plan.pk)
+        plan.current_user = self.owner
         email.email_plan_update(plan)
 
-        mailto.assert_not_called()
+        self.assertEqual(len(mail.outbox), 0)
 
-    @patch('tcms.testplans.helpers.email.mailto')
-    def test_no_recipients_for_email_plan_deletion(self, mailto):
+    def test_no_recipients_for_email_plan_deletion(self):
         es = self.plan.email_settings
         es.auto_to_plan_owner = False
         es.auto_to_plan_author = False
@@ -171,9 +190,10 @@ class TestGetPlanNotificationRecipients(test.TestCase):
         es.save()
 
         plan = TestPlan.objects.get(pk=self.plan.pk)
+        plan.current_user = self.owner
         email.email_plan_deletion(plan)
 
-        mailto.assert_not_called()
+        self.assertEqual(len(mail.outbox), 0)
 
 
 class TestPlanTreeView(BasePlanCase):

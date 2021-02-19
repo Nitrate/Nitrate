@@ -1,4 +1,4 @@
-TestPlan [{{ plan.name }}] has been deleted.
+TestPlan [{{ plan_name }}] has been deleted.
 
 --
 
