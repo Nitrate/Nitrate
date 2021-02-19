@@ -521,6 +521,21 @@ class TestPlan(TCMSActionModel):
         ancestor_ids = self.get_ancestor_ids()
         return TestPlan.objects.filter(pk__in=ancestor_ids)
 
+    def get_notification_recipients(self):
+        recipients = set()
+        emailing = self.email_settings
+        if emailing.auto_to_plan_owner and self.owner:
+            recipients.add(self.owner.email)
+        if emailing.auto_to_plan_author:
+            recipients.add(self.author.email)
+        if emailing.auto_to_case_owner:
+            case_authors = self.case.values_list('author__email', flat=True)
+            recipients.update(case_authors)
+        if emailing.auto_to_case_default_tester:
+            case_testers = self.case.values_list('default_tester__email', flat=True)
+            recipients.update(case_testers)
+        return [r for r in recipients if r]
+
 
 class TestPlanText(TCMSActionModel):
     plan = models.ForeignKey(TestPlan, related_name='text', on_delete=models.CASCADE)

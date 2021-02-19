@@ -8,6 +8,8 @@ import re
 import enum
 
 from datetime import datetime
+from typing import Dict
+
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxLengthValidator, RegexValidator
 from django.db import models
@@ -262,7 +264,7 @@ class IssueTracker(TCMSActionModel):
         return cls.objects.filter(**criteria)
 
     @property
-    def credential(self):
+    def credential(self) -> Dict[str, str]:
         """Get login credential
 
         The returned credential could contain different login credential data

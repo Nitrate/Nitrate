@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from datetime import timedelta
+from textwrap import dedent
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
@@ -244,18 +245,18 @@ class TestSendMailOnCaseIsUpdated(BasePlanCase):
         self.case.summary = 'New summary for running test'
         self.case.save()
 
-        expected_mail_body = '''TestCase [{0}] has been updated by {1}
+        full_url = self.case.get_full_url()
+        expected_mail_body = dedent(f'''\
+            TestCase [{self.case.summary}] has been updated by editor
 
-Case -
-{2}?#log
+            Case -
+            {full_url}?#log
 
---
-Configure mail: {2}/edit/
-------- You are receiving this mail because: -------
-You have subscribed to the changes of this TestCase
-You are related to this TestCase'''.format(self.case.summary,
-                                           'editor',
-                                           self.case.get_full_url())
+            --
+            Configure mail: {full_url}/edit/
+            ------- You are receiving this mail because: -------
+            You have subscribed to the changes of this TestCase
+            You are related to this TestCase''')
 
         self.assertEqual(1, len(mail.outbox))
         self.assertEqual(expected_mail_body, mail.outbox[0].body)

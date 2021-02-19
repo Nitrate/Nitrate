@@ -1,4 +1,4 @@
-Test Case [{{ case.summary }}] has been deleted.
+Test Case [{{ summary }}] has been deleted.
 
 --
 
