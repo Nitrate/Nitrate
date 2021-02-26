@@ -25,7 +25,7 @@ class IssueTrackerAdmin(admin.ModelAdmin):
         (None, {
             'fields': ('enabled', 'tracker_product', 'name', 'description',
                        'service_url', 'api_url', 'issue_url_fmt',
-                       'validate_regex'),
+                       'validate_regex', 'issues_display_url_fmt'),
         }),
         ('Options', {
             'classes': ('wide',),
@@ -56,6 +56,7 @@ class IssueTrackerAdmin(admin.ModelAdmin):
         fields['issue_report_params'].widget = forms.Textarea(attrs={'cols': 60})
         fields['issue_report_templ'].widget = forms.Textarea(attrs={'cols': 60})
         fields['issue_report_endpoint'].widget = forms.TextInput(attrs={'size': 30})
+        fields['issues_display_url_fmt'].widget = forms.TextInput(attrs={'size': 50})
         return form
 
 
