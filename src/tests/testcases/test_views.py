@@ -1829,11 +1829,8 @@ class TestIssueManagement(BaseCaseRun):
         })
 
         self.assert400(resp)
-
-        self.assertIn(
-            f'Issue key abcdef1234 is in wrong format for issue tracker "{self.issue_tracker.name}"',
-            resp.json()['message'][0]
-        )
+        self.assertIn(f'Issue key abcdef1234 is in wrong format.',
+                      resp.json()['message'][0])
 
     def test_remove_an_issue(self):
         user_should_have_perm(self.tester, self.perm_delete_issue)

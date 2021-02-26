@@ -14,6 +14,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MaxLengthValidator, RegexValidator
 from django.db import models
 from django.db.models import Count
+from django.utils.translation import gettext_lazy as _
 
 from tcms.core.models import TCMSActionModel
 from tcms.issuetracker import validators
@@ -57,7 +58,8 @@ class IssueTrackerProduct(TCMSActionModel):
     name = models.CharField(
         max_length=30,
         unique=True,
-        help_text='Name of issue tracker product.')
+        help_text=_('Name of the issue tracker product.'),
+    )
 
     class Meta:
         db_table = 'issue_tracker_products'
@@ -78,29 +80,35 @@ class ProductIssueTrackerRelationship(TCMSActionModel):
     associated with a product added to Nitrate.
     """
 
-    product = models.ForeignKey('management.Product', on_delete=models.CASCADE)
-    issue_tracker = models.ForeignKey('issuetracker.IssueTracker', on_delete=models.CASCADE)
+    product = models.ForeignKey(
+        'management.Product',
+        on_delete=models.CASCADE,
+        help_text=_('Select which project the issue tracker is associated with.'),
+    )
+    issue_tracker = models.ForeignKey(
+        'issuetracker.IssueTracker',
+        on_delete=models.CASCADE,
+        help_text=_('Select an issue tracker to be associated with a product.'),
+    )
 
     alias = models.CharField(
-        max_length=50,
-        null=True,
-        blank=True,
-        help_text='The corresponding product name in issue tracker.')
+        max_length=50, null=True, blank=True,
+        help_text=_('The corresponding product name in issue tracker.'),
+    )
 
     namespace = models.CharField(
-        max_length=30,
-        null=True,
-        blank=True,
-        help_text='A name which the issues reported for product should '
-                  'belong to in issue tracker. Different issue tracker '
-                  'services will use this namespace to construct '
-                  'specific URL for issue report. Namespace could be '
-                  'empty, if product is not under a namespace in issue '
-                  'tracker, or is the top level product with its own '
-                  'components. For example, in a Bugzilla instance, product '
-                  'A is a component of a product X, namespace should be the '
-                  'name of X.',
-        validators=[MaxLengthValidator(30)])
+        max_length=30, null=True, blank=True,
+        help_text=_(
+            'A name which the issues reported for product should belong to in '
+            'issue tracker. Different issue tracker services will use this '
+            'namespace to construct specific URL for issue report. Namespace '
+            'could be empty, if product is not under a namespace in issue '
+            'tracker, or is the top level product with its own components. '
+            'For example, in a Bugzilla instance, product A is a component of '
+            'a product X, namespace should be the name of X.',
+        ),
+        validators=[MaxLengthValidator(30)],
+    )
 
     def __str__(self):
         return f'Rel {self.product} - {self.issue_tracker}'
@@ -108,6 +116,7 @@ class ProductIssueTrackerRelationship(TCMSActionModel):
     class Meta:
         db_table = 'product_issue_tracker_relationship'
         unique_together = ('product', 'issue_tracker')
+        verbose_name = _('Relationship between Issue Tracker and Product')
 
 
 class IssueTracker(TCMSActionModel):
@@ -116,114 +125,161 @@ class IssueTracker(TCMSActionModel):
     enabled = models.BooleanField(
         default=True,
         db_index=True,
-        help_text='Whether to enable this issue tracker in system wide.')
+        help_text=_(
+            'Whether to enable this issue tracker in system wide. Default: true.'
+        ),
+    )
     name = models.CharField(
         max_length=50,
         unique=True,
-        help_text='Issue tracker name.',
+        help_text=_('Issue tracker name.'),
         validators=[
-            MaxLengthValidator(50, message='Issue tracker name is too long.'),
+            MaxLengthValidator(50, message=_(
+                'Issue tracker name is too long. 50 characters at most.'
+            )),
             RegexValidator(
                 r'^[a-zA-Z0-9 ]+$',
-                message='Name contains invalid characters. Name could contain'
-                        ' lower and upper case letters, digit or space.')
-        ]
+                message=_(
+                    'Name contains invalid characters. Name could contain '
+                    'lower and upper case letters, digit or space.'
+                )
+            )
+        ],
     )
     description = models.CharField(
         max_length=255,
         blank=True,
         default='',
-        help_text='A short description to this issue tracker.')
+        help_text=_('A short description to this issue tracker. '
+                    '255 characters at most.'),
+    )
     service_url = models.URLField(
-        default='',
-        blank=True,
-        help_text='URL of this issue tracker.')
+        default='', blank=True, verbose_name=_('Service URL'),
+        help_text=_(
+            'URL of this issue tracker. Example: https://issues.example.com/. '
+            'The trailing slash "/" is optional.',
+        ),
+    )
     api_url = models.URLField(
-        default='',
-        blank=True,
-        help_text='API URL of this issue tracker.')
+        default='', blank=True, verbose_name=_('API URL'),
+        help_text=_(
+            'API URL of this issue tracker, that is used by the corresponding '
+            'service object implementation to complete specific action. A '
+            'typical use case would be, a service object of a Bugzilla may use'
+            ' this URL to associate a case with a specific bug as an external '
+            'link. Example: https://bz.example.com/xmlrpc.cgi'
+        ),
+    )
 
     issues_display_url_fmt = models.URLField(
-        help_text='URL format to construct a display URL used to open in Web '
-                  'browse to display issues. For example, '
-                  'http://bugzilla.example.com/buglist.cgi?bug_id={issue_keys}'
+        verbose_name=_('Issues Display URL Format'),
+        help_text=_(
+            'URL format to construct a display URL used to open in Web browse '
+            'to display issues. Example: http://bugzilla.example.com/'
+            'buglist.cgi?bug_id={issue_key}'
+        ),
     )
 
     issue_url_fmt = models.URLField(
-        help_text='Formatter string used to construct a specific issue\'s URL.'
-                  ' Format arguments: issue_key, product. For example,'
-                  ' https://bugzilla.domain/show_bug.cgi?id=%(issue_key)s')
+        verbose_name=_('Issue URL Format'),
+        help_text=_(
+            'Formatter string used to construct a specific issue\'s URL. '
+            'Format arguments: issue_key, product. Example: '
+            'https://bugzilla.domain/show_bug.cgi?id=%(issue_key)s'
+        ),
+    )
 
     validate_regex = models.CharField(
         max_length=100,
-        help_text='Regular expression in Python Regular Expression syntax, '
-                  'which is used to validate issue ID. This regex will be '
-                  'used in both JavaScript code and Python code. So, please '
-                  'write it carefully.',
-        validators=[validators.validate_reg_exp])
+        help_text=_(
+            'Regular expression in Python Regular Expression syntax, which is '
+            'used to validate issue ID. This regex will be used in both '
+            'JavaScript code and Python code. So, please write it carefully.'
+        ),
+        validators=[validators.validate_reg_exp],
+    )
 
     allow_add_case_to_issue = models.BooleanField(
         default=False,
-        help_text='Allow to add associated test case link to issue.')
+        help_text=_('Allow to add associated test case link to issue.'),
+    )
 
     credential_type = models.CharField(
         max_length=10,
         choices=[(item.name, item.value) for item in list(CredentialTypes)],
-        help_text='Type of credential')
+        help_text=_(
+            'Select a credential type. The corresponding service '
+            'implementation will use it to log into the remote issue tracker '
+            'service. Please remember to create a specific user/pwd or token '
+            'credential if you select one of these two types.'
+        ),
+    )
 
     tracker_product = models.ForeignKey(
         IssueTrackerProduct,
         related_name='tracker_instances',
-        on_delete=models.CASCADE)
+        on_delete=models.CASCADE,
+        verbose_name=_('Tracker Product'),
+    )
 
     products = models.ManyToManyField(
         'management.Product',
         through=ProductIssueTrackerRelationship,
-        related_name='issue_trackers')
+        related_name='issue_trackers',
+    )
 
     # Field for loading corresponding Python class to do specific actions
     class_path = models.CharField(
         max_length=100,
         default='tcms.issuetracker.services.IssueTrackerService',
-        help_text='Importable path to the implementation for this issue '
-                  'tracker. Default is '
-                  '<code>tcms.issuetracker.models.IssueTrackerService</code>, '
-                  'which provides basic functionalities for general purpose. '
-                  'Set to a custom path for specific class inherited from '
-                  '<code>IssueTrackerService</code>',
-        validators=[validators.validate_class_path])
+        verbose_name=_('Custom service class path'),
+        help_text=_(
+            'Importable path to the implementation for this issue tracker. '
+            'Default is <code>tcms.issuetracker.models.IssueTrackerService</code>, '
+            'which provides basic functionalities for general purpose. '
+            'Set to a custom path for specific service implementation '
+            'inherited from <code>IssueTrackerService</code>'
+        ),
+        validators=[validators.validate_class_path],
+    )
 
     # Fields for implementing filing issue in an issue tracker.
 
     issue_report_endpoint = models.CharField(
-        max_length=50,
-        help_text='The endpoint of this issue tracker service to file an '
-                  'issue.')
+        max_length=50, verbose_name=_('Issue Report Endpoint'),
+        help_text=_(
+            'The endpoint for filing an issue. Used in the serivce '
+            'implementation to construct final full URL. Example: '
+            '/secure/CreateIssue!default.jspa'
+        ),
+    )
 
     issue_report_params = models.TextField(
-        max_length=255,
-        blank=True,
-        default='',
-        help_text='Parameters used to format URL for reporting issue. '
-                  'Each line is a <code>key:value</code> pair of parameters. '
-                  'Nitrate provides a few parameters to format URL and '
-                  'additional parameters could be provided by system '
-                  'administrator as well.',
-        validators=[validators.validate_issue_report_params])
+        max_length=255, blank=True, default='',
+        verbose_name=_('Issue Report Parameters'),
+        help_text=_(
+            'Parameters used to format URL for reporting issue. Each line is a'
+            ' <code>key:value</code> pair of parameters. Nitrate provides a '
+            'few parameters to format URL and additional parameters could be '
+            'provided by system administrator as well.'
+        ),
+        validators=[validators.validate_issue_report_params],
+    )
 
     issue_report_templ = models.TextField(
-        max_length=255,
-        blank=True,
-        default='',
-        help_text='The issue content template, which could be arbitrary text '
-                  'with format arguments. Nitrate provides these format '
-                  'arguments: <code>TestBuild.name</code>, '
-                  '<code>setup</code>, <code>action</code> and '
-                  '<code>effect</code>. The text is formatted with keyward '
-                  'arguments.')
+        max_length=255, blank=True, default='',
+        verbose_name=_('Issue Report Template'),
+        help_text=_(
+            'The issue content template, which could be arbitrary text with '
+            'format arguments. Nitrate provides these format arguments: '
+            '<code>TestBuild.name</code>, <code>setup</code>, <code>action</code> '
+            'and <code>effect</code>. The text is formatted with keyward arguments.'
+        )
+    )
 
     class Meta:
         db_table = 'issue_trackers'
+        verbose_name = _('Issue Tracker')
 
     def __str__(self):
         return self.name
@@ -277,8 +333,8 @@ class IssueTracker(TCMSActionModel):
             cred = UserPwdCredential.objects.filter(issue_tracker=self).first()
             if cred is None:
                 raise ValueError(
-                    'Username/password credential is not set for issue tracker {}.'
-                    .format(self.name))
+                    f'Username/password credential is not set for issue tracker {self.name}.'
+                )
             else:
                 if cred.secret_file:
                     content = cred.read_secret_file(cred.secret_file)
@@ -293,8 +349,9 @@ class IssueTracker(TCMSActionModel):
         elif self.credential_type == CredentialTypes.Token.name:
             cred = TokenCredential.objects.filter(issue_tracker=self).first()
             if cred is None:
-                raise ValueError('Token credential is not set for issue tracker {}.'
-                                 .format(self.name))
+                raise ValueError(
+                    f'Token credential is not set for issue tracker {self.name}.'
+                )
             else:
                 if cred.secret_file:
                     content = cred.read_secret_file(cred.secret_file)
@@ -307,11 +364,12 @@ class Credential(TCMSActionModel):
     """Base class providing general functions for credentials"""
 
     secret_file = models.CharField(
-        max_length=100,
-        null=True,
-        blank=True,
-        help_text='Alternative secret file in INI format including username '
-                  'and password.')
+        max_length=100, null=True, blank=True,
+        help_text=_(
+            'An absolute path to an alternative secret file to provide the '
+            'credential. The file must be in INI format.'
+        )
+    )
 
     class Meta:
         abstract = True
@@ -331,44 +389,47 @@ class Credential(TCMSActionModel):
         """
         if not os.access(filename, os.F_OK):
             raise ValidationError({
-                'secret_file': 'Secret file {} does not exist.'
-                .format(filename)
+                'secret_file': 'Secret file {} does not exist.'.format(filename)
             })
         if not os.path.isfile(filename):
-            raise ValidationError({
-                'secret_file': f'{filename} is not a file.'
-            })
+            raise ValidationError({'secret_file': f'{filename} is not a file.'})
         if not os.access(filename, os.R_OK):
             raise ValidationError({
-                'secret_file': 'Secret file {} cannot be read.'
-                .format(filename)
+                'secret_file': 'Secret file {} cannot be read.'.format(filename)
             })
 
         config = self.read_secret_file(filename)
         config_section = 'issuetracker'
         if not config.has_section(config_section):
+            # Translators: validation error is shown in Admin WebUI
             raise ValidationError({
-                'secret_file': 'Secret file does not have section "issuetracker".'
+                'secret_file': _('Secret file does not have section "issuetracker".'),
             })
         if isinstance(self, TokenCredential):
             if not config.has_option(config_section, 'token'):
+                # Translators: validation error is shown in Admin WebUI
                 raise ValidationError({
-                    'secret_file': 'Token is not set in secret file.'
+                    'secret_file': _('Token is not set in secret file.'),
                 })
             if config.has_option(config_section, 'until'):
                 expiration_date = parse_token_expiration_date(
                     config.get(config_section, 'until'))
                 today = datetime.utcnow()
                 if expiration_date < today:
+                    # Translators: validation error is shown in Admin WebUI
                     raise ValidationError({
-                        'secret_file': 'Is token expired? The expiration date is '
-                                       'older than today.'
+                        'secret_file': _(
+                            'Is token expired? The expiration date is older than today.'
+                        ),
                     })
         if (isinstance(self, UserPwdCredential) and
                 not (config.has_option('issuetracker', 'username') and
                      config.has_option('issuetracker', 'password'))):
+            # Translators: validation error is shown in Admin WebUI
             raise ValidationError({
-                'secret_file': 'Neither Username nor password is set in secrete file.'
+                'secret_file': _(
+                    'Neither Username nor password is set in secrete file.'
+                ),
             })
 
     def clean(self):
@@ -382,28 +443,26 @@ class Credential(TCMSActionModel):
         cred_type = self.issue_tracker.credential_type
 
         if cred_type == CredentialTypes.NoNeed.name:
+            cred_type = CredentialTypes[cred_type].value
             raise ValidationError({
-                'issue_tracker': 'Is credential really required? '
-                                 'Credential type "{}" is selected.'.format(
-                                     CredentialTypes[cred_type].value)
+                'issue_tracker': f'Is credential really required? '
+                                 f'Credential type "{cred_type}" is selected.'
             })
 
         if (isinstance(self, UserPwdCredential) and
                 cred_type != CredentialTypes.UserPwd.name):
+            cred_type = CredentialTypes[cred_type].value
             raise ValidationError({
-                'issue_tracker':
-                    'Cannot create a username/password credential. '
-                    'Credential type "{}" is selected.'.format(
-                        CredentialTypes[cred_type].value)
+                'issue_tracker': f'Cannot create a username/password credential. '
+                                 f'Credential type "{cred_type}" is selected.'
             })
 
         if (isinstance(self, TokenCredential) and
                 cred_type != CredentialTypes.Token.name):
+            cred_type = CredentialTypes[cred_type].value
             raise ValidationError({
-                'issue_tracker':
-                    'Cannot create a token based credential. '
-                    'Credential type "{}" is selected.'.format(
-                        CredentialTypes[cred_type].value)
+                'issue_tracker': f'Cannot create a token based credential. '
+                                 f'Credential type "{cred_type}" is selected.'
             })
 
         if self.secret_file:
@@ -414,27 +473,30 @@ class UserPwdCredential(Credential):
     """Username/password credential for logging into issue tracker"""
 
     username = models.CharField(
-        max_length=100,
-        null=True,
-        blank=True,
-        help_text='Username to log into remote issue tracker.')
+        max_length=100, null=True, blank=True,
+        help_text=_('Username used to log into remote issue tracker service.'),
+    )
     password = models.CharField(
-        max_length=255,
-        null=True,
-        blank=True,
-        help_text='Password used with username together to log into remote '
-                  'issue tracker.')
+        max_length=255, null=True, blank=True,
+        help_text=_(
+            'Password used with username together to log into remote issue '
+            'tracker service.'
+        ),
+    )
 
     issue_tracker = models.OneToOneField(
         IssueTracker,
         related_name='user_pwd_credential',
-        on_delete=models.CASCADE)
+        on_delete=models.CASCADE,
+        help_text=_('The issue tracker this credential is applied to.'),
+    )
 
     def __str__(self):
         return 'Username/Password Credential'
 
     class Meta:
         db_table = 'issue_tracker_user_pwd_credential'
+        verbose_name = _('Username/Password Credential')
 
     def clean(self):
         """Validate username/password credential"""
@@ -442,50 +504,56 @@ class UserPwdCredential(Credential):
 
         if not self.secret_file and not self.username and not self.password:
             raise ValidationError({
-                'username': 'Username and password are not set yet. '
-                            'Please consider setting them in database or '
-                            'a secret file in filesystem.'
+                'username': _(
+                    'Username and password are not set yet. Please consider '
+                    'setting them in database or a secret file in filesystem.'
+                ),
             })
 
         if self.username and self.secret_file:
             raise ValidationError({
-                'username': 'Both username and secret file are specified. '
-                            'Please consider using one of them.'
+                'username': _(
+                    'Both username and secret file are specified. '
+                    'Please consider using one of them.'
+                ),
             })
 
         if self.username or self.password:
             if not self.username:
-                raise ValidationError({'username': 'Missing username.'})
+                raise ValidationError({'username': _('Missing username.')})
             if not self.password:
-                raise ValidationError({'password': 'Missing password.'})
+                raise ValidationError({'password': _('Missing password.')})
 
 
 class TokenCredential(Credential):
     """Token based authentication for logging into issue tracker"""
 
     token = models.CharField(
-        max_length=255,
-        null=True,
-        blank=True,
-        help_text='Token used to log into remote issue tracker.')
+        max_length=255, null=True, blank=True,
+        help_text=_('Token used to log into remote issue tracker.'),
+    )
     until = models.DateField(
-        null=True,
-        blank=True,
-        help_text='Optional expiration date. This is useful for Nitrate to '
-                  'determine whether the token has been expired before '
-                  'request. If omitted, request will be sent without checking '
-                  'the expiration date.')
+        null=True, blank=True,
+        help_text=_(
+            'Optional expiration date. This is useful for Nitrate to determine'
+            ' whether the token has been expired before request. If omitted, '
+            'request will be sent without checking the expiration date.'
+        ),
+    )
 
     issue_tracker = models.OneToOneField(
         IssueTracker,
         related_name='token_credential',
-        on_delete=models.CASCADE)
+        on_delete=models.CASCADE,
+        help_text=_('The issue tracker this credential is applied to.'),
+    )
 
     def __str__(self):
         return 'Token credential'
 
     class Meta:
         db_table = 'issue_tracker_token_credential'
+        verbose_name = _('Token Credential')
 
     def clean(self):
         """Validate token credential"""
@@ -493,20 +561,24 @@ class TokenCredential(Credential):
 
         if not self.secret_file and not self.token:
             raise ValidationError({
-                'token': 'Token is not set yet. A token can be set in database'
-                         ' or a secret file in filesystem.'
+                'token': _(
+                    'Token is not set yet. A token can be set in database or a'
+                    ' secret file in filesystem.'
+                ),
             })
 
         if self.token and self.secret_file:
             raise ValidationError({
-                'token': 'Token is set in database as well as a secret file. '
-                         'Please consider using one of them.'
+                'token': _(
+                    'Token is set in database as well as a secret file. '
+                    'Please consider using one of them.'
+                ),
             })
 
         if self.until:
             today = datetime.utcnow()
             if self.until < today:
-                raise ValidationError('Expiration date is prior to today.')
+                raise ValidationError(_('Expiration date is prior to today.'))
 
 
 class Issue(TCMSActionModel):
@@ -519,50 +591,47 @@ class Issue(TCMSActionModel):
 
     issue_key = models.CharField(
         max_length=50,
-        help_text='Actual issue ID corresponding issue tracker. Different '
-                  'issue tracker may have issue IDs in different type or '
-                  'format. For example, in Bugzilla, it could be an integer, '
-                  'or in JIRA, it could be a string in format '
-                  'PROJECTNAME-number, e.g. PROJECT-1000.',
+        help_text=_(
+            'Actual issue ID corresponding issue tracker. Different issue '
+            'tracker may have issue IDs in different type or format. For '
+            'example, in Bugzilla, it could be an integer, or in JIRA, it '
+            'could be a string in format PROJECTNAME-number, e.g. PROJECT-1.'
+        ),
         validators=[
-            MaxLengthValidator(
-                50,
-                'Issue key has too many characters. '
-                'It should have 50 characters at most.')
+            MaxLengthValidator(50, _(
+                'Issue key has too many characters. 50 characters at most.'
+            ))
         ])
 
     summary = models.CharField(
-        max_length=255,
-        null=True,
-        blank=True,
-        help_text='Summary of issue.')
+        max_length=255, null=True, blank=True, help_text=_('Summary of issue.')
+    )
 
     description = models.TextField(
-        null=True,
-        blank=True,
-        help_text='Description of issue.')
+        null=True, blank=True, help_text=_('Description of issue.')
+    )
 
     tracker = models.ForeignKey(
         IssueTracker,
         related_name='issues',
-        help_text='Which issue tracker this issue belongs to.',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        help_text=_('Which issue tracker this issue belongs to.'),
     )
     case = models.ForeignKey(
         'testcases.TestCase',
         related_name='issues',
         help_text='A test case this issue is associated with.',
         error_messages={
-            'required': 'Case is missed.'
+            'required': _('Case is missed.'),
         },
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
     )
     case_run = models.ForeignKey(
         'testruns.TestCaseRun',
         null=True,
         blank=True,
         related_name='issues',
-        help_text='A test case run this issue is associated with optionally.',
+        help_text=_('Optionally associate this issue to this case run.'),
         on_delete=models.SET_NULL
     )
 
@@ -588,9 +657,7 @@ class Issue(TCMSActionModel):
         issue_key_re = re.compile(self.tracker.validate_regex)
         if not issue_key_re.match(self.issue_key):
             raise ValidationError({
-                'issue_key':
-                    'Issue key {} is in wrong format for issue tracker "{}".'
-                    .format(self.issue_key, self.tracker)
+                'issue_key': f'Issue key {self.issue_key} is in wrong format.'
             })
 
     @staticmethod
