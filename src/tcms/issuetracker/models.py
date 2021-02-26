@@ -67,11 +67,6 @@ class IssueTrackerProduct(TCMSActionModel):
     def __str__(self):
         return self.name
 
-    def import_service_class(self):
-        module_path, _, class_name = importlib.import_module(self.klass_path)
-        module = importlib.import_module(module_path)
-        return getattr(module, class_name)
-
 
 class ProductIssueTrackerRelationship(TCMSActionModel):
     """Many-to-many relationship between Product and IssueTracker
