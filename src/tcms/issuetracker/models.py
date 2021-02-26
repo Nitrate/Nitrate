@@ -167,11 +167,12 @@ class IssueTracker(TCMSActionModel):
     )
 
     issues_display_url_fmt = models.URLField(
+        default='', blank=True,
         verbose_name=_('Issues Display URL Format'),
         help_text=_(
             'URL format to construct a display URL used to open in Web browse '
-            'to display issues. Example: http://bugzilla.example.com/'
-            'buglist.cgi?bug_id={issue_key}'
+            'to display issues. This should probably only apply to Bugzilla. '
+            'Example: http://bz.example.com/buglist.cgi?bug_id={issue_keys}'
         ),
     )
 
