@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
+
+import logging
+import warnings
 from typing import Dict
 
-import bugzilla
-import warnings
-
 from tcms.core.task import Task
+
+logger = logging.getLogger(__name__)
 
 
 @Task
@@ -13,6 +15,12 @@ def bugzilla_external_track(tracker_api_url: str,
                             issue_key: str,
                             case_id: int):
     """Link issue to a bug's external tracker"""
+    try:
+        import bugzilla
+    except ModuleNotFoundError:
+        logger.error('python-bugzilla is not installed. '
+                     'Skip adding external link to a bug.')
+        return
     try:
         bz = bugzilla.Bugzilla(tracker_api_url,
                                user=tracker_credential['username'],

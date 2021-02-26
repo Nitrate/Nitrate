@@ -182,14 +182,15 @@ For detailed information, please refer to the package python-social-auth-core.
 %files -n %{mainpkg}+socialauth
 %ghost %{python3_sitelib}/%{egginfo_name}-%{version}-py*.egg-info/
 
-%package -n %{mainpkg}+bugzillaauth
+%package -n %{mainpkg}+bugzilla
 Summary: Metapackage for %{mainpkg} to install dependencies.
 Requires: %{mainpkg} = %{?epoch:%{epoch}:}%{version}-%{release}
 Requires: python3dist(python-bugzilla)
-%description -n %{mainpkg}+bugzillaauth
+%description -n %{mainpkg}+bugzilla
 A metapackage for %{mainpkg} to install dependencies for the authentication
-backend against a Bugzilla instance. No code is included.
-%files -n %{mainpkg}+bugzillaauth
+backend against a Bugzilla instance, or the issue tracker working with a remote
+Bugzilla service. No code is included.
+%files -n %{mainpkg}+bugzilla
 %ghost %{python3_sitelib}/%{egginfo_name}-%{version}-py*.egg-info/
 
 %changelog
