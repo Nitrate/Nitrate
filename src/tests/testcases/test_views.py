@@ -1829,7 +1829,7 @@ class TestIssueManagement(BaseCaseRun):
         })
 
         self.assert400(resp)
-        self.assertIn(f'Issue key abcdef1234 is in wrong format.',
+        self.assertIn('Issue key abcdef1234 is in wrong format.',
                       resp.json()['message'][0])
 
     def test_remove_an_issue(self):
