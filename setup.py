@@ -70,7 +70,9 @@ extras_require = {
         'social-auth-app-django == 3.1.0',
     ],
 
-    'bugzillaauth': ['python-bugzilla'],
+    # Used for authentication backend based on bugzilla and the asynchronous
+    # task adding using bugzilla.
+    'bugzilla': ['python-bugzilla'],
 }
 
 setup(
