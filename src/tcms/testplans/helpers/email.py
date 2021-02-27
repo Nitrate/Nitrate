@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from django.conf import settings
 from tcms.core.mailto import mail_notify
 
 
 def email_plan_update(plan):
     mail_notify(plan,
-                settings.PLAN_EMAIL_TEMPLATE,
+                'mail/change_plan.txt',
                 f'TestPlan {plan.pk} has been updated.',
                 {
                     'plan_name': plan.name,
@@ -17,6 +16,6 @@ def email_plan_update(plan):
 
 def email_plan_deletion(plan):
     mail_notify(plan,
-                settings.PLAN_DELELE_EMAIL_TEMPLATE,
+                'mail/delete_plan.txt',
                 f'TestPlan {plan.pk} has been deleted.',
                 {'plan_name': plan.name})
