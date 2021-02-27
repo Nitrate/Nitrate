@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from django.conf import settings
 
 from tcms.core.mailto import mail_notify
 
@@ -10,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 def email_case_update(case):
     mail_notify(case,
-                settings.CASE_EMAIL_TEMPLATE,
+                'mail/edit_case.txt',
                 f'TestCase {case.pk} has been updated.',
                 {
                     'summary': case.summary,
@@ -22,7 +21,7 @@ def email_case_update(case):
 
 def email_case_deletion(case):
     mail_notify(case,
-                settings.CASE_DELETE_EMAIL_TEMPLATE,
+                'mail/delete_case.txt',
                 f'TestCase {case.pk} has been deleted.',
                 {'summary': case.summary},
                 cc=case.emailing.get_cc_list())
