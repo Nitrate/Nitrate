@@ -33,17 +33,27 @@ publish-to-pypi: tarball
 CONTAINER ?= podman
 RELEASE_VERSION ?= latest
 DOCKER_ORG ?= quay.io/nitrate
-IMAGE_TAG = $(DOCKER_ORG)/nitrate:$(RELEASE_VERSION)
+IMAGE = $(DOCKER_ORG)/nitrate:$(RELEASE_VERSION)
+WORKER_IMAGE = $(DOCKER_ORG)/nitrate-worker:$(RELEASE_VERSION)
 
-.PHONY: release-image
-release-image:
-	@cd docker && $(CONTAINER) build -t $(IMAGE_TAG) --build-arg version=$(RELEASE_VERSION) .
+ifeq ($(RELEASE_VERSION),latest)
+BUILD_LATEST=yes
+else
+BUILD_LATEST=no
+endif
 
-.PHONY: latest-image
-latest-image:
-	@cd docker && $(CONTAINER) build -t $(IMAGE_TAG) \
+.PHONY: image
+image:
+	@cd docker && $(CONTAINER) build -t $(IMAGE) \
 		--build-arg version=$(RELEASE_VERSION) \
-		--build-arg build_latest=yes .
+		--build-arg build_latest=$(BUILD_LATEST) .
+
+.PHONY: worker-image
+worker-image:
+	@cd docker && $(CONTAINER) build -t $(WORKER_IMAGE) \
+		-f Dockerfile-worker \
+		--build-arg version=$(RELEASE_VERSION) \
+		--build-arg build_latest=$(BUILD_LATEST) .
 
 .PHONY: login-registry
 login-registry:
@@ -54,9 +64,10 @@ login-registry:
 		$(CONTAINER) login quay.io; \
 	fi
 
-.PHONY: publish-image
-publish-image: login-registry
-	$(CONTAINER) push $(IMAGE_TAG)
+.PHONY: publish-images
+publish-images: login-registry
+	$(CONTAINER) push $(IMAGE)
+	$(CONTAINER) push $(WORKER_IMAGE)
 
 ifeq ($(strip $(DB)),)
 DB_ENVS=

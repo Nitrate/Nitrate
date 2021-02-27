@@ -47,8 +47,8 @@ jobs:
     steps:
     - run: sudo apt-get install make
     - uses: actions/checkout@v2
-    - run: CONTAINER=docker make latest-image
-    - name: Publish image
+    - run: CONTAINER=docker make image worker-image
+    - name: Publish images
       run: |
         QUAY_USER=${{ secrets.quay_username }} QUAY_PASSWORD=${{ secrets.quay_token }} \
-        CONTAINER=docker make publish-image
+        CONTAINER=docker make publish-images

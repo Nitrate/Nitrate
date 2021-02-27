@@ -46,14 +46,13 @@ jobs:
     - name: Install make
       run: sudo apt-get install make
     - uses: actions/checkout@v2
-    - run: echo build image
     - run: |
         echo "RELEASE_VERSION=$(echo "${{ github.ref }}" | sed 's#refs/tags/v##')" >> $GITHUB_ENV
     - name: Build image
       run: |
-        CONTAINER=docker RELEASE_VERSION=${RELEASE_VERSION} make release-image
-    - name: Publish image
+        CONTAINER=docker RELEASE_VERSION=${RELEASE_VERSION} make image worker-image
+    - name: Publish images
       run: |
         CONTAINER=docker RELEASE_VERSION=${RELEASE_VERSION} \
         QUAY_USER=${{ secrets.quay_username }} QUAY_PASSWORD=${{ secrets.quay_token }} \
-        make publish-image
+        make publish-images

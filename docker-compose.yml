@@ -2,11 +2,6 @@ version: "3"
 
 # Please note that, this docker-compose is only for test latest image built
 # from development branch and prod image built from released version.
-# Before launching database and Nitrate images, make sure the image is built by
-# `make image' with proper tag.
-#
-# If you would like to launch Nitrate for development purpose, please use
-# `docker-compose-dev.yml`.
 
 services:
   db:
@@ -19,16 +14,39 @@ services:
       MYSQL_ROOT_PASSWORD: nitrate
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 
+  messagebus:
+    image: rabbitmq:3.8.12-alpine
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_VHOST=myvhost
+
+  worker:
+    depends_on:
+    - messagebus
+    restart: always
+    image: "${DOCKER_ORG:-quay.io/nitrate}/nitrate-worker:${IMAGE_VERSION:-latest}"
+    volumes:
+    - "./contrib/compose/worker_custom_conf.py:/nitrate-config/nitrate_custom_conf.py:Z"
+    environment:
+      NITRATE_DB_ENGINE: mysql
+      NITRATE_DB_HOST: db
+      NITRATE_DB_PORT: 3306
+      NITRATE_DB_NAME: nitrate
+      NITRATE_DB_USER: root
+      NITRATE_SECRET_KEY: do-not-use-this-key-for-worker-production
+
   web:
     depends_on:
     - db
+    - messagebus
     restart: always
     image: "${DOCKER_ORG:-quay.io/nitrate}/nitrate:${IMAGE_VERSION:-latest}"
     ports:
     - "8001:80"
     volumes:
-    - "nitrate_uploads:/code/uploads"
-    - "nitrate_httpd_logs:/var/log/httpd"
+    - "./contrib/compose/web_custom_conf.py:/nitrate-config/nitrate_custom_conf.py:Z"
+    - "nitrate_uploads:/code/uploads:Z"
+    - "nitrate_httpd_logs:/var/log/httpd:Z"
     environment:
       NITRATE_DB_ENGINE: mysql
       NITRATE_DB_HOST: db
@@ -36,6 +54,12 @@ services:
       NITRATE_DB_NAME: nitrate
       NITRATE_DB_USER: root
       NITRATE_SECRET_KEY: do-not-use-this-key-for-production
+      NITRATE_MIGRATE_DB: yes
+      NITRATE_SET_DEFAULT_PERMS: yes
+      NITRATE_SUPERUSER_USERNAME: admin
+      NITRATE_SUPERUSER_PASSWORD: admin
+      NITRATE_SUPERUSER_EMAIL: admin@example.com
+
 
 # Run `docker inspect web` to see volume directory on host.
 
