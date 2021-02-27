@@ -45,7 +45,8 @@ Nitrate works with:
 * Python: ``3.6``, ``3.7``, ``3.8``, ``3.9``.
 * Django: ``2.2``, ``3.0``, ``3.1``.
 
-What's more, Nitrate is tested with the following database versions:
+What's more, Nitrate is tested with the following database versions in the
+testenv:
 
 * MariaDB: ``10.4.14``.
 * MySQL: ``8.0.22``.
@@ -65,7 +66,7 @@ development. TCMS is the project name, and Nitrate is the code name which has
 been being used as the name in open source community all the time to this day.
 
 The project was hosted in fedorahosted.org at the very early age to build the
-community. The site had vaiours artifacts of Nitrate, including the source
+community. The site had various artifacts of Nitrate, including the source
 code, kinds of development and project management documentations, roadmaps,
 mailing list, etc. The source code was managed by SVN in the beginning. Along
 with more contributors started to contribute to Nitrate, the team decided to
@@ -74,7 +75,7 @@ migrate to Git eventually.
 Since 2009, there were three major version releases, that were version 1.0
 released in October 2009, version 2.0 released in January 2010, and version
 3.0 released in April 2010. After version 3.0, the team had been adding new
-features, fixing bugs, improving performance and user experience continously
+features, fixing bugs, improving performance and user experience continuously
 in a series of minor releases. As of year 2014, Nitrate was open sourced to
 community and hosted in GitHub based on the version 3.18, and new journey had
 began.
@@ -82,16 +83,18 @@ began.
 Up to this day, at the moment of writing this brief history review, Nitrate
 has been 11 years old and it still has strong vitality.
 
-How to run
-----------
+Run Nitrate
+-----------
 
-There are a series of instructions for installing Nitrate in the
-`The Deployment Guide`_.
+There are a series of instructions for running Nitrate. Please refer to
+`Deployment`_.
 
 Skim through the documentation and choose the installation instructions
 that are appropriate for your case. And please, if you identify any issues
 with the installation guide, kindly bring it to our attention. You can either
 report the issue on the github repo, or submit a PR with a fix for it.
+
+.. _Deployment: https://nitrate.readthedocs.io/en/latest/install/index.html
 
 Documentation
 -------------
@@ -102,34 +105,24 @@ APIs, please refer to https://nitrate.readthedocs.org/.
 Contribution
 ------------
 
-Any kind of contribution is highly welcome and welcome, whether to the
-documentation or the source code itself. We also greatly appreciate
-contributions in the form of ideas to make Nitrate better.
+Welcome contributions in various fields. The `Contribution`_ document describes
+those fields in more details.
 
-Please refer to `The Development Guide`_ for more information on how to contribute.
+.. _Contribution: https://nitrate.readthedocs.io/en/latest/contribution.html
 
-.. _The Development Guide: https://nitrate.readthedocs.io/en/latest/index.html#the-development-guide
+Write Code
+----------
 
-Contributing Code
------------------
+If you would like to write some code, the `Development`_ document is the right
+place for you to get reference and started.
 
-If you would like to write some code, the Vagrant machine would be a
-good choice for you to setup a development environment quickly, where you
-can run tests and debug issues.
+.. _Development: https://nitrate.readthedocs.io/en/latest/contribution.html#development
 
-Please refer to the `The Deployment Guide`_ for more information on
-how to run locally, the Vagrant way.
+Report Issues
+-------------
 
-.. _The Deployment Guide: https://nitrate.readthedocs.io/en/latest/index.html#the-deployment-guide
-
-Bug Reports
------------
-
-If you've stumbled upon a bug in Nitrate, you can create an issue for that bug
-`here`_.
-
-However, before creating the issue, please refer to `Report an Issue`_
-for details on how to report a bug in Nitrate.
+If you've stumbled upon an issue in Nitrate, please refer to `Report an Issue`_
+to create one `here`_.
 
 .. _here: https://github.com/Nitrate/Nitrate/issues/new
 .. _Report an Issue: http://nitrate.readthedocs.org/en/latest/bug_reporting.html
