@@ -1,4 +1,4 @@
-FROM registry.fedoraproject.org/fedora:32
+FROM registry.fedoraproject.org/fedora:33
 
 ARG version=latest
 ARG vcs_url="https://github.com/Nitrate/Nitrate"
