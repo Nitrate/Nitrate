@@ -1,12 +1,4 @@
-.. _api_xmlrpc:
-
-XMLRPC
-======
-
-
-.. toctree::
-   :maxdepth: 2
-
+.. _xmlrpc-api:
 
 Authentication
 --------------

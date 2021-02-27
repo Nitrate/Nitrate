@@ -1,6 +1,6 @@
 .. _contribution:
 
-
+============
 Contribution
 ============
 
@@ -36,7 +36,7 @@ Translation
 -----------
 
 We are willing to make our contribution to benefit the world. To translate
-Nitrate to usual languages in the universe is a critial task. Your contribution
+Nitrate to usual languages in the universe is a critical task. Your contribution
 is so important to everyone. Picking up and editing the PO file of specific
 language you are skilled in.
 
@@ -48,9 +48,8 @@ consulting language experts around you when you hesitant.
 Package
 -------
 
-Currently, Nitrate team only supports to distribute standard Python package
-and RPM package. You are encouraged to package for other package system, such
-as the deb package for Debian based Linux distributions.
+RPM packages are available from Fedora Copr already. You are encouraged to
+package for other package system, e.g. the DEB package or others.
 
 
 Development
@@ -75,10 +74,18 @@ clone it
     git clone git@github.com:[my github username]/Nitrate.git
 
 
-Start Nitrate locally
-~~~~~~~~~~~~~~~~~~~~~
+Setup development environment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-See :doc:`set_dev_env` or :doc:`set_dev_env_with_vagrant` for more information!
+Follow up the steps in either of the following documents to setup your own
+development environment. The steps should be doable on other Linux
+distributions.
+
+.. toctree::
+   :maxdepth: 1
+
+   set_dev_env
+   set_dev_env_with_vagrant
 
 
 Confirm the problem
