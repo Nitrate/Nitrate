@@ -27,7 +27,7 @@ From image registry::
 
     docker pull quay.io/nitrate/nitrate:4.7
 
-Refer to :ref:`how_to_run` for details of installation.
+Refer to :ref:`deployment` for details of installation.
 
 Database Migration
 ------------------

@@ -1,5 +1,6 @@
-.. _bug_report:
+.. _issue_report:
 
+===============
 Report an Issue
 ===============
 
@@ -43,8 +44,8 @@ on the mailing list first. Post patches early and listen to feedback." Few
 development experiences are more discouraging than spending a bunch of time
 writing a patch only to have someone point out a better approach on list.
 
-Template of a successful bug report
------------------------------------
+A successful issue report template
+----------------------------------
 
 ::
 

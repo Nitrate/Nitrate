@@ -1,5 +1,6 @@
-.. _setup_devenv_vagrant:
+.. _setup_with_vagrant:
 
+==========================================
 Setup development environment with Vagrant
 ==========================================
 

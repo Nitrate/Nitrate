@@ -103,57 +103,25 @@ Useful Links
 * `Talk @ Gitter <https://gitter.im/Nitrate/Nitrate>`_
 * `Nitrate @ Gitee <https://gitee.com/Nitrate/Nitrate>`_: A mirror repo of GitHub. GitHub的镜像，定期更新。
 
+Contact
+-------
+
+* Mailing list: nitrate-devel@lists.fedorahosted.org
+* IRC: #nitrate at freenode.net
+* Gitter: https://gitter.im/Nitrate/Nitrate
+
+Table of Content
+----------------
 
 .. toctree::
-   :caption: The Development Guide
    :maxdepth: 2
 
-   bug_reporting
+   license
+   authors
+   report_issue
    contribution
-   set_dev_env
-   set_dev_env_with_vagrant
-
-.. toctree::
-   :caption: The Deployment Guide
-   :maxdepth: 2
-
    install/index
    configuration
-
-.. toctree::
-   :caption: The Community Guide
-   :maxdepth: 2
-
-   contact
-   authors
-   license
+   guide/index
+   api/index
    releases/index
-
-.. toctree::
-   :caption: The API Documentation
-   :maxdepth: 1
-
-   api/testcases
-   api/testruns
-   api/issuetracker
-   api/xmlrpc
-
-.. toctree::
-   :caption: The User Guide
-   :maxdepth: 2
-
-   guide/introduction
-   guide/usecase
-   guide/db
-   guide/environment
-   guide/testplan
-   guide/testcase
-   guide/testrun
-   guide/issuetracker
-   guide/report
-   guide/admin
-   guide/appendix
-
-
-.. github_url: https://github.com/Nitrate/Nitrate
-

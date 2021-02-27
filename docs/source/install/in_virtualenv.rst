@@ -38,7 +38,7 @@ Install Nitrate from source code
 --------------------------------
 
 First install RPM packages which are needed to compile some of the Python
-dependencies. See :ref:`setup_devenv` for more information. Then::
+dependencies. See :ref:`setup_on_fedora` for more information. Then::
 
     (venv)# cd /home/<username>/
     (venv)# git clone https://github.com/Nitrate/Nitrate.git

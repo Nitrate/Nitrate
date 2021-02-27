@@ -1,5 +1,6 @@
-.. _setup_devenv:
+.. _setup_on_fedora:
 
+==============================================
 Setting up a development environment on Fedora
 ==============================================
 

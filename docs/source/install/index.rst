@@ -1,6 +1,7 @@
-.. _how_to_run:
+.. _deployment:
 
-How to Run
+==========
+Deployment
 ==========
 
 In this document, you are able to find out several ways to run Nitrate for your
@@ -61,6 +62,11 @@ Installation Guides
 Here are a few of various installation documents. Choose one for your
 environment. Feel free to report issue if you find out anything that does not
 work.
+
+.. warning::
+   These documentation were contributed by contributors in the past. Some of
+   them might be out-dated. Please read them and apply the steps carefully.
+   Welcome patches to update these documents.
 
 .. toctree::
    :maxdepth: 1
