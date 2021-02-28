@@ -4,72 +4,100 @@
 Setting up a development environment on Fedora
 ==============================================
 
+This document describes the steps to set up a development environment by
+creating and initializing a Python virtual environment. As an example,
+Fedora 33 is used as the platform to develop Nitrate.
+
 Get source code
 ---------------
 
-Nitrate source code is available at: https://github.com/Nitrate/Nitrate
+Fork https://github.com/Nitrate/Nitrate to your own repository, then clone it
+to your local system.
 
-You can get the latest changes with git easily::
+.. code-block:: shell
 
-    git clone https://github.com/Nitrate/Nitrate.git
+    git clone https://github.com/[your_github_name]/Nitrate.git
 
-Create virtualenv
------------------
+Create a virtual environment
+----------------------------
 
-Install database and devel packages which are required to compile some of the
-Python dependencies::
+Install database and devel packages. For development, SQLite is good enough as a
+database backend, however this guide uses PostgreSQL to serve the database to
+show more what Nitrate provides to help developers.
 
-    sudo dnf install gcc python-devel mariadb mariadb-devel mariadb-server \
-        krb5-devel libxml2-devel libxslt-devel
+.. code-block:: shell
 
-Start the db server::
+    sudo dnf install -y \
+        python3 python3-devel python3-pip gcc postgresql-server \
+        graphviz-devel krb5-devel postgresql-devel
 
-    sudo systemctl start mariadb
+Initialize the PostgreSQL database and start the server:
 
-Create a virtual environment::
+.. code-block:: shell
 
-    virtualenv ~/virtualenvs/nitrate
+    sudo postgresql-setup --initdb
+    sudo systemctl start postgresql
 
-Install dependencies::
+Create a virtual environment and install dependencies:
 
-    . ~/virtualenvs/nitrate/bin/activate
-    pip install -r requirements/devel.txt
+.. code-block:: shell
 
-.. note::
-
-    ``devel.txt`` has the link to ``base.txt`` which includes required Python
-    packages for running Nitrate.
+    cd path/to/code
+    python3 -m venv .venv
+    . .venv/bin/activate
+    python3 -m pip install .[pgsql,krbauth,docs,tests,devtools,async,bugzilla,socialauth]
 
 Initialize database
 -------------------
 
-Create database::
+Add this line to ``/var/lib/pgsql/data/pg_hba.conf``::
 
-    mysql -uroot
-    create database nitrate character set utf8;
-
-For convenience for development, user, password and database name are already
-set in ``tcms/settings/devel.py`` with default value.
+   local    all     all     trust
 
 .. note::
 
-    You may want to adjust the database and/or other configuration settings.
-    Override them in ``./tcms/settings/devel.py`` if necessary. While MariaDB
-    is supported currently, sqlite appears to work for development and some
-    people have used PostgreSQL with varying success in production! At the
-    moment Nitrate is not 100% portable between database backends due to some
-    hard-coded SQL statements. If you use something other than MariaDB some
-    parts of the application may not work correctly!
+   How the local PostgreSQL server instance is configured depends on how you
+   want the Nitrate to connect to the server. Above line is just an example
+   FYI. In practice, you are free to change it any value to fulfill your
+   requirement.
 
-Load database schema and initial data::
+   Note that, once you change it, please remember to also change the default
+   values to ``NITRATE_DB_*`` environment variables accordingly. Refer to the
+   Makefile target ``db_envs`` or the output from ``DB=pgsql make db_envs``.
 
-    ./manage.py migrate
+Create database:
+
+.. code-block:: shell
+
+   psql -U postgres -c "create database nitrate"
+
+Migrate database:
+
+.. code-block:: shell
+
+   . .venv/bin/activate
+   eval "$(DB=pgsql make db_envs)"
+   make migrate
 
 Final Step
 ----------
 
-Nitrate is ready to run::
+.. code-block:: shell
 
-    ./manage.py runserver
+   . .venv/bin/activate
+   eval "$(DB=pgsql make db_envs)"
+
+Before running the server, you may need to create a superuser in order to
+manage the site during development:
+
+.. code-block:: shell
+
+   make createsuperuser
+
+As of now, it is ready to run Nitrate:
+
+.. code-block:: shell
+
+   make runserver
 
 Open http://127.0.0.1:8000/ and there should be brand new Nitrate homepage!
