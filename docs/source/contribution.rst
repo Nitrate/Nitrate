@@ -4,10 +4,11 @@
 Contribution
 ============
 
-Nitrate team welcomes and appreciates any kind of contribution from you in
-order to make Nitrate better and better. Anyone who is interested in Nitrate is
-able to contribute in various areas, whatever you are a good and experienced
-developer, documentation writer or even a normal user.
+Any kind of contribution (not limit to what is mentioned in this document) is
+appreciated in order to make Nitrate better. Anyone who is interested in
+Nitrate is able to contribute in various areas, whatever you are good at
+coding, organizing or writing documentation, or a normal user to share ideas
+and suggestions.
 
 
 Testing
@@ -28,17 +29,25 @@ Documentation has been provided along with the source code within ``docs/``
 directory. You could go through the documentation to find any potential
 problems, e.g. typos or out-of-date content.
 
-Documentation is built using Sphinx. All content are written in
+Documentation is built using Sphinx. All content must be written in
 reStructuredText format. You can use any your favourite text editor to edit it.
+
+To generate the HTML content and review::
+
+    (cd docs; make html)
+
+To test the changes::
+
+    tox -e docs
 
 
 Translation
 -----------
 
 We are willing to make our contribution to benefit the world. To translate
-Nitrate to usual languages in the universe is a critical task. Your contribution
-is so important to everyone. Picking up and editing the PO file of specific
-language you are skilled in.
+Nitrate to usual languages in the universe is a critical task. Your
+contribution is so important to everyone. Picking up and editing the PO file of
+specific language you are skilled in.
 
 Before making pull request, make sure your translation have no grammatical
 mistakes and semantic errors. Feel free the look into to translation issues by
@@ -55,31 +64,32 @@ package for other package system, e.g. the DEB package or others.
 Development
 -----------
 
-If you are experiencing programming in Python and Django or interested in
-learning how to develop a website using Django, contributing patch to fix
-problems or improving features are both welcome. Please don't be hesitated to
-contact Nitrate team to disucss your ideas and implement it. Following these
-steps to contribute code to Nitrate.
+If you are interested in writing code or would like to learn how to develop a
+website using Python and Django, contributing patch to fix specific problems
+would be a good way. Please don't be hesitated to contact maintainer to discuss
+your ideas and implement it.
 
+For easily to get started, you may want to go through `easyfix issues`_ or
+`help-wanted issues`_ and take one.
+
+.. _easyfix issues: https://github.com/Nitrate/Nitrate/issues?q=is%3Aissue+is%3Aopen+label%3Aeasyfix
+.. _help-wanted issues: https://github.com/Nitrate/Nitrate/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22
 
 Get the code
 ~~~~~~~~~~~~
 
 Code is hosted in Github. Following the guide in Github to fork and clone
 code to your local machine. For example, I have forked Nitrate, then I can
-clone it
+clone it::
 
-::
-
-    git clone git@github.com:[my github username]/Nitrate.git
+    git clone git@github.com:tkdchen/Nitrate.git
 
 
 Setup development environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Follow up the steps in either of the following documents to setup your own
-development environment. The steps should be doable on other Linux
-distributions.
+development environment. The steps should be doable on other platforms.
 
 .. toctree::
    :maxdepth: 1
@@ -116,8 +126,8 @@ Happy hacking.
 
        tox
 
-#. when your code is ready, commit your changes with sign-off, push to your
-   cloned repository, and make a pull request to ``develop`` branch.
+#. when your code is ready, commit your changes and sign-off the commit, push to
+   your cloned repository, and make a pull request to ``develop`` branch.
 
 
 Commit message format
@@ -126,11 +136,9 @@ Commit message format
 A good commit message will help us to understand your contribution as easily
 and correctly as possible. Your commit message should follow this format::
 
-    summary to describe what this commit does
+    summary to describe what this commit does (#XXX)
 
     Arbitrary text to describe why you commit these code in detail
-
-    Fixes #N
 
 Generally, the length of summary line should be limited within range 70-75. The
 remaining text should be wrapped at 79 character.
