@@ -23,6 +23,9 @@ It is a database-backed web application built on top of Django.
 %package -n %{mainpkg}
 Summary:        Test Case Management System
 
+# required since f34
+BuildRequires:  make
+
 BuildRequires:  python3-devel
 BuildRequires:  python3dist(setuptools)
 

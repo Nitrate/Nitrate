@@ -105,9 +105,11 @@ db_envs:
     done
 
 
-local_build_deps=https://download.copr.fedorainfracloud.org/results/cqi/python-nitrate-tcms/fedora-33-x86_64/01874726-python-django-tinymce/python3-django-tinymce-3.2.0-1.fc33.noarch.rpm
+mock_root ?= fedora-33-x86_64
+rpm_dist = $(shell echo "$(mock_root)" | cut -d'-' -f2)
+local_build_deps=https://download.copr.fedorainfracloud.org/results/cqi/python-nitrate-tcms/$(mock_root)/01874726-python-django-tinymce/python3-django-tinymce-3.2.0-1.fc$(rpm_dist).noarch.rpm
 nvr=$(shell rpm -q --qf "%{nvr}\n" --specfile python-nitrate-tcms.spec | grep python-nitrate-tcms)
-mock=mock --root fedora-33-x86_64
+mock=mock --root $(mock_root)
 
 .PHONY: quick-local-build
 quick-local-build:
