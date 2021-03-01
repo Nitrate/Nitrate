@@ -22,22 +22,22 @@ jobs:
         django-version: [django220, django300, django310]
         db: [sqlite]
         include:
-          - python-version: 3.8
+          - python-version: 3.9
             django-version: django300
             db: mysql
-          - python-version: 3.8
+          - python-version: 3.9
             django-version: django300
             db: mariadb
-          - python-version: 3.8
+          - python-version: 3.9
             django-version: django300
             db: postgres
-          - python-version: 3.8
+          - python-version: 3.9
             django-version: django310
             db: mysql
-          - python-version: 3.8
+          - python-version: 3.9
             django-version: django310
             db: mariadb
-          - python-version: 3.8
+          - python-version: 3.9
             django-version: django310
             db: postgres
 
