@@ -83,6 +83,68 @@ began.
 Up to this day, at the moment of writing this brief history review, Nitrate
 has been 11 years old and it still has strong vitality.
 
+Get Nitrate
+-----------
+
+Nitrate ships with optional subpackages in addition to the main nitrate-tcms
+package. They are available from either PyPI or the YUM repository. The
+subpackages include:
+
+* ``mysql``: needed when Nitrate works with MySQL or MariaDB database.
+
+* ``pgsql``: needed when Nitrate works with PostgreSQL database.
+
+* ``bugzilla``: needed when the ``BugzillaBackend`` authentication backend is
+  enabled, or the issue tracker is configured to work with a Bugzilla
+  instance.
+
+* ``krbauth``: needed when the ``KerberosBackend`` authentication backend is
+  enabled.
+
+* ``socialauth``: needed when the social-based authentication backend is enabled.
+
+* ``async``: needed when to run asynchronous tasks as Celery tasks.
+
+PyPI
+~~~~
+
+::
+
+  python3 -m pip install nitrate-tcms
+
+  # Example: if Kerberos-based authentication is required
+  python3 -m pip install nitrate-tcms[krbauth]
+
+RPM
+~~~
+
+RPM packages are provided from a `Copr repository`_::
+
+  sudo dnf copr enable cqi/python-nitrate-tcms
+  sudo dnf install python3-nitrate-tcms
+
+  # Example: if Celery is required and run with PostgreSQL
+  sudo dnf install python3-nitrate-tcms+async python3-nitrate-tcms+pgsql
+
+.. _Copr repository: https://copr.fedorainfracloud.org/coprs/cqi/python-nitrate-tcms/
+
+Container Images
+~~~~~~~~~~~~~~~~
+
+Nitrate provides two container images:
+
+* `quay.io/nitrate/nitrate`_
+* `quay.io/nitrate/nitrate-worker`_
+
+The ``nitrate-worker`` image is optional, that depends no whether there is
+requirement to run asynchronous tasks by Celery.
+
+For more information, please refer to the description of image
+``quay.io/nitrate/nitrate``.
+
+.. _quay.io/nitrate/nitrate: https://quay.io/repository/nitrate/nitrate
+.. _quay.io/nitrate/nitrate-worker: https://quay.io/repository/nitrate/nitrate-worker
+
 Run Nitrate
 -----------
 
