@@ -1,17 +1,17 @@
 %define debug_package %{nil}
 %global codename nitrate
-%global pkgname %{codename}-tcms
+%global pypi_name %{codename}-tcms
 %global egginfo_name %{codename}_tcms
-%global mainpkg python3-%{pkgname}
+%global mainpkg python3-%{pypi_name}
 
-Name:           python-%{pkgname}
+Name:           python-%{pypi_name}
 Version:        4.10
 Release:        1%{?dist}
 Summary:        Test Case Management System
 
 License:        GPLv2+
 URL:            https://github.com/Nitrate/Nitrate/
-Source0:        %{pkgname}-%{version}.tar.gz
+Source0:        %{pypi_source}
 BuildArch:      noarch
 
 %description
@@ -63,7 +63,7 @@ Requires:       python3dist(odfpy)
 Requires:       python3dist(xmltodict)
 
 
-%{?python_provide:%python_provide python3-%{pkgname}}
+%{?python_provide:%python_provide python3-%{pypi_name}}
 
 %description -n %{mainpkg}
 Nitrate is a tool for tracking testing being done on a product.
@@ -71,14 +71,14 @@ Nitrate is a tool for tracking testing being done on a product.
 It is a database-backed web application built on top of Django.
 
 
-%package -n %{pkgname}-doc
+%package -n %{pypi_name}-doc
 Summary:        Documentation of Nitrate
 
-%description -n %{pkgname}-doc
+%description -n %{pypi_name}-doc
 Documentation of Nitrate
 
 %prep
-%autosetup -n %{pkgname}-%{version}
+%autosetup -n %{pypi_name}-%{version}
 # Remove bundled egg-info
 rm -rf %{egginfo_name}.egg-info
 
@@ -120,7 +120,7 @@ templates_root=${data_root}/templates/
 mkdir -p $templates_root
 cp -r src/templates/* $templates_root
 
-%files -n python3-%{pkgname}
+%files -n python3-%{pypi_name}
 %doc AUTHORS CHANGELOG.rst README.rst VERSION.txt
 %license LICENSE
 %{_datadir}/nitrate
@@ -128,7 +128,7 @@ cp -r src/templates/* $templates_root
 %{python3_sitelib}/%{egginfo_name}-%{version}-py*.egg-info/
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/%{codename}.conf
 
-%files -n %{pkgname}-doc
+%files -n %{pypi_name}-doc
 %doc docs/target/html
 %license LICENSE
 
