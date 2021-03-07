@@ -9,8 +9,8 @@ Related Links:
 
 - Documentation: https://nitrate.readthedocs.io/
 - Source code: https://github.com/Nitrate/Nitrate/
-- Dockerfile for the Web container image: [docker/Dockerfile](https://github.com/Nitrate/Nitrate/blob/master/docker/Dockerfile)
-- Dockerfile for the worker container image: [docker/Dockerfile-worker](https://github.com/Nitrate/Nitrate/blob/master/docker/Dockerfile-worker)
+- Containerfile for the Web container image: [container/Containerfile](https://github.com/Nitrate/Nitrate/blob/master/container/Containerfile)
+- Containerfile for the worker container image: [container/Containerfile-worker](https://github.com/Nitrate/Nitrate/blob/master/container/Containerfile-worker)
 
 ## Tags
 
@@ -34,7 +34,7 @@ The worker image has same tag scheme. Refer to the above [Tags](#tags) section.
 When making a new release of Nitrate, both this Web and the worker image are
 built and published to the repositories individually.
 
-**Hint**: You can try the worker image with the [docker-compose.yml](https://github.com/Nitrate/Nitrate/blob/master/docker-compose.yml).
+**Hint**: You can try the worker image with the [container-compose.yml](https://github.com/Nitrate/Nitrate/blob/master/container-compose.yml).
 
 ## Usage
 
@@ -63,7 +63,7 @@ command, you can use the `podman-compose` or `docker-compose` to up containers.
 podman-compose up
 ```
 
-Nitrate source code provides the [docker-compose.yml](https://github.com/Nitrate/Nitrate/blob/master/docker-compose.yml)
+Nitrate source code provides the [container-compose.yml](https://github.com/Nitrate/Nitrate/blob/master/container-compose.yml)
 to up Nitrate locally. **Note that**, please do not use it as a production
 environment.
 

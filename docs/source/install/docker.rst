@@ -19,21 +19,21 @@ Run Nitrate inside Container
 ----------------------------
 
 You have two choices to run Nitrate inside container. One way is to use
-`docker-compose`_::
+`podman-compose`_ or `docker-compose`_::
 
-    docker-compose -f docker-compose.yml up
+    podman-compose -f container-compose.yml up
 
 Then, visit http://127.0.0.1:8001/
 
 This will create two containers:
 
 * A web container based on the specific version of Nitrate image specified in
-  ``docker-compose.yml``.
+  ``podman-compose.yml``.
 
 * A MariaDB database container.
 
-``docker-compose`` will also create two volumes for persistent data storage.
-Refer to ``docker-compose.yml`` for available volumes.
+There are two volumes for persistent data storage created. Refer to
+``container-compose.yml`` for available volumes.
 
 Please note that, this requires you to have a copy (probable cloned from git
 repository) of Nitrate source code. It is recommended for you to deploy Nitrate
@@ -41,6 +41,7 @@ into a container environment, e.g. OpenShift. This is the second way you should
 choose for running Nitrate in production.
 
 .. _docker-compose: https://docs.docker.com/compose/
+.. _podman-compose: https://github.com/containers/podman-compose
 
 
 Initial configuration of running container

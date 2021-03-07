@@ -3,11 +3,11 @@ include python-nitrate-tcms.spec Makefile requirements.txt
 include src/manage.py
 
 include .coveragerc .eslintrc.js .dockerignore .gitignore
-include docker-compose.yml docker-compose-dev.yml
+include container-compose.yml
 include tox.ini
 
 graft .github
-graft docker
+graft container
 graft contrib
 graft src/locale
 graft src/static

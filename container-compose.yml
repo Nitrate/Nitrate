@@ -1,6 +1,6 @@
 version: "3"
 
-# Please note that, this docker-compose is only for test latest image built
+# Please note that, this container-compose is only for test latest image built
 # from development branch and prod image built from released version.
 
 services:
