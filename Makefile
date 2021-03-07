@@ -44,14 +44,15 @@ endif
 
 .PHONY: image
 image:
-	@cd docker && $(CONTAINER) build -t $(IMAGE) \
+	@cd container && $(CONTAINER) build -t $(IMAGE) \
+		-f Containerfile \
 		--build-arg version=$(RELEASE_VERSION) \
 		--build-arg build_latest=$(BUILD_LATEST) .
 
 .PHONY: worker-image
 worker-image:
-	@cd docker && $(CONTAINER) build -t $(WORKER_IMAGE) \
-		-f Dockerfile-worker \
+	@cd container && $(CONTAINER) build -t $(WORKER_IMAGE) \
+		-f Containerfile-worker \
 		--build-arg version=$(RELEASE_VERSION) \
 		--build-arg build_latest=$(BUILD_LATEST) .
 
