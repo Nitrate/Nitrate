@@ -5,7 +5,7 @@
 %global mainpkg python3-%{pypi_name}
 
 Name:           python-%{pypi_name}
-Version:        4.10
+Version:        4.11
 Release:        1%{?dist}
 Summary:        Test Case Management System
 
@@ -197,6 +197,9 @@ Bugzilla service. No code is included.
 %ghost %{python3_sitelib}/%{egginfo_name}-%{version}-py*.egg-info/
 
 %changelog
+* Sun Mar 07 2021 Chenxiong Qi <qcxhome@gmail.com> - 4.11-1
+- Built for version 4.11
+
 * Thu Feb 11 2021 Chenxiong Qi <qcxhome@gmail.com> - 4.10-1
 - Built for version 4.10
 
