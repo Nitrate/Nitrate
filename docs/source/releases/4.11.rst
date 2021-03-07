@@ -1,0 +1,117 @@
+.. _4.11:
+
+====
+4.11
+====
+
+*Mar 07, 2021*
+
+I'm pleased to announce a new release 4.11 is available now.
+
+Highlights
+==========
+
+Bugfixes
+--------
+
+* Code sending mail notification on specific event are fixed so that they can
+  be scheduled as Celery tasks (`PR#904`_). To try the asynchronous tasks, run
+  ``podman-compose up`` from the top directory of source code.
+
+Distribution
+------------
+
+* RPM subpackages are built for the extras including ``mysql``, ``pgsql``,
+  ``krbauth``, ``bugzilla`` and ``async``. It is possible to choose the
+  required package to install according to specific requirements. (`#882`_)
+
+Infrastructure improvements
+---------------------------
+
+* Fedora 34 is added to CI workflow to test the package build. (`#909`_)
+
+* Tests run in Python 3.9 with various database engines in tests environment.
+  (`#912`_)
+
+* RabbitMQ is added to the ``docker-compose.yml`` as a messaging broker and it
+  works to run asynchronous tasks. (`PR#904`_)
+
+.. _PR#904: https://github.com/Nitrate/Nitrate/pull/904
+
+Get Nitrate
+===========
+
+From PyPI
+---------
+
+.. code-block:: shell
+
+   python3 -m pip install nitrate-tcms
+
+RPM Packages
+------------
+
+Packages are available via a `Fedora Copr`_.
+
+.. code-block:: shell
+
+   sudo dnf copr enable cqi/python-nitrate-tcms
+   sudo dnf install python-nitrate-tcms
+
+   # Install extra subpackages accordingly, e.g.
+   sudo dnf install python-nitrate-tcms+pgsql python-nitrate-tcms+async
+
+.. _Fedora Copr: https://copr.fedorainfracloud.org/coprs/cqi/python-nitrate-tcms/
+
+Container Images
+----------------
+
+* ``quay.io/nitrate/nitrate:4.11``: the main image including Nitrate Web
+  application.
+
+* ``quay.io/nitrate/nitrate-worker:4.11``: an optional worker image if the
+  asynchronous tasks scheduled and run by Celery are required.
+
+Refer to :ref:`deployment` for detailed information.
+
+Database Migration
+==================
+
+* Many help text of ``issuetracker`` app are updated, which cause a database
+  migration is generated.
+
+Run:
+
+.. code-block:: shell
+
+   django-admin --settings=tcms.settings.produce migrate
+
+Change Log
+==========
+
+* Use %pypi_source macro in SPEC
+* Use %{pytest} macro in SPEC
+* Update docs about getting Nitrate
+* Add issuetracker migration
+* Run tests in py3.9 with various database engines (`#912`_)
+* Build f34 RPM (`#909`_)
+* Update contribution docs
+* Update image README
+* Update README
+* Re-organize docs
+* Upgrade base image to f33
+* Reference some mail notify templates directly
+* Make it work to run async tasks
+* Make python-bugzilla optional
+* Fix flake8 errors
+* Show the issues display url format field (`#901`_)
+* Remove unused method from issuetracker
+* Improve help text of issue tracker models
+* Refactor mail notify for scheduling Celery task
+* Build subpackages for extras (`#882`_)
+
+.. _#882: https://github.com/Nitrate/Nitrate/issues/882
+.. _#901: https://github.com/Nitrate/Nitrate/issues/901
+.. _#909: https://github.com/Nitrate/Nitrate/issues/909
+.. _#912: https://github.com/Nitrate/Nitrate/issues/912
+

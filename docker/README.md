@@ -50,7 +50,7 @@ Nitrate is able to run locally by either `docker` or `podman` and be linked to a
 database container:
 
 ```
-podman run -p 80:80 -t quay.io/nitrate/nitrate:4.10
+podman run -p 80:80 -t quay.io/nitrate/nitrate:4.11
 ```
 
 Following various environment variables can be set to initialize the container
