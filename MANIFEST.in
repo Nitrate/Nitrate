@@ -18,3 +18,5 @@ include docs/Makefile docs/requirements.txt docs/make.bat
 graft docs/source
 
 global-exclude *.pyc
+
+recursive-exclude src/**/.mypy_cache/ *
