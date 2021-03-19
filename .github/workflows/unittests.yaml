@@ -45,7 +45,7 @@ jobs:
       - name: Install packages used to setup testenv
         run: |
           sudo apt update
-          sudo apt-get install gcc python3-dev libkrb5-dev libmariadb-dev libxcrypt-dev
+          sudo apt-get install gcc python3-dev libkrb5-dev libmariadb-dev libcrypt-dev
 
       - name: Checkout code
         uses: actions/checkout@v2
