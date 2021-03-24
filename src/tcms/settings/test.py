@@ -8,9 +8,9 @@ db_host = (
     env.get('NITRATE_DB_HOST', '') or
     # These three variables will be set by tox-docker if use to run tests with
     # specific database engine.
-    env.get('MYSQL_HOST', '') or
-    env.get('MARIADB_HOST', '') or
-    env.get('POSTGRES_HOST', '')
+    env.get('TESTDB_MYSQL_HOST', '') or
+    env.get('TESTDB_MARIADB_HOST', '') or
+    env.get('TESTDB_POSTGRES_HOST', '')
 )
 
 DATABASES = {
