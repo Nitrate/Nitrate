@@ -44,16 +44,15 @@ def post_comment(comment_data, request_user, remote_addr=None):
         comment_data["name"] = request_user.get_full_name() or request_user.username
         comment_data["email"] = request_user.email
 
-    ctype = comment_data.get('content_type')
-    object_pk = comment_data.get('object_pk')
+    ctype = comment_data.get("content_type")
+    object_pk = comment_data.get("object_pk")
 
     target = get_comment_target_object(ctype, int(object_pk))
 
     form = tcms.comments.get_form()(target, data=comment_data)
     if not form.is_valid():
-        log.error('Failed to add comment to %s %s: %r',
-                  ctype, object_pk, comment_data)
-        log.error('Error messages: %r', form.errors)
+        log.error("Failed to add comment to %s %s: %r", ctype, object_pk, comment_data)
+        log.error("Error messages: %r", form.errors)
         raise InvalidCommentPostRequest(target, form)
 
     # Otherwise create the comment
@@ -66,8 +65,7 @@ def post_comment(comment_data, request_user, remote_addr=None):
     return target, comment
 
 
-def add_comment(
-        request_user, content_type, object_pks, comment, remote_addr=None) -> List[Comment]:
+def add_comment(request_user, content_type, object_pks, comment, remote_addr=None) -> List[Comment]:
     """Add comment to given target objects
 
     This function is useful particularly for not add a comment from WebUI by
@@ -93,19 +91,20 @@ def add_comment(
         try:
             target = get_comment_target_object(content_type, object_pk)
         except ObjectDoesNotExist:
-            log.error('%s object with id %s does not exist in database. '
-                      'Ignore it and continue to add comment to next one.',
-                      content_type, object_pk)
+            log.error(
+                "%s object with id %s does not exist in database. "
+                "Ignore it and continue to add comment to next one.",
+                content_type,
+                object_pk,
+            )
             continue
         initial_form = comment_form(target)
         comment_data = initial_form.initial.copy()
-        comment_data['comment'] = comment
+        comment_data["comment"] = comment
         try:
-            _, new_comment = post_comment(
-                comment_data, request_user, remote_addr)
+            _, new_comment = post_comment(comment_data, request_user, remote_addr)
         except InvalidCommentPostRequest:
-            log.error(
-                'Failed to add comment, continue to add comment to next one.')
+            log.error("Failed to add comment, continue to add comment to next one.")
         else:
             new_comments.append(new_comment)
     return new_comments

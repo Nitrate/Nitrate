@@ -7,18 +7,16 @@ from django.core.exceptions import PermissionDenied
 
 from tcms.xmlrpc.decorators import log_call
 
-__all__ = (
-    'login', 'logout', 'login_krbv'
-)
+__all__ = ("login", "logout", "login_krbv")
 
-__xmlrpc_namespace__ = 'Auth'
+__xmlrpc_namespace__ = "Auth"
 
 
 def check_user_name(parameters):
-    username = parameters.get('username')
-    password = parameters.get('password')
+    username = parameters.get("username")
+    password = parameters.get("password")
     if not username or not password:
-        raise PermissionDenied('Username and password is required')
+        raise PermissionDenied("Username and password is required")
 
     return username, password
 
@@ -46,13 +44,12 @@ def login(request, credential):
         user = backend.authenticate(request, *check_user_name(credential))
 
         if user:
-            user.backend = "{}.{}".format(backend.__module__,
-                                          backend.__class__.__name__)
+            user.backend = "{}.{}".format(backend.__module__, backend.__class__.__name__)
             django.contrib.auth.login(request, user)
             return request.session.session_key
 
     if user is None:
-        raise PermissionDenied('Wrong username or password')
+        raise PermissionDenied("Wrong username or password")
 
 
 @log_call(namespace=__xmlrpc_namespace__)

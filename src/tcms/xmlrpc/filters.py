@@ -14,11 +14,11 @@ import django.db.utils
 from django.conf import settings
 
 
-__filters__ = ('wrap_exceptions',)
+__filters__ = ("wrap_exceptions",)
 
 
 def _validate_config():
-    if not hasattr(settings, 'XMLRPC_METHODS'):
+    if not hasattr(settings, "XMLRPC_METHODS"):
         raise ImportError("Variable 'XMLRPC_METHODS' not set in settings.")
 
 
@@ -32,11 +32,9 @@ def _get_enable_apis():
 
 
 def _wrap_exceptions(module_name):
-    """Load api list and wrap them with decorators
-
-    """
+    """Load api list and wrap them with decorators"""
     module = __import__(module_name, {}, {}, [""])
-    funcs = getattr(module, '__all__', None)
+    funcs = getattr(module, "__all__", None)
     if not funcs:
         return
 
@@ -66,21 +64,20 @@ def autowrap_xmlrpc_apis(path, package):
     enable_apis = _get_enable_apis()
     for dir_path, dir_names, file_names in os.walk(path):
         rel_path = os.path.relpath(dir_path, path)
-        if rel_path == '.':
-            rel_pkg = ''
+        if rel_path == ".":
+            rel_pkg = ""
         else:
-            rel_pkg = '.%s' % '.'.join(rel_path.split(os.sep))
+            rel_pkg = ".%s" % ".".join(rel_path.split(os.sep))
 
         for file_name in file_names:
             root, ext = os.path.splitext(file_name)
 
             # Skip __init__ and anything that's not .py
             # FIXME maybe .pyc in prod env.
-            if ext != '.py' or root == '__init__':
+            if ext != ".py" or root == "__init__":
                 continue
 
-            module_name = ("%s%s.%s" %
-                           (package, rel_pkg, root))
+            module_name = "%s%s.%s" % (package, rel_pkg, root)
 
             if module_name in enable_apis:
                 _wrap_exceptions(module_name)
@@ -104,13 +101,15 @@ def wrap_exceptions(func):
             # 404 Not Found
             fault_code = HTTPStatus.NOT_FOUND
             fault_string = str(e)
-        except (django.core.exceptions.FieldDoesNotExist,
-                django.core.exceptions.FieldError,
-                django.core.exceptions.ValidationError,
-                django.core.exceptions.MultipleObjectsReturned,
-                django.forms.ValidationError,
-                ValueError,
-                TypeError) as e:
+        except (
+            django.core.exceptions.FieldDoesNotExist,
+            django.core.exceptions.FieldError,
+            django.core.exceptions.ValidationError,
+            django.core.exceptions.MultipleObjectsReturned,
+            django.forms.ValidationError,
+            ValueError,
+            TypeError,
+        ) as e:
             # 400 Bad Request
             fault_code = HTTPStatus.BAD_REQUEST
             fault_string = str(e)
@@ -127,14 +126,14 @@ def wrap_exceptions(func):
             fault_string = str(e)
 
         if settings.DEBUG:
-            stack_trace = ''.join(traceback.format_exception(*sys.exc_info()))
-            fault_string = f'{fault_string}\n{stack_trace}'
+            stack_trace = "".join(traceback.format_exception(*sys.exc_info()))
+            fault_string = f"{fault_string}\n{stack_trace}"
 
-        raise Fault(faultCode=fault_code,
-                    faultString=_format_message(fault_string))
+        raise Fault(faultCode=fault_code, faultString=_format_message(fault_string))
 
     return _decorator
 
 
-XMLRPC_API_FILTERS = [getattr(sys.modules[__name__], api_filter, None) for
-                      api_filter in __filters__]
+XMLRPC_API_FILTERS = [
+    getattr(sys.modules[__name__], api_filter, None) for api_filter in __filters__
+]

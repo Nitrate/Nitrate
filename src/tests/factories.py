@@ -24,12 +24,11 @@ def md5_hash(s):
 
 
 class UserFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'auth.User'
+        model = "auth.User"
 
-    username = factory.Sequence(lambda n: 'User%d' % n)
-    email = factory.LazyAttribute(lambda user: '%s@example.com' % user.username)
+    username = factory.Sequence(lambda n: "User%d" % n)
+    email = factory.LazyAttribute(lambda user: "%s@example.com" % user.username)
 
     @factory.post_generation
     def groups(self, create, extracted, **kwargs):
@@ -41,120 +40,107 @@ class UserFactory(DjangoModelFactory):
 
 
 class GroupFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'auth.Group'
+        model = "auth.Group"
 
-    name = factory.Sequence(lambda n: 'Group %d' % n)
+    name = factory.Sequence(lambda n: "Group %d" % n)
 
 
 # ### Factories for app management ###
 
 
 class ClassificationFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'management.Classification'
+        model = "management.Classification"
 
-    name = factory.Sequence(lambda n: 'Classification %d' % n)
+    name = factory.Sequence(lambda n: "Classification %d" % n)
 
 
 class ProductFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'management.Product'
+        model = "management.Product"
 
-    name = factory.Sequence(lambda n: 'Product %d' % n)
+    name = factory.Sequence(lambda n: "Product %d" % n)
     classification = factory.SubFactory(ClassificationFactory)
 
 
 class PriorityFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'management.Priority'
+        model = "management.Priority"
 
-    value = factory.Sequence(lambda n: 'P%d' % n)
+    value = factory.Sequence(lambda n: "P%d" % n)
     is_active = True
 
 
 class MilestoneFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'management.Milestone'
+        model = "management.Milestone"
 
     product = factory.SubFactory(ProductFactory)
-    value = factory.Sequence(lambda n: 'Milestone %d' % n)
+    value = factory.Sequence(lambda n: "Milestone %d" % n)
 
 
 class ComponentFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'management.Component'
+        model = "management.Component"
 
-    name = factory.Sequence(lambda n: 'Component %d' % n)
+    name = factory.Sequence(lambda n: "Component %d" % n)
     product = factory.SubFactory(ProductFactory)
     initial_owner = factory.SubFactory(UserFactory)
     initial_qa_contact = factory.SubFactory(UserFactory)
 
 
 class VersionFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'management.Version'
+        model = "management.Version"
 
-    value = factory.Sequence(lambda n: '0.%d' % n)
+    value = factory.Sequence(lambda n: "0.%d" % n)
     product = factory.SubFactory(ProductFactory)
 
 
 class TestBuildFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'management.TestBuild'
+        model = "management.TestBuild"
 
-    name = factory.Sequence(lambda n: 'Build %d' % n)
+    name = factory.Sequence(lambda n: "Build %d" % n)
     product = factory.SubFactory(ProductFactory)
 
 
 class TestEnvironmentFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'management.TestEnvironment'
+        model = "management.TestEnvironment"
 
-    name = factory.Sequence(lambda n: 'Environment %d' % n)
+    name = factory.Sequence(lambda n: "Environment %d" % n)
     product = factory.SubFactory(ProductFactory)
 
 
 class TestEnvironmentCategoryFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'management.TestEnvironmentCategory'
+        model = "management.TestEnvironmentCategory"
 
-    name = factory.Sequence(lambda n: 'Environment Category %d' % n)
+    name = factory.Sequence(lambda n: "Environment Category %d" % n)
     product = factory.SubFactory(ProductFactory)
 
 
 class TestEnvironmentElementFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'management.TestEnvironmentElement'
+        model = "management.TestEnvironmentElement"
 
-    name = factory.Sequence(lambda n: 'Environment Element %d' % n)
+    name = factory.Sequence(lambda n: "Environment Element %d" % n)
     env_category = factory.SubFactory(TestEnvironmentCategoryFactory)
 
 
 class TestEnvironmentPropertyFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'management.TestEnvironmentProperty'
+        model = "management.TestEnvironmentProperty"
 
-    name = factory.Sequence(lambda n: 'Environment Property %d' % n)
+    name = factory.Sequence(lambda n: "Environment Property %d" % n)
     element = factory.SubFactory(TestEnvironmentElementFactory)
 
 
 class TestEnvironmentMapFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'management.TestEnvironmentMap'
+        model = "management.TestEnvironmentMap"
 
     environment = factory.SubFactory(TestEnvironmentFactory)
     property = factory.SubFactory(TestEnvironmentPropertyFactory)
@@ -162,41 +148,37 @@ class TestEnvironmentMapFactory(DjangoModelFactory):
 
 
 class TestTagFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'management.TestTag'
+        model = "management.TestTag"
 
-    name = factory.Sequence(lambda n: 'Tag %d' % n)
+    name = factory.Sequence(lambda n: "Tag %d" % n)
 
 
 class TestAttachmentFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'management.TestAttachment'
+        model = "management.TestAttachment"
 
-    stored_name = factory.sequence(lambda n: f'attachment-file-{n}')
-    file_name = factory.LazyFunction(lambda: '%s.png' % str(datetime.now()))
+    stored_name = factory.sequence(lambda n: f"attachment-file-{n}")
+    file_name = factory.LazyFunction(lambda: "%s.png" % str(datetime.now()))
     submitter = factory.SubFactory(UserFactory)
     create_date = factory.LazyFunction(datetime.now)
-    description = factory.Sequence(lambda n: 'Attachment Image %d' % n)
-    checksum = factory.sequence(lambda n: f'12ac3b{n}')
+    description = factory.Sequence(lambda n: "Attachment Image %d" % n)
+    checksum = factory.sequence(lambda n: f"12ac3b{n}")
 
 
 class TestAttachmentDataFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'management.TestAttachmentData'
+        model = "management.TestAttachmentData"
 
-    contents = factory.Sequence(lambda n: 'content %d' % n)
+    contents = factory.Sequence(lambda n: "content %d" % n)
     attachment = factory.SubFactory(TestAttachmentFactory)
 
 
 class TCMSEnvGroupFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'management.TCMSEnvGroup'
+        model = "management.TCMSEnvGroup"
 
-    name = factory.Sequence(lambda n: 'Env group %d' % n)
+    name = factory.Sequence(lambda n: "Env group %d" % n)
     manager = factory.SubFactory(UserFactory)
     modified_by = factory.SubFactory(UserFactory)
 
@@ -210,28 +192,25 @@ class TCMSEnvGroupFactory(DjangoModelFactory):
 
 
 class TCMSEnvPropertyFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'management.TCMSEnvProperty'
+        model = "management.TCMSEnvProperty"
 
-    name = factory.Sequence(lambda n: 'Env property %d' % n)
+    name = factory.Sequence(lambda n: "Env property %d" % n)
 
 
 class TCMSEnvGroupPropertyMapFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'management.TCMSEnvGroupPropertyMap'
+        model = "management.TCMSEnvGroupPropertyMap"
 
     group = factory.SubFactory(TCMSEnvGroupFactory)
     property = factory.SubFactory(TCMSEnvPropertyFactory)
 
 
 class TCMSEnvValueFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'management.TCMSEnvValue'
+        model = "management.TCMSEnvValue"
 
-    value = factory.Sequence(lambda n: 'Env value %d' % n)
+    value = factory.Sequence(lambda n: "Env value %d" % n)
     property = factory.SubFactory(TCMSEnvPropertyFactory)
 
 
@@ -239,19 +218,17 @@ class TCMSEnvValueFactory(DjangoModelFactory):
 
 
 class TestPlanTypeFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'testplans.TestPlanType'
+        model = "testplans.TestPlanType"
 
-    name = factory.Sequence(lambda n: 'Plan type %d' % n)
+    name = factory.Sequence(lambda n: "Plan type %d" % n)
 
 
 class TestPlanFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'testplans.TestPlan'
+        model = "testplans.TestPlan"
 
-    name = factory.Sequence(lambda n: 'Plan name %d' % n)
+    name = factory.Sequence(lambda n: "Plan name %d" % n)
     create_date = factory.LazyFunction(datetime.now)
     product_version = factory.SubFactory(VersionFactory)
     owner = factory.SubFactory(UserFactory)
@@ -294,58 +271,52 @@ class TestPlanFactory(DjangoModelFactory):
 
 
 class TestPlanAttachmentFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'testplans.TestPlanAttachment'
+        model = "testplans.TestPlanAttachment"
 
     plan = factory.SubFactory(TestPlanFactory)
     attachment = factory.SubFactory(TestAttachmentFactory)
 
 
 class TestPlanTagFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'testplans.TestPlanTag'
+        model = "testplans.TestPlanTag"
 
     plan = factory.SubFactory(TestPlanFactory)
     tag = factory.SubFactory(TestTagFactory)
 
 
 class TestPlanComponentFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'testplans.TestPlanComponent'
+        model = "testplans.TestPlanComponent"
 
     plan = factory.SubFactory(TestPlanFactory)
     component = factory.SubFactory(ComponentFactory)
 
 
 class TCMSEnvPlanMapFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'testplans.TCMSEnvPlanMap'
+        model = "testplans.TCMSEnvPlanMap"
 
     plan = factory.SubFactory(TestPlanFactory)
     group = factory.SubFactory(TCMSEnvGroupFactory)
 
 
 class TestPlanTextFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'testplans.TestPlanText'
+        model = "testplans.TestPlanText"
 
     plan = factory.SubFactory(TestPlanFactory)
     plan_text_version = 1
     author = factory.SubFactory(UserFactory)
     create_date = factory.LazyFunction(datetime.now)
-    plan_text = factory.Sequence(lambda n: 'Plan text %d' % n)
+    plan_text = factory.Sequence(lambda n: "Plan text %d" % n)
     checksum = factory.LazyAttribute(lambda obj: md5_hash(obj.plan_text))
 
 
 class TestPlanEmailSettingsFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'testplans.TestPlanEmailSettings'
+        model = "testplans.TestPlanEmailSettings"
 
     plan = factory.SubFactory(TestPlanFactory)
 
@@ -354,21 +325,19 @@ class TestPlanEmailSettingsFactory(DjangoModelFactory):
 
 
 class TestCaseCategoryFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'testcases.TestCaseCategory'
+        model = "testcases.TestCaseCategory"
 
-    name = factory.Sequence(lambda n: 'category %d' % n)
+    name = factory.Sequence(lambda n: "category %d" % n)
     product = factory.SubFactory(ProductFactory)
-    description = ''
+    description = ""
 
 
 class TestCaseFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'testcases.TestCase'
+        model = "testcases.TestCase"
 
-    summary = factory.Sequence(lambda n: 'Test case summary %d' % n)
+    summary = factory.Sequence(lambda n: "Test case summary %d" % n)
     estimated_time = timedelta(0)
 
     case_status = factory.LazyFunction(lambda: TestCaseStatus.objects.all()[0:1][0])
@@ -412,9 +381,8 @@ class TestCaseFactory(DjangoModelFactory):
 
 
 class TestCasePlanFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'testcases.TestCasePlan'
+        model = "testcases.TestCasePlan"
 
     plan = factory.SubFactory(TestPlanFactory)
     case = factory.SubFactory(TestCaseFactory)
@@ -422,28 +390,25 @@ class TestCasePlanFactory(DjangoModelFactory):
 
 
 class TestCaseAttachmentFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'testcases.TestCaseAttachment'
+        model = "testcases.TestCaseAttachment"
 
     attachment = factory.SubFactory(TestAttachmentFactory)
     case = factory.SubFactory(TestCaseFactory)
-    case_run = factory.SubFactory('tests.factories.TestCaseRunFactory')
+    case_run = factory.SubFactory("tests.factories.TestCaseRunFactory")
 
 
 class TestCaseComponentFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'testcases.TestCaseComponent'
+        model = "testcases.TestCaseComponent"
 
     case = factory.SubFactory(TestCaseFactory)
     component = factory.SubFactory(ComponentFactory)
 
 
 class TestCaseTagFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'testcases.TestCaseTag'
+        model = "testcases.TestCaseTag"
 
     case = factory.SubFactory(TestCaseFactory)
     tag = factory.SubFactory(TestTagFactory)
@@ -451,17 +416,16 @@ class TestCaseTagFactory(DjangoModelFactory):
 
 
 class TestCaseTextFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'testcases.TestCaseText'
+        model = "testcases.TestCaseText"
 
     case = factory.SubFactory(TestCaseFactory)
     case_text_version = 1
     author = factory.SubFactory(UserFactory)
-    action = 'action'
-    effect = 'effect'
-    setup = 'setup'
-    breakdown = 'breakdown'
+    action = "action"
+    effect = "effect"
+    setup = "setup"
+    breakdown = "breakdown"
     action_checksum = factory.LazyAttribute(lambda obj: md5_hash(obj.action))
     effect_checksum = factory.LazyAttribute(lambda obj: md5_hash(obj.effect))
     setup_checksum = factory.LazyAttribute(lambda obj: md5_hash(obj.setup))
@@ -469,18 +433,16 @@ class TestCaseTextFactory(DjangoModelFactory):
 
 
 class ContactFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'testcases.Contact'
+        model = "testcases.Contact"
 
-    name = factory.Sequence(lambda n: 'contact_%d' % n)
-    email = factory.LazyAttribute(lambda obj: '%s@example.com' % obj.name.replace(' ', '_'))
+    name = factory.Sequence(lambda n: "contact_%d" % n)
+    email = factory.LazyAttribute(lambda obj: "%s@example.com" % obj.name.replace(" ", "_"))
 
 
 class TestCaseEmailSettingsFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'testcases.TestCaseEmailSettings'
+        model = "testcases.TestCaseEmailSettings"
 
     case = factory.SubFactory(TestCaseFactory)
 
@@ -489,15 +451,14 @@ class TestCaseEmailSettingsFactory(DjangoModelFactory):
 
 
 class TestRunFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'testruns.TestRun'
+        model = "testruns.TestRun"
 
-    summary = factory.Sequence(lambda n: 'Test run summary %d' % n)
+    summary = factory.Sequence(lambda n: "Test run summary %d" % n)
     product_version = factory.SubFactory(VersionFactory)
     plan_text_version = 1
     stop_date = None
-    notes = ''
+    notes = ""
     plan = factory.SubFactory(TestPlanFactory)
     # FIXME: field name build conflicts with method Factory.build
     build = factory.SubFactory(TestBuildFactory)
@@ -530,16 +491,15 @@ class TestRunFactory(DjangoModelFactory):
 
 
 class TestCaseRunFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'testruns.TestCaseRun'
+        model = "testruns.TestCaseRun"
 
     assignee = factory.SubFactory(UserFactory)
     tested_by = factory.SubFactory(UserFactory)
     case_text_version = 1
     running_date = None
     close_date = None
-    notes = ''
+    notes = ""
     sortkey = factory.Sequence(lambda n: n)
     run = factory.SubFactory(TestRunFactory)
     case = factory.SubFactory(TestCaseFactory)
@@ -548,27 +508,24 @@ class TestCaseRunFactory(DjangoModelFactory):
 
 
 class TestRunTagFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'testruns.TestRunTag'
+        model = "testruns.TestRunTag"
 
     tag = factory.SubFactory(TestTagFactory)
     run = factory.SubFactory(TestRunFactory)
 
 
 class TestRunCCFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'testruns.TestRunCC'
+        model = "testruns.TestRunCC"
 
     run = factory.SubFactory(TestRunFactory)
     user = factory.SubFactory(UserFactory)
 
 
 class TCMSEnvRunValueMapFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'testruns.TCMSEnvRunValueMap'
+        model = "testruns.TCMSEnvRunValueMap"
 
     run = factory.SubFactory(TestRunFactory)
     value = factory.SubFactory(TCMSEnvValueFactory)
@@ -578,42 +535,38 @@ class TCMSEnvRunValueMapFactory(DjangoModelFactory):
 
 
 class ProfilesFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'profiles.Profiles'
+        model = "profiles.Profiles"
 
-    login_name = factory.Sequence(lambda n: 'Profile login name %d' % n)
-    cryptpassword = 'crypted password'
+    login_name = factory.Sequence(lambda n: "Profile login name %d" % n)
+    cryptpassword = "crypted password"
     realname = factory.LazyAttribute(lambda obj: "%s's realname" % obj.login_name)
-    disabledtext = ''
+    disabledtext = ""
     mybugslink = 1
 
 
 class GroupsFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'profiles.Groups'
+        model = "profiles.Groups"
 
-    name = factory.Sequence(lambda n: 'Group name %d' % n)
-    description = ''
+    name = factory.Sequence(lambda n: "Group name %d" % n)
+    description = ""
     isbuggroup = 0
-    userregexp = ''
+    userregexp = ""
     isactive = 0
 
 
 class UserGroupMapFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'profiles.UserGroupMap'
+        model = "profiles.UserGroupMap"
 
     user = factory.SubFactory(UserFactory)
     group = factory.SubFactory(GroupsFactory)
 
 
 class UserProfileFactory(DjangoModelFactory):
-
     class Meta:
-        model = 'profiles.UserProfile'
+        model = "profiles.UserProfile"
 
     user = factory.SubFactory(UserFactory)
 
@@ -624,27 +577,27 @@ class UserProfileFactory(DjangoModelFactory):
 class IssueTrackerProductFactory(DjangoModelFactory):
     """Factory to create model IssueTrackerProduct"""
 
-    name = factory.Sequence(lambda n: f'tracker_product_{n}')
+    name = factory.Sequence(lambda n: f"tracker_product_{n}")
 
     class Meta:
-        model = 'issuetracker.IssueTrackerProduct'
+        model = "issuetracker.IssueTrackerProduct"
 
 
 class IssueTrackerFactory(DjangoModelFactory):
     """Factory to create model IssueTracker"""
 
     enabled = True
-    name = factory.Sequence(lambda n: f'Cool Issue Tracker {n}')
-    issue_url_fmt = 'http://localhost/%{issue_key}s'
-    validate_regex = r'^\d+$'
+    name = factory.Sequence(lambda n: f"Cool Issue Tracker {n}")
+    issue_url_fmt = "http://localhost/%{issue_key}s"
+    validate_regex = r"^\d+$"
     credential_type = CredentialTypes.NoNeed.name
-    issue_report_endpoint = '/enter.cgi'
+    issue_report_endpoint = "/enter.cgi"
     # product = factory.SubFactory(f.ProductFactory)
     tracker_product = factory.SubFactory(IssueTrackerProductFactory)
-    issue_report_params = 'product:\ncomponent:'
+    issue_report_params = "product:\ncomponent:"
 
     class Meta:
-        model = 'issuetracker.IssueTracker'
+        model = "issuetracker.IssueTracker"
 
 
 class ProductIssueTrackerRelationshipFactory(DjangoModelFactory):
@@ -654,14 +607,14 @@ class ProductIssueTrackerRelationshipFactory(DjangoModelFactory):
     issue_tracker = factory.SubFactory(IssueTrackerFactory)
 
     class Meta:
-        model = 'issuetracker.ProductIssueTrackerRelationship'
+        model = "issuetracker.ProductIssueTrackerRelationship"
 
 
 class IssueFactory(DjangoModelFactory):
     """Factory to create model Issue"""
 
     class Meta:
-        model = 'issuetracker.Issue'
+        model = "issuetracker.Issue"
 
     tracker = factory.SubFactory(IssueTrackerFactory)
     case = factory.SubFactory(TestCaseFactory)
@@ -672,7 +625,7 @@ class UserPwdCredentialFactory(DjangoModelFactory):
     """Factory to create UserPwdCredentialFactory"""
 
     class Meta:
-        model = 'issuetracker.UserPwdCredential'
+        model = "issuetracker.UserPwdCredential"
 
     issue_tracker = factory.SubFactory(IssueTrackerFactory)
 
@@ -681,6 +634,6 @@ class TokenCredentialFactory(DjangoModelFactory):
     """Factory to create model UserPwdCredential"""
 
     class Meta:
-        model = 'issuetracker.TokenCredential'
+        model = "issuetracker.TokenCredential"
 
     issue_tracker = factory.SubFactory(IssueTrackerFactory)

@@ -2,10 +2,12 @@
 
 from tcms.core.tcms_router import connection
 
-__all__ = ('SQLExecution',
-           'get_groupby_result',
-           'GroupByResult',
-           'workaround_single_value_for_in_clause')
+__all__ = (
+    "SQLExecution",
+    "get_groupby_result",
+    "GroupByResult",
+    "workaround_single_value_for_in_clause",
+)
 
 
 def workaround_single_value_for_in_clause(build_ids):
@@ -41,8 +43,7 @@ class SQLExecution:
     """
 
     def __init__(self, sql, params=None, with_field_name=True):
-        """Initialize and execute SQL query
-        """
+        """Initialize and execute SQL query"""
         self.cursor = connection.reader_cursor
         if params is None:
             self.cursor.execute(sql)
@@ -137,7 +138,7 @@ class GroupByResult:
         # within GroupByResult could be integer or a nested GroupByResult.
         if key in self._data:
             return self._data.__getitem__(key)
-        raise KeyError(f'Unknown key {key} inside the group by result.')
+        raise KeyError(f"Unknown key {key} inside the group by result.")
 
     def __setitem__(self, key, value):
         r = self._data.__setitem__(key, value)
@@ -227,8 +228,8 @@ class GroupByResult:
             return round(subtotal * 100.0 / total, 1)
 
     def __getattr__(self, name):
-        if name.endswith('_percent'):
-            key, identifier = name.split('_')
+        if name.endswith("_percent"):
+            key, identifier = name.split("_")
             if key in self._data:
                 return self._get_percent(key)
         return 0
@@ -251,9 +252,9 @@ class GroupByResult:
         if refresh:
             necessary_to_count = True
         else:
-            necessary_to_count = 'value_leaf_count' not in self._meta
+            necessary_to_count = "value_leaf_count" not in self._meta
         if not necessary_to_count:
-            return self._meta['value_leaf_count']
+            return self._meta["value_leaf_count"]
 
         count = 0
         for key, value in self.iteritems():
@@ -261,7 +262,7 @@ class GroupByResult:
                 count += value.leaf_values_count(value_in_row)
             else:
                 count = 1 if value_in_row else count + 1
-        self._meta['value_leaf_count'] = count
+        self._meta["value_leaf_count"] = count
         return count
 
 
@@ -270,10 +271,15 @@ class GroupByResult:
 
 # TODO: key_conv and value_name are not used, maybe the rest as well.
 # we should probably remove them
-def get_groupby_result(sql, params,
-                       key_name=None, key_conv=None,
-                       value_name=None,
-                       with_rollup=False, rollup_name=None):
+def get_groupby_result(
+    sql,
+    params,
+    key_name=None,
+    key_conv=None,
+    value_name=None,
+    with_rollup=False,
+    rollup_name=None,
+):
     """Get mapping between GROUP BY field and total count
 
     Example, to execute SQL `SELECT objtype, count(*) from t1 GROUP by name`.
@@ -306,20 +312,21 @@ def get_groupby_result(sql, params,
     :return: mapping between GROUP BY field and the total count.
     :rtype: dict
     """
+
     def _key_conv(value):
         if key_conv is not None:
-            if not hasattr(key_conv, '__call__'):
-                raise ValueError('key_conv is not a callable object')
+            if not hasattr(key_conv, "__call__"):
+                raise ValueError("key_conv is not a callable object")
             return key_conv(value)
         else:
             return value
 
-    _key_name = 'groupby_field' if key_name is None else str(key_name)
-    _value_name = 'total_count' if value_name is None else str(value_name)
+    _key_name = "groupby_field" if key_name is None else str(key_name)
+    _value_name = "total_count" if value_name is None else str(value_name)
 
     _rollup_name = None
     if with_rollup:
-        _rollup_name = 'TOTAL' if rollup_name is None else rollup_name
+        _rollup_name = "TOTAL" if rollup_name is None else rollup_name
 
     def _rows_generator():
         sql_executor = SQLExecution(sql, params)
@@ -338,32 +345,34 @@ class CaseRunStatusGroupByResult(GroupByResult):
 
     @property
     def complete_count(self):
-        return (self.get('PASSED', 0) +
-                self.get('ERROR', 0) +
-                self.get('FAILED', 0) +
-                self.get('WAIVED', 0))
+        return (
+            self.get("PASSED", 0)
+            + self.get("ERROR", 0)
+            + self.get("FAILED", 0)
+            + self.get("WAIVED", 0)
+        )
 
     @property
     def failure_count(self):
-        return self.get('ERROR', 0) + self.get('FAILED', 0)
+        return self.get("ERROR", 0) + self.get("FAILED", 0)
 
     @property
     def complete_percent(self):
         if self.total:
             return self.complete_count * 100.0 / self.total
         else:
-            return .0
+            return 0.0
 
     @property
     def failure_percent_in_complete(self):
         if self.complete_count:
             return self.failure_count * 100.0 / self.complete_count
         else:
-            return .0
+            return 0.0
 
     @property
     def failure_percent_in_total(self):
         if self.total:
             return self.failure_count * 100.0 / self.total
         else:
-            return .0
+            return 0.0

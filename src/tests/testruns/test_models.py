@@ -20,18 +20,20 @@ class TestRunGetIssuesCount(BaseCaseRun):
             product_version=cls.version,
             plan=cls.plan,
             manager=cls.tester,
-            default_tester=cls.tester)
+            default_tester=cls.tester,
+        )
         cls.test_run_no_issues = f.TestRunFactory(
             product_version=cls.version,
             plan=cls.plan,
             manager=cls.tester,
-            default_tester=cls.tester)
+            default_tester=cls.tester,
+        )
 
         cls.bz_tracker = cls.create_bz_tracker()
 
-        cls.case_run_1.add_issue('12345', cls.bz_tracker)
-        cls.case_run_1.add_issue('909090', cls.bz_tracker)
-        cls.case_run_3.add_issue('4567890', cls.bz_tracker)
+        cls.case_run_1.add_issue("12345", cls.bz_tracker)
+        cls.case_run_1.add_issue("909090", cls.bz_tracker)
+        cls.case_run_3.add_issue("4567890", cls.bz_tracker)
 
     def test_get_issues_count_if_no_issue_added(self):
         self.assertEqual(0, self.empty_test_run.get_issues_count())
@@ -46,12 +48,10 @@ class TestSendMailNotifyOnTestRunCreation(test.TestCase):
 
     def setUp(self):
         mail.outbox = []
-        post_save.connect(mail_notify_on_test_run_creation_or_update,
-                          sender=TestRun)
+        post_save.connect(mail_notify_on_test_run_creation_or_update, sender=TestRun)
 
     def tearDown(self):
-        post_save.disconnect(mail_notify_on_test_run_creation_or_update,
-                             sender=TestRun)
+        post_save.disconnect(mail_notify_on_test_run_creation_or_update, sender=TestRun)
 
     def test_notify(self):
         run = f.TestRunFactory()
@@ -60,11 +60,10 @@ class TestSendMailNotifyOnTestRunCreation(test.TestCase):
 
         self.assertEqual(run.get_notification_recipients(), out_mail.recipients())
         self.assertEqual(
-            f'A new test run is created from plan {run.plan.pk}: {run.summary}',
-            out_mail.subject
+            f"A new test run is created from plan {run.plan.pk}: {run.summary}",
+            out_mail.subject,
         )
-        self.assertIn(f'A new test run {run.pk} has been created for you.',
-                      out_mail.body)
+        self.assertIn(f"A new test run {run.pk} has been created for you.", out_mail.body)
 
 
 class TestSendMailNotifyOnTestRunUpdate(test.TestCase):
@@ -76,23 +75,20 @@ class TestSendMailNotifyOnTestRunUpdate(test.TestCase):
 
     def setUp(self):
         mail.outbox = []
-        post_save.connect(mail_notify_on_test_run_creation_or_update,
-                          sender=TestRun)
+        post_save.connect(mail_notify_on_test_run_creation_or_update, sender=TestRun)
 
     def tearDown(self):
-        post_save.disconnect(mail_notify_on_test_run_creation_or_update,
-                             sender=TestRun)
+        post_save.disconnect(mail_notify_on_test_run_creation_or_update, sender=TestRun)
 
     def test_notify(self):
-        self.test_run.summary = 'A new test run for mail notify'
+        self.test_run.summary = "A new test run for mail notify"
         self.test_run.save()
 
         out_mail = mail.outbox[0]
 
-        self.assertEqual(self.test_run.get_notification_recipients(),
-                         out_mail.recipients())
-        self.assertEqual(f'Test Run {self.test_run.pk} - '
-                         f'{self.test_run.summary} has been updated',
-                         out_mail.subject)
-        self.assertIn(f'Test run {self.test_run.pk} has been updated for you.',
-                      out_mail.body)
+        self.assertEqual(self.test_run.get_notification_recipients(), out_mail.recipients())
+        self.assertEqual(
+            f"Test Run {self.test_run.pk} - " f"{self.test_run.summary} has been updated",
+            out_mail.subject,
+        )
+        self.assertIn(f"Test run {self.test_run.pk} has been updated for you.", out_mail.body)

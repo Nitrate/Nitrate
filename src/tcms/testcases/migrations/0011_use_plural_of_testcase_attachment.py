@@ -6,13 +6,13 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('testcases', '0010_remove_max_length_from_authfield'),
+        ("testcases", "0010_remove_max_length_from_authfield"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='testcase',
-            old_name='attachment',
-            new_name='attachments',
+            model_name="testcase",
+            old_name="attachment",
+            new_name="attachments",
         ),
     ]

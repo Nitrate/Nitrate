@@ -2,7 +2,7 @@
 
 from tcms.xmlrpc.decorators import log_call
 
-__xmlrpc_namespace__ = 'Testopia'
+__xmlrpc_namespace__ = "Testopia"
 
 
 @log_call(namespace=__xmlrpc_namespace__)

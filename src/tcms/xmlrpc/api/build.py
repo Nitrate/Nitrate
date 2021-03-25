@@ -7,11 +7,17 @@ from tcms.management.models import TestBuild
 from tcms.xmlrpc.utils import pre_check_product, parse_bool_value
 
 __all__ = (
-    'check_build', 'create', 'get', 'get_runs', 'get_caseruns',
-    'lookup_id_by_name', 'lookup_name_by_id', 'update'
+    "check_build",
+    "create",
+    "get",
+    "get_runs",
+    "get_caseruns",
+    "lookup_id_by_name",
+    "lookup_name_by_id",
+    "update",
 )
 
-__xmlrpc_namespace__ = 'TestBuild'
+__xmlrpc_namespace__ = "TestBuild"
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -37,7 +43,7 @@ def check_build(request, name, product):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('management.add_testbuild', raise_exception=True)
+@permission_required("management.add_testbuild", raise_exception=True)
 def create(request, values):
     """Creates a new build object and stores it in the database
 
@@ -59,16 +65,16 @@ def create(request, values):
         # Create build by product name and set the build to inactive.
         Build.create({'product': 'TCMS', 'name': 'tcms_testing 2', 'description': 'None', 'is_active': 0})
     """
-    if not values.get('product') or not values.get('name'):
-        raise ValueError('Product and name are both required.')
+    if not values.get("product") or not values.get("name"):
+        raise ValueError("Product and name are both required.")
 
     p = pre_check_product(values)
 
     return TestBuild.objects.create(
         product=p,
-        name=values['name'],
-        description=values.get('description'),
-        is_active=parse_bool_value(values.get('is_active', True))
+        name=values["name"],
+        description=values.get("description"),
+        is_active=parse_bool_value(values.get("is_active", True)),
     ).serialize()
 
 
@@ -102,7 +108,7 @@ def get_runs(request, build_id):
     from tcms.testruns.models import TestRun
 
     tb = TestBuild.objects.get(build_id=build_id)
-    query = {'build': tb}
+    query = {"build": tb}
 
     return TestRun.to_xmlrpc(query)
 
@@ -121,7 +127,7 @@ def get_caseruns(request, build_id):
     from tcms.testruns.models import TestCaseRun
 
     tb = TestBuild.objects.get(build_id=build_id)
-    query = {'build': tb}
+    query = {"build": tb}
 
     return TestCaseRun.to_xmlrpc(query)
 
@@ -145,7 +151,7 @@ def lookup_name_by_id(request, build_id):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('management.change_testbuild', raise_exception=True)
+@permission_required("management.change_testbuild", raise_exception=True)
 def update(request, build_id, values):
     """
     Description: Updates the fields of the selected build or builds.
@@ -175,15 +181,14 @@ def update(request, build_id, values):
         update_fields.append(name)
 
     update_fields = list()
-    if values.get('product'):
-        _update_value(tb, 'product', pre_check_product(values))
-    if values.get('name'):
-        _update_value(tb, 'name', values['name'])
-    if values.get('description'):
-        _update_value(tb, 'description', values['description'])
-    if values.get('is_active') is not None:
-        _update_value(tb, 'is_active', parse_bool_value(values.get(
-            'is_active', True)))
+    if values.get("product"):
+        _update_value(tb, "product", pre_check_product(values))
+    if values.get("name"):
+        _update_value(tb, "name", values["name"])
+    if values.get("description"):
+        _update_value(tb, "description", values["description"])
+    if values.get("is_active") is not None:
+        _update_value(tb, "is_active", parse_bool_value(values.get("is_active", True)))
 
     tb.save(update_fields=update_fields)
 

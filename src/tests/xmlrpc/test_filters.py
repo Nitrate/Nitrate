@@ -7,10 +7,10 @@ from tests.xmlrpc.utils import XmlrpcAPIBaseTest
 
 
 class TestFaultCode(XmlrpcAPIBaseTest):
-
     def test_403(self):
         def raise_exception(*args, **kwargs):
             from django.core.exceptions import PermissionDenied
+
             raise PermissionDenied()
 
         wrapper = wrap_exceptions(raise_exception)
@@ -19,13 +19,14 @@ class TestFaultCode(XmlrpcAPIBaseTest):
     def test_404(self):
         def raise_exception(*args, **kwargs):
             from django.db.models import ObjectDoesNotExist
+
             raise ObjectDoesNotExist()
 
         wrapper = wrap_exceptions(raise_exception)
         self.assertXmlrpcFaultNotFound(wrapper)
 
     def test_400(self):
-        exceptions = [v for k, v in locals().copy().items() if k != 'self']
+        exceptions = [v for k, v in locals().copy().items() if k != "self"]
         exceptions.extend((TypeError, ValueError))
 
         def raise_exception(cls):
@@ -38,6 +39,7 @@ class TestFaultCode(XmlrpcAPIBaseTest):
     def test_409(self):
         def raise_exception(*args, **kwargs):
             from django.db.utils import IntegrityError
+
             raise IntegrityError()
 
         wrapper = wrap_exceptions(raise_exception)

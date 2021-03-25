@@ -6,18 +6,18 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('profiles', '0001_initial'),
+        ("profiles", "0001_initial"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='bookmarkcategory',
-            name='user',
+            model_name="bookmarkcategory",
+            name="user",
         ),
         migrations.DeleteModel(
-            name='Bookmark',
+            name="Bookmark",
         ),
         migrations.DeleteModel(
-            name='BookmarkCategory',
+            name="BookmarkCategory",
         ),
     ]

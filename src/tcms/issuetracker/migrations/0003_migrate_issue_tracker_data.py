@@ -6,18 +6,19 @@ from tcms.issuetracker.models import CredentialTypes
 
 
 def migrate_to_issue_tracker(apps, schema_editor):
-    TestCaseBugSystem = apps.get_model('testcases', 'TestCaseBugSystem')
-    TestCaseBug = apps.get_model('testcases', 'TestCaseBug')
-    IssueTracker = apps.get_model('issuetracker', 'IssueTracker')
-    IssueTrackerProduct = apps.get_model('issuetracker', 'IssueTrackerProduct')
+    TestCaseBugSystem = apps.get_model("testcases", "TestCaseBugSystem")
+    TestCaseBug = apps.get_model("testcases", "TestCaseBug")
+    IssueTracker = apps.get_model("issuetracker", "IssueTracker")
+    IssueTrackerProduct = apps.get_model("issuetracker", "IssueTrackerProduct")
     ProductIssueTrackerRelationship = apps.get_model(
-        'issuetracker', 'ProductIssueTrackerRelationship')
-    Issue = apps.get_model('issuetracker', 'Issue')
-    Product = apps.get_model('management', 'Product')
+        "issuetracker", "ProductIssueTrackerRelationship"
+    )
+    Issue = apps.get_model("issuetracker", "Issue")
+    Product = apps.get_model("management", "Product")
 
     issue_tracker_cred_type = {
-        'Bugzilla': CredentialTypes.UserPwd.name,
-        'JIRA': CredentialTypes.NoNeed.name,
+        "Bugzilla": CredentialTypes.UserPwd.name,
+        "JIRA": CredentialTypes.NoNeed.name,
     }
 
     existing_products = Product.objects.all()
@@ -29,16 +30,18 @@ def migrate_to_issue_tracker(apps, schema_editor):
         issue_tracker = IssueTracker.objects.create(
             name=bug_system.name,
             description=bug_system.description,
-            service_url='',
-            api_url='',
+            service_url="",
+            api_url="",
             issue_url_fmt=bug_system.url_reg_exp,
             validate_regex=bug_system.validate_reg_exp,
             credential_type=credential_type,
-            tracker_product=tracker_product)
+            tracker_product=tracker_product,
+        )
 
         for product in existing_products:
             ProductIssueTrackerRelationship.objects.create(
-                product=product, issue_tracker=issue_tracker)
+                product=product, issue_tracker=issue_tracker
+            )
 
         for bug in TestCaseBug.objects.filter(bug_system=bug_system):
             Issue.objects.create(
@@ -47,7 +50,8 @@ def migrate_to_issue_tracker(apps, schema_editor):
                 description=bug.description,
                 tracker=issue_tracker,
                 case=bug.case,
-                case_run=bug.case_run)
+                case_run=bug.case_run,
+            )
 
     TestCaseBug.objects.all().delete()
     TestCaseBugSystem.objects.all().delete()
@@ -60,19 +64,21 @@ def migrate_to_issue_tracker(apps, schema_editor):
 
 
 def restore_back_to_original_bug_systems(apps, schema_editor):
-    TestCaseBugSystem = apps.get_model('testcases', 'TestCaseBugSystem')
-    TestCaseBug = apps.get_model('testcases', 'TestCaseBug')
-    IssueTracker = apps.get_model('issuetracker', 'IssueTracker')
-    Issue = apps.get_model('issuetracker', 'Issue')
+    TestCaseBugSystem = apps.get_model("testcases", "TestCaseBugSystem")
+    TestCaseBug = apps.get_model("testcases", "TestCaseBug")
+    IssueTracker = apps.get_model("issuetracker", "IssueTracker")
+    Issue = apps.get_model("issuetracker", "Issue")
     ProductIssueTrackerRelationship = apps.get_model(
-        'issuetracker', 'ProductIssueTrackerRelationship')
+        "issuetracker", "ProductIssueTrackerRelationship"
+    )
 
     for tracker in IssueTracker.objects.all():
         bug_system = TestCaseBugSystem.objects.create(
             name=tracker.name,
             description=tracker.description,
             url_reg_exp=tracker.issue_url_fmt,
-            validate_reg_exp=tracker.validate_regex)
+            validate_reg_exp=tracker.validate_regex,
+        )
         for issue in tracker.issues.all():
             TestCaseBug.objects.create(
                 bug_id=issue.issue_key,
@@ -80,7 +86,8 @@ def restore_back_to_original_bug_systems(apps, schema_editor):
                 description=issue.description,
                 bug_system=bug_system,
                 case=issue.case,
-                case_run=issue.case_run)
+                case_run=issue.case_run,
+            )
 
     Issue.objects.all().delete()
     ProductIssueTrackerRelationship.objects.all().delete()
@@ -90,12 +97,9 @@ def restore_back_to_original_bug_systems(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('issuetracker', '0002_add_issue_tracker_products'),
+        ("issuetracker", "0002_add_issue_tracker_products"),
     ]
 
     operations = [
-        migrations.RunPython(
-            migrate_to_issue_tracker,
-            restore_back_to_original_bug_systems
-        ),
+        migrations.RunPython(migrate_to_issue_tracker, restore_back_to_original_bug_systems),
     ]

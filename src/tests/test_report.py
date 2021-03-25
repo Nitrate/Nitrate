@@ -20,22 +20,22 @@ class TestReportOverall(BaseCaseRun):
     def setUpTestData(cls):
         super().setUpTestData()
 
-        cls.product_a = f.ProductFactory(name='producta')
-        cls.product_b = f.ProductFactory(name='productb')
+        cls.product_a = f.ProductFactory(name="producta")
+        cls.product_b = f.ProductFactory(name="productb")
 
     def test_overall(self):
-        response = self.client.get(reverse('report-overall'))
+        response = self.client.get(reverse("report-overall"))
 
         content = [
             '<td><a href="{}">{}</a></td><td>{}</td><td>{}</td><td>{}</td>'.format(
-                reverse('report-overview', args=[self.product.pk]),
+                reverse("report-overview", args=[self.product.pk]),
                 self.product.name,
                 TestPlan.objects.filter(product=self.product).count(),
                 TestRun.objects.filter(plan__product=self.product).count(),
-                TestCase.objects.filter(plan__product=self.product).count()
+                TestCase.objects.filter(plan__product=self.product).count(),
             ),
-            '<td>producta</td><td>0</td><td>0</td><td>0</td>',
-            '<td>productb</td><td>0</td><td>0</td><td>0</td>',
+            "<td>producta</td><td>0</td><td>0</td><td>0</td>",
+            "<td>productb</td><td>0</td><td>0</td><td>0</td>",
         ]
 
         for item in content:
@@ -50,10 +50,10 @@ class TestProductOverview(BaseCaseRun):
         super().setUpTestData()
 
         tcrs_get = TestCaseRunStatus.objects.get
-        cls.status_idle = tcrs_get(name='IDLE')
-        cls.status_running = tcrs_get(name='RUNNING')
-        cls.status_passed = tcrs_get(name='PASSED')
-        cls.status_failed = tcrs_get(name='FAILED')
+        cls.status_idle = tcrs_get(name="IDLE")
+        cls.status_running = tcrs_get(name="RUNNING")
+        cls.status_passed = tcrs_get(name="PASSED")
+        cls.status_failed = tcrs_get(name="FAILED")
 
         # Test data:
         # Runs: total(2), running(1), finished(1)
@@ -72,12 +72,11 @@ class TestProductOverview(BaseCaseRun):
         cls.case_run_5.save()
         cls.case_run_6.save()
 
-        cls.product_overview_url = reverse(
-            'report-overview', args=[cls.product.pk])
+        cls.product_overview_url = reverse("report-overview", args=[cls.product.pk])
 
     def test_404_if_specified_product_does_not_exist(self):
-        qs = Product.objects.aggregate(max_pk=Max('pk'))
-        url = reverse('report-overview', args=[qs['max_pk'] + 1])
+        qs = Product.objects.aggregate(max_pk=Max("pk"))
+        url = reverse("report-overview", args=[qs["max_pk"] + 1])
         self.assert404(self.client.get(url))
 
     def test_show_overview(self):
@@ -85,26 +84,27 @@ class TestProductOverview(BaseCaseRun):
 
         case_runs_subtotal = (
             # Runs
-            ('Finished', 1, 50.0),
-            ('Running', 1, 50.0),
-
+            ("Finished", 1, 50.0),
+            ("Running", 1, 50.0),
             # Case runs
-            ('PASSED', 2, 33.3),
-            ('FAILED', 1, 16.7),
-            ('IDLE', 2, 33.3),
-            ('ERROR', 0, 0),
-            ('PAUSED', 0, 0),
-            ('BLOCKED', 0, 0),
-            ('RUNNING', 1, 16.7),
-            ('WAIVED', 0, 0),
+            ("PASSED", 2, 33.3),
+            ("FAILED", 1, 16.7),
+            ("IDLE", 2, 33.3),
+            ("ERROR", 0, 0),
+            ("PAUSED", 0, 0),
+            ("BLOCKED", 0, 0),
+            ("RUNNING", 1, 16.7),
+            ("WAIVED", 0, 0),
         )
 
         for item_name, subtotal_count, percent in case_runs_subtotal:
             self.assertContains(
                 resp,
-                '<tr><td>{}</td><td>{}</td><td>{}%</td></tr>'.format(
-                    item_name, subtotal_count, percent),
-                html=True)
+                "<tr><td>{}</td><td>{}</td><td>{}%</td></tr>".format(
+                    item_name, subtotal_count, percent
+                ),
+                html=True,
+            )
 
 
 class TestOverallProductByBuilds(BaseCaseRun):
@@ -114,7 +114,7 @@ class TestOverallProductByBuilds(BaseCaseRun):
     def setUpTestData(cls):
         super().setUpTestData()
 
-        cls.url = reverse('report-overall-product-build', args=[cls.product.pk])
+        cls.url = reverse("report-overall-product-build", args=[cls.product.pk])
 
         # Test data:
         #
@@ -128,45 +128,52 @@ class TestOverallProductByBuilds(BaseCaseRun):
         #   Rest 2 case runs: IDLE
 
         tcrs_get = TestCaseRunStatus.objects.get
-        cls.status_running = tcrs_get(name='RUNNING')
-        cls.status_passed = tcrs_get(name='PASSED')
-        cls.status_failed = tcrs_get(name='FAILED')
+        cls.status_running = tcrs_get(name="RUNNING")
+        cls.status_passed = tcrs_get(name="PASSED")
+        cls.status_failed = tcrs_get(name="FAILED")
 
-        for case_run, status in ((cls.case_run_1, cls.status_failed),
-                                 (cls.case_run_2, cls.status_failed),
-                                 (cls.case_run_4, cls.status_running),
-                                 (cls.case_run_6, cls.status_passed)):
+        for case_run, status in (
+            (cls.case_run_1, cls.status_failed),
+            (cls.case_run_2, cls.status_failed),
+            (cls.case_run_4, cls.status_running),
+            (cls.case_run_6, cls.status_passed),
+        ):
             case_run.case_run_status = status
             case_run.save()
 
     def test_404_if_specified_product_does_not_exist(self):
-        qs = Product.objects.aggregate(max_pk=Max('pk'))
-        url = reverse('report-overall-product-build', args=[qs['max_pk'] + 1])
+        qs = Product.objects.aggregate(max_pk=Max("pk"))
+        url = reverse("report-overall-product-build", args=[qs["max_pk"] + 1])
         self.assert404(self.client.get(url))
 
     def test_404_if_query_nonexisting_build_for_details(self):
-        qs = TestBuild.objects.aggregate(max_pk=Max('pk'))
-        self.assert404(self.client.get(self.url, data={'build_id': qs['max_pk'] + 1}))
+        qs = TestBuild.objects.aggregate(max_pk=Max("pk"))
+        self.assert404(self.client.get(self.url, data={"build_id": qs["max_pk"] + 1}))
 
     def test_by_builds(self):
         resp = self.client.get(self.url)
 
         stats = (
-            (f'<a href="?build_id={self.build.pk}">{self.build.name}</a>',
-             '<p>0/2</p>',
-             '50.0',
-             '<div class="strong emphasize">2 Failed</div>'),
-            ('<a href="?build_id={}">{}</a>'.format(
-                self.product.build.get(name='unspecified').pk, 'unspecified'),
-             '<p>0/0</p>',
-             '0',
-             ''),
+            (
+                f'<a href="?build_id={self.build.pk}">{self.build.name}</a>',
+                "<p>0/2</p>",
+                "50.0",
+                '<div class="strong emphasize">2 Failed</div>',
+            ),
+            (
+                '<a href="?build_id={}">{}</a>'.format(
+                    self.product.build.get(name="unspecified").pk, "unspecified"
+                ),
+                "<p>0/0</p>",
+                "0",
+                "",
+            ),
         )
 
         for col_build, col_runs, col_case_runs, col_failed_case_runs in stats:
             self.assertContains(
                 resp,
-                '''\
+                """\
 <tr>
     <td class="variety_0">{0}</td>
     <td class="variety_1">{1}</td>
@@ -179,28 +186,32 @@ class TestOverallProductByBuilds(BaseCaseRun):
     </td>
     <td>{3}</td>
 </tr>
-'''.format(col_build, col_runs, col_case_runs, col_failed_case_runs),
-                html=True)
+""".format(
+                    col_build, col_runs, col_case_runs, col_failed_case_runs
+                ),
+                html=True,
+            )
 
     def test_show_case_runs_subtotal_by_one_build(self):
-        resp = self.client.get(self.url, data={'build_id': self.build.pk})
+        resp = self.client.get(self.url, data={"build_id": self.build.pk})
 
         data = (
-            ('BLOCKED', 0, 0),
-            ('ERROR', 0, 0),
-            ('FAILED', 2, 33.3),
-            ('IDLE', 2, 33.3),
-            ('PASSED', 1, 16.7),
-            ('PAUSED', 0, 0),
-            ('RUNNING', 1, 16.7),
-            ('WAIVED', 0, 0),
+            ("BLOCKED", 0, 0),
+            ("ERROR", 0, 0),
+            ("FAILED", 2, 33.3),
+            ("IDLE", 2, 33.3),
+            ("PASSED", 1, 16.7),
+            ("PAUSED", 0, 0),
+            ("RUNNING", 1, 16.7),
+            ("WAIVED", 0, 0),
         )
 
         for status_name, count, percent in data:
             self.assertContains(
                 resp,
                 '<tr class="variety_{}">'
-                '<td>{}</td><td>{}</td><td>{}%</td></tr>'.format(
+                "<td>{}</td><td>{}</td><td>{}%</td></tr>".format(
                     status_name.lower(), status_name, count, percent
                 ),
-                html=True)
+                html=True,
+            )

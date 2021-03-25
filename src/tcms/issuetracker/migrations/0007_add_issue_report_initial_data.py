@@ -4,14 +4,14 @@ from django.db import migrations
 
 
 def forward(apps, schema_editor):
-    IssueTracker = apps.get_model('issuetracker', 'IssueTracker')
+    IssueTracker = apps.get_model("issuetracker", "IssueTracker")
 
     for tracker in IssueTracker.objects.all():
-        if tracker.name == 'JIRA':
-            tracker.issue_report_endpoint = '/secure/CreateIssue!default.jspa'
-        elif tracker.name == 'Bugzilla':
-            tracker.issue_report_endpoint = '/enter_bug.cgi'
-            tracker.issue_report_templ = '''\
+        if tracker.name == "JIRA":
+            tracker.issue_report_endpoint = "/secure/CreateIssue!default.jspa"
+        elif tracker.name == "Bugzilla":
+            tracker.issue_report_endpoint = "/enter_bug.cgi"
+            tracker.issue_report_templ = """\
 Filed from caserun (INSERT URL HERE)
 
 Version-Release number of selected component (if applicable):
@@ -25,14 +25,14 @@ Actual results:
 #FIXME
 
 Expected results:
-{effect}'''
-            tracker.issue_report_params = '''\
+{effect}"""
+            tracker.issue_report_params = """\
 op_sys: Linux
 component:
 product:
 short_desc:
 version:
-'''
+"""
 
         tracker.save()
 
@@ -40,9 +40,7 @@ version:
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('issuetracker', '0006_add_field_alias_to_product_issue_tracker_relation'),
+        ("issuetracker", "0006_add_field_alias_to_product_issue_tracker_relation"),
     ]
 
-    operations = [
-        migrations.RunPython(forward, reverse_code=migrations.RunPython.noop)
-    ]
+    operations = [migrations.RunPython(forward, reverse_code=migrations.RunPython.noop)]

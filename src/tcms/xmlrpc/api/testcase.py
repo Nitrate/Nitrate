@@ -22,48 +22,48 @@ from tcms.core.utils import form_error_messages_to_list, timedelta2int
 
 
 __all__ = (
-    'add_comment',
-    'add_component',
-    'add_tag',
-    'add_to_run',
-    'attach_issue',
-    'check_case_status',
-    'check_priority',
-    'calculate_average_estimated_time',
-    'calculate_total_estimated_time',
-    'create',
-    'detach_issue',
-    'filter',
-    'filter_count',
-    'get',
-    'get_issue_tracker',
-    'get_issues',
-    'get_case_run_history',
-    'get_case_status',
-    'get_change_history',
-    'get_components',
-    'get_plans',
-    'get_tags',
-    'get_text',
-    'get_priority',
-    'link_plan',
-    'lookup_category_name_by_id',
-    'lookup_category_id_by_name',
-    'lookup_priority_name_by_id',
-    'lookup_priority_id_by_name',
-    'lookup_status_name_by_id',
-    'lookup_status_id_by_name',
-    'notification_add_cc',
-    'notification_get_cc_list',
-    'notification_remove_cc',
-    'remove_component',
-    'remove_tag',
-    'store_text',
-    'unlink_plan',
-    'update',
+    "add_comment",
+    "add_component",
+    "add_tag",
+    "add_to_run",
+    "attach_issue",
+    "check_case_status",
+    "check_priority",
+    "calculate_average_estimated_time",
+    "calculate_total_estimated_time",
+    "create",
+    "detach_issue",
+    "filter",
+    "filter_count",
+    "get",
+    "get_issue_tracker",
+    "get_issues",
+    "get_case_run_history",
+    "get_case_status",
+    "get_change_history",
+    "get_components",
+    "get_plans",
+    "get_tags",
+    "get_text",
+    "get_priority",
+    "link_plan",
+    "lookup_category_name_by_id",
+    "lookup_category_id_by_name",
+    "lookup_priority_name_by_id",
+    "lookup_priority_id_by_name",
+    "lookup_status_name_by_id",
+    "lookup_status_id_by_name",
+    "notification_add_cc",
+    "notification_get_cc_list",
+    "notification_remove_cc",
+    "remove_component",
+    "remove_tag",
+    "store_text",
+    "unlink_plan",
+    "update",
 )
 
-__xmlrpc_namespace__ = 'TestCase'
+__xmlrpc_namespace__ = "TestCase"
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -91,12 +91,16 @@ def add_comment(request, case_ids, comment):
     if not object_pks:
         return
     tcms.comments.models.add_comment(
-        request.user, 'testcases.testcase', object_pks, comment,
-        request.META.get('REMOTE_ADDR'))
+        request.user,
+        "testcases.testcase",
+        object_pks,
+        comment,
+        request.META.get("REMOTE_ADDR"),
+    )
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('testcases.add_testcasecomponent', raise_exception=True)
+@permission_required("testcases.add_testcasecomponent", raise_exception=True)
 def add_component(request, case_ids, component_ids):
     """Adds one or more components to the selected test cases.
 
@@ -122,10 +126,8 @@ def add_component(request, case_ids, component_ids):
     """
     from tcms.management.models import Component
 
-    tcs = TestCase.objects.filter(
-        case_id__in=pre_process_ids(value=case_ids))
-    cs = Component.objects.filter(
-        id__in=pre_process_ids(value=component_ids))
+    tcs = TestCase.objects.filter(case_id__in=pre_process_ids(value=case_ids))
+    cs = Component.objects.filter(id__in=pre_process_ids(value=component_ids))
 
     for tc in tcs.iterator():
         for c in cs.iterator():
@@ -133,7 +135,7 @@ def add_component(request, case_ids, component_ids):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('testcases.add_testcasetag', raise_exception=True)
+@permission_required("testcases.add_testcasetag", raise_exception=True)
 def add_tag(request, case_ids, tags):
     """Add one or more tags to the selected test cases.
 
@@ -155,9 +157,7 @@ def add_tag(request, case_ids, tags):
         # Add tag list ['foo', 'bar'] to cases list [1, 2] with String
         TestCase.add_tag('1, 2', 'foo, bar')
     """
-    tcs = TestCase.objects.filter(
-        case_id__in=pre_process_ids(value=case_ids)
-    ).only('pk')
+    tcs = TestCase.objects.filter(case_id__in=pre_process_ids(value=case_ids)).only("pk")
 
     if not tcs.exists():
         return
@@ -174,7 +174,7 @@ def add_tag(request, case_ids, tags):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('testruns.add_testcaserun', raise_exception=True)
+@permission_required("testruns.add_testcaserun", raise_exception=True)
 def add_to_run(request, case_ids, run_ids):
     """Add one or more cases to the selected test runs.
 
@@ -205,18 +205,18 @@ def add_to_run(request, case_ids, run_ids):
 
     trs = TestRun.objects.filter(run_id__in=run_ids)
     if not trs.exists():
-        raise ValueError('Invalid run_ids')
+        raise ValueError("Invalid run_ids")
 
     tcs = TestCase.objects.filter(case_id__in=case_ids)
     if not tcs.exists():
-        raise ValueError('Invalid case_ids')
+        raise ValueError("Invalid case_ids")
 
     for run, case in itertools.product(trs, tcs):
         run.add_case_run(case)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('issuetracker.add_issue', raise_exception=True)
+@permission_required("issuetracker.add_issue", raise_exception=True)
 def attach_issue(request, values):
     """Add one or more issues to the selected test cases.
 
@@ -256,12 +256,12 @@ def attach_issue(request, values):
     for value in values:
         form = CaseIssueForm(value)
         if form.is_valid():
-            case = form.cleaned_data['case']
+            case = form.cleaned_data["case"]
             case.add_issue(
-                form.cleaned_data['issue_key'],
-                form.cleaned_data['tracker'],
-                summary=form.cleaned_data['summary'],
-                description=form.cleaned_data['description']
+                form.cleaned_data["issue_key"],
+                form.cleaned_data["tracker"],
+                summary=form.cleaned_data["summary"],
+                description=form.cleaned_data["description"],
             )
         else:
             raise ValueError(form_error_messages_to_list(form))
@@ -318,19 +318,18 @@ def calculate_average_estimated_time(request, case_ids):
     """
     from django.db.models import Avg
 
-    tcs = TestCase.objects.filter(
-        pk__in=pre_process_ids(case_ids)).only('estimated_time')
+    tcs = TestCase.objects.filter(pk__in=pre_process_ids(case_ids)).only("estimated_time")
 
     if not tcs.exists():
-        raise ValueError('Please input valid case Id')
+        raise ValueError("Please input valid case Id")
 
     # aggregate avg return integer directly rather than timedelta
-    seconds = tcs.aggregate(Avg('estimated_time')).get('estimated_time__avg')
+    seconds = tcs.aggregate(Avg("estimated_time")).get("estimated_time__avg")
 
     m, s = divmod(seconds, 60)
     h, m = divmod(m, 60)
     # TODO: return h:m:s or d:h:m
-    return '%02i:%02i:%02i' % (h, m, s)
+    return "%02i:%02i:%02i" % (h, m, s)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -350,23 +349,22 @@ def calculate_total_estimated_time(request, case_ids):
     """
     from django.db.models import Sum
 
-    tcs = TestCase.objects.filter(
-        pk__in=pre_process_ids(case_ids)).only('estimated_time')
+    tcs = TestCase.objects.filter(pk__in=pre_process_ids(case_ids)).only("estimated_time")
 
     if not tcs.exists():
-        raise ValueError('Please input valid case Id')
+        raise ValueError("Please input valid case Id")
 
     # aggregate Sum return integer directly rather than timedelta
-    seconds = tcs.aggregate(total=Sum('estimated_time'))['total'].seconds
+    seconds = tcs.aggregate(total=Sum("estimated_time"))["total"].seconds
 
     m, s = divmod(seconds, 60)
     h, m = divmod(m, 60)
     # TODO: return h:m:s or d:h:m
-    return '%02i:%02i:%02i' % (h, m, s)
+    return "%02i:%02i:%02i" % (h, m, s)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('testcases.add_testcase', raise_exception=True)
+@permission_required("testcases.add_testcase", raise_exception=True)
 def create(request, values):
     """Creates a new Test Case object and stores it in the database.
 
@@ -414,17 +412,17 @@ def create(request, values):
     from tcms.core import forms
     from tcms.xmlrpc.forms import NewCaseForm
 
-    if not (values.get('category') or values.get('summary')):
+    if not (values.get("category") or values.get("summary")):
         raise ValueError()
 
-    values['component'] = pre_process_ids(values.get('component', []))
-    values['plan'] = pre_process_ids(values.get('plan', []))
-    values['bug'] = pre_process_ids(values.get('bug', []))
-    if values.get('estimated_time'):
-        values['estimated_time'] = pre_process_estimated_time(values.get('estimated_time'))
+    values["component"] = pre_process_ids(values.get("component", []))
+    values["plan"] = pre_process_ids(values.get("plan", []))
+    values["bug"] = pre_process_ids(values.get("bug", []))
+    if values.get("estimated_time"):
+        values["estimated_time"] = pre_process_estimated_time(values.get("estimated_time"))
 
     form = NewCaseForm(values)
-    form.populate(values.get('product'))
+    form.populate(values.get("product"))
 
     if form.is_valid():
         # Create the case
@@ -432,24 +430,24 @@ def create(request, values):
 
         # Add case text to the case
         tc.add_text(
-            action=form.cleaned_data['action'] or '',
-            effect=form.cleaned_data['effect'] or '',
-            setup=form.cleaned_data['setup'] or '',
-            breakdown=form.cleaned_data['breakdown'] or '',
+            action=form.cleaned_data["action"] or "",
+            effect=form.cleaned_data["effect"] or "",
+            setup=form.cleaned_data["setup"] or "",
+            breakdown=form.cleaned_data["breakdown"] or "",
         )
 
         # Add the case to specific plans
-        for p in form.cleaned_data['plan']:
+        for p in form.cleaned_data["plan"]:
             tc.add_to_plan(plan=p)
             del p
 
         # Add components to the case
-        for c in form.cleaned_data['component']:
+        for c in form.cleaned_data["component"]:
             tc.add_component(component=c)
             del c
 
         # Add tag to the case
-        for tag in TestTag.string_to_list(values.get('tag', [])):
+        for tag in TestTag.string_to_list(values.get("tag", [])):
             t, c = TestTag.objects.get_or_create(name=tag)
             tc.add_tag(tag=t)
     else:
@@ -460,7 +458,7 @@ def create(request, values):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('issuetracker.delete_issue', raise_exception=True)
+@permission_required("issuetracker.delete_issue", raise_exception=True)
 def detach_issue(request, case_ids, issue_keys):
     """Remove one or more issues to the selected test cases.
 
@@ -487,7 +485,7 @@ def detach_issue(request, case_ids, issue_keys):
     case_ids = pre_process_ids(case_ids)
     issue_keys = pre_process_ids(issue_keys)
 
-    cases = TestCase.objects.filter(case_id__in=case_ids).only('pk').iterator()
+    cases = TestCase.objects.filter(case_id__in=case_ids).only("pk").iterator()
     for case, issue_key in itertools.product(cases, issue_keys):
         case.remove_issue(issue_key)
 
@@ -534,9 +532,9 @@ def filter(request, query):
         # Get cases with ID 12345, 23456, 34567 - Here is only support array so far.
         TestCase.filter({'case_id__in': [12345, 23456, 34567]})
     """
-    if query.get('estimated_time'):
-        query['estimated_time'] = timedelta2int(
-            pre_process_estimated_time(query.get('estimated_time'))
+    if query.get("estimated_time"):
+        query["estimated_time"] = timedelta2int(
+            pre_process_estimated_time(query.get("estimated_time"))
         )
     deprecate_critetion_attachment(query)
     return TestCase.to_xmlrpc(query)
@@ -554,9 +552,9 @@ def filter_count(request, values={}):
     .. seealso:: Examples of :meth:`TestCase.filter <tcms.xmlrpc.api.testcase.filter>`.
     """
 
-    if values.get('estimated_time'):
-        values['estimated_time'] = timedelta2int(
-            pre_process_estimated_time(values.get('estimated_time'))
+    if values.get("estimated_time"):
+        values["estimated_time"] = timedelta2int(
+            pre_process_estimated_time(values.get("estimated_time"))
         )
 
     return distinct_count(TestCase, values)
@@ -580,13 +578,13 @@ def get(request, case_id):
     tc_latest_text = tc.latest_text().serialize()
 
     response = tc.serialize()
-    response['text'] = tc_latest_text
+    response["text"] = tc_latest_text
     # get the xmlrpc tags
-    tag_ids = tc.tag.values_list('id', flat=True)
-    query = {'id__in': tag_ids}
+    tag_ids = tc.tag.values_list("id", flat=True)
+    query = {"id__in": tag_ids}
     tags = TestTag.to_xmlrpc(query)
     # cut 'id' attribute off, only leave 'name' here
-    tags_without_id = [tag['name'] for tag in tags]
+    tags_without_id = [tag["name"] for tag in tags]
     # replace tag_id list in the serialize return data
     response["tag"] = tags_without_id
     return response
@@ -629,7 +627,7 @@ def get_issues(request, case_ids):
         TestCase.get_issues('1, 2')
     """
     case_ids = pre_process_ids(case_ids)
-    query = {'case__in': case_ids}
+    query = {"case__in": case_ids}
     return Issue.to_xmlrpc(query)
 
 
@@ -650,7 +648,7 @@ def get_case_run_history(request, case_id):
 
     .. warning:: NOT IMPLEMENTED - Case run history is different than before
     """
-    raise NotImplementedError('Not implemented RPC method')
+    raise NotImplementedError("Not implemented RPC method")
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -692,7 +690,7 @@ def get_change_history(request, case_id):
 
        NOT IMPLEMENTED - Case history is different than before
     """
-    raise NotImplementedError('Not implemented RPC method')
+    raise NotImplementedError("Not implemented RPC method")
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -712,8 +710,8 @@ def get_components(request, case_id):
 
     tc = TestCase.objects.get(case_id=case_id)
 
-    component_ids = tc.component.values_list('id', flat=True)
-    query = {'id__in': component_ids}
+    component_ids = tc.component.values_list("id", flat=True)
+    query = {"id__in": component_ids}
     return Component.to_xmlrpc(query)
 
 
@@ -732,8 +730,8 @@ def get_plans(request, case_id):
     """
     tc = TestCase.objects.get(case_id=case_id)
 
-    plan_ids = tc.plan.values_list('plan_id', flat=True)
-    query = {'plan_id__in': plan_ids}
+    plan_ids = tc.plan.values_list("plan_id", flat=True)
+    query = {"plan_id__in": plan_ids}
     return TestPlan.to_xmlrpc(query)
 
 
@@ -752,8 +750,8 @@ def get_tags(request, case_id):
     """
     tc = TestCase.objects.get(case_id=case_id)
 
-    tag_ids = tc.tag.values_list('id', flat=True)
-    query = {'id__in': tag_ids}
+    tag_ids = tc.tag.values_list("id", flat=True)
+    query = {"id__in": tag_ids}
     return TestTag.to_xmlrpc(query)
 
 
@@ -779,8 +777,7 @@ def get_text(request, case_id, case_text_version=None):
     """
     tc = TestCase.objects.get(case_id=case_id)
 
-    return tc.get_text_with_version(
-        case_text_version=case_text_version).serialize()
+    return tc.get_text_with_version(case_text_version=case_text_version).serialize()
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -801,9 +798,9 @@ def get_priority(request, id):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('testcases.add_testcaseplan', raise_exception=True)
+@permission_required("testcases.add_testcaseplan", raise_exception=True)
 def link_plan(request, case_ids, plan_ids):
-    """"Link test cases to the given plan.
+    """ "Link test cases to the given plan.
 
     :param case_ids: give one or more case IDs. It could be an integer, a
         string containing comma separated IDs, or a list of int each of them is
@@ -828,39 +825,38 @@ def link_plan(request, case_ids, plan_ids):
     """
     case_ids = pre_process_ids(value=case_ids)
     qs = TestCase.objects.filter(pk__in=case_ids)
-    tcs_ids = qs.values_list('pk', flat=True)
+    tcs_ids = qs.values_list("pk", flat=True)
 
     # Check the non-exist case ids.
     ids_diff = set(case_ids) - set(tcs_ids.iterator())
     if ids_diff:
-        ids_str = ','.join(map(str, ids_diff))
+        ids_str = ",".join(map(str, ids_diff))
         if len(ids_diff) > 1:
-            err_msg = 'TestCases %s do not exist.' % ids_str
+            err_msg = "TestCases %s do not exist." % ids_str
         else:
-            err_msg = 'TestCase %s does not exist.' % ids_str
+            err_msg = "TestCase %s does not exist." % ids_str
         raise ObjectDoesNotExist(err_msg)
 
     plan_ids = pre_process_ids(value=plan_ids)
     qs = TestPlan.objects.filter(pk__in=plan_ids)
-    tps_ids = qs.values_list('pk', flat=True)
+    tps_ids = qs.values_list("pk", flat=True)
 
     # Check the non-exist plan ids.
     ids_diff = set(plan_ids) - set(tps_ids.iterator())
     if ids_diff:
-        ids_str = ','.join(map(str, ids_diff))
+        ids_str = ",".join(map(str, ids_diff))
         if len(ids_diff) > 1:
-            err_msg = 'TestPlans %s do not exist.' % ids_str
+            err_msg = "TestPlans %s do not exist." % ids_str
         else:
-            err_msg = 'TestPlan %s does not exist.' % ids_str
+            err_msg = "TestPlan %s does not exist." % ids_str
         raise ObjectDoesNotExist(err_msg)
 
     # (plan_id, case_id) pair might probably exist in test_case_plans table, so
     # skip the ones that do exist and create the rest.
     # note: this query returns a list of tuples!
-    existing = TestCasePlan.objects.filter(
-        plan__in=plan_ids,
-        case__in=case_ids
-    ).values_list('plan', 'case')
+    existing = TestCasePlan.objects.filter(plan__in=plan_ids, case__in=case_ids).values_list(
+        "plan", "case"
+    )
 
     # Link the plans to cases
     def _generate_link_plan_value():
@@ -869,10 +865,12 @@ def link_plan(request, case_ids, plan_ids):
                 if (plan_id, case_id) not in existing:
                     yield plan_id, case_id
 
-    TestCasePlan.objects.bulk_create([
-        TestCasePlan(plan_id=_plan_id, case_id=_case_id)
-        for _plan_id, _case_id in _generate_link_plan_value()
-    ])
+    TestCasePlan.objects.bulk_create(
+        [
+            TestCasePlan(plan_id=_plan_id, case_id=_case_id)
+            for _plan_id, _case_id in _generate_link_plan_value()
+        ]
+    )
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -946,7 +944,7 @@ def lookup_status_id_by_name(request, name):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('testcases.delete_testcasecomponent', raise_exception=True)
+@permission_required("testcases.delete_testcasecomponent", raise_exception=True)
 def remove_component(request, case_ids, component_ids):
     """Removes selected component from the selected test case.
 
@@ -972,19 +970,15 @@ def remove_component(request, case_ids, component_ids):
     """
     from tcms.management.models import Component
 
-    cases = TestCase.objects.filter(
-        case_id__in=pre_process_ids(value=case_ids)
-    )
-    components = Component.objects.filter(
-        id__in=pre_process_ids(value=component_ids)
-    )
+    cases = TestCase.objects.filter(case_id__in=pre_process_ids(value=case_ids))
+    components = Component.objects.filter(id__in=pre_process_ids(value=component_ids))
 
     for case, component in itertools.product(cases, components):
         case.remove_component(component=component)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('testcases.delete_testcasetag', raise_exception=True)
+@permission_required("testcases.delete_testcasetag", raise_exception=True)
 def remove_tag(request, case_ids, tags):
     """Remove a tag from a case.
 
@@ -1006,21 +1000,16 @@ def remove_tag(request, case_ids, tags):
         # Remove tag 'foo' and 'bar' from cases list '1, 2' with String
         TestCase.remove_tag('1, 2', 'foo, bar')
     """
-    cases = TestCase.objects.filter(
-        case_id__in=pre_process_ids(value=case_ids)
-    )
-    tags = TestTag.objects.filter(
-        name__in=TestTag.string_to_list(tags)
-    )
+    cases = TestCase.objects.filter(case_id__in=pre_process_ids(value=case_ids))
+    tags = TestTag.objects.filter(name__in=TestTag.string_to_list(tags))
 
     for case, tag in itertools.product(cases, tags):
         case.remove_tag(tag)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('testcases.add_testcasetext', raise_exception=True)
-def store_text(request, case_id, action, effect='', setup='', breakdown='',
-               author_id=None):
+@permission_required("testcases.add_testcasetext", raise_exception=True)
+def store_text(request, case_id, action, effect="", setup="", breakdown="", author_id=None):
     """Update the large text fields of a case.
 
     :param int case_id: case ID.
@@ -1056,7 +1045,7 @@ def store_text(request, case_id, action, effect='', setup='', breakdown='',
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('testcases.delete_testcaseplan', raise_exception=True)
+@permission_required("testcases.delete_testcaseplan", raise_exception=True)
 def unlink_plan(requst, case_id, plan_id):
     """
     Unlink a test case from the given plan. If only one plan is linked, this
@@ -1076,13 +1065,12 @@ def unlink_plan(requst, case_id, plan_id):
         TestCase.unlink_plan(100, 10)
     """
     TestCasePlan.objects.filter(case=case_id, plan=plan_id).delete()
-    plan_pks = TestCasePlan.objects.filter(case=case_id).values_list('plan',
-                                                                     flat=True)
-    return TestPlan.to_xmlrpc(query={'pk__in': plan_pks})
+    plan_pks = TestCasePlan.objects.filter(case=case_id).values_list("plan", flat=True)
+    return TestPlan.to_xmlrpc(query={"pk__in": plan_pks})
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('testcases.change_testcase', raise_exception=True)
+@permission_required("testcases.change_testcase", raise_exception=True)
 def update(request, case_ids, values):
     """Updates the fields of the selected case or cases.
 
@@ -1122,16 +1110,16 @@ def update(request, case_ids, values):
     from tcms.core import forms
     from tcms.xmlrpc.forms import UpdateCaseForm
 
-    if values.get('estimated_time'):
-        values['estimated_time'] = pre_process_estimated_time(values.get('estimated_time'))
+    if values.get("estimated_time"):
+        values["estimated_time"] = pre_process_estimated_time(values.get("estimated_time"))
 
     form = UpdateCaseForm(values)
 
-    if values.get('category') and not values.get('product'):
-        raise ValueError('Product ID is required for category')
+    if values.get("category") and not values.get("product"):
+        raise ValueError("Product ID is required for category")
 
-    if values.get('product'):
-        form.populate(product_id=values['product'])
+    if values.get("product"):
+        form.populate(product_id=values["product"])
 
     if form.is_valid():
         tcs = TestCase.update(
@@ -1141,7 +1129,7 @@ def update(request, case_ids, values):
     else:
         raise ValueError(forms.errors_to_list(form))
 
-    query = {'pk__in': tcs.values_list('pk', flat=True)}
+    query = {"pk__in": tcs.values_list("pk", flat=True)}
     return TestCase.to_xmlrpc(query)
 
 
@@ -1156,19 +1144,22 @@ def validate_cc_list(cc_list):
     """
 
     if not isinstance(cc_list, list):
-        raise TypeError('cc_list should be a list object.')
+        raise TypeError("cc_list should be a list object.")
 
-    field = EmailField(required=True, error_messages={
-        'required': 'Missing email address.',
-        'invalid': '%(value)s is not a valid email address.',
-    })
+    field = EmailField(
+        required=True,
+        error_messages={
+            "required": "Missing email address.",
+            "invalid": "%(value)s is not a valid email address.",
+        },
+    )
 
     for item in cc_list:
         field.clean(item)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('testcases.change_testcase', raise_exception=True)
+@permission_required("testcases.change_testcase", raise_exception=True)
 def notification_add_cc(request, case_ids, cc_list):
     """Add email addresses to the notification CC list of specific TestCases
 
@@ -1192,7 +1183,7 @@ def notification_add_cc(request, case_ids, cc_list):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('testcases.change_testcase', raise_exception=True)
+@permission_required("testcases.change_testcase", raise_exception=True)
 def notification_remove_cc(request, case_ids, cc_list):
     """Remove email addresses from the notification CC list of specific TestCases
 
@@ -1204,12 +1195,12 @@ def notification_remove_cc(request, case_ids, cc_list):
     """
     validate_cc_list(cc_list)
     tc_ids = pre_process_ids(case_ids)
-    for tc in TestCase.objects.filter(pk__in=tc_ids).only('pk').iterator():
+    for tc in TestCase.objects.filter(pk__in=tc_ids).only("pk").iterator():
         tc.emailing.remove_cc(cc_list)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('testcases.change_testcase', raise_exception=True)
+@permission_required("testcases.change_testcase", raise_exception=True)
 def notification_get_cc_list(request, case_ids):
     """Return whole CC list of each TestCase
 

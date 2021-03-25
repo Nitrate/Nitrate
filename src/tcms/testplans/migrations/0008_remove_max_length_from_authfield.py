@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('testplans', '0007_migration_due_to_add_related_name_to_model'),
+        ("testplans", "0007_migration_due_to_add_related_name_to_model"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='testplan',
-            name='plan_id',
+            model_name="testplan",
+            name="plan_id",
             field=models.AutoField(primary_key=True, serialize=False),
         ),
     ]

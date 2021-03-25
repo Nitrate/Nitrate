@@ -15,31 +15,31 @@ from tcms.xmlrpc.serializer import XMLRPCSerializer
 from tcms.xmlrpc.utils import pre_process_ids, distinct_count
 
 __all__ = (
-    'add_comment',
-    'attach_issue',
-    'attach_log',
-    'check_case_run_status',
-    'create',
-    'detach_issue',
-    'detach_log',
-    'filter',
-    'filter_count',
-    'get',
-    'get_s',
-    'get_issues',
-    'get_issues_s',
-    'get_case_run_status',
-    'get_completion_time',
-    'get_completion_time_s',
-    'get_history',
-    'get_history_s',
-    'get_logs',
-    'lookup_status_name_by_id',
-    'lookup_status_id_by_name',
-    'update',
+    "add_comment",
+    "attach_issue",
+    "attach_log",
+    "check_case_run_status",
+    "create",
+    "detach_issue",
+    "detach_log",
+    "filter",
+    "filter_count",
+    "get",
+    "get_s",
+    "get_issues",
+    "get_issues_s",
+    "get_case_run_status",
+    "get_completion_time",
+    "get_completion_time_s",
+    "get_history",
+    "get_history_s",
+    "get_logs",
+    "lookup_status_name_by_id",
+    "lookup_status_id_by_name",
+    "update",
 )
 
-__xmlrpc_namespace__ = 'TestCaseRun'
+__xmlrpc_namespace__ = "TestCaseRun"
 
 
 class GetCaseRun:
@@ -47,14 +47,10 @@ class GetCaseRun:
         return TestCaseRun.objects.get(pk=case_run_id)
 
     def pre_process_tcr_s(self, run_id, case_id, build_id, environment_id=0):
-        query = {
-            'run__pk': run_id,
-            'case__pk': case_id,
-            'build__pk': build_id
-        }
+        query = {"run__pk": run_id, "case__pk": case_id, "build__pk": build_id}
 
         if environment_id:
-            query['environment_id'] = environment_id
+            query["environment_id"] = environment_id
 
         return TestCaseRun.objects.get(**query)
 
@@ -88,12 +84,16 @@ def add_comment(request, case_run_ids, comment):
     if not object_pks:
         return
     tcms.comments.models.add_comment(
-        request.user, 'testruns.testcaserun', object_pks, comment,
-        request.META.get('REMOTE_ADDR'))
+        request.user,
+        "testruns.testcaserun",
+        object_pks,
+        comment,
+        request.META.get("REMOTE_ADDR"),
+    )
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('issuetracker.add_issue', raise_exception=True)
+@permission_required("issuetracker.add_issue", raise_exception=True)
 def attach_issue(request, values):
     """Add one or more issues to the selected test cases.
 
@@ -129,23 +129,26 @@ def attach_issue(request, values):
        test case ids.
     """
     if isinstance(values, dict):
-        values = [values, ]
+        values = [
+            values,
+        ]
 
     for value in values:
         form = CaseRunIssueForm(value)
         if form.is_valid():
-            service = find_service(form.cleaned_data['tracker'])
-            issue_key = form.cleaned_data['issue_key']
-            summary = form.cleaned_data['summary']
-            description = form.cleaned_data['description']
-            case_runs = form.cleaned_data['case_run']
+            service = find_service(form.cleaned_data["tracker"])
+            issue_key = form.cleaned_data["issue_key"]
+            summary = form.cleaned_data["summary"]
+            description = form.cleaned_data["description"]
+            case_runs = form.cleaned_data["case_run"]
             for case_run in case_runs:
                 service.add_issue(
                     issue_key,
                     case_run.case,
                     case_run=case_run,
                     summary=summary,
-                    description=description)
+                    description=description,
+                )
         else:
             raise ValueError(form_error_messages_to_list(form))
 
@@ -166,7 +169,7 @@ def check_case_run_status(request, name):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('testruns.add_testcaserun', raise_exception=True)
+@permission_required("testruns.add_testcaserun", raise_exception=True)
 def create(request, values):
     """Creates a new Test Case Run object and stores it in the database.
 
@@ -200,21 +203,21 @@ def create(request, values):
     form = XMLRPCNewCaseRunForm(values)
 
     if not isinstance(values, dict):
-        raise TypeError('Argument values must be in dict type.')
+        raise TypeError("Argument values must be in dict type.")
     if not values:
-        raise ValueError('Argument values is empty.')
+        raise ValueError("Argument values is empty.")
 
     if form.is_valid():
-        tr = form.cleaned_data['run']
+        tr = form.cleaned_data["run"]
 
         tcr = tr.add_case_run(
-            case=form.cleaned_data['case'],
-            build=form.cleaned_data['build'],
-            assignee=form.cleaned_data['assignee'],
-            case_run_status=form.cleaned_data['case_run_status'],
-            case_text_version=form.cleaned_data['case_text_version'],
-            notes=form.cleaned_data['notes'],
-            sortkey=form.cleaned_data['sortkey']
+            case=form.cleaned_data["case"],
+            build=form.cleaned_data["build"],
+            assignee=form.cleaned_data["assignee"],
+            case_run_status=form.cleaned_data["case_run_status"],
+            case_text_version=form.cleaned_data["case_text_version"],
+            notes=form.cleaned_data["notes"],
+            sortkey=form.cleaned_data["sortkey"],
         )
     else:
         raise ValueError(forms.errors_to_list(form))
@@ -223,7 +226,7 @@ def create(request, values):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('issuetracker.delete_issue', raise_exception=True)
+@permission_required("issuetracker.delete_issue", raise_exception=True)
 def detach_issue(request, case_run_ids, issue_keys):
     """Remove one or more issues to the selected test case-runs.
 
@@ -331,8 +334,7 @@ def get_s(request, case_id, run_id, build_id, environment_id=0):
 
         TestCaseRun.get_s(1, 2, 3, 4)
     """
-    return gcr.pre_process_tcr_s(run_id, case_id, build_id,
-                                 environment_id).serialize()
+    return gcr.pre_process_tcr_s(run_id, case_id, build_id, environment_id).serialize()
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -347,7 +349,7 @@ def get_issues(request, case_run_id):
 
         TestCaseRun.get_issues(10)
     """
-    query = {'case_run': int(case_run_id)}
+    query = {"case_run": int(case_run_id)}
     return Issue.to_xmlrpc(query)
 
 
@@ -367,9 +369,9 @@ def get_issues_s(request, run_id, case_id, build_id, environment_id=0):
         TestCaseRun.get_issues_s(1, 2, 3, 4)
     """
     query = {
-        'case_run__run': int(run_id),
-        'case_run__build': int(build_id),
-        'case_run__case': int(case_id),
+        "case_run__run": int(run_id),
+        "case_run__build": int(build_id),
+        "case_run__case": int(case_id),
     }
     # Just keep the same with original implementation that calls
     # pre_process_tcr_s. In which following logical exists. I don't why this
@@ -377,7 +379,7 @@ def get_issues_s(request, run_id, case_id, build_id, environment_id=0):
     # FIXME: seems it should be `if environment_id is not None`, otherwise such
     # judgement should not happen.
     if environment_id:
-        query['case_run__environment_id'] = int(environment_id)
+        query["case_run__environment_id"] = int(environment_id)
     return Issue.to_xmlrpc(query)
 
 
@@ -471,7 +473,7 @@ def get_history(request, case_run_id):
     .. warning::
        NOT IMPLEMENTED
     """
-    raise NotImplementedError('Not implemented RPC method')
+    raise NotImplementedError("Not implemented RPC method")
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -488,7 +490,7 @@ def get_history_s(request, run_id, build_id, environment_id):
     .. warning::
        NOT IMPLEMENTED
     """
-    raise NotImplementedError('Not implemented RPC method')
+    raise NotImplementedError("Not implemented RPC method")
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -508,7 +510,7 @@ def lookup_status_id_by_name(request, name):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('testruns.change_testcaserun', raise_exception=True)
+@permission_required("testruns.change_testcaserun", raise_exception=True)
 def update(request, case_run_ids, values):
     """Updates the fields of the selected case-runs.
 
@@ -547,32 +549,32 @@ def update(request, case_run_ids, values):
     if form.is_valid():
         data = {}
 
-        if form.cleaned_data['build']:
-            data['build'] = form.cleaned_data['build']
+        if form.cleaned_data["build"]:
+            data["build"] = form.cleaned_data["build"]
 
-        if form.cleaned_data['assignee']:
-            data['assignee'] = form.cleaned_data['assignee']
+        if form.cleaned_data["assignee"]:
+            data["assignee"] = form.cleaned_data["assignee"]
 
-        if form.cleaned_data['case_run_status']:
-            data['case_run_status'] = form.cleaned_data['case_run_status']
-            data['tested_by'] = request.user
-            data['close_date'] = datetime.now()
+        if form.cleaned_data["case_run_status"]:
+            data["case_run_status"] = form.cleaned_data["case_run_status"]
+            data["tested_by"] = request.user
+            data["close_date"] = datetime.now()
 
-        if 'notes' in values:
-            if values['notes'] in (None, ''):
-                data['notes'] = values['notes']
-            if form.cleaned_data['notes']:
-                data['notes'] = form.cleaned_data['notes']
+        if "notes" in values:
+            if values["notes"] in (None, ""):
+                data["notes"] = values["notes"]
+            if form.cleaned_data["notes"]:
+                data["notes"] = form.cleaned_data["notes"]
 
-        if form.cleaned_data['sortkey'] is not None:
-            data['sortkey'] = form.cleaned_data['sortkey']
+        if form.cleaned_data["sortkey"] is not None:
+            data["sortkey"] = form.cleaned_data["sortkey"]
 
         tcrs.update(**data)
 
     else:
         raise ValueError(forms.errors_to_list(form))
 
-    query = {'pk__in': pks_to_update}
+    query = {"pk__in": pks_to_update}
     return TestCaseRun.to_xmlrpc(query)
 
 

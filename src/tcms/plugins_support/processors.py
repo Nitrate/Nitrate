@@ -21,8 +21,7 @@ class PushSignalToPlugins:
         self.plugins = []
 
     def import_plugins(self):
-        if not hasattr(settings,
-                       'SIGNAL_PLUGINS') or not settings.SIGNAL_PLUGINS:
+        if not hasattr(settings, "SIGNAL_PLUGINS") or not settings.SIGNAL_PLUGINS:
             return
 
         for p in settings.SIGNAL_PLUGINS:
@@ -30,8 +29,7 @@ class PushSignalToPlugins:
 
     def push(self, model, instance, signal):
         for p in self.plugins:
-            NewThread(p.receiver, {'model': model, 'instance': instance,
-                                   'signal': signal}).start()
+            NewThread(p.receiver, {"model": model, "instance": instance, "signal": signal}).start()
 
 
 # Create the PushSignalToPlugins instance

@@ -6,13 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('issuetracker', '0005_adjust_issue_report_fields'),
+        ("issuetracker", "0005_adjust_issue_report_fields"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='productissuetrackerrelationship',
-            name='alias',
-            field=models.CharField(blank=True, help_text='The corresponding product name in issue tracker.', max_length=50, null=True),
+            model_name="productissuetrackerrelationship",
+            name="alias",
+            field=models.CharField(
+                blank=True,
+                help_text="The corresponding product name in issue tracker.",
+                max_length=50,
+                null=True,
+            ),
         ),
     ]

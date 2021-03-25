@@ -9,18 +9,22 @@ import tcms.core.models.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('testruns', '0003_testrun_estimated_time_remove_max_length'),
+        ("testruns", "0003_testrun_estimated_time_remove_max_length"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='testrun',
-            name='estimated_time',
+            model_name="testrun",
+            name="estimated_time",
             field=tcms.core.models.fields.DurationField(default=datetime.timedelta(0)),
         ),
         migrations.AlterField(
-            model_name='testruntag',
-            name='run',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='tags', to='testruns.TestRun'),
+            model_name="testruntag",
+            name="run",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="tags",
+                to="testruns.TestRun",
+            ),
         ),
     ]

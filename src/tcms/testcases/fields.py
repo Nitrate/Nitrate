@@ -5,16 +5,19 @@ from itertools import filterfalse
 from django.forms import EmailField
 from django.forms import ValidationError
 
-__all__ = ['MultipleEmailField', 'CC_LIST_DEFAULT_DELIMITER', ]
+__all__ = [
+    "MultipleEmailField",
+    "CC_LIST_DEFAULT_DELIMITER",
+]
 
-CC_LIST_DEFAULT_DELIMITER = ','
+CC_LIST_DEFAULT_DELIMITER = ","
 
 
 class MultipleEmailField(EmailField):
     """Holding mulitple email addresses"""
 
     default_error_messages = {
-        'invalid': '%(value)s is/are not valid email addresse(s).',
+        "invalid": "%(value)s is/are not valid email addresse(s).",
     }
 
     def __init__(self, delimiter=CC_LIST_DEFAULT_DELIMITER, *args, **kwargs):
@@ -28,11 +31,12 @@ class MultipleEmailField(EmailField):
             return []
 
         if not isinstance(value, str):
-            raise ValidationError(
-                '%s is not a valid string value.' % str(value))
+            raise ValidationError("%s is not a valid string value." % str(value))
 
-        result = [item.strip() for item in filterfalse(
-            lambda item: item.strip() == '', value.split(self.delimiter))]
+        result = [
+            item.strip()
+            for item in filterfalse(lambda item: item.strip() == "", value.split(self.delimiter))
+        ]
         return result
 
     def clean(self, value):
@@ -54,7 +58,7 @@ class MultipleEmailField(EmailField):
 
         if invalid_email_addrs:
             raise ValidationError(
-                self.error_messages['invalid'] % {
-                    'value': ', '.join(invalid_email_addrs)})
+                self.error_messages["invalid"] % {"value": ", ".join(invalid_email_addrs)}
+            )
 
         return valid_email_addrs

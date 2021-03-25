@@ -13,18 +13,18 @@ def user_klass_clean(self):
 
     # Additional checks to validate
     if self.email and User.objects.filter(email=self.email).exists():
-        raise ValidationError(
-            f'There is already an existing user with email {self.email}')
+        raise ValidationError(f"There is already an existing user with email {self.email}")
 
 
 def patch_user_model_clean():
     from django.contrib.auth.models import User
+
     User.clean = user_klass_clean
 
 
 class AppConfig(DjangoAppConfig):
-    name = 'tcms.auth'
-    label = 'tcms.core.contrib.auth'
+    name = "tcms.auth"
+    label = "tcms.core.contrib.auth"
     verbose_name = _("Core auth")
 
     def ready(self):

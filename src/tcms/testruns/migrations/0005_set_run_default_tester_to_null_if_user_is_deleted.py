@@ -8,13 +8,19 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('testruns', '0004_fix_missing_migrations'),
+        ("testruns", "0004_fix_missing_migrations"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='testrun',
-            name='default_tester',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='default_tester', to=settings.AUTH_USER_MODEL),
+            model_name="testrun",
+            name="default_tester",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="default_tester",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

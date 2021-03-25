@@ -56,11 +56,13 @@ class BugzillaBackend(ModelBackend):
         else:
             import bugzilla
 
-            xmlrpc_url = getattr(settings, 'BUGZILLA_XMLRPC_URL', None)
+            xmlrpc_url = getattr(settings, "BUGZILLA_XMLRPC_URL", None)
             if not xmlrpc_url:
-                logger.error('Bugzilla XMLRPC URL is not set in settings module. '
-                             'Please enable and set a workable URL to config '
-                             'BUGZILLA_XMLRPC_URL.')
+                logger.error(
+                    "Bugzilla XMLRPC URL is not set in settings module. "
+                    "Please enable and set a workable URL to config "
+                    "BUGZILLA_XMLRPC_URL."
+                )
                 return None
 
             bz = bugzilla.Bugzilla(xmlrpc_url)
@@ -68,7 +70,7 @@ class BugzillaBackend(ModelBackend):
             try:
                 bz.login(user=username, password=password)
             except bugzilla.transport.BugzillaError as e:
-                logger.warning('User login via Bugzilla failed. Reason: %s', str(e))
+                logger.warning("User login via Bugzilla failed. Reason: %s", str(e))
                 return None
 
             # Login Bugzilla with username and password is just for checking
@@ -81,10 +83,7 @@ class BugzillaBackend(ModelBackend):
                 user.set_password(password)
                 user.save()
             except User.DoesNotExist:
-                user = User.objects.create_user(
-                    username=username.split('@')[0],
-                    email=username
-                )
+                user = User.objects.create_user(username=username.split("@")[0], email=username)
 
                 user.set_unusable_password(password)
 
@@ -117,10 +116,7 @@ class KerberosBackend(ModelBackend):
         import kerberos
 
         try:
-            kerberos.checkPassword(
-                username, password, '',
-                settings.KRB5_REALM
-            )
+            kerberos.checkPassword(username, password, "", settings.KRB5_REALM)
         except kerberos.BasicAuthError:
             return None
 
@@ -129,7 +125,7 @@ class KerberosBackend(ModelBackend):
         except User.DoesNotExist:
             user = User.objects.create_user(
                 username=username,
-                email='{}@{}'.format(username, settings.KRB5_REALM.lower())
+                email="{}@{}".format(username, settings.KRB5_REALM.lower()),
             )
         user.set_unusable_password()
         user.save()
@@ -185,7 +181,7 @@ class ModAuthKerbBackend(RemoteUserBackend):
 
         By default, returns the user unmodified.
         """
-        user.email = user.username + '@' + settings.KRB5_REALM.lower()
+        user.email = user.username + "@" + settings.KRB5_REALM.lower()
         user.set_unusable_password()
         user.save()
         initiate_user_with_default_setups(user)
@@ -199,8 +195,8 @@ class ModAuthKerbBackend(RemoteUserBackend):
         For more info, reference clean_username function in
         django/auth/backends.py
         """
-        username = username.replace('@' + settings.KRB5_REALM, '')
-        username_tuple = username.split('/')
+        username = username.replace("@" + settings.KRB5_REALM, "")
+        username_tuple = username.split("/")
         if len(username_tuple) > 1:
             username = username_tuple[1]
         return len(username) > 30 and username[:30] or username

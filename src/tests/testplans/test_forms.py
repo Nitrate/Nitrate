@@ -11,7 +11,7 @@ class TestUploadedHTMLFile(unittest.TestCase):
 
     def test_necessary_tags_are_removed(self):
         uploaded_file = Mock()
-        uploaded_file.read.return_value = '''<html>
+        uploaded_file.read.return_value = """<html>
     <head>
         <script type="text/javascript">alert('hello Nitrate')</script>
         <style type="text/css">p {font-size: 14px}</style>
@@ -26,15 +26,15 @@ class TestUploadedHTMLFile(unittest.TestCase):
         console.log('testing, testing, ...')
         </script>
     </body>
-</html>'''
+</html>"""
 
         cleaner = UploadedHTMLFile(uploaded_file)
         cleaned_content = cleaner.get_content()
-        self.assertEqual('<p>Importing plan</p>', cleaned_content.strip())
+        self.assertEqual("<p>Importing plan</p>", cleaned_content.strip())
 
     def test_necessary_attributes_are_removed(self):
         uploaded_file = Mock()
-        uploaded_file.read.return_value = '''<html>
+        uploaded_file.read.return_value = """<html>
     <head>
         <script type="text/javascript">alert('hello Nitrate')</script>
         <style type="text/css">p {font-size: 14px}</style>
@@ -51,10 +51,12 @@ class TestUploadedHTMLFile(unittest.TestCase):
         console.log('testing, testing, ...')
         </script>
     </body>
-</html>'''
+</html>"""
         cleaner = UploadedHTMLFile(uploaded_file)
         cleaned_content = cleaner.get_content()
         self.assertEqual(
-            '''<div>
+            """<div>
 <p>Importing plan</p>
-</div>''', cleaned_content.strip())
+</div>""",
+            cleaned_content.strip(),
+        )

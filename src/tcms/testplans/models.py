@@ -32,7 +32,7 @@ except ImportError:
 
 
 class TestPlanType(TCMSActionModel):
-    id = models.AutoField(db_column='type_id', primary_key=True)
+    id = models.AutoField(db_column="type_id", primary_key=True)
     name = models.CharField(max_length=64, unique=True)
     description = models.TextField(blank=True, null=True)
 
@@ -40,8 +40,8 @@ class TestPlanType(TCMSActionModel):
         return self.name
 
     class Meta:
-        db_table = 'test_plan_types'
-        ordering = ['name']
+        db_table = "test_plan_types"
+        ordering = ["name"]
 
 
 class TestPlan(TCMSActionModel):
@@ -49,36 +49,44 @@ class TestPlan(TCMSActionModel):
 
     plan_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255, db_index=True)
-    create_date = models.DateTimeField(db_column='creation_date', auto_now_add=True)
-    is_active = models.BooleanField(db_column='isactive', default=True, db_index=True)
+    create_date = models.DateTimeField(db_column="creation_date", auto_now_add=True)
+    is_active = models.BooleanField(db_column="isactive", default=True, db_index=True)
     extra_link = models.CharField(max_length=1024, default=None, blank=True, null=True)
 
-    product_version = models.ForeignKey(Version, related_name='plans',
-                                        on_delete=models.CASCADE)
-    owner = models.ForeignKey('auth.User', blank=True, null=True,
-                              related_name='myplans', on_delete=models.CASCADE)
-    author = models.ForeignKey('auth.User', on_delete=models.CASCADE)
-    product = models.ForeignKey('management.Product', related_name='plan',
-                                on_delete=models.CASCADE)
+    product_version = models.ForeignKey(Version, related_name="plans", on_delete=models.CASCADE)
+    owner = models.ForeignKey(
+        "auth.User",
+        blank=True,
+        null=True,
+        related_name="myplans",
+        on_delete=models.CASCADE,
+    )
+    author = models.ForeignKey("auth.User", on_delete=models.CASCADE)
+    product = models.ForeignKey("management.Product", related_name="plan", on_delete=models.CASCADE)
     type = models.ForeignKey(TestPlanType, on_delete=models.CASCADE)
-    parent = models.ForeignKey('self', blank=True, null=True,
-                               related_name='child_set',
-                               on_delete=models.SET_NULL)
+    parent = models.ForeignKey(
+        "self",
+        blank=True,
+        null=True,
+        related_name="child_set",
+        on_delete=models.SET_NULL,
+    )
 
     attachments = models.ManyToManyField(
-        'management.TestAttachment',
-        through='testplans.TestPlanAttachment')
+        "management.TestAttachment", through="testplans.TestPlanAttachment"
+    )
 
-    component = models.ManyToManyField('management.Component',
-                                       through='testplans.TestPlanComponent')
-    env_group = models.ManyToManyField('management.TCMSEnvGroup',
-                                       related_name='plans',
-                                       through='TCMSEnvPlanMap')
-    tag = models.ManyToManyField('management.TestTag', through='testplans.TestPlanTag')
+    component = models.ManyToManyField(
+        "management.Component", through="testplans.TestPlanComponent"
+    )
+    env_group = models.ManyToManyField(
+        "management.TCMSEnvGroup", related_name="plans", through="TCMSEnvPlanMap"
+    )
+    tag = models.ManyToManyField("management.TestTag", through="testplans.TestPlanTag")
 
     class Meta:
-        db_table = 'test_plans'
-        index_together = [['product', 'plan_id']]
+        db_table = "test_plans"
+        index_together = [["product", "plan_id"]]
 
     def __str__(self):
         return self.name
@@ -89,55 +97,58 @@ class TestPlan(TCMSActionModel):
         from tcms.xmlrpc.utils import distinct_filter
 
         _query = query or {}
-        qs = distinct_filter(TestPlan, _query).order_by('pk')
+        qs = distinct_filter(TestPlan, _query).order_by("pk")
         s = TestPlanXMLRPCSerializer(model_class=cls, queryset=qs)
         return s.serialize_queryset()
 
     @classmethod
     def list(cls, query=None):
-        '''docstring for list_plans'''
+        """docstring for list_plans"""
         from django.db.models import Q
 
         new_query = {}
 
         for k, v in query.items():
-            if v and k not in ['action', 't', 'f', 'a']:
-                new_query[k] = hasattr(v, 'strip') and v.strip() or v
+            if v and k not in ["action", "t", "f", "a"]:
+                new_query[k] = hasattr(v, "strip") and v.strip() or v
 
         # build a QuerySet:
         q = cls.objects
         # add any necessary filters to the query:
 
-        if new_query.get('search'):
-            q = q.filter(Q(plan_id__icontains=new_query['search']) |
-                         Q(name__icontains=new_query['search']))
-            del new_query['search']
+        if new_query.get("search"):
+            q = q.filter(
+                Q(plan_id__icontains=new_query["search"]) | Q(name__icontains=new_query["search"])
+            )
+            del new_query["search"]
 
         return q.filter(**new_query).distinct()
 
     @classmethod
-    def apply_subtotal(cls, queryset,
-                       cases_count: bool = False,
-                       runs_count: bool = False,
-                       children_count: bool = False):
+    def apply_subtotal(
+        cls,
+        queryset,
+        cases_count: bool = False,
+        runs_count: bool = False,
+        children_count: bool = False,
+    ):
         select = {}
         if cases_count:
-            select['cases_count'] = RawSQL.num_cases
+            select["cases_count"] = RawSQL.num_cases
         if runs_count:
-            select['runs_count'] = RawSQL.num_runs
+            select["runs_count"] = RawSQL.num_runs
         if children_count:
-            select['children_count'] = RawSQL.num_child_plans
+            select["children_count"] = RawSQL.num_child_plans
         if select:
             queryset = queryset.extra(select=select)
         return queryset
 
     def confirmed_case(self):
-        return self.case.filter(case_status__name='CONFIRMED')
+        return self.case.filter(case_status__name="CONFIRMED")
 
     def latest_text(self):
         try:
-            return self.text.select_related('author').order_by(
-                '-plan_text_version')[0]
+            return self.text.select_related("author").order_by("-plan_text_version")[0]
         except IndexError:
             return None
         except ObjectDoesNotExist:
@@ -153,8 +164,7 @@ class TestPlan(TCMSActionModel):
 
     def text_checksum(self):
         try:
-            return self.text.order_by('-plan_text_version').only(
-                'checksum')[0].checksum
+            return self.text.order_by("-plan_text_version").only("checksum")[0].checksum
         except IndexError:
             return None
         except ObjectDoesNotExist:
@@ -163,20 +173,20 @@ class TestPlan(TCMSActionModel):
     def get_text_with_version(self, plan_text_version=None):
         if plan_text_version:
             try:
-                return self.text.get(
-                    plan_text_version=plan_text_version
-                )
+                return self.text.get(plan_text_version=plan_text_version)
             except TestPlanText.DoesNotExist:
                 return None
 
         return self.latest_text()
 
-    def add_text(self,
-                 author,
-                 plan_text,
-                 create_date=datetime.now(),
-                 plan_text_version=None,
-                 text_checksum=None):
+    def add_text(
+        self,
+        author,
+        plan_text,
+        create_date=datetime.now(),
+        plan_text_version=None,
+        text_checksum=None,
+    ):
         if not plan_text_version:
             latest_text = self.latest_text()
             if latest_text:
@@ -195,7 +205,7 @@ class TestPlan(TCMSActionModel):
             author=author,
             create_date=create_date,
             plan_text=plan_text,
-            checksum=text_checksum or checksum(plan_text)
+            checksum=text_checksum or checksum(plan_text),
         )
 
     def add_case(self, case, sortkey=1):
@@ -206,7 +216,7 @@ class TestPlan(TCMSActionModel):
         )
         if is_created:
             tcp.sortkey = sortkey
-            tcp.save(update_fields=['sortkey'])
+            tcp.save(update_fields=["sortkey"])
 
     def add_component(self, component):
         try:
@@ -231,22 +241,18 @@ class TestPlan(TCMSActionModel):
         )
 
     def add_tag(self, tag):
-        return TestPlanTag.objects.get_or_create(
-            plan=self,
-            tag=tag
-        )
+        return TestPlanTag.objects.get_or_create(plan=self, tag=tag)
 
     def remove_tag(self, tag):
         cursor = connection.writer_cursor
         cursor.execute(
             "DELETE from test_plan_tags WHERE plan_id = %s AND tag_id = %s",
-            (self.pk, tag.pk))
+            (self.pk, tag.pk),
+        )
 
     def remove_component(self, component):
         try:
-            return TestPlanComponent.objects.get(
-                plan=self, component=component
-            ).delete()
+            return TestPlanComponent.objects.get(plan=self, component=component).delete()
         except Exception:
             return False
 
@@ -258,17 +264,20 @@ class TestPlan(TCMSActionModel):
         TestCasePlan.objects.filter(case=case.pk, plan=self.pk).delete()
 
     def get_absolute_url(self):
-        return reverse('plan-get', kwargs={
-            'plan_id': self.plan_id,
-            'slug': slugify(self.name),
-        })
+        return reverse(
+            "plan-get",
+            kwargs={
+                "plan_id": self.plan_id,
+                "slug": slugify(self.name),
+            },
+        )
 
     def get_case_sortkey(self):
-        '''
+        """
         Get case sortkey.
-        '''
-        result = TestCasePlan.objects.filter(plan=self).aggregate(Max('sortkey'))
-        sortkey = result['sortkey__max']
+        """
+        result = TestCasePlan.objects.filter(plan=self).aggregate(Max("sortkey"))
+        sortkey = result["sortkey__max"]
         if sortkey is None:
             return None
         else:
@@ -276,17 +285,25 @@ class TestPlan(TCMSActionModel):
 
     def make_cloned_name(self):
         """Make default name of cloned plan"""
-        return f'Copy of {self.name}'
+        return f"Copy of {self.name}"
 
-    def clone(self, new_name=None, product=None, version=None,
-              new_original_author=None, set_parent=True,
-              copy_texts=True, default_text_author=None,
-              copy_attachments=True,
-              copy_environment_group=True,
-              link_cases=True, copy_cases=None,
-              new_case_author=None,
-              new_case_default_tester=None,
-              default_component_initial_owner=None):
+    def clone(
+        self,
+        new_name=None,
+        product=None,
+        version=None,
+        new_original_author=None,
+        set_parent=True,
+        copy_texts=True,
+        default_text_author=None,
+        copy_attachments=True,
+        copy_environment_group=True,
+        link_cases=True,
+        copy_cases=None,
+        new_case_author=None,
+        new_case_default_tester=None,
+        default_component_initial_owner=None,
+    ):
         """Clone this plan
 
         :param str new_name: New name of cloned plan. If not passed, make_cloned_name is called
@@ -314,10 +331,10 @@ class TestPlan(TCMSActionModel):
         """
 
         if not copy_texts and not default_text_author:
-            raise ValueError('Missing default text author when not copy texts.')
+            raise ValueError("Missing default text author when not copy texts.")
 
         if not copy_cases and not default_component_initial_owner:
-            raise ValueError('Missing default component initial owner when not copy cases.')
+            raise ValueError("Missing default component initial owner when not copy cases.")
 
         tp_dest = TestPlan.objects.create(
             name=new_name or self.make_cloned_name(),
@@ -328,7 +345,8 @@ class TestPlan(TCMSActionModel):
             create_date=self.create_date,
             is_active=self.is_active,
             extra_link=self.extra_link,
-            parent=self if set_parent else None)
+            parent=self if set_parent else None,
+        )
 
         # Copy the plan documents
         if copy_texts:
@@ -338,9 +356,10 @@ class TestPlan(TCMSActionModel):
                     plan_text_version=tptxt_src.plan_text_version,
                     author=tptxt_src.author,
                     create_date=tptxt_src.create_date,
-                    plan_text=tptxt_src.plan_text)
+                    plan_text=tptxt_src.plan_text,
+                )
         else:
-            tp_dest.add_text(author=default_text_author, plan_text='')
+            tp_dest.add_text(author=default_text_author, plan_text="")
 
         # Copy the plan tags
         for tp_tag_src in self.tag.all():
@@ -367,7 +386,8 @@ class TestPlan(TCMSActionModel):
                     default_tester = new_case_default_tester or tpcase_src.default_tester
 
                     tc_category, b_created = TestCaseCategory.objects.get_or_create(
-                        name=tpcase_src.category.name, product=product)
+                        name=tpcase_src.category.name, product=product
+                    )
 
                     tpcase_dest = TestCase.objects.create(
                         create_date=tpcase_src.create_date,
@@ -378,11 +398,12 @@ class TestPlan(TCMSActionModel):
                         requirement=tpcase_src.requirement,
                         alias=tpcase_src.alias,
                         estimated_time=tpcase_src.estimated_time,
-                        case_status=TestCaseStatus.get('PROPOSED'),
+                        case_status=TestCaseStatus.get("PROPOSED"),
                         category=tc_category,
                         priority=tpcase_src.priority,
                         author=author,
-                        default_tester=default_tester)
+                        default_tester=default_tester,
+                    )
 
                     # Add case to plan.
                     tp_dest.add_case(tpcase_dest, tcp.sortkey)
@@ -397,19 +418,22 @@ class TestPlan(TCMSActionModel):
                             new_c = tp_dest.product.component.create(
                                 name=component.name,
                                 initial_owner=default_component_initial_owner,
-                                description=component.description)
+                                description=component.description,
+                            )
 
                         tpcase_dest.add_component(new_c)
 
                     text = tpcase_src.latest_text()
 
                     if text:
-                        tpcase_dest.add_text(author=text.author,
-                                             action=text.action,
-                                             effect=text.effect,
-                                             setup=text.setup,
-                                             breakdown=text.breakdown,
-                                             create_date=text.create_date)
+                        tpcase_dest.add_text(
+                            author=text.author,
+                            action=text.action,
+                            effect=text.effect,
+                            setup=text.setup,
+                            breakdown=text.breakdown,
+                            create_date=text.create_date,
+                        )
             else:
                 for tpcase_src in tpcases_src:
                     tcp = get_object_or_404(TestCasePlan, plan=self, case=tpcase_src)
@@ -438,41 +462,45 @@ class TestPlan(TCMSActionModel):
         :param int sortkey: the sort key of imported case.
         """
         category, _ = TestCaseCategory.objects.get_or_create(
-            product=self.product,
-            name=case_info['category_name'])
+            product=self.product, name=case_info["category_name"]
+        )
 
         tc = TestCase.objects.create(
-            is_automated=case_info['is_automated'],
-            script='',
-            arguments='',
-            summary=case_info['summary'],
-            requirement='',
-            alias='',
+            is_automated=case_info["is_automated"],
+            script="",
+            arguments="",
+            summary=case_info["summary"],
+            requirement="",
+            alias="",
             estimated_time=0,
-            case_status_id=case_info['case_status_id'],
+            case_status_id=case_info["case_status_id"],
             category_id=category.id,
-            priority_id=case_info['priority_id'],
-            author_id=case_info['author_id'],
-            default_tester_id=case_info['default_tester_id'],
-            notes=case_info['notes'])
+            priority_id=case_info["priority_id"],
+            author_id=case_info["author_id"],
+            default_tester_id=case_info["default_tester_id"],
+            notes=case_info["notes"],
+        )
 
-        tc.add_text(case_text_version=1,
-                    author=case_info['author'],
-                    action=case_info['action'],
-                    effect=case_info['effect'],
-                    setup=case_info['setup'],
-                    breakdown=case_info['breakdown'])
+        tc.add_text(
+            case_text_version=1,
+            author=case_info["author"],
+            action=case_info["action"],
+            effect=case_info["effect"],
+            setup=case_info["setup"],
+            breakdown=case_info["breakdown"],
+        )
 
         # handle tags
-        if case_info['tags']:
-            for tag in case_info['tags']:
+        if case_info["tags"]:
+            for tag in case_info["tags"]:
                 tc.add_tag(tag=tag)
 
         self.add_case(tc, sortkey=sortkey)
 
     def get_descendant_ids(self, direct: bool = False) -> List[int]:
         if direct:
-            sql = dedent(f'''
+            sql = dedent(
+                f"""
                 WITH RECURSIVE sub_tree AS (
                     SELECT plan_id, 0 as depth FROM test_plans WHERE plan_id = {self.pk}
                     UNION ALL
@@ -480,9 +508,11 @@ class TestPlan(TCMSActionModel):
                     WHERE tp.parent_id = st.plan_id
                 )
                 SELECT plan_id FROM sub_tree WHERE depth = 1;
-            ''')
+            """
+            )
         else:
-            sql = dedent(f'''
+            sql = dedent(
+                f"""
                 WITH RECURSIVE sub_tree AS (
                     SELECT plan_id, 0 as depth FROM test_plans WHERE plan_id = {self.pk}
                     UNION ALL
@@ -490,7 +520,8 @@ class TestPlan(TCMSActionModel):
                     WHERE tp.parent_id = st.plan_id
                 )
                 SELECT plan_id FROM sub_tree WHERE depth > 0;
-            ''')
+            """
+            )
         with connection.reader_cursor as cursor:
             cursor.execute(sql)
             return [row[0] for row in cursor.fetchall()]
@@ -500,7 +531,8 @@ class TestPlan(TCMSActionModel):
         return TestPlan.objects.filter(pk__in=descendant_ids)
 
     def get_ancestor_ids(self) -> List[int]:
-        sql_ancestors = dedent(f'''
+        sql_ancestors = dedent(
+            f"""
             WITH RECURSIVE sub_tree AS (
                 SELECT plan_id, parent_id FROM test_plans
                 WHERE plan_id = {self.pk}
@@ -510,7 +542,8 @@ class TestPlan(TCMSActionModel):
                 WHERE st.parent_id = tp.plan_id
             )
             SELECT * FROM sub_tree;
-        ''')
+        """
+        )
         with connection.reader_cursor as cursor:
             cursor.execute(sql_ancestors)
             result = [row[0] for row in cursor.fetchall()]
@@ -529,58 +562,56 @@ class TestPlan(TCMSActionModel):
         if emailing.auto_to_plan_author:
             recipients.add(self.author.email)
         if emailing.auto_to_case_owner:
-            case_authors = self.case.values_list('author__email', flat=True)
+            case_authors = self.case.values_list("author__email", flat=True)
             recipients.update(case_authors)
         if emailing.auto_to_case_default_tester:
-            case_testers = self.case.values_list('default_tester__email', flat=True)
+            case_testers = self.case.values_list("default_tester__email", flat=True)
             recipients.update(case_testers)
         return [r for r in recipients if r]
 
 
 class TestPlanText(TCMSActionModel):
-    plan = models.ForeignKey(TestPlan, related_name='text', on_delete=models.CASCADE)
+    plan = models.ForeignKey(TestPlan, related_name="text", on_delete=models.CASCADE)
     plan_text_version = models.IntegerField()
-    author = models.ForeignKey('auth.User', db_column='who', on_delete=models.CASCADE)
-    create_date = models.DateTimeField(auto_now_add=True,
-                                       db_column='creation_ts')
+    author = models.ForeignKey("auth.User", db_column="who", on_delete=models.CASCADE)
+    create_date = models.DateTimeField(auto_now_add=True, db_column="creation_ts")
     plan_text = models.TextField(blank=True)
     checksum = models.CharField(max_length=32)
 
     class Meta:
-        db_table = 'test_plan_texts'
-        ordering = ['plan', '-plan_text_version']
-        unique_together = ('plan', 'plan_text_version')
+        db_table = "test_plan_texts"
+        ordering = ["plan", "-plan_text_version"]
+        unique_together = ("plan", "plan_text_version")
 
 
 class TestPlanAttachment(models.Model):
-    attachment = models.ForeignKey('management.TestAttachment', on_delete=models.CASCADE)
+    attachment = models.ForeignKey("management.TestAttachment", on_delete=models.CASCADE)
     plan = models.ForeignKey(TestPlan, on_delete=models.CASCADE)
 
     class Meta:
-        db_table = 'test_plan_attachments'
+        db_table = "test_plan_attachments"
 
 
 class TestPlanTag(models.Model):
-    tag = models.ForeignKey('management.TestTag', on_delete=models.CASCADE)
+    tag = models.ForeignKey("management.TestTag", on_delete=models.CASCADE)
     plan = models.ForeignKey(TestPlan, on_delete=models.CASCADE)
-    user = models.IntegerField(default="1", db_column='userid')
+    user = models.IntegerField(default="1", db_column="userid")
 
     class Meta:
-        db_table = 'test_plan_tags'
+        db_table = "test_plan_tags"
 
 
 class TestPlanComponent(models.Model):
     plan = models.ForeignKey(TestPlan, on_delete=models.CASCADE)
-    component = models.ForeignKey('management.Component', on_delete=models.CASCADE)
+    component = models.ForeignKey("management.Component", on_delete=models.CASCADE)
 
     class Meta:
-        db_table = 'test_plan_components'
-        unique_together = ('plan', 'component')
+        db_table = "test_plan_components"
+        unique_together = ("plan", "component")
 
 
 class TestPlanEmailSettings(models.Model):
-    plan = models.OneToOneField(TestPlan, related_name='email_settings',
-                                on_delete=models.CASCADE)
+    plan = models.OneToOneField(TestPlan, related_name="email_settings", on_delete=models.CASCADE)
     is_active = models.BooleanField(default=False)
     auto_to_plan_owner = models.BooleanField(default=False)
     auto_to_plan_author = models.BooleanField(default=False)
@@ -596,16 +627,16 @@ class TestPlanEmailSettings(models.Model):
 
 class TCMSEnvPlanMap(models.Model):
     plan = models.ForeignKey(TestPlan, on_delete=models.CASCADE)
-    group = models.ForeignKey('management.TCMSEnvGroup', on_delete=models.CASCADE)
+    group = models.ForeignKey("management.TCMSEnvGroup", on_delete=models.CASCADE)
 
     class Meta:
-        db_table = 'tcms_env_plan_map'
+        db_table = "tcms_env_plan_map"
 
 
 @receiver(post_save, sender=TestPlan)
 def set_email_settings_to_new_plan(sender, **kwargs):
-    if kwargs['created']:
-        TestPlanEmailSettings.objects.create(plan=kwargs['instance'])
+    if kwargs["created"]:
+        TestPlanEmailSettings.objects.create(plan=kwargs["instance"])
 
 
 if register_model:
@@ -618,8 +649,7 @@ if register_model:
 
 def _listen():
     post_save.connect(plan_watchers.notify_on_plan_is_updated, TestPlan)
-    pre_delete.connect(
-        plan_watchers.load_email_settings_for_later_deletion, TestPlan)
+    pre_delete.connect(plan_watchers.load_email_settings_for_later_deletion, TestPlan)
     post_delete.connect(plan_watchers.notify_deletion_of_plan, TestPlan)
     pre_save.connect(plan_watchers.pre_save_clean, TestPlan)
 
@@ -627,8 +657,7 @@ def _listen():
 def _disconnect_signals():
     """ used in testing """
     post_save.disconnect(plan_watchers.notify_on_plan_is_updated, TestPlan)
-    pre_delete.disconnect(
-        plan_watchers.load_email_settings_for_later_deletion, TestPlan)
+    pre_delete.disconnect(plan_watchers.load_email_settings_for_later_deletion, TestPlan)
     post_delete.disconnect(plan_watchers.notify_deletion_of_plan, TestPlan)
     pre_save.disconnect(plan_watchers.pre_save_clean, TestPlan)
 

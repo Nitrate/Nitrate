@@ -16,12 +16,11 @@ class TCMSLog:
         self.model = model
 
     def get_new_log_object(self):
-        elements = ['who', 'field', 'original_value', 'new_value']
+        elements = ["who", "field", "original_value", "new_value"]
 
         for element in elements:
             if not hasattr(self, element):
-                raise NotImplementedError(
-                    f'Log does not have attribute {element}')
+                raise NotImplementedError(f"Log does not have attribute {element}")
 
         model = self.get_log_model()
         new = model(**self.get_log_create_data())
@@ -36,19 +35,19 @@ class TCMSLog:
 
     def get_log_create_data(self):
         return {
-            'content_object': self.model,
-            'site_id': settings.SITE_ID,
-            'who': self.who,
-            'field': self.field,
-            'original_value': self.original_value,
-            'new_value': self.new_value,
+            "content_object": self.model,
+            "site_id": settings.SITE_ID,
+            "who": self.who,
+            "field": self.field,
+            "original_value": self.original_value,
+            "new_value": self.new_value,
         }
 
     def make(self, who, new_value, field=None, original_value=None):
         """Create new log"""
         self.who = who
-        self.field = field or ''
-        self.original_value = original_value or ''
+        self.field = field or ""
+        self.original_value = original_value or ""
         self.new_value = new_value
 
         model = self.get_new_log_object()
@@ -61,10 +60,12 @@ class TCMSLog:
         ctype = self.lookup_content_type()
         model = self.get_log_model()
 
-        qs = model.objects.filter(content_type=ctype,
-                                  object_pk=smart_str(self.model.pk),
-                                  site=settings.SITE_ID)
-        qs = qs.select_related('who')
+        qs = model.objects.filter(
+            content_type=ctype,
+            object_pk=smart_str(self.model.pk),
+            site=settings.SITE_ID,
+        )
+        qs = qs.select_related("who")
         return qs
 
     def list(self):

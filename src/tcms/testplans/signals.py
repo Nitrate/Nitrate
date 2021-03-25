@@ -23,5 +23,5 @@ def notify_deletion_of_plan(sender, instance, **kwargs):
 
 
 def pre_save_clean(sender, **kwargs):
-    instance = kwargs['instance']
+    instance = kwargs["instance"]
     instance.clean()

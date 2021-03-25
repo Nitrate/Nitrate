@@ -4,11 +4,9 @@ from django.db import migrations
 
 
 def forwards(apps, schema_editor):
-    IssueTrackerProduct = apps.get_model('issuetracker', 'IssueTrackerProduct')
+    IssueTrackerProduct = apps.get_model("issuetracker", "IssueTrackerProduct")
 
-    product_names = [
-        'BitBucket', 'Bugzilla', 'GitHub', 'JIRA', 'GitLab', 'Pagure'
-    ]
+    product_names = ["BitBucket", "Bugzilla", "GitHub", "JIRA", "GitLab", "Pagure"]
 
     for name in product_names:
         IssueTrackerProduct.objects.create(name=name)
@@ -17,14 +15,10 @@ def forwards(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('issuetracker', '0001_initial'),
+        ("issuetracker", "0001_initial"),
     ]
 
     # Not remove created products here, remove table will remove the data
     # obviously.
 
-    operations = [
-        migrations.RunPython(
-            forwards,
-            reverse_code=migrations.RunPython.noop)
-    ]
+    operations = [migrations.RunPython(forwards, reverse_code=migrations.RunPython.noop)]

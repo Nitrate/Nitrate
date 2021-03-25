@@ -9,23 +9,22 @@ from .managers import TCMSLogManager
 
 # Create your models here.
 
+
 class TCMSLogModel(TCMSContentTypeBaseModel):
     date = models.DateTimeField(auto_now_add=True)
     action = models.TextField()
-    field = models.CharField(max_length=50, default='')
-    original_value = models.TextField(default='')
-    new_value = models.TextField(default='')
+    field = models.CharField(max_length=50, default="")
+    original_value = models.TextField(default="")
+    new_value = models.TextField(default="")
 
-    who = models.ForeignKey('auth.User',
-                            related_name='log_who',
-                            on_delete=models.CASCADE)
+    who = models.ForeignKey("auth.User", related_name="log_who", on_delete=models.CASCADE)
 
     objects = TCMSLogManager()
 
     class Meta:
         abstract = False
-        db_table = 'tcms_logs'
-        index_together = (('content_type', 'object_pk', 'site'),)
+        db_table = "tcms_logs"
+        index_together = (("content_type", "object_pk", "site"),)
 
     def __str__(self):
         return self.action

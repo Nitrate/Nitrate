@@ -13,18 +13,16 @@ class TestLoginWithModelBackend(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.tester = User.objects.create_user(
-            username='tester', email='tester@localhost', password='123'
+            username="tester", email="tester@localhost", password="123"
         )
 
     def test_login(self):
         # ModelBackend is already configured in settings
-        request = RequestFactory().post('/xmlrpc/')
+        request = RequestFactory().post("/xmlrpc/")
         request.user = self.tester
         # Ensure request.session is set
         SessionMiddleware().process_request(request)
-        session_key = auth.login(request, {
-            'username': 'tester', 'password': '123'
-        })
+        session_key = auth.login(request, {"username": "tester", "password": "123"})
 
         self.assertTrue(request.user.is_authenticated)
         self.assertGreater(len(session_key), 0)

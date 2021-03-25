@@ -10,41 +10,43 @@ from tcms.testplans.importer import clean_xml_file
 from tcms.testplans.models import TestPlan, TestPlanType, TCMSEnvPlanMap
 from tcms.xmlrpc.decorators import log_call
 from tcms.xmlrpc.utils import (
-    deprecate_critetion_attachment, pre_process_ids, distinct_count
+    deprecate_critetion_attachment,
+    pre_process_ids,
+    distinct_count,
 )
 
 __all__ = (
-    'add_tag',
-    'add_component',
-    'check_plan_type',
-    'create',
-    'filter',
-    'filter_count',
-    'get',
-    'get_change_history',
-    'get_env_groups',
-    'get_plan_type',
-    'get_product',
-    'get_tags',
-    'get_components',
-    'get_test_cases',
-    'get_all_cases_tags',
-    'get_test_runs',
-    'get_text',
-    'lookup_type_id_by_name',
-    'lookup_type_name_by_id',
-    'remove_tag',
-    'remove_component',
-    'store_text',
-    'update',
-    'import_case_via_XML',
+    "add_tag",
+    "add_component",
+    "check_plan_type",
+    "create",
+    "filter",
+    "filter_count",
+    "get",
+    "get_change_history",
+    "get_env_groups",
+    "get_plan_type",
+    "get_product",
+    "get_tags",
+    "get_components",
+    "get_test_cases",
+    "get_all_cases_tags",
+    "get_test_runs",
+    "get_text",
+    "lookup_type_id_by_name",
+    "lookup_type_name_by_id",
+    "remove_tag",
+    "remove_component",
+    "store_text",
+    "update",
+    "import_case_via_XML",
 )
 
-__xmlrpc_namespace__ = 'TestPlan'
+__xmlrpc_namespace__ = "TestPlan"
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('testplans.add_testplantag', raise_exception=True)
+@permission_required("testplans.add_testplantag", raise_exception=True)
 def add_tag(request, plan_ids, tags):
     """Add one or more tags to the selected test plans.
 
@@ -80,7 +82,7 @@ def add_tag(request, plan_ids, tags):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('testplans.add_testplancomponent', raise_exception=True)
+@permission_required("testplans.add_testplancomponent", raise_exception=True)
 def add_component(request, plan_ids, component_ids):
     """Adds one or more components to the selected test plan.
 
@@ -106,12 +108,8 @@ def add_component(request, plan_ids, component_ids):
     """
     # FIXME: optimize this method to reduce possible huge number of SQLs
 
-    tps = TestPlan.objects.filter(
-        plan_id__in=pre_process_ids(value=plan_ids)
-    )
-    cs = Component.objects.filter(
-        id__in=pre_process_ids(value=component_ids)
-    )
+    tps = TestPlan.objects.filter(plan_id__in=pre_process_ids(value=plan_ids))
+    cs = Component.objects.filter(id__in=pre_process_ids(value=component_ids))
 
     for tp in tps.iterator():
         for c in cs.iterator():
@@ -136,7 +134,7 @@ def check_plan_type(request, name):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('testplans.add_testplan', raise_exception=True)
+@permission_required("testplans.add_testplan", raise_exception=True)
 def create(request, values):
     """Creates a new Test Plan object and stores it in the database.
 
@@ -173,29 +171,29 @@ def create(request, values):
     from tcms.core import forms
     from tcms.xmlrpc.forms import NewPlanForm
 
-    if values.get('default_product_version'):
-        values['product_version'] = values.pop('default_product_version')
+    if values.get("default_product_version"):
+        values["product_version"] = values.pop("default_product_version")
 
-    if not values.get('product'):
-        raise ValueError('Value of product is required')
+    if not values.get("product"):
+        raise ValueError("Value of product is required")
 
     form = NewPlanForm(values)
-    form.populate(product_id=values['product'])
+    form.populate(product_id=values["product"])
 
     if form.is_valid():
         tp = TestPlan.objects.create(
-            product=form.cleaned_data['product'],
-            name=form.cleaned_data['name'],
-            type=form.cleaned_data['type'],
+            product=form.cleaned_data["product"],
+            name=form.cleaned_data["name"],
+            type=form.cleaned_data["type"],
             author=request.user,
-            product_version=form.cleaned_data['product_version'],
-            parent=form.cleaned_data['parent'],
-            is_active=form.cleaned_data['is_active']
+            product_version=form.cleaned_data["product_version"],
+            parent=form.cleaned_data["parent"],
+            is_active=form.cleaned_data["is_active"],
         )
 
         tp.add_text(
             author=request.user,
-            plan_text=values['text'],
+            plan_text=values["text"],
         )
 
         return tp.serialize()
@@ -271,14 +269,14 @@ def get(request, plan_id):
 
     # This is for backward-compatibility. Actually, this is not a good way to
     # add this extra field. But, now that's it.
-    response['default_product_version'] = response['product_version']
+    response["default_product_version"] = response["product_version"]
 
     # get the xmlrpc tags
-    tag_ids = tp.tag.values_list('id', flat=True)
-    query = {'id__in': tag_ids}
+    tag_ids = tp.tag.values_list("id", flat=True)
+    query = {"id__in": tag_ids}
     tags = TestTag.to_xmlrpc(query)
     # cut 'id' attribute off, only leave 'name' here
-    tags_without_id = [tag['name'] for tag in tags]
+    tags_without_id = [tag["name"] for tag in tags]
     # replace tag_id list in the serialize return data
     response["tag"] = tags_without_id
     return response
@@ -295,7 +293,7 @@ def get_change_history(request, plan_id):
 
        NOT IMPLEMENTED - History is different than before.
     """
-    raise NotImplementedError('Not implemented RPC method')
+    raise NotImplementedError("Not implemented RPC method")
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -308,7 +306,7 @@ def get_env_groups(request, plan_id):
     """
     from tcms.management.models import TCMSEnvGroup
 
-    query = {'testplan__pk': plan_id}
+    query = {"testplan__pk": plan_id}
     return TCMSEnvGroup.to_xmlrpc(query)
 
 
@@ -340,8 +338,8 @@ def get_product(request, plan_id):
         TestPlan.get_product(1)
     """
     products = Product.objects.filter(plan=plan_id)
-    products = products.select_related('classification')
-    products = products.defer('classification__description')
+    products = products.select_related("classification")
+    products = products.defer("classification__description")
     if len(products) == 0:
         raise Product.DoesNotExist
     else:
@@ -362,8 +360,8 @@ def get_tags(request, plan_id):
     """
     tp = TestPlan.objects.get(plan_id=plan_id)
 
-    tag_ids = tp.tag.values_list('id', flat=True)
-    query = {'id__in': tag_ids}
+    tag_ids = tp.tag.values_list("id", flat=True)
+    query = {"id__in": tag_ids}
     return TestTag.to_xmlrpc(query)
 
 
@@ -381,8 +379,8 @@ def get_components(request, plan_id):
     """
     tp = TestPlan.objects.get(plan_id=plan_id)
 
-    component_ids = tp.component.values_list('id', flat=True)
-    query = {'id__in': component_ids}
+    component_ids = tp.component.values_list("id", flat=True)
+    query = {"id__in": component_ids}
     return Component.to_xmlrpc(query)
 
 
@@ -403,9 +401,9 @@ def get_all_cases_tags(request, plan_id):
     tcs = tp.case.all()
     tag_ids = []
     for tc in tcs.iterator():
-        tag_ids.extend(tc.tag.values_list('id', flat=True))
+        tag_ids.extend(tc.tag.values_list("id", flat=True))
     tag_ids = list(set(tag_ids))
-    query = {'id__in': tag_ids}
+    query = {"id__in": tag_ids}
     return TestTag.to_xmlrpc(query)
 
 
@@ -424,15 +422,16 @@ def get_test_cases(request, plan_id):
     from tcms.testcases.models import TestCase
     from tcms.testplans.models import TestPlan
     from tcms.xmlrpc.serializer import XMLRPCSerializer
+
     tp = TestPlan.objects.get(pk=plan_id)
-    tcs = TestCase.objects.filter(plan=tp).order_by('testcaseplan__sortkey')
+    tcs = TestCase.objects.filter(plan=tp).order_by("testcaseplan__sortkey")
     serialized_tcs = XMLRPCSerializer(tcs.iterator()).serialize_queryset()
     if serialized_tcs:
         for serialized_tc in serialized_tcs:
-            case_id = serialized_tc.get('case_id', None)
+            case_id = serialized_tc.get("case_id", None)
             tc = tcs.get(pk=case_id)
             tcp = tc.testcaseplan_set.get(plan=tp)
-            serialized_tc['sortkey'] = tcp.sortkey
+            serialized_tc["sortkey"] = tcp.sortkey
     return serialized_tcs
 
 
@@ -450,7 +449,7 @@ def get_test_runs(request, plan_id):
     """
     from tcms.testruns.models import TestRun
 
-    query = {'plan': plan_id}
+    query = {"plan": plan_id}
     return TestRun.to_xmlrpc(query)
 
 
@@ -473,8 +472,7 @@ def get_text(request, plan_id, plan_text_version=None):
         TestPlan.get_text(1, 4)
     """
     tp = TestPlan.objects.get(plan_id=plan_id)
-    test_plan_text = tp.get_text_with_version(
-        plan_text_version=plan_text_version)
+    test_plan_text = tp.get_text_with_version(plan_text_version=plan_text_version)
     if test_plan_text:
         return test_plan_text.serialize()
     else:
@@ -494,7 +492,7 @@ def lookup_type_name_by_id(request, id):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('testplans.delete_testplantag', raise_exception=True)
+@permission_required("testplans.delete_testplantag", raise_exception=True)
 def remove_tag(request, plan_ids, tags):
     """Remove a tag from a plan.
 
@@ -517,12 +515,8 @@ def remove_tag(request, plan_ids, tags):
     """
     from tcms.management.models import TestTag
 
-    tps = TestPlan.objects.filter(
-        plan_id__in=pre_process_ids(value=plan_ids)
-    )
-    tgs = TestTag.objects.filter(
-        name__in=TestTag.string_to_list(tags)
-    )
+    tps = TestPlan.objects.filter(plan_id__in=pre_process_ids(value=plan_ids))
+    tgs = TestTag.objects.filter(name__in=TestTag.string_to_list(tags))
 
     for tp in tps.iterator():
         for tg in tgs.iterator():
@@ -535,8 +529,7 @@ def remove_tag(request, plan_ids, tags):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('testplans.delete_testplancomponent',
-                     raise_exception=True)
+@permission_required("testplans.delete_testplancomponent", raise_exception=True)
 def remove_component(request, plan_ids, component_ids):
     """Removes selected component from the selected test plan.
 
@@ -559,12 +552,8 @@ def remove_component(request, plan_ids, component_ids):
         # Remove component ids list '3, 4' from plan list '1, 2' with String
         TestPlan.remove_component('1, 2', '3, 4')
     """
-    tps = TestPlan.objects.filter(
-        plan_id__in=pre_process_ids(value=plan_ids)
-    )
-    cs = Component.objects.filter(
-        id__in=pre_process_ids(value=component_ids)
-    )
+    tps = TestPlan.objects.filter(plan_id__in=pre_process_ids(value=plan_ids))
+    cs = Component.objects.filter(id__in=pre_process_ids(value=component_ids))
 
     for tp in tps.iterator():
         for c in cs.iterator():
@@ -577,7 +566,7 @@ def remove_component(request, plan_ids, component_ids):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('testplans.add_testplantext', raise_exception=True)
+@permission_required("testplans.add_testplantext", raise_exception=True)
 def store_text(request, plan_id, text, author=None):
     """Update the document field of a plan.
 
@@ -608,7 +597,7 @@ def store_text(request, plan_id, text, author=None):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('testplans.change_testplan', raise_exception=True)
+@permission_required("testplans.change_testplan", raise_exception=True)
 def update(request, plan_ids, values):
     """Updates the fields of the selected test plan.
 
@@ -642,57 +631,54 @@ def update(request, plan_ids, values):
     from tcms.core import forms
     from tcms.xmlrpc.forms import EditPlanForm
 
-    if values.get('default_product_version'):
-        values['product_version'] = values.pop('default_product_version')
+    if values.get("default_product_version"):
+        values["product_version"] = values.pop("default_product_version")
 
     form = EditPlanForm(values)
 
-    if values.get('product_version') and not values.get('product'):
+    if values.get("product_version") and not values.get("product"):
         raise ValueError('Field "product" is required by product_version')
 
-    if values.get('product') and not values.get('product_version'):
+    if values.get("product") and not values.get("product_version"):
         raise ValueError('Field "product_version" is required by product')
 
-    if values.get('product_version') and values.get('product'):
-        form.populate(product_id=values['product'])
+    if values.get("product_version") and values.get("product"):
+        form.populate(product_id=values["product"])
 
     plan_ids = pre_process_ids(value=plan_ids)
     tps = TestPlan.objects.filter(pk__in=plan_ids)
 
     if form.is_valid():
         _values = dict()
-        if form.cleaned_data['name']:
-            _values['name'] = form.cleaned_data['name']
+        if form.cleaned_data["name"]:
+            _values["name"] = form.cleaned_data["name"]
 
-        if form.cleaned_data['type']:
-            _values['type'] = form.cleaned_data['type']
+        if form.cleaned_data["type"]:
+            _values["type"] = form.cleaned_data["type"]
 
-        if form.cleaned_data['product']:
-            _values['product'] = form.cleaned_data['product']
+        if form.cleaned_data["product"]:
+            _values["product"] = form.cleaned_data["product"]
 
-        if form.cleaned_data['product_version']:
-            _values['product_version'] = form.cleaned_data[
-                'product_version']
+        if form.cleaned_data["product_version"]:
+            _values["product_version"] = form.cleaned_data["product_version"]
 
-        if form.cleaned_data['owner']:
-            _values['owner'] = form.cleaned_data['owner']
+        if form.cleaned_data["owner"]:
+            _values["owner"] = form.cleaned_data["owner"]
 
-        if form.cleaned_data['parent']:
-            _values['parent'] = form.cleaned_data['parent']
+        if form.cleaned_data["parent"]:
+            _values["parent"] = form.cleaned_data["parent"]
 
-        if not (values.get('is_active') is None):
-            _values['is_active'] = form.cleaned_data['is_active']
+        if not (values.get("is_active") is None):
+            _values["is_active"] = form.cleaned_data["is_active"]
 
         tps.update(**_values)
 
         # requested to update environment group for selected test plans
-        if form.cleaned_data['env_group']:
+        if form.cleaned_data["env_group"]:
             # prepare the list of new objects to be inserted into DB
             new_objects = [
-                TCMSEnvPlanMap(
-                    plan_id=plan_pk,
-                    group_id=form.cleaned_data['env_group'].pk
-                ) for plan_pk in plan_ids
+                TCMSEnvPlanMap(plan_id=plan_pk, group_id=form.cleaned_data["env_group"].pk)
+                for plan_pk in plan_ids
             ]
 
             # first delete the old values (b/c many-to-many I presume ?)
@@ -702,7 +688,7 @@ def update(request, plan_ids, values):
     else:
         raise ValueError(forms.errors_to_list(form))
 
-    query = {'pk__in': tps.values_list('pk', flat=True)}
+    query = {"pk__in": tps.values_list("pk", flat=True)}
     return TestPlan.to_xmlrpc(query)
 
 
@@ -722,4 +708,4 @@ def import_case_via_XML(request, plan_id, xml_content):
     tp = TestPlan.objects.get(pk=plan_id)
     new_case_from_xml = list(clean_xml_file(xml_content))
     tp.import_cases(new_case_from_xml)
-    return 'Success update {} cases'.format(len(new_case_from_xml))
+    return "Success update {} cases".format(len(new_case_from_xml))

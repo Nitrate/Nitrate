@@ -6,23 +6,21 @@ from django.db import migrations
 
 
 def forward(apps, schema_editor):
-    IssueTracker = apps.get_model('issuetracker', 'IssueTracker')
+    IssueTracker = apps.get_model("issuetracker", "IssueTracker")
 
-    bz = IssueTracker.objects.get(name='Bugzilla')
-    bz.issue_url_fmt = 'https://bugzilla.example.com/show_bug.cgi?id={issue_key}'
-    bz.save(update_fields=['issue_url_fmt'])
+    bz = IssueTracker.objects.get(name="Bugzilla")
+    bz.issue_url_fmt = "https://bugzilla.example.com/show_bug.cgi?id={issue_key}"
+    bz.save(update_fields=["issue_url_fmt"])
 
-    jira = IssueTracker.objects.get(name='JIRA')
-    jira.issue_url_fmt = 'https://jira.example.com/browse/{issue_key}'
-    jira.save(update_fields=['issue_url_fmt'])
+    jira = IssueTracker.objects.get(name="JIRA")
+    jira.issue_url_fmt = "https://jira.example.com/browse/{issue_key}"
+    jira.save(update_fields=["issue_url_fmt"])
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('issuetracker', '0013_modify_unique_constraint_for_issue'),
+        ("issuetracker", "0013_modify_unique_constraint_for_issue"),
     ]
 
-    operations = [
-        migrations.RunPython(forward, reverse_code=migrations.RunPython.noop)
-    ]
+    operations = [migrations.RunPython(forward, reverse_code=migrations.RunPython.noop)]

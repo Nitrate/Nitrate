@@ -31,9 +31,9 @@ except ImportError:
     register_model = None
 
 AUTOMATED_CHOICES = (
-    (0, 'Manual'),
-    (1, 'Auto'),
-    (2, 'Both'),
+    (0, "Manual"),
+    (1, "Auto"),
+    (2, "Both"),
 )
 
 log = logging.getLogger(__name__)
@@ -42,10 +42,10 @@ log = logging.getLogger(__name__)
 class NoneText:
     author = None
     case_text_version = 0
-    action = ''
-    effect = ''
-    setup = ''
-    breakdown = ''
+    action = ""
+    effect = ""
+    setup = ""
+    breakdown = ""
     create_date = datetime.now()
 
     @classmethod
@@ -64,7 +64,7 @@ class PlainText:
 
 
 class TestCaseStatus(EnumLike, TCMSActionModel):
-    id = models.AutoField(db_column='case_status_id', primary_key=True)
+    id = models.AutoField(db_column="case_status_id", primary_key=True)
     # FIXME: if name has unique value for each status, give unique constraint
     # to this field. Otherwise, all SQL queries filtering upon this
     #        field will cost much time in the database side.
@@ -72,7 +72,7 @@ class TestCaseStatus(EnumLike, TCMSActionModel):
     description = models.TextField(null=True, blank=True)
 
     class Meta:
-        db_table = 'test_case_status'
+        db_table = "test_case_status"
         verbose_name = "Test case status"
         verbose_name_plural = "Test case status"
 
@@ -80,20 +80,21 @@ class TestCaseStatus(EnumLike, TCMSActionModel):
         return self.name
 
     def is_confirmed(self):
-        return self.name == 'CONFIRMED'
+        return self.name == "CONFIRMED"
 
 
 class TestCaseCategory(TCMSActionModel):
-    id = models.AutoField(db_column='category_id', primary_key=True)
+    id = models.AutoField(db_column="category_id", primary_key=True)
     name = models.CharField(max_length=255)
-    product = models.ForeignKey('management.Product', related_name="category",
-                                on_delete=models.CASCADE)
+    product = models.ForeignKey(
+        "management.Product", related_name="category", on_delete=models.CASCADE
+    )
     description = models.TextField(blank=True)
 
     class Meta:
-        db_table = 'test_case_categories'
-        verbose_name_plural = 'test case categories'
-        unique_together = ('product', 'name')
+        db_table = "test_case_categories"
+        verbose_name_plural = "test case categories"
+        unique_together = ("product", "name")
 
     def __str__(self):
         return self.name
@@ -101,8 +102,8 @@ class TestCaseCategory(TCMSActionModel):
 
 class TestCase(TCMSActionModel):
     case_id = models.AutoField(primary_key=True)
-    create_date = models.DateTimeField(db_column='creation_date', auto_now_add=True)
-    is_automated = models.IntegerField(db_column='isautomated', default=0)
+    create_date = models.DateTimeField(db_column="creation_date", auto_now_add=True)
+    is_automated = models.IntegerField(db_column="isautomated", default=0)
     is_automated_proposed = models.BooleanField(default=False)
     script = models.TextField(blank=True)
     arguments = models.TextField(blank=True)
@@ -110,43 +111,60 @@ class TestCase(TCMSActionModel):
     summary = models.CharField(max_length=255, blank=True)
     requirement = models.CharField(max_length=255, blank=True)
     alias = models.CharField(max_length=255, blank=True)
-    estimated_time = DurationField(db_column='estimated_time', default=0)
+    estimated_time = DurationField(db_column="estimated_time", default=0)
     notes = models.TextField(blank=True)
 
     case_status = models.ForeignKey(TestCaseStatus, on_delete=models.CASCADE)
     category = models.ForeignKey(
-        TestCaseCategory, related_name='category_case', on_delete=models.CASCADE)
+        TestCaseCategory, related_name="category_case", on_delete=models.CASCADE
+    )
     priority = models.ForeignKey(
-        'management.Priority', related_name='priority_case', on_delete=models.CASCADE)
+        "management.Priority", related_name="priority_case", on_delete=models.CASCADE
+    )
     author = models.ForeignKey(
-        'auth.User', related_name='cases_as_author', on_delete=models.CASCADE)
+        "auth.User", related_name="cases_as_author", on_delete=models.CASCADE
+    )
     default_tester = models.ForeignKey(
-        'auth.User', blank=True, null=True,
-        related_name='cases_as_default_tester', on_delete=models.SET_NULL)
+        "auth.User",
+        blank=True,
+        null=True,
+        related_name="cases_as_default_tester",
+        on_delete=models.SET_NULL,
+    )
     reviewer = models.ForeignKey(
-        'auth.User', blank=True, null=True,
-        related_name='cases_as_reviewer', on_delete=models.SET_NULL)
+        "auth.User",
+        blank=True,
+        null=True,
+        related_name="cases_as_reviewer",
+        on_delete=models.SET_NULL,
+    )
 
     attachments = models.ManyToManyField(
-        'management.TestAttachment',
-        related_name='cases',
-        through='testcases.TestCaseAttachment')
+        "management.TestAttachment",
+        related_name="cases",
+        through="testcases.TestCaseAttachment",
+    )
 
     # FIXME: related_name should be cases instead of case. But now keep it
     # named case due to historical reason.
-    plan = models.ManyToManyField('testplans.TestPlan', related_name='case',
-                                  through='testcases.TestCasePlan')
+    plan = models.ManyToManyField(
+        "testplans.TestPlan", related_name="case", through="testcases.TestCasePlan"
+    )
 
-    component = models.ManyToManyField('management.Component', related_name='cases',
-                                       through='testcases.TestCaseComponent')
+    component = models.ManyToManyField(
+        "management.Component",
+        related_name="cases",
+        through="testcases.TestCaseComponent",
+    )
 
-    tag = models.ManyToManyField('management.TestTag', related_name='cases',
-                                 through='testcases.TestCaseTag')
+    tag = models.ManyToManyField(
+        "management.TestTag", related_name="cases", through="testcases.TestCaseTag"
+    )
 
     # Auto-generated attributes from back-references:
     # 'texts' : list of TestCaseTexts (from TestCaseTexts.case)
     class Meta:
-        db_table = 'test_cases'
+        db_table = "test_cases"
 
     def __str__(self):
         return self.summary
@@ -157,7 +175,7 @@ class TestCase(TCMSActionModel):
         from tcms.xmlrpc.utils import distinct_filter
 
         _query = query or {}
-        qs = distinct_filter(TestCase, _query).order_by('pk')
+        qs = distinct_filter(TestCase, _query).order_by("pk")
         s = TestCaseXMLRPCSerializer(model_class=cls, queryset=qs)
         return s.serialize_queryset()
 
@@ -168,28 +186,28 @@ class TestCase(TCMSActionModel):
         """
         case = cls.objects.create(
             author=author,
-            is_automated=values['is_automated'],
-            is_automated_proposed=values['is_automated_proposed'],
-            script=values['script'],
-            arguments=values['arguments'],
-            extra_link=values['extra_link'],
-            summary=values['summary'],
-            requirement=values['requirement'],
-            alias=values['alias'],
-            estimated_time=values['estimated_time'],
-            case_status=values['case_status'],
-            category=values['category'],
-            priority=values['priority'],
-            default_tester=values['default_tester'],
-            notes=values['notes'],
+            is_automated=values["is_automated"],
+            is_automated_proposed=values["is_automated_proposed"],
+            script=values["script"],
+            arguments=values["arguments"],
+            extra_link=values["extra_link"],
+            summary=values["summary"],
+            requirement=values["requirement"],
+            alias=values["alias"],
+            estimated_time=values["estimated_time"],
+            case_status=values["case_status"],
+            category=values["category"],
+            priority=values["priority"],
+            default_tester=values["default_tester"],
+            notes=values["notes"],
         )
 
-        tags = values.get('tag')
+        tags = values.get("tag")
         if tags:
             for tag in tags:
                 case.add_tag(tag)
 
-        components = values.get('component')
+        components = values.get("component")
         if components is not None:
             for component in components:
                 case.add_component(component=component)
@@ -203,19 +221,18 @@ class TestCase(TCMSActionModel):
     @classmethod
     def update(cls, case_ids, values):
         if isinstance(case_ids, int):
-            case_ids = [case_ids, ]
+            case_ids = [
+                case_ids,
+            ]
 
         fields = [field.name for field in cls._meta.fields]
 
         tcs = cls.objects.filter(pk__in=case_ids)
-        _values = {
-            k: v for k, v in values.items()
-            if k in fields and v is not None and v != ''
-        }
-        if values['notes'] == '':
-            _values['notes'] = ''
-        if values['script'] == '':
-            _values['script'] = ''
+        _values = {k: v for k, v in values.items() if k in fields and v is not None and v != ""}
+        if values["notes"] == "":
+            _values["notes"] = ""
+        if values["script"] == "":
+            _values["script"] = ""
         tcs.update(**_values)
         return tcs
 
@@ -229,53 +246,49 @@ class TestCase(TCMSActionModel):
         else:
             q = cls.objects.filter(plan=plan)
 
-        if query.get('case_id_set'):
-            q = q.filter(pk__in=query['case_id_set'])
+        if query.get("case_id_set"):
+            q = q.filter(pk__in=query["case_id_set"])
 
-        if query.get('search'):
+        if query.get("search"):
             q = q.filter(
-                Q(pk__icontains=query['search']) |
-                Q(summary__icontains=query['search']) |
-                Q(author__email__startswith=query['search'])
+                Q(pk__icontains=query["search"])
+                | Q(summary__icontains=query["search"])
+                | Q(author__email__startswith=query["search"])
             )
 
-        if query.get('summary'):
-            q = q.filter(Q(summary__icontains=query['summary']))
+        if query.get("summary"):
+            q = q.filter(Q(summary__icontains=query["summary"]))
 
-        if query.get('author'):
+        if query.get("author"):
             q = q.filter(
-                Q(author__first_name__startswith=query['author']) |
-                Q(author__last_name__startswith=query['author']) |
-                Q(author__username__icontains=query['author']) |
-                Q(author__email__startswith=query['author'])
+                Q(author__first_name__startswith=query["author"])
+                | Q(author__last_name__startswith=query["author"])
+                | Q(author__username__icontains=query["author"])
+                | Q(author__email__startswith=query["author"])
             )
 
-        if query.get('default_tester'):
+        if query.get("default_tester"):
             q = q.filter(
-                Q(default_tester__first_name__startswith=query[
-                    'default_tester']) |
-                Q(default_tester__last_name__startswith=query[
-                    'default_tester']) |
-                Q(default_tester__username__icontains=query[
-                    'default_tester']) |
-                Q(default_tester__email__startswith=query[
-                    'default_tester'])
+                Q(default_tester__first_name__startswith=query["default_tester"])
+                | Q(default_tester__last_name__startswith=query["default_tester"])
+                | Q(default_tester__username__icontains=query["default_tester"])
+                | Q(default_tester__email__startswith=query["default_tester"])
             )
 
-        if query.get('tag__name__in'):
-            q = q.filter(tag__name__in=query['tag__name__in'])
+        if query.get("tag__name__in"):
+            q = q.filter(tag__name__in=query["tag__name__in"])
 
-        if query.get('category'):
-            q = q.filter(category__name=query['category'].name)
+        if query.get("category"):
+            q = q.filter(category__name=query["category"].name)
 
-        if query.get('priority'):
-            q = q.filter(priority__in=query['priority'])
+        if query.get("priority"):
+            q = q.filter(priority__in=query["priority"])
 
-        if query.get('case_status'):
-            q = q.filter(case_status__in=query['case_status'])
+        if query.get("case_status"):
+            q = q.filter(case_status__in=query["case_status"])
 
         # If plan exists, remove leading and trailing whitespace from it.
-        plan_str = query.get('plan', '').strip()
+        plan_str = query.get("plan", "").strip()
         if plan_str:
             try:
                 # Is it an integer?  If so treat as a plan_id:
@@ -286,56 +299,66 @@ class TestCase(TCMSActionModel):
                 q = q.filter(plan__name__icontains=plan_str)
         del plan_str
 
-        if query.get('product'):
-            q = q.filter(category__product=query['product'])
+        if query.get("product"):
+            q = q.filter(category__product=query["product"])
 
-        if query.get('component'):
-            q = q.filter(component=query['component'])
+        if query.get("component"):
+            q = q.filter(component=query["component"])
 
-        if query.get('issue_key'):
-            q = q.filter(issues__issue_key__in=query['issue_key'])
+        if query.get("issue_key"):
+            q = q.filter(issues__issue_key__in=query["issue_key"])
 
-        if query.get('is_automated'):
-            q = q.filter(is_automated=query['is_automated'])
+        if query.get("is_automated"):
+            q = q.filter(is_automated=query["is_automated"])
 
-        if query.get('is_automated_proposed'):
-            q = q.filter(
-                is_automated_proposed=query['is_automated_proposed'])
+        if query.get("is_automated_proposed"):
+            q = q.filter(is_automated_proposed=query["is_automated_proposed"])
 
         return q.distinct()
 
     @classmethod
     def list_confirmed(cls):
-        return cls.list({'case_status__name': 'CONFIRMED'})
+        return cls.list({"case_status__name": "CONFIRMED"})
 
     @staticmethod
-    def mail_scene(objects: QuerySet,
-                   field: Optional[str] = None,
-                   value=None, ctype=None, object_pk=None):
-        tcs = (objects
-               .select_related('reviewer')
-               .only('summary', 'reviewer__email')
-               .order_by('pk'))
+    def mail_scene(
+        objects: QuerySet,
+        field: Optional[str] = None,
+        value=None,
+        ctype=None,
+        object_pk=None,
+    ):
+        tcs = objects.select_related("reviewer").only("summary", "reviewer__email").order_by("pk")
         tc: TestCase
         scence_templates = {
-            'reviewer': {
-                'template_name': 'mail/change_case_reviewer.txt',
-                'subject': 'You have been the reviewer of cases',
-                'recipients': list(set(tcs.values_list('reviewer__email', flat=True))),
-                'context': {
-                    'test_cases': [
-                        {'pk': tc.pk, 'summary': tc.summary, 'full_url': tc.get_full_url()}
+            "reviewer": {
+                "template_name": "mail/change_case_reviewer.txt",
+                "subject": "You have been the reviewer of cases",
+                "recipients": list(set(tcs.values_list("reviewer__email", flat=True))),
+                "context": {
+                    "test_cases": [
+                        {
+                            "pk": tc.pk,
+                            "summary": tc.summary,
+                            "full_url": tc.get_full_url(),
+                        }
                         for tc in tcs
                     ],
-                }
+                },
             }
         }
 
         return scence_templates.get(field)
 
-    def add_issue(self, issue_key, issue_tracker,
-                  summary=None, description=None,
-                  case_run=None, link_external_tracker=False):
+    def add_issue(
+        self,
+        issue_key,
+        issue_tracker,
+        summary=None,
+        description=None,
+        case_run=None,
+        link_external_tracker=False,
+    ):
         """Add issue to case or case run
 
         :param str issue_key: issue key to add.
@@ -362,22 +385,25 @@ class TestCase(TCMSActionModel):
            replaced with ``issue_tracker``.
         """
         if case_run and case_run.case != self:
-            raise ValueError('Case run {} is not associated with case {}'
-                             .format(case_run, self))
+            raise ValueError("Case run {} is not associated with case {}".format(case_run, self))
 
-        existing_issue = Issue.objects.filter(
-            issue_key=issue_key, tracker=issue_tracker
-        ).only('issue_key').first()
+        existing_issue = (
+            Issue.objects.filter(issue_key=issue_key, tracker=issue_tracker)
+            .only("issue_key")
+            .first()
+        )
         if existing_issue is not None:
-            log.info('Issue %s already exist. Skip add.', issue_key)
+            log.info("Issue %s already exist. Skip add.", issue_key)
             return existing_issue
 
-        issue = Issue(issue_key=issue_key,
-                      tracker=issue_tracker,
-                      case=self,
-                      case_run=case_run,
-                      summary=summary,
-                      description=description)
+        issue = Issue(
+            issue_key=issue_key,
+            tracker=issue_tracker,
+            case=self,
+            case_run=case_run,
+            summary=summary,
+            description=description,
+        )
         issue.full_clean()
         issue.save()
 
@@ -427,18 +453,19 @@ class TestCase(TCMSActionModel):
             self.remove_tag(tag)
 
     def add_text(
-            self,
-            action,
-            effect,
-            setup,
-            breakdown,
-            author=None,
-            create_date=None,
-            case_text_version=1,
-            action_checksum=None,
-            effect_checksum=None,
-            setup_checksum=None,
-            breakdown_checksum=None):
+        self,
+        action,
+        effect,
+        setup,
+        breakdown,
+        author=None,
+        create_date=None,
+        case_text_version=1,
+        action_checksum=None,
+        effect_checksum=None,
+        setup_checksum=None,
+        breakdown_checksum=None,
+    ):
         if not author:
             author = self.author
 
@@ -448,10 +475,12 @@ class TestCase(TCMSActionModel):
         new_breakdown_checksum = checksum(breakdown)
 
         old_action, old_effect, old_setup, old_breakdown = self.text_checksum()
-        if (old_action != new_action_checksum or
-                old_effect != new_effect_checksum or
-                old_setup != new_setup_checksum or
-                old_breakdown != new_breakdown_checksum):
+        if (
+            old_action != new_action_checksum
+            or old_effect != new_effect_checksum
+            or old_setup != new_setup_checksum
+            or old_breakdown != new_breakdown_checksum
+        ):
             case_text_version = self.latest_text_version() + 1
 
             latest_text = TestCaseText.objects.create(
@@ -466,7 +495,8 @@ class TestCase(TCMSActionModel):
                 action_checksum=action_checksum or new_action_checksum,
                 effect_checksum=effect_checksum or new_effect_checksum,
                 setup_checksum=setup_checksum or new_setup_checksum,
-                breakdown_checksum=breakdown_checksum or new_breakdown_checksum)
+                breakdown_checksum=breakdown_checksum or new_breakdown_checksum,
+            )
         else:
             latest_text = self.latest_text()
 
@@ -480,7 +510,7 @@ class TestCase(TCMSActionModel):
         return format_timedelta(self.estimated_time)
 
     def get_issues(self):
-        return Issue.objects.filter(case__pk=self.pk).select_related('tracker', 'case_run')
+        return Issue.objects.filter(case__pk=self.pk).select_related("tracker", "case_run")
 
     def get_choiced(self, obj_value, choices):
         for x in choices:
@@ -494,11 +524,10 @@ class TestCase(TCMSActionModel):
         if self.is_automated == 2:
             return [0, 1]
 
-        return (self.is_automated, )
+        return (self.is_automated,)
 
     def get_is_automated_status(self):
-        return self.get_is_automated() + (
-            self.is_automated_proposed and ' (Autoproposed)' or '')
+        return self.get_is_automated() + (self.is_automated_proposed and " (Autoproposed)" or "")
 
     def get_previous_and_next(self, pk_list):
         pk_list = list(pk_list)
@@ -514,8 +543,7 @@ class TestCase(TCMSActionModel):
         if case_text_version:
             try:
                 return TestCaseText.objects.get(
-                    case__case_id=self.case_id,
-                    case_text_version=case_text_version
+                    case__case_id=self.case_id, case_text_version=case_text_version
                 )
             except TestCaseText.DoesNotExist:
                 return NoneText
@@ -525,34 +553,34 @@ class TestCase(TCMSActionModel):
     def latest_text(self, text_required=True):
         text = self.text
         if not text_required:
-            text = text.defer('action', 'effect', 'setup', 'breakdown')
-        qs = text.order_by('-case_text_version')[0:1]
+            text = text.defer("action", "effect", "setup", "breakdown")
+        qs = text.order_by("-case_text_version")[0:1]
         return NoneText if len(qs) == 0 else qs[0]
 
     def latest_text_version(self):
-        result = (
-            self.text.order_by('case', 'case_text_version')
-            .aggregate(latest_version=Max('case_text_version'))
+        result = self.text.order_by("case", "case_text_version").aggregate(
+            latest_version=Max("case_text_version")
         )
-        latest_version = result['latest_version']
+        latest_version = result["latest_version"]
         return 0 if latest_version is None else latest_version
 
     def text_exist(self):
         return self.text.exists()
 
     def text_checksum(self):
-        qs = self.text.order_by('-case_text_version').only(
-            'action_checksum', 'effect_checksum',
-            'setup_checksum', 'breakdown_checksum'
+        qs = self.text.order_by("-case_text_version").only(
+            "action_checksum", "effect_checksum", "setup_checksum", "breakdown_checksum"
         )[0:1]
         if len(qs) == 0:
             return None, None, None, None
         else:
             text = qs[0]
-            return (text.action_checksum,
-                    text.effect_checksum,
-                    text.setup_checksum,
-                    text.breakdown_checksum)
+            return (
+                text.action_checksum,
+                text.effect_checksum,
+                text.setup_checksum,
+                text.breakdown_checksum,
+            )
 
     def mail(self, template, subject, context={}, to=[], request=None):
         from tcms.core.mailto import mailto
@@ -584,20 +612,19 @@ class TestCase(TCMSActionModel):
                 rel_exists = case_run.case == self
             elif isinstance(case_run, int):
                 case_run_id = case_run
-                rel_exists = TestCaseRun.objects.filter(
-                    pk=case_run, case=self).exists()
+                rel_exists = TestCaseRun.objects.filter(pk=case_run, case=self).exists()
             else:
-                raise TypeError('Argument case_run should be an object of '
-                                'TestCaseRun or an int.')
+                raise TypeError("Argument case_run should be an object of TestCaseRun or an int.")
             if not rel_exists:
-                raise ValueError('Case run {} is not associated with case {}.'
-                                 .format(case_run_id, self.pk))
+                raise ValueError(
+                    "Case run {} is not associated with case {}.".format(case_run_id, self.pk)
+                )
 
-        criteria = {'issue_key': issue_key, 'case': self}
+        criteria = {"issue_key": issue_key, "case": self}
         if case_run is None:
-            criteria['case_run__isnull'] = True
+            criteria["case_run__isnull"] = True
         else:
-            criteria['case_run'] = case_run
+            criteria["case_run"] = case_run
         num_deletes, _ = Issue.objects.filter(**criteria).delete()
         return num_deletes > 0
 
@@ -611,7 +638,12 @@ class TestCase(TCMSActionModel):
         self.tag.through.objects.filter(case=self.pk, tag=tag.pk).delete()
 
     def get_absolute_url(self, request=None):
-        return reverse('case-get', args=[self.pk, ])
+        return reverse(
+            "case-get",
+            args=[
+                self.pk,
+            ],
+        )
 
     def _get_email_conf(self):
         try:
@@ -621,9 +653,16 @@ class TestCase(TCMSActionModel):
 
     emailing = property(_get_email_conf)
 
-    def clone(self, to_plans, author=None, default_tester=None,
-              source_plan=None, copy_attachment=True, copy_component=True,
-              component_initial_owner=None):
+    def clone(
+        self,
+        to_plans,
+        author=None,
+        default_tester=None,
+        source_plan=None,
+        copy_attachment=True,
+        copy_component=True,
+        component_initial_owner=None,
+    ):
         """Clone this case to plans
 
         :param to_plans: list of test plans this case will be cloned to.
@@ -658,7 +697,7 @@ class TestCase(TCMSActionModel):
             requirement=self.requirement,
             alias=self.alias,
             estimated_time=self.estimated_time,
-            case_status=TestCaseStatus.get('PROPOSED'),
+            case_status=TestCaseStatus.get("PROPOSED"),
             category=self.category,
             priority=self.priority,
             notes=self.notes,
@@ -673,7 +712,7 @@ class TestCase(TCMSActionModel):
             action=src_latest_text.action,
             effect=src_latest_text.effect,
             setup=src_latest_text.setup,
-            breakdown=src_latest_text.breakdown
+            breakdown=src_latest_text.breakdown,
         )
 
         # The original tags are not copied actually. They are just
@@ -684,10 +723,12 @@ class TestCase(TCMSActionModel):
         # The original attachments are not copied actually. They
         # are just linked to the new cloned test case.
         if copy_attachment:
-            TestCaseAttachment.objects.bulk_create([
-                TestCaseAttachment(case=cloned_case, attachment=item)
-                for item in self.attachments.all()
-            ])
+            TestCaseAttachment.objects.bulk_create(
+                [
+                    TestCaseAttachment(case=cloned_case, attachment=item)
+                    for item in self.attachments.all()
+                ]
+            )
 
         rel = TestCasePlan.objects.filter(plan=source_plan, case=self).first()
 
@@ -727,8 +768,7 @@ class TestCase(TCMSActionModel):
 
         return cloned_case
 
-    def transition_to_plans(
-            self, to_plans, author=None, default_tester=None, source_plan=None):
+    def transition_to_plans(self, to_plans, author=None, default_tester=None, source_plan=None):
         """Transition this case to other plans
 
         This method will link this case to specified test plans and no change
@@ -772,22 +812,22 @@ class TestCase(TCMSActionModel):
         if emailing.auto_to_case_tester and self.default_tester:
             recipients.add(self.default_tester.email)
         if emailing.auto_to_run_manager:
-            managers = self.case_run.values_list('run__manager__email', flat=True)
+            managers = self.case_run.values_list("run__manager__email", flat=True)
             recipients.update(managers)
         if emailing.auto_to_run_tester:
-            run_testers = self.case_run.values_list('run__default_tester__email', flat=True)
+            run_testers = self.case_run.values_list("run__default_tester__email", flat=True)
             recipients.update(run_testers)
         if emailing.auto_to_case_run_assignee:
-            assignees = self.case_run.values_list('assignee__email', flat=True)
+            assignees = self.case_run.values_list("assignee__email", flat=True)
             recipients.update(assignees)
         return [item for item in recipients if item]
 
 
 class TestCaseText(TCMSActionModel):
-    case = models.ForeignKey(TestCase, related_name='text', on_delete=models.CASCADE)
+    case = models.ForeignKey(TestCase, related_name="text", on_delete=models.CASCADE)
     case_text_version = models.IntegerField()
-    author = models.ForeignKey('auth.User', db_column='who', on_delete=models.CASCADE)
-    create_date = models.DateTimeField(db_column='creation_ts', auto_now_add=True)
+    author = models.ForeignKey("auth.User", db_column="who", on_delete=models.CASCADE)
+    create_date = models.DateTimeField(db_column="creation_ts", auto_now_add=True)
     action = models.TextField(blank=True)
     effect = models.TextField(blank=True)
     setup = models.TextField(blank=True)
@@ -798,21 +838,20 @@ class TestCaseText(TCMSActionModel):
     breakdown_checksum = models.CharField(max_length=32)
 
     class Meta:
-        db_table = 'test_case_texts'
-        ordering = ['case', '-case_text_version']
-        unique_together = ('case', 'case_text_version')
+        db_table = "test_case_texts"
+        ordering = ["case", "-case_text_version"]
+        unique_together = ("case", "case_text_version")
 
     def get_plain_text(self):
         action = html2text(smart_str(self.action)).rstrip()
         effect = html2text(smart_str(self.effect)).rstrip()
         setup = html2text(smart_str(self.setup)).rstrip()
         breakdown = html2text(smart_str(self.breakdown)).rstrip()
-        return PlainText(action=action, setup=setup,
-                         effect=effect, breakdown=breakdown)
+        return PlainText(action=action, setup=setup, effect=effect, breakdown=breakdown)
 
 
 class TestCasePlan(models.Model):
-    plan = models.ForeignKey('testplans.TestPlan', on_delete=models.CASCADE)
+    plan = models.ForeignKey("testplans.TestPlan", on_delete=models.CASCADE)
     case = models.ForeignKey(TestCase, on_delete=models.CASCADE)
     sortkey = models.IntegerField(null=True, blank=True)
 
@@ -820,44 +859,47 @@ class TestCasePlan(models.Model):
     # in database.
 
     class Meta:
-        db_table = 'test_case_plans'
-        unique_together = ('plan', 'case')
+        db_table = "test_case_plans"
+        unique_together = ("plan", "case")
 
 
 class TestCaseAttachment(models.Model):
-    attachment = models.ForeignKey('management.TestAttachment',
-                                   on_delete=models.CASCADE)
+    attachment = models.ForeignKey("management.TestAttachment", on_delete=models.CASCADE)
 
-    case = models.ForeignKey(TestCase, default=None,
-                             related_name='case_attachment',
-                             on_delete=models.CASCADE)
+    case = models.ForeignKey(
+        TestCase, default=None, related_name="case_attachment", on_delete=models.CASCADE
+    )
 
-    case_run = models.ForeignKey('testruns.TestCaseRun', default=None,
-                                 null=True, blank=True,
-                                 related_name='case_run_attachment',
-                                 on_delete=models.CASCADE)
+    case_run = models.ForeignKey(
+        "testruns.TestCaseRun",
+        default=None,
+        null=True,
+        blank=True,
+        related_name="case_run_attachment",
+        on_delete=models.CASCADE,
+    )
 
     class Meta:
-        db_table = 'test_case_attachments'
+        db_table = "test_case_attachments"
         # FIXME: what unique constraints are needed against this model?
 
 
 class TestCaseComponent(models.Model):
     case = models.ForeignKey(TestCase, on_delete=models.CASCADE)
-    component = models.ForeignKey('management.Component', on_delete=models.CASCADE)
+    component = models.ForeignKey("management.Component", on_delete=models.CASCADE)
 
     class Meta:
-        db_table = 'test_case_components'
-        unique_together = ('case', 'component')
+        db_table = "test_case_components"
+        unique_together = ("case", "component")
 
 
 class TestCaseTag(models.Model):
-    tag = models.ForeignKey('management.TestTag', on_delete=models.CASCADE)
+    tag = models.ForeignKey("management.TestTag", on_delete=models.CASCADE)
     case = models.ForeignKey(TestCase, on_delete=models.CASCADE)
-    user = models.IntegerField(db_column='userid', default='0')
+    user = models.IntegerField(db_column="userid", default="0")
 
     class Meta:
-        db_table = 'test_case_tags'
+        db_table = "test_case_tags"
 
 
 class Contact(TCMSContentTypeBaseModel):
@@ -871,30 +913,30 @@ class Contact(TCMSContentTypeBaseModel):
         return self.name
 
     class Meta:
-        db_table = 'tcms_contacts'
-        index_together = (('content_type', 'object_pk', 'site'),)
+        db_table = "tcms_contacts"
+        index_together = (("content_type", "object_pk", "site"),)
 
     @classmethod
     def create(cls, email, content_object, name=None):
         """Factory method to create a new Contact"""
 
         if not name:
-            store_name = email.split('@')[0]
+            store_name = email.split("@")[0]
         else:
             store_name = name
 
-        c = cls(name=store_name,
-                email=email,
-                content_object=content_object,
-                site_id=settings.SITE_ID)
+        c = cls(
+            name=store_name,
+            email=email,
+            content_object=content_object,
+            site_id=settings.SITE_ID,
+        )
         c.save()
         return c
 
 
 class TestCaseEmailSettings(models.Model):
-    case = models.OneToOneField(TestCase,
-                                related_name='email_settings',
-                                on_delete=models.CASCADE)
+    case = models.OneToOneField(TestCase, related_name="email_settings", on_delete=models.CASCADE)
 
     notify_on_case_update = models.BooleanField(default=False)
     notify_on_case_delete = models.BooleanField(default=False)
@@ -904,7 +946,7 @@ class TestCaseEmailSettings(models.Model):
     auto_to_run_tester = models.BooleanField(default=False)
     auto_to_case_run_assignee = models.BooleanField(default=False)
 
-    cc_list = GenericRelation(Contact, object_id_field='object_pk')
+    cc_list = GenericRelation(Contact, object_id_field="object_pk")
 
     class Meta:
         pass
@@ -967,8 +1009,7 @@ class TestCaseEmailSettings(models.Model):
 
         origin_emails = self.get_cc_list()
 
-        emails_to_delete = self.filter_unnecessary_emails(origin_emails,
-                                                          email_addrs)
+        emails_to_delete = self.filter_unnecessary_emails(origin_emails, email_addrs)
         self.remove_cc(emails_to_delete)
         self.add_cc(self.filter_new_emails(origin_emails, email_addrs))
 

@@ -22,6 +22,7 @@ SECONDS_PER_DAY = 86400  # SECONDS_PER_HOUR * 24
 
 # ## Data format conversion functions ###
 
+
 def do_nothing(value):
     return value
 
@@ -31,7 +32,7 @@ def to_str(value):
 
 
 def encode_utf8(value):
-    return value if value is None else value.encode('utf-8')
+    return value if value is None else value.encode("utf-8")
 
 
 def int_to_str(value):
@@ -56,7 +57,7 @@ def timedelta_to_str(value):
     # minutes - Total seconds subtract the used hours
     minutes = total_seconds / SECONDS_PER_MIN - total_seconds / SECONDS_PER_HOUR * 60
     seconds = total_seconds % SECONDS_PER_MIN
-    return '%02i:%02i:%02i' % (hours, minutes, seconds)
+    return "%02i:%02i:%02i" % (hours, minutes, seconds)
 
 
 # ## End of functions ###
@@ -83,10 +84,10 @@ class XMLRPCSerializer:
 
     def __init__(self, queryset=None, model=None):
         """Initial the class"""
-        if hasattr(queryset, '__iter__'):
+        if hasattr(queryset, "__iter__"):
             self.queryset = queryset
             return
-        elif hasattr(model, '__dict__'):
+        elif hasattr(model, "__dict__"):
             self.model = model
             return
 
@@ -98,7 +99,7 @@ class XMLRPCSerializer:
 
         Returns: Dictionary
         """
-        if not hasattr(self.model, '__dict__'):
+        if not hasattr(self.model, "__dict__"):
             raise TypeError("Models or Dictionary is required")
         response = {}
         opts = self.model._meta
@@ -123,7 +124,7 @@ class XMLRPCSerializer:
             response[field.name] = value
         for field in opts.local_many_to_many:
             value = getattr(self.model, field.name)
-            value = value.values_list('pk', flat=True)
+            value = value.values_list("pk", flat=True)
             response[field.name] = list(value)
         return response
 
@@ -165,9 +166,9 @@ class QuerySetBasedXMLRPCSerializer(XMLRPCSerializer):
 
     def __init__(self, model_class, queryset):
         if model_class is None:
-            raise ValueError('model_class should not be None')
+            raise ValueError("model_class should not be None")
         if queryset is None:
-            raise ValueError('queryset should not be None')
+            raise ValueError("queryset should not be None")
 
         self.model_class = model_class
         self.queryset = queryset
@@ -181,7 +182,7 @@ class QuerySetBasedXMLRPCSerializer(XMLRPCSerializer):
         This method can also be override in subclass to provide the extra
         fields programatically.
         """
-        fields = getattr(self, 'extra_fields', None)
+        fields = getattr(self, "extra_fields", None)
         if fields is None:
             fields = {}
         return fields
@@ -196,7 +197,7 @@ class QuerySetBasedXMLRPCSerializer(XMLRPCSerializer):
         dictionary object.
         :rtype: dict
         """
-        return getattr(self.__class__, 'values_fields_mapping', {})
+        return getattr(self.__class__, "values_fields_mapping", {})
 
     def _get_values_fields(self):
         """Return ORM side field names defined in the values fields mapping
@@ -226,11 +227,10 @@ class QuerySetBasedXMLRPCSerializer(XMLRPCSerializer):
         :return: names of fields with type ManyToManyField
         :rtype: list
         """
-        if hasattr(self.__class__, 'm2m_fields'):
+        if hasattr(self.__class__, "m2m_fields"):
             return self.__class__.m2m_fields
         else:
-            return tuple(field.name for field in
-                         self.model_class._meta.many_to_many)
+            return tuple(field.name for field in self.model_class._meta.many_to_many)
 
     # TODO: how to deal with the situation that is primary key does not appear
     # in values fields, although such thing could not happen.
@@ -248,15 +248,15 @@ class QuerySetBasedXMLRPCSerializer(XMLRPCSerializer):
         :raises ValueError: if model does not have a primary key field during
         the process of inspecting primary key from model's field.
         """
-        if hasattr(self.__class__, 'primary_key'):
+        if hasattr(self.__class__, "primary_key"):
             return self.__class__.primary_key
         else:
-            fields = [field.name for field in self.model_class._meta.fields
-                      if field.primary_key]
+            fields = [field.name for field in self.model_class._meta.fields if field.primary_key]
             if not fields:
                 raise ValueError(
-                    'Model %s has no primary key. You have to specify such '
-                    'field manually.' % self.model_class.__name__)
+                    "Model %s has no primary key. You have to specify such "
+                    "field manually." % self.model_class.__name__
+                )
             return fields[0]
 
     def _query_m2m_field(self, field_name):
@@ -278,23 +278,17 @@ class QuerySetBasedXMLRPCSerializer(XMLRPCSerializer):
         :return: dictionary mapping between model's pk and related object's pk
         :rtype: dict
         """
-        qs = self.queryset.values('pk', field_name).order_by('pk')
-        return OrderedDict({
-            pk: tuple(values) for pk, values in
-            groupby(qs.iterator(), operator.itemgetter('pk'))
-        })
+        qs = self.queryset.values("pk", field_name).order_by("pk")
+        return OrderedDict(
+            {pk: tuple(values) for pk, values in groupby(qs.iterator(), operator.itemgetter("pk"))}
+        )
 
     def _query_m2m_fields(self):
         m2m_fields = self._get_m2m_fields()
-        return {
-            field_name: self._query_m2m_field(field_name)
-            for field_name in m2m_fields
-        }
+        return {field_name: self._query_m2m_field(field_name) for field_name in m2m_fields}
 
-    def _get_single_field_related_object_pks(
-            self, m2m_field_query, model_pk, field_name):
-        return [item[field_name] for item in m2m_field_query[model_pk]
-                if item[field_name]]
+    def _get_single_field_related_object_pks(self, m2m_field_query, model_pk, field_name):
+        return [item[field_name] for item in m2m_field_query[model_pk] if item[field_name]]
 
     def _get_related_object_pks(self, m2m_fields_query, model_pk, field_name):
         """Return related object pks from query result via ManyToManyFields
@@ -324,7 +318,7 @@ class QuerySetBasedXMLRPCSerializer(XMLRPCSerializer):
         extra_fields = self.get_extra_fields()
 
         for handle_name, value in extra_fields.items():
-            if handle_name == 'alias':
+            if handle_name == "alias":
                 for original_name, alias in value.items():
                     if original_name in data:
                         data[alias] = data[original_name]
@@ -378,7 +372,8 @@ class QuerySetBasedXMLRPCSerializer(XMLRPCSerializer):
             model_pk = row[primary_key_field]
             for field_name in m2m_fields:
                 related_object_pks = self._get_related_object_pks(
-                    m2m_fields_query, model_pk, field_name)
+                    m2m_fields_query, model_pk, field_name
+                )
                 new_serialized_data[field_name] = related_object_pks
 
             # Finally, there might be some extra fields to added to final JSON
@@ -397,57 +392,55 @@ class TestPlanXMLRPCSerializer(QuerySetBasedXMLRPCSerializer):
     """XMLRPC serializer specific for TestPlan"""
 
     values_fields_mapping = {
-        'create_date': ('create_date', datetime_to_str),
-        'extra_link': ('extra_link', do_nothing),
-        'is_active': ('is_active', do_nothing),
-        'name': ('name', do_nothing),
-        'plan_id': ('plan_id', do_nothing),
-
-        'author': ('author_id', do_nothing),
-        'author__username': ('author', to_str),
-        'owner': ('owner_id', do_nothing),
-        'owner__username': ('owner', to_str),
-        'parent': ('parent_id', do_nothing),
-        'parent__name': ('parent', encode_utf8),
-        'product': ('product_id', do_nothing),
-        'product__name': ('product', encode_utf8),
-        'product_version': ('product_version_id', do_nothing),
-        'product_version__value': ('product_version', encode_utf8),
-        'type': ('type_id', do_nothing),
-        'type__name': ('type', encode_utf8),
+        "create_date": ("create_date", datetime_to_str),
+        "extra_link": ("extra_link", do_nothing),
+        "is_active": ("is_active", do_nothing),
+        "name": ("name", do_nothing),
+        "plan_id": ("plan_id", do_nothing),
+        "author": ("author_id", do_nothing),
+        "author__username": ("author", to_str),
+        "owner": ("owner_id", do_nothing),
+        "owner__username": ("owner", to_str),
+        "parent": ("parent_id", do_nothing),
+        "parent__name": ("parent", encode_utf8),
+        "product": ("product_id", do_nothing),
+        "product__name": ("product", encode_utf8),
+        "product_version": ("product_version_id", do_nothing),
+        "product_version__value": ("product_version", encode_utf8),
+        "type": ("type_id", do_nothing),
+        "type__name": ("type", encode_utf8),
     }
 
     extra_fields = {
-        'alias': {'product_version': 'default_product_version'},
+        "alias": {"product_version": "default_product_version"},
     }
 
-    m2m_fields = ('attachments', 'case', 'component', 'env_group', 'tag')
+    m2m_fields = ("attachments", "case", "component", "env_group", "tag")
 
 
 class TestCaseRunXMLRPCSerializer(QuerySetBasedXMLRPCSerializer):
     """XMLRPC serializer specific for TestCaseRun"""
 
     values_fields_mapping = {
-        'case_run_id': ('case_run_id', do_nothing),
-        'case_text_version': ('case_text_version', do_nothing),
-        'close_date': ('close_date', datetime_to_str),
-        'environment_id': ('environment_id', do_nothing),
-        'notes': ('notes', do_nothing),
-        'running_date': ('running_date', datetime_to_str),
-        'sortkey': ('sortkey', do_nothing),
-
-        'assignee': ('assignee_id', do_nothing),
-        'assignee__username': ('assignee', to_str),
-        'build': ('build_id', do_nothing),
-        'build__name': ('build', encode_utf8),
-        'case': ('case_id', do_nothing),
-        'case__summary': ('case', encode_utf8),
-        'case_run_status': ('case_run_status_id', do_nothing),
-        'case_run_status__name': ('case_run_status', encode_utf8),
-        'run': ('run_id', do_nothing),
-        'run__summary': ('run', encode_utf8),
-        'tested_by': ('tested_by_id', do_nothing),
-        'tested_by__username': ('tested_by', to_str),
+        "case_run_id": ("case_run_id", do_nothing),
+        "case_text_version": ("case_text_version", do_nothing),
+        "close_date": ("close_date", datetime_to_str),
+        "environment_id": ("environment_id", do_nothing),
+        "notes": ("notes", do_nothing),
+        "running_date": ("running_date", datetime_to_str),
+        "sortkey": ("sortkey", do_nothing),
+        "assignee": ("assignee_id", do_nothing),
+        "assignee__username": ("assignee", to_str),
+        "build": ("build_id", do_nothing),
+        "build__name": ("build", encode_utf8),
+        "case": ("case_id", do_nothing),
+        "case__summary": ("case", encode_utf8),
+        "case_run_status": ("case_run_status_id", do_nothing),
+        "case_run_status__name": ("case_run_status", encode_utf8),
+        "run": ("run_id", do_nothing),
+        "run__summary": ("run", encode_utf8),
+        "tested_by": ("tested_by_id", do_nothing),
+        "tested_by__username": ("tested_by", to_str),
     }
 
 
@@ -455,26 +448,25 @@ class TestRunXMLRPCSerializer(QuerySetBasedXMLRPCSerializer):
     """Serializer for TestRun"""
 
     values_fields_mapping = {
-        'auto_update_run_status': ('auto_update_run_status', do_nothing),
-        'environment_id': ('environment_id', do_nothing),
-        'estimated_time': ('estimated_time', timedelta_to_str),
-        'notes': ('notes', do_nothing),
-        'plan_text_version': ('plan_text_version', do_nothing),
-        'run_id': ('run_id', do_nothing),
-        'start_date': ('start_date', datetime_to_str),
-        'stop_date': ('stop_date', datetime_to_str),
-        'summary': ('summary', do_nothing),
-
-        'build': ('build_id', do_nothing),
-        'build__name': ('build', encode_utf8),
-        'default_tester': ('default_tester_id', do_nothing),
-        'default_tester__username': ('default_tester', to_str),
-        'manager': ('manager_id', do_nothing),
-        'manager__username': ('manager', to_str),
-        'plan': ('plan_id', do_nothing),
-        'plan__name': ('plan', encode_utf8),
-        'product_version': ('product_version_id', do_nothing),
-        'product_version__value': ('product_version', encode_utf8),
+        "auto_update_run_status": ("auto_update_run_status", do_nothing),
+        "environment_id": ("environment_id", do_nothing),
+        "estimated_time": ("estimated_time", timedelta_to_str),
+        "notes": ("notes", do_nothing),
+        "plan_text_version": ("plan_text_version", do_nothing),
+        "run_id": ("run_id", do_nothing),
+        "start_date": ("start_date", datetime_to_str),
+        "stop_date": ("stop_date", datetime_to_str),
+        "summary": ("summary", do_nothing),
+        "build": ("build_id", do_nothing),
+        "build__name": ("build", encode_utf8),
+        "default_tester": ("default_tester_id", do_nothing),
+        "default_tester__username": ("default_tester", to_str),
+        "manager": ("manager_id", do_nothing),
+        "manager__username": ("manager", to_str),
+        "plan": ("plan_id", do_nothing),
+        "plan__name": ("plan", encode_utf8),
+        "product_version": ("product_version_id", do_nothing),
+        "product_version__value": ("product_version", encode_utf8),
     }
 
 
@@ -482,31 +474,30 @@ class TestCaseXMLRPCSerializer(QuerySetBasedXMLRPCSerializer):
     """Serializer for TestCase"""
 
     values_fields_mapping = {
-        'alias': ('alias', do_nothing),
-        'arguments': ('arguments', do_nothing),
-        'case_id': ('case_id', do_nothing),
-        'create_date': ('create_date', datetime_to_str),
-        'estimated_time': ('estimated_time', timedelta_to_str),
-        'extra_link': ('extra_link', do_nothing),
-        'is_automated': ('is_automated', do_nothing),
-        'is_automated_proposed': ('is_automated_proposed', do_nothing),
-        'notes': ('notes', do_nothing),
-        'requirement': ('requirement', do_nothing),
-        'script': ('script', do_nothing),
-        'summary': ('summary', do_nothing),
-
-        'author': ('author_id', do_nothing),
-        'author__username': ('author', to_str),
-        'case_status': ('case_status_id', do_nothing),
-        'case_status__name': ('case_status', encode_utf8),
-        'category': ('category_id', do_nothing),
-        'category__name': ('category', encode_utf8),
-        'default_tester': ('default_tester_id', do_nothing),
-        'default_tester__username': ('default_tester', to_str),
-        'priority': ('priority_id', do_nothing),
-        'priority__value': ('priority', encode_utf8),
-        'reviewer': ('reviewer_id', do_nothing),
-        'reviewer__username': ('reviewer', to_str),
+        "alias": ("alias", do_nothing),
+        "arguments": ("arguments", do_nothing),
+        "case_id": ("case_id", do_nothing),
+        "create_date": ("create_date", datetime_to_str),
+        "estimated_time": ("estimated_time", timedelta_to_str),
+        "extra_link": ("extra_link", do_nothing),
+        "is_automated": ("is_automated", do_nothing),
+        "is_automated_proposed": ("is_automated_proposed", do_nothing),
+        "notes": ("notes", do_nothing),
+        "requirement": ("requirement", do_nothing),
+        "script": ("script", do_nothing),
+        "summary": ("summary", do_nothing),
+        "author": ("author_id", do_nothing),
+        "author__username": ("author", to_str),
+        "case_status": ("case_status_id", do_nothing),
+        "case_status__name": ("case_status", encode_utf8),
+        "category": ("category_id", do_nothing),
+        "category__name": ("category", encode_utf8),
+        "default_tester": ("default_tester_id", do_nothing),
+        "default_tester__username": ("default_tester", to_str),
+        "priority": ("priority_id", do_nothing),
+        "priority__value": ("priority", encode_utf8),
+        "reviewer": ("reviewer_id", do_nothing),
+        "reviewer__username": ("reviewer", to_str),
     }
 
 
@@ -514,18 +505,17 @@ class ProductXMLRPCSerializer(QuerySetBasedXMLRPCSerializer):
     """Serializer for Product"""
 
     values_fields_mapping = {
-        'id': ('id', do_nothing),
-        'name': ('name', do_nothing),
-        'description': ('description', do_nothing),
-        'milestone_url': ('milestone_url', do_nothing),
-        'disallow_new': ('disallow_new', do_nothing),
-        'vote_super_user': ('vote_super_user', do_nothing),
-        'max_vote_super_bug': ('max_vote_super_bug', do_nothing),
-        'votes_to_confirm': ('votes_to_confirm', do_nothing),
-        'default_milestone': ('default_milestone', do_nothing),
-
-        'classification': ('classification_id', do_nothing),
-        'classification__name': ('classification', encode_utf8),
+        "id": ("id", do_nothing),
+        "name": ("name", do_nothing),
+        "description": ("description", do_nothing),
+        "milestone_url": ("milestone_url", do_nothing),
+        "disallow_new": ("disallow_new", do_nothing),
+        "vote_super_user": ("vote_super_user", do_nothing),
+        "max_vote_super_bug": ("max_vote_super_bug", do_nothing),
+        "votes_to_confirm": ("votes_to_confirm", do_nothing),
+        "default_milestone": ("default_milestone", do_nothing),
+        "classification": ("classification_id", do_nothing),
+        "classification__name": ("classification", encode_utf8),
     }
 
 
@@ -533,12 +523,11 @@ class TestBuildXMLRPCSerializer(QuerySetBasedXMLRPCSerializer):
     """Serializer for TestBuild"""
 
     values_fields_mapping = {
-        'build_id': ('build_id', do_nothing),
-        'description': ('description', do_nothing),
-        'is_active': ('is_active', do_nothing),
-        'milestone': ('milestone', do_nothing),
-        'name': ('name', do_nothing),
-
-        'product': ('product_id', do_nothing),
-        'product__name': ('product', encode_utf8),
+        "build_id": ("build_id", do_nothing),
+        "description": ("description", do_nothing),
+        "is_active": ("is_active", do_nothing),
+        "milestone": ("milestone", do_nothing),
+        "name": ("name", do_nothing),
+        "product": ("product_id", do_nothing),
+        "product__name": ("product", encode_utf8),
     }

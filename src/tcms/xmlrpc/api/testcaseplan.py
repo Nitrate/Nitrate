@@ -6,9 +6,9 @@ from tcms.testplans.models import TestPlan
 from tcms.xmlrpc.decorators import log_call
 
 
-__all__ = ('get', 'update')
+__all__ = ("get", "update")
 
-__xmlrpc_namespace__ = 'TestCasePlan'
+__xmlrpc_namespace__ = "TestCasePlan"
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -51,6 +51,6 @@ def update(request, case_id, plan_id, sortkey):
 
     if isinstance(sortkey, int):
         tcp.sortkey = sortkey
-        tcp.save(update_fields=['sortkey'])
+        tcp.save(update_fields=["sortkey"])
 
     return XMLRPCSerializer(model=tcp).serialize_model()

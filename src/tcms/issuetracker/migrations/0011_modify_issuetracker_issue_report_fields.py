@@ -12,18 +12,29 @@ import tcms.issuetracker.validators
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('issuetracker', '0010_change_class_path_default_value'),
+        ("issuetracker", "0010_change_class_path_default_value"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='issuetracker',
-            name='issue_report_params',
-            field=models.TextField(blank=True, default='', help_text='Parameters used to format URL for reporting issue. Each line is a <code>key:value</code> pair of parameters. Nitrate provides a few parameters to format URL and additional parameters could be provided by system administrator as well.', max_length=255, validators=[tcms.issuetracker.validators.validate_issue_report_params]),
+            model_name="issuetracker",
+            name="issue_report_params",
+            field=models.TextField(
+                blank=True,
+                default="",
+                help_text="Parameters used to format URL for reporting issue. Each line is a <code>key:value</code> pair of parameters. Nitrate provides a few parameters to format URL and additional parameters could be provided by system administrator as well.",
+                max_length=255,
+                validators=[tcms.issuetracker.validators.validate_issue_report_params],
+            ),
         ),
         migrations.AlterField(
-            model_name='issuetracker',
-            name='issue_report_templ',
-            field=models.TextField(blank=True, default='', help_text='The issue content template, which could be arbitrary text with format arguments. Nitrate provides these format arguments: <code>TestBuild.name</code>, <code>setup</code>, <code>action</code> and <code>effect</code>. The text is formatted with keyward arguments.', max_length=255),
+            model_name="issuetracker",
+            name="issue_report_templ",
+            field=models.TextField(
+                blank=True,
+                default="",
+                help_text="The issue content template, which could be arbitrary text with format arguments. Nitrate provides these format arguments: <code>TestBuild.name</code>, <code>setup</code>, <code>action</code> and <code>effect</code>. The text is formatted with keyward arguments.",
+                max_length=255,
+            ),
         ),
     ]

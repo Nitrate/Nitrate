@@ -8,34 +8,34 @@ from tcms.xmlrpc.decorators import log_call
 from tcms.xmlrpc.utils import pre_check_product, parse_bool_value
 
 __all__ = (
-    'check_category',
-    'check_component',
-    'check_product',
-    'filter',
-    'filter_categories',
-    'filter_components',
-    'filter_versions',
-    'get',
-    'get_builds',
-    'get_cases',
-    'get_categories',
-    'get_category',
-    'add_component',
-    'get_component',
-    'update_component',
-    'get_components',
-    'get_environments',
-    'get_milestones',
-    'get_plans',
-    'get_runs',
-    'get_tag',
-    'add_version',
-    'get_versions',
-    'lookup_name_by_id',
-    'lookup_id_by_name',
+    "check_category",
+    "check_component",
+    "check_product",
+    "filter",
+    "filter_categories",
+    "filter_components",
+    "filter_versions",
+    "get",
+    "get_builds",
+    "get_cases",
+    "get_categories",
+    "get_category",
+    "add_component",
+    "get_component",
+    "update_component",
+    "get_components",
+    "get_environments",
+    "get_milestones",
+    "get_plans",
+    "get_runs",
+    "get_tag",
+    "add_version",
+    "get_versions",
+    "lookup_name_by_id",
+    "lookup_id_by_name",
 )
 
-__xmlrpc_namespace__ = 'Product'
+__xmlrpc_namespace__ = "Product"
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -240,7 +240,7 @@ def get_builds(request, product, is_active=True):
     from tcms.management.models import TestBuild
 
     p = pre_check_product(values=product)
-    query = {'product': p, 'is_active': parse_bool_value(is_active)}
+    query = {"product": p, "is_active": parse_bool_value(is_active)}
     return TestBuild.to_xmlrpc(query)
 
 
@@ -262,7 +262,7 @@ def get_cases(request, product):
     from tcms.testcases.models import TestCase
 
     p = pre_check_product(values=product)
-    query = {'category__product': p}
+    query = {"category__product": p}
     return TestCase.to_xmlrpc(query)
 
 
@@ -285,7 +285,7 @@ def get_categories(request, product):
     from tcms.testcases.models import TestCaseCategory
 
     p = pre_check_product(values=product)
-    query = {'product': p}
+    query = {"product": p}
     return TestCaseCategory.to_xmlrpc(query)
 
 
@@ -307,7 +307,7 @@ def get_category(request, id):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('management.add_component', raise_exception=True)
+@permission_required("management.add_component", raise_exception=True)
 def add_component(request, product, name, initial_owner_id=None, initial_qa_contact_id=None):
     """Add component to selected product.
 
@@ -365,7 +365,7 @@ def get_component(request, id):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('management.change_component', raise_exception=True)
+@permission_required("management.change_component", raise_exception=True)
 def update_component(request, component_id, values):
     """Update component to selected product.
 
@@ -385,19 +385,25 @@ def update_component(request, component_id, values):
     """
     from tcms.management.models import Component
 
-    if not isinstance(values, dict) or 'name' not in values:
-        raise ValueError(f'Component name is not in values {values}.')
+    if not isinstance(values, dict) or "name" not in values:
+        raise ValueError(f"Component name is not in values {values}.")
 
-    name = values['name']
+    name = values["name"]
     if not isinstance(name, str) or len(name) == 0:
-        raise ValueError(f'Component name {name} is not a string value.')
+        raise ValueError(f"Component name {name} is not a string value.")
 
     component = Component.objects.get(pk=int(component_id))
     component.name = name
-    if values.get('initial_owner_id') and User.objects.filter(pk=values['initial_owner_id']).exists():
-        component.initial_owner_id = values['initial_owner_id']
-    if values.get('initial_qa_contact_id') and User.objects.filter(pk=values['initial_qa_contact_id']).exists():
-        component.initial_qa_contact_id = values['initial_qa_contact_id']
+    if (
+        values.get("initial_owner_id")
+        and User.objects.filter(pk=values["initial_owner_id"]).exists()
+    ):
+        component.initial_owner_id = values["initial_owner_id"]
+    if (
+        values.get("initial_qa_contact_id")
+        and User.objects.filter(pk=values["initial_qa_contact_id"]).exists()
+    ):
+        component.initial_qa_contact_id = values["initial_qa_contact_id"]
     component.save()
     return component.serialize()
 
@@ -421,20 +427,20 @@ def get_components(request, product):
     from tcms.management.models import Component
 
     p = pre_check_product(values=product)
-    query = {'product': p}
+    query = {"product": p}
     return Component.to_xmlrpc(query)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_environments(request, product):
     """FIXME: NOT IMPLEMENTED"""
-    raise NotImplementedError('Not implemented RPC method')
+    raise NotImplementedError("Not implemented RPC method")
 
 
 @log_call(namespace=__xmlrpc_namespace__)
 def get_milestones(request, product):
     """FIXME: NOT IMPLEMENTED"""
-    raise NotImplementedError('Not implemented RPC method')
+    raise NotImplementedError("Not implemented RPC method")
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -456,7 +462,7 @@ def get_plans(request, product):
     from tcms.testplans.models import TestPlan
 
     p = pre_check_product(values=product)
-    query = {'product': p}
+    query = {"product": p}
     return TestPlan.to_xmlrpc(query)
 
 
@@ -479,7 +485,7 @@ def get_runs(request, product):
     from tcms.testruns.models import TestRun
 
     p = pre_check_product(values=product)
-    query = {'build__product': p}
+    query = {"build__product": p}
     return TestRun.to_xmlrpc(query)
 
 
@@ -501,7 +507,7 @@ def get_tag(request, id):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@permission_required('management.add_version', raise_exception=True)
+@permission_required("management.add_version", raise_exception=True)
 def add_version(request, values):
     """Add version to specified product.
 
@@ -527,7 +533,7 @@ def add_version(request, values):
 
     product = pre_check_product(values)
     form_values = values.copy()
-    form_values['product'] = product.pk
+    form_values["product"] = product.pk
 
     form = VersionForm(form_values)
     if form.is_valid():
@@ -556,7 +562,7 @@ def get_versions(request, product):
     from tcms.management.models import Version
 
     p = pre_check_product(values=product)
-    query = {'product': p}
+    query = {"product": p}
     return Version.to_xmlrpc(query)
 
 

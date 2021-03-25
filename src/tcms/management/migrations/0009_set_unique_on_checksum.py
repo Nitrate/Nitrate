@@ -6,13 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('management', '0008_add_checksum_to_testattachment'),
+        ("management", "0008_add_checksum_to_testattachment"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='testattachment',
-            name='checksum',
-            field=models.CharField(help_text='MD5 checksum of this uploaded file.', max_length=32, unique=True),
+            model_name="testattachment",
+            name="checksum",
+            field=models.CharField(
+                help_text="MD5 checksum of this uploaded file.",
+                max_length=32,
+                unique=True,
+            ),
         ),
     ]

@@ -20,13 +20,13 @@ from tcms.testruns.models import TestCaseRunStatus
 from tests import factories as f
 
 __all__ = (
-    'AuthMixin',
-    'user_should_have_perm',
-    'remove_perm_from_user',
-    'BasePlanCase',
-    'BaseCaseRun',
-    'encode',
-    'HelperAssertions',
+    "AuthMixin",
+    "user_should_have_perm",
+    "remove_perm_from_user",
+    "BasePlanCase",
+    "BaseCaseRun",
+    "encode",
+    "HelperAssertions",
 )
 
 
@@ -46,19 +46,20 @@ def encode(s):
 def user_should_have_perm(user, perm):
     if isinstance(perm, str):
         try:
-            app_label, codename = perm.split('.')
+            app_label, codename = perm.split(".")
         except ValueError:
-            raise ValueError('%s is not valid. Should be in format app_label.perm_codename')
+            raise ValueError("%s is not valid. Should be in format app_label.perm_codename")
         else:
             if not app_label or not codename:
-                raise ValueError('Invalid app_label or codename')
+                raise ValueError("Invalid app_label or codename")
             get_permission = Permission.objects.get
             user.user_permissions.add(
-                get_permission(content_type__app_label=app_label, codename=codename))
+                get_permission(content_type__app_label=app_label, codename=codename)
+            )
     elif isinstance(perm, Permission):
         user.user_permissions.add(perm)
     else:
-        raise TypeError('perm should be an instance of either basestring or Permission')
+        raise TypeError("perm should be an instance of either basestring or Permission")
 
 
 def remove_perm_from_user(user, perm):
@@ -66,19 +67,20 @@ def remove_perm_from_user(user, perm):
 
     if isinstance(perm, str):
         try:
-            app_label, codename = perm.split('.')
+            app_label, codename = perm.split(".")
         except ValueError:
-            raise ValueError('%s is not valid. Should be in format app_label.perm_codename')
+            raise ValueError("%s is not valid. Should be in format app_label.perm_codename")
         else:
             if not app_label or not codename:
-                raise ValueError('Invalid app_label or codename')
+                raise ValueError("Invalid app_label or codename")
             get_permission = Permission.objects.get
             user.user_permissions.remove(
-                get_permission(content_type__app_label=app_label, codename=codename))
+                get_permission(content_type__app_label=app_label, codename=codename)
+            )
     elif isinstance(perm, Permission):
         user.user_permissions.remove(perm)
     else:
-        raise TypeError('perm should be an instance of either basestring or Permission')
+        raise TypeError("perm should be an instance of either basestring or Permission")
 
 
 def create_request_user(username=None, password=None):
@@ -89,7 +91,7 @@ def create_request_user(username=None, password=None):
     if password:
         user.set_password(password)
     else:
-        user.set_password('password')
+        user.set_password("password")
     user.save()
     return user
 
@@ -116,8 +118,7 @@ class HelperAssertions(SimpleTestCase):
         self.assertEqual(HTTPStatus.NOT_FOUND, response.status_code)
 
     def assert500(self, response):
-        self.assertEqual(
-            HTTPStatus.INTERNAL_SERVER_ERROR, response.status_code)
+        self.assertEqual(HTTPStatus.INTERNAL_SERVER_ERROR, response.status_code)
 
     def assertJsonResponse(self, response, expected, status_code=200):
         self.assertEqual(status_code, response.status_code)
@@ -145,15 +146,12 @@ class HelperAssertions(SimpleTestCase):
         try:
             func(*args, **kwargs)
         except Exception as e:
-            self.assertIsInstance(
-                e, ValidationError, f'Exception {e} is not a ValidationError.')
-            self.assertIn(field, e.message_dict,
-                          f'Field {field} is not included in errors.')
-            matches = [re.search(message_regex, item) is not None
-                       for item in e.message_dict[field]]
-            self.assertTrue(any(matches), 'Expected match message is not included.')
+            self.assertIsInstance(e, ValidationError, f"Exception {e} is not a ValidationError.")
+            self.assertIn(field, e.message_dict, f"Field {field} is not included in errors.")
+            matches = [re.search(message_regex, item) is not None for item in e.message_dict[field]]
+            self.assertTrue(any(matches), "Expected match message is not included.")
         else:
-            self.fail('ValidationError is not raised.')
+            self.fail("ValidationError is not raised.")
 
 
 class AuthMixin(SimpleTestCase):
@@ -168,9 +166,9 @@ class AuthMixin(SimpleTestCase):
     @classmethod
     def setUpTestData(cls):
         cls.tester = User.objects.create_user(
-            username='nitrate-tester',
-            email='nitrate-tester@example.com')
-        cls.tester.set_password('password')
+            username="nitrate-tester", email="nitrate-tester@example.com"
+        )
+        cls.tester.set_password("password")
         cls.tester.save()
 
     def setUp(self):
@@ -188,10 +186,9 @@ class AuthMixin(SimpleTestCase):
             login_password = password
         else:
             login_user = self.tester
-            login_password = 'password'
+            login_password = "password"
 
-        self.client.login(username=login_user.username,
-                          password=login_password)
+        self.client.login(username=login_user.username, password=login_password)
 
 
 class NitrateTestCase(test.TestCase):
@@ -201,26 +198,28 @@ class NitrateTestCase(test.TestCase):
     def create_bz_tracker(cls):
         """Helper function to create a Bugzilla issue tracker"""
         return f.IssueTrackerFactory(
-            name='bz',
-            service_url='http://bugs.example.com/',
-            issue_report_endpoint='/enter_bug.cgi',
-            issue_url_fmt='http://bugs.example.com/?id={issue_key}',
-            issues_display_url_fmt='http://bugs.example.com/?bug_id={issue_keys}',
-            validate_regex=r'^\d+$')
+            name="bz",
+            service_url="http://bugs.example.com/",
+            issue_report_endpoint="/enter_bug.cgi",
+            issue_url_fmt="http://bugs.example.com/?id={issue_key}",
+            issues_display_url_fmt="http://bugs.example.com/?bug_id={issue_keys}",
+            validate_regex=r"^\d+$",
+        )
 
     @classmethod
     def create_jira_tracker(cls):
         """Helper function to create a Bugzilla issue tracker"""
         return f.IssueTrackerFactory(
-            name='jira',
-            service_url='http://jira.example.com/',
-            issue_report_endpoint='/enter_bug.cgi',
-            issue_url_fmt='http://jira.example.com/browse/{issue_key}',
-            issues_display_url_fmt='http://jira.example.com/?jql=issuekey in ({issue_keys})',
-            validate_regex=r'^[A-Z]+-\d+$')
+            name="jira",
+            service_url="http://jira.example.com/",
+            issue_report_endpoint="/enter_bug.cgi",
+            issue_url_fmt="http://jira.example.com/browse/{issue_key}",
+            issues_display_url_fmt="http://jira.example.com/?jql=issuekey in ({issue_keys})",
+            validate_regex=r"^[A-Z]+-\d+$",
+        )
 
     def get_max_plan_id(self):
-        return TestPlan.objects.aggregate(max_pk=Max('pk'))['max_pk']
+        return TestPlan.objects.aggregate(max_pk=Max("pk"))["max_pk"]
 
 
 class BasePlanCase(AuthMixin, HelperAssertions, NitrateTestCase):
@@ -230,17 +229,18 @@ class BasePlanCase(AuthMixin, HelperAssertions, NitrateTestCase):
     def setUpTestData(cls):
         super().setUpTestData()
 
-        cls.case_status_confirmed = TestCaseStatus.objects.get(name='CONFIRMED')
-        cls.case_status_proposed = TestCaseStatus.objects.get(name='PROPOSED')
+        cls.case_status_confirmed = TestCaseStatus.objects.get(name="CONFIRMED")
+        cls.case_status_proposed = TestCaseStatus.objects.get(name="PROPOSED")
 
-        cls.product = f.ProductFactory(name='Nitrate')
-        cls.version = f.VersionFactory(value='0.1', product=cls.product)
+        cls.product = f.ProductFactory(name="Nitrate")
+        cls.version = f.VersionFactory(value="0.1", product=cls.product)
 
         cls.plan = f.TestPlanFactory(
             author=cls.tester,
             owner=cls.tester,
             product=cls.product,
-            product_version=cls.version)
+            product_version=cls.version,
+        )
 
         case_creator = partial(
             f.TestCaseFactory,
@@ -248,15 +248,16 @@ class BasePlanCase(AuthMixin, HelperAssertions, NitrateTestCase):
             default_tester=None,
             reviewer=cls.tester,
             case_status=cls.case_status_confirmed,
-            plan=[cls.plan])
+            plan=[cls.plan],
+        )
 
-        cls.case = case_creator(summary='Test case 0')
-        cls.case_1 = case_creator(summary='Test case 1')
-        cls.case_2 = case_creator(summary='Test case 2')
-        cls.case_3 = case_creator(summary='Test case 3')
-        cls.case_4 = case_creator(summary='Test case 4')
-        cls.case_5 = case_creator(summary='Test case 5')
-        cls.case_6 = case_creator(summary='Test case 6')
+        cls.case = case_creator(summary="Test case 0")
+        cls.case_1 = case_creator(summary="Test case 1")
+        cls.case_2 = case_creator(summary="Test case 2")
+        cls.case_3 = case_creator(summary="Test case 3")
+        cls.case_4 = case_creator(summary="Test case 4")
+        cls.case_5 = case_creator(summary="Test case 5")
+        cls.case_6 = case_creator(summary="Test case 6")
 
     @classmethod
     def create_treeview_data(cls):
@@ -267,7 +268,8 @@ class BasePlanCase(AuthMixin, HelperAssertions, NitrateTestCase):
             author=cls.tester,
             owner=cls.tester,
             product=cls.product,
-            product_version=cls.version)
+            product_version=cls.version,
+        )
 
         # Sample tree view
         # plan 1
@@ -298,7 +300,7 @@ class BaseCaseRun(BasePlanCase):
     def setUpTestData(cls):
         super().setUpTestData()
 
-        cls.case_run_status_idle = TestCaseRunStatus.objects.get(name='IDLE')
+        cls.case_run_status_idle = TestCaseRunStatus.objects.get(name="IDLE")
         cls.build = f.TestBuildFactory(product=cls.product)
 
         case_run_creator = partial(
@@ -306,36 +308,33 @@ class BaseCaseRun(BasePlanCase):
             assignee=cls.tester,
             tested_by=cls.tester,
             build=cls.build,
-            case_run_status=cls.case_run_status_idle)
+            case_run_status=cls.case_run_status_idle,
+        )
 
         cls.test_run = f.TestRunFactory(
             product_version=cls.version,
             plan=cls.plan,
             build=cls.build,
             manager=cls.tester,
-            default_tester=cls.tester)
+            default_tester=cls.tester,
+        )
 
-        cls.case_run_1 = case_run_creator(
-            run=cls.test_run, case=cls.case_1, sortkey=10)
+        cls.case_run_1 = case_run_creator(run=cls.test_run, case=cls.case_1, sortkey=10)
 
-        cls.case_run_2 = case_run_creator(
-            run=cls.test_run, case=cls.case_2, sortkey=20)
+        cls.case_run_2 = case_run_creator(run=cls.test_run, case=cls.case_2, sortkey=20)
 
-        cls.case_run_3 = case_run_creator(
-            run=cls.test_run, case=cls.case_3, sortkey=30)
+        cls.case_run_3 = case_run_creator(run=cls.test_run, case=cls.case_3, sortkey=30)
 
         cls.test_run_1 = f.TestRunFactory(
             product_version=cls.version,
             plan=cls.plan,
             build=cls.build,
             manager=cls.tester,
-            default_tester=cls.tester)
+            default_tester=cls.tester,
+        )
 
-        cls.case_run_4 = case_run_creator(
-            run=cls.test_run_1, case=cls.case_4, sortkey=10)
+        cls.case_run_4 = case_run_creator(run=cls.test_run_1, case=cls.case_4, sortkey=10)
 
-        cls.case_run_5 = case_run_creator(
-            run=cls.test_run_1, case=cls.case_5, sortkey=20)
+        cls.case_run_5 = case_run_creator(run=cls.test_run_1, case=cls.case_5, sortkey=20)
 
-        cls.case_run_6 = case_run_creator(
-            run=cls.test_run_1, case=cls.case_6, sortkey=30)
+        cls.case_run_6 = case_run_creator(run=cls.test_run_1, case=cls.case_6, sortkey=30)

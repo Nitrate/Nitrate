@@ -3,11 +3,9 @@
 from tcms.xmlrpc.decorators import log_call
 from tcms.xmlrpc import get_version
 
-__all__ = (
-    'get',
-)
+__all__ = ("get",)
 
-__xmlrpc_namespace__ = 'Version'
+__xmlrpc_namespace__ = "Version"
 
 
 @log_call(namespace=__xmlrpc_namespace__)

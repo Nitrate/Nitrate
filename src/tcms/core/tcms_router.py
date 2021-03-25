@@ -8,7 +8,7 @@ class RWRouter:
     def __init__(self):
         self.db_list = list(settings.DATABASES.keys())
         self.db_read = list(settings.DATABASES.keys())
-        self.db_read.remove('default')
+        self.db_read.remove("default")
 
     def db_for_read(self, model, **hints):
         if not self.db_read:
@@ -16,7 +16,7 @@ class RWRouter:
         return random.choice(self.db_read)
 
     def db_for_write(self, model, **hints):
-        return 'default'
+        return "default"
 
     def allow_relation(self, obj1, obj2, **hints):
         """
