@@ -6,30 +6,33 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('testcases', '0007_set_default_tester_and_reviewer_to_null_if_user_is_deleted'),
+        (
+            "testcases",
+            "0007_set_default_tester_and_reviewer_to_null_if_user_is_deleted",
+        ),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='testcasebug',
+            name="testcasebug",
             unique_together=set(),
         ),
         migrations.RemoveField(
-            model_name='testcasebug',
-            name='bug_system',
+            model_name="testcasebug",
+            name="bug_system",
         ),
         migrations.RemoveField(
-            model_name='testcasebug',
-            name='case',
+            model_name="testcasebug",
+            name="case",
         ),
         migrations.RemoveField(
-            model_name='testcasebug',
-            name='case_run',
+            model_name="testcasebug",
+            name="case_run",
         ),
         migrations.DeleteModel(
-            name='TestCaseBug',
+            name="TestCaseBug",
         ),
         migrations.DeleteModel(
-            name='TestCaseBugSystem',
+            name="TestCaseBugSystem",
         ),
     ]

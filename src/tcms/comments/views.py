@@ -19,36 +19,33 @@ log = logging.getLogger(__name__)
 
 
 @require_POST
-def post(request, template_name='comments/comments.html'):
+def post(request, template_name="comments/comments.html"):
     """Post a comment"""
     data = request.POST.copy()
     try:
-        target, _ = post_comment(
-            data, request.user, request.META.get('REMOTE_ADDR'))
+        target, _ = post_comment(data, request.user, request.META.get("REMOTE_ADDR"))
     except InvalidCommentPostRequest as e:
-        msg = f'Fail to add comment to object {e.target}'
+        msg = f"Fail to add comment to object {e.target}"
         log.exception(msg)
-        return JsonResponseBadRequest({'message': msg})
+        return JsonResponseBadRequest({"message": msg})
     return JsonResponse({})
 
 
 class DeleteCommentView(PermissionRequiredMixin, generic.View):
     """Delete comment from given objects"""
 
-    permission_required = 'django_comments.can_moderate'
+    permission_required = "django_comments.can_moderate"
 
     def post(self, request):
         comments = django_comments.get_model().objects.filter(
-            pk__in=request.POST.getlist('comment_id'),
+            pk__in=request.POST.getlist("comment_id"),
             site__pk=settings.SITE_ID,
             is_removed=False,
-            user_id=request.user.id
+            user_id=request.user.id,
         )
 
         if not comments:
-            return JsonResponseBadRequest({
-                'message': 'No incoming comment id exists.'
-            })
+            return JsonResponseBadRequest({"message": "No incoming comment id exists."})
 
         # Flag the comment as deleted instead of actually deleting it.
         for comment in comments:

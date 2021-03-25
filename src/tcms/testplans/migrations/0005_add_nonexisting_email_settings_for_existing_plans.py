@@ -5,11 +5,10 @@ from django.db import migrations
 
 def forwards(apps, schema_editor):
     """Create email settings for previously create plans if they don't have"""
-    TestPlan = apps.get_model('testplans', 'TestPlan')
-    TestPlanEmailSettings = apps.get_model(
-        'testplans', 'TestPlanEmailSettings')
+    TestPlan = apps.get_model("testplans", "TestPlan")
+    TestPlanEmailSettings = apps.get_model("testplans", "TestPlanEmailSettings")
 
-    for plan in TestPlan.objects.all().only('pk'):
+    for plan in TestPlan.objects.all().only("pk"):
         if not TestPlanEmailSettings.objects.filter(plan=plan).exists():
             TestPlanEmailSettings.objects.create(plan=plan)
 
@@ -17,9 +16,7 @@ def forwards(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('testplans', '0004_remove_model_TestPlanActivity'),
+        ("testplans", "0004_remove_model_TestPlanActivity"),
     ]
 
-    operations = [
-        migrations.RunPython(forwards)
-    ]
+    operations = [migrations.RunPython(forwards)]

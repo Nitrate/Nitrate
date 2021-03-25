@@ -4,14 +4,14 @@ from django.db import migrations
 
 
 def forward(apps, schema_editor):
-    permission_model = apps.get_model('auth', 'Permission')
+    permission_model = apps.get_model("auth", "Permission")
     perms_codename = (
-        'add_testcasebug',
-        'change_testcasebug',
-        'delete_testcasebug',
-        'add_testcasebugsystem',
-        'change_testcasebugsystem',
-        'delete_testcasebugsystem',
+        "add_testcasebug",
+        "change_testcasebug",
+        "delete_testcasebug",
+        "add_testcasebugsystem",
+        "change_testcasebugsystem",
+        "delete_testcasebugsystem",
     )
     for codename in perms_codename:
         permission_model.objects.filter(codename=codename).delete()
@@ -20,10 +20,7 @@ def forward(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('testcases', '0008_remove_testcasebug_testcasebugsystem'),
+        ("testcases", "0008_remove_testcasebug_testcasebugsystem"),
     ]
 
-    operations = [
-        migrations.RunPython(
-            forward, reverse_code=migrations.RunPython.noop)
-    ]
+    operations = [migrations.RunPython(forward, reverse_code=migrations.RunPython.noop)]

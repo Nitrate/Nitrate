@@ -9,18 +9,19 @@ from django.conf import settings
 from kobo.django.xmlrpc.models import XmlRpcLog
 
 
-__all__ = ('log_call',)
+__all__ = ("log_call",)
 
-logger = logging.getLogger('nitrate.xmlrpc')
+logger = logging.getLogger("nitrate.xmlrpc")
 
 if settings.DEBUG:
     # To avoid pollute XMLRPC logs with those generated during development
     def create_log(user, method, args):
-        log_msg = 'user: {}, method: {}, args: {}'.format(
-            user.username if hasattr(user, 'username') else user,
-            method,
-            args)
+        log_msg = "user: {}, method: {}, args: {}".format(
+            user.username if hasattr(user, "username") else user, method, args
+        )
         logger.debug(log_msg)
+
+
 else:
     create_log = XmlRpcLog.objects.create
 
@@ -38,9 +39,9 @@ def log_call(*args, **kwargs):
         def func(request):
             return None
     """
-    namespace = kwargs.get('namespace', '')
+    namespace = kwargs.get("namespace", "")
     if namespace:
-        namespace = namespace + '.'
+        namespace = namespace + "."
 
     def decorator(function):
         argspec = inspect.getfullargspec(function)
@@ -52,18 +53,18 @@ def log_call(*args, **kwargs):
         def _new_function(request, *args, **kwargs):
             try:
                 known_args = list(zip(arg_names, args))
-                unknown_args = list(enumerate(args[len(arg_names):]))
+                unknown_args = list(enumerate(args[len(arg_names) :]))
                 keyword_args = [
-                    (key, value) for key, value in kwargs.items()
-                    if (key, value) not in known_args
+                    (key, value) for key, value in kwargs.items() if (key, value) not in known_args
                 ]
 
-                create_log(user=request.user,
-                           method=f'{namespace}{function.__name__}',
-                           args=str(known_args + unknown_args + keyword_args))
+                create_log(
+                    user=request.user,
+                    method=f"{namespace}{function.__name__}",
+                    args=str(known_args + unknown_args + keyword_args),
+                )
             except Exception:
-                logger.exception(
-                    f'Fail to log XMLRPC call on {function.__name__}')
+                logger.exception(f"Fail to log XMLRPC call on {function.__name__}")
             return function(request, *args, **kwargs)
 
         return _new_function

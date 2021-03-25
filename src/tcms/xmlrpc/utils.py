@@ -12,55 +12,54 @@ from typing import Any, Dict
 COUNT_DISTINCT = 0
 QUERY_DISTINCT = 1
 
-ACCEPTABLE_BOOL_VALUES = ('0', '1', 0, 1, True, False)
+ACCEPTABLE_BOOL_VALUES = ("0", "1", 0, 1, True, False)
 
 
 def parse_bool_value(value):
     if value in ACCEPTABLE_BOOL_VALUES:
-        if value == '0':
+        if value == "0":
             return False
-        elif value == '1':
+        elif value == "1":
             return True
         else:
             return value
     else:
-        raise ValueError('Unacceptable bool value.')
+        raise ValueError("Unacceptable bool value.")
 
 
 def pre_check_product(values):
     if isinstance(values, dict):
-        if not values.get('product'):
-            raise ValueError('No product name to know what product to get.')
-        product_str = values['product']
+        if not values.get("product"):
+            raise ValueError("No product name to know what product to get.")
+        product_str = values["product"]
     else:
         product_str = values
 
     if isinstance(product_str, str):
         if not product_str:
-            raise ValueError('Got empty product name.')
+            raise ValueError("Got empty product name.")
         return Product.objects.get(name=product_str)
     elif isinstance(product_str, bool):
-        raise ValueError('The type of product is not recognizable.')
+        raise ValueError("The type of product is not recognizable.")
     elif isinstance(product_str, int):
         return Product.objects.get(pk=product_str)
     else:
-        raise ValueError('The type of product is not recognizable.')
+        raise ValueError("The type of product is not recognizable.")
 
 
 def pre_process_ids(value):
     # FIXME: Add more type checks, e.g. value cannot be a boolean value.
 
     if isinstance(value, list):
-        return [isinstance(c, int) and c or int(c.strip())
-                for c in value if c]
+        return [isinstance(c, int) and c or int(c.strip()) for c in value if c]
 
     if isinstance(value, str):
-        return [int(c.strip()) for c in value.split(',') if c]
+        return [int(c.strip()) for c in value.split(",") if c]
 
     if isinstance(value, int):
         return [value]
 
-    raise TypeError('Unrecognizable type of ids')
+    raise TypeError("Unrecognizable type of ids")
 
 
 def compare_list(src_list, dest_list):
@@ -101,7 +100,7 @@ def _lookup_fields_in_model(cls, fields):
             if field.many_to_many:
                 yield True
             else:
-                if getattr(field, 'related_model', None):
+                if getattr(field, "related_model", None):
                     cls = field.related_model
         except FieldDoesNotExist:
             pass
@@ -135,21 +134,21 @@ def distinct_m2m_rows(cls, values, op_type):
     """
     flag = False
     for field in values.keys():
-        if '__' in field:
-            if _need_distinct_m2m_rows(cls, field.split('__')):
+        if "__" in field:
+            if _need_distinct_m2m_rows(cls, field.split("__")):
                 flag = True
                 break
 
     qs = cls.objects.filter(**values)
     if op_type == COUNT_DISTINCT:
         if flag:
-            return qs.aggregate(Count('pk', distinct=True))['pk__count']
+            return qs.aggregate(Count("pk", distinct=True))["pk__count"]
         else:
             return qs.count()
     elif op_type == QUERY_DISTINCT:
         return qs.distinct() if flag else qs
     else:
-        raise TypeError('Not implement op type %s' % op_type)
+        raise TypeError("Not implement op type %s" % op_type)
 
 
 def distinct_count(cls, values):
@@ -160,8 +159,8 @@ def distinct_filter(cls, values):
     return distinct_m2m_rows(cls, values, op_type=QUERY_DISTINCT)
 
 
-estimated_time_re = re.compile(r'^(\d+[d])?(\d+[h])?(\d+[m])?(\d+[s])?$')
-estimated_time_hms_re = re.compile(r'^(\d+):(\d+):(\d+)$')
+estimated_time_re = re.compile(r"^(\d+[d])?(\d+[h])?(\d+[m])?(\d+[s])?$")
+estimated_time_hms_re = re.compile(r"^(\d+):(\d+):(\d+)$")
 
 
 def pre_process_estimated_time(value):
@@ -171,17 +170,17 @@ def pre_process_estimated_time(value):
     return xdxhxmxs
     """
     if isinstance(value, str):
-        match = estimated_time_re.match(value.replace(' ', ''))
+        match = estimated_time_re.match(value.replace(" ", ""))
         if match:
             return value
         else:
             match = estimated_time_hms_re.match(value)
             if not match:
-                raise ValueError('Invaild estimated_time format.')
+                raise ValueError("Invaild estimated_time format.")
             else:
-                return '{}h{}m{}s'.format(*match.groups())
+                return "{}h{}m{}s".format(*match.groups())
     else:
-        raise ValueError('Invaild estimated_time format.')
+        raise ValueError("Invaild estimated_time format.")
 
 
 def deprecate_critetion_attachment(query: Dict[str, Any]):
@@ -198,22 +197,24 @@ def deprecate_critetion_attachment(query: Dict[str, Any]):
     attachments_critesion = None
 
     for key in query:
-        if key.startswith('attachment__'):
+        if key.startswith("attachment__"):
             attachment_criterion = key
-        elif key.startswith('attachments__'):
+        elif key.startswith("attachments__"):
             attachments_critesion = key
 
     if attachment_criterion and attachments_critesion:
         raise ValueError(
-            'Filter criterion attachment and attachments cannot be used '
-            'together. Please use attachments.')
+            "Filter criterion attachment and attachments cannot be used "
+            "together. Please use attachments."
+        )
 
     if attachment_criterion:
         warnings.warn(
-            'Filter criterion attachment is deprecated. Please use '
-            'attachments.', DeprecationWarning)
+            "Filter criterion attachment is deprecated. Please use attachments.",
+            DeprecationWarning,
+        )
 
-        new_key = attachment_criterion.replace('attachment', 'attachments')
+        new_key = attachment_criterion.replace("attachment", "attachments")
         query[new_key] = query[attachment_criterion]
         # The old one is useless, so remove it.
         del query[attachment_criterion]

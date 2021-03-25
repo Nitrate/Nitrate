@@ -9,13 +9,16 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('management', '0005_set_testattachment_submitter_to_null_if_user_is_deleted'),
+        ("management", "0005_set_testattachment_submitter_to_null_if_user_is_deleted"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='testattachmentdata',
-            name='attachment',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='management.TestAttachment'),
+            model_name="testattachmentdata",
+            name="attachment",
+            field=models.OneToOneField(
+                on_delete=django.db.models.deletion.CASCADE,
+                to="management.TestAttachment",
+            ),
         ),
     ]

@@ -11,17 +11,13 @@ from django.db.models import QuerySet
 from django.http import QueryDict
 
 
-def string_to_list(strs, spliter=','):
+def string_to_list(strs, spliter=","):
     """Convert the string to list"""
     if isinstance(strs, list):
-        str_list = (
-            item.strip() if isinstance(item, bytes) else item
-            for item in strs
-        )
+        str_list = (item.strip() if isinstance(item, bytes) else item for item in strs)
     elif strs.find(spliter):
         str_list = (
-            item.strip() if isinstance(item, bytes) else item
-            for item in strs.split(spliter)
+            item.strip() if isinstance(item, bytes) else item for item in strs.split(spliter)
         )
     else:
         str_list = (strs,)
@@ -60,9 +56,9 @@ def calc_percent(x, y):
 
 def request_host_link(request, domain_name=None):
     if request.is_secure():
-        protocol = 'https://'
+        protocol = "https://"
     else:
-        protocol = 'http://'
+        protocol = "http://"
 
     if not domain_name:
         domain_name = request.get_host()
@@ -81,12 +77,12 @@ def clean_request(request, keys=None):
     for k in keys:
         k = str(k)
         if request_contents.get(k):
-            if k == 'order_by' or k == 'from_plan':
+            if k == "order_by" or k == "from_plan":
                 continue
 
             v = request.GET[k]
             # Convert the value to be list if it's __in filter.
-            if k.endswith('__in') and isinstance(v, str):
+            if k.endswith("__in") and isinstance(v, str):
                 v = string_to_list(v)
             rt[k] = v
     return rt
@@ -131,7 +127,7 @@ class QuerySetIterationProxy:
         self._iterable = iter(iterable)
         self._associate_name = associate_name
         if self._associate_name is None:
-            self._associate_name = 'pk'
+            self._associate_name = "pk"
         self._associated_data = associated_data
 
     def __iter__(self):
@@ -140,11 +136,11 @@ class QuerySetIterationProxy:
     def next(self):
         next_one = next(self._iterable)
         for name, lookup_table in self._associated_data.items():
-            setattr(next_one,
-                    name,
-                    lookup_table.get(
-                        getattr(next_one, self._associate_name, None),
-                        ()))
+            setattr(
+                next_one,
+                name,
+                lookup_table.get(getattr(next_one, self._associate_name, None), ()),
+            )
         return next_one
 
     __next__ = next
@@ -155,37 +151,40 @@ class DataTableResult:
 
     DEFAULT_PAGE_SIZE = 20
 
-    def __init__(self,
-                 request_data: QueryDict,
-                 queryset: QuerySet,
-                 column_names: List[str],
-                 default_order_key: str = 'pk'):
+    def __init__(
+        self,
+        request_data: QueryDict,
+        queryset: QuerySet,
+        column_names: List[str],
+        default_order_key: str = "pk",
+    ):
         self.queryset = queryset
         self.request_data = request_data
         self.column_names = column_names
         self._default_order_key = default_order_key
 
     def _iter_sorting_columns(self):
-        number_of_sorting_cols = int(self.request_data.get('iSortingCols', 0))
+        number_of_sorting_cols = int(self.request_data.get("iSortingCols", 0))
         for idx_which_column in range(number_of_sorting_cols):
-            sorting_col_index = int(
-                self.request_data.get(f'iSortCol_{idx_which_column}', 0))
+            sorting_col_index = int(self.request_data.get(f"iSortCol_{idx_which_column}", 0))
 
-            sortable_key = f'bSortable_{sorting_col_index}'
-            sort_dir_key = f'sSortDir_{idx_which_column}'
+            sortable_key = f"bSortable_{sorting_col_index}"
+            sort_dir_key = f"sSortDir_{idx_which_column}"
 
-            sortable = self.request_data.get(sortable_key, 'false')
-            if sortable == 'false':
+            sortable = self.request_data.get(sortable_key, "false")
+            if sortable == "false":
                 continue
 
             sorting_col_name = self.column_names[sorting_col_index]
-            sorting_direction = self.request_data.get(sort_dir_key, 'asc')
+            sorting_direction = self.request_data.get(sort_dir_key, "asc")
             yield sorting_col_name, sorting_direction
 
     def _sort_result(self):
         sorting_columns = self._iter_sorting_columns()
-        order_fields = [f'-{col_name}' if direction == 'desc' else col_name
-                        for col_name, direction in sorting_columns]
+        order_fields = [
+            f"-{col_name}" if direction == "desc" else col_name
+            for col_name, direction in sorting_columns
+        ]
         if order_fields:
             self.queryset = self.queryset.order_by(*order_fields)
         else:
@@ -194,9 +193,9 @@ class DataTableResult:
 
     def _paginate_result(self):
         display_length = min(
-            int(self.request_data.get('iDisplayLength', self.DEFAULT_PAGE_SIZE)),
-            100)
-        display_start = int(self.request_data.get('iDisplayStart', 0))
+            int(self.request_data.get("iDisplayLength", self.DEFAULT_PAGE_SIZE)), 100
+        )
+        display_start = int(self.request_data.get("iDisplayStart", 0))
         display_end = display_start + display_length
         self.queryset = self.queryset[display_start:display_end]
 
@@ -207,10 +206,10 @@ class DataTableResult:
         self._paginate_result()
 
         return {
-            'sEcho': int(self.request_data.get('sEcho', 0)),
-            'iTotalRecords': total_records,
-            'iTotalDisplayRecords': total_display_records,
-            'querySet': self.queryset,
+            "sEcho": int(self.request_data.get("sEcho", 0)),
+            "iTotalRecords": total_records,
+            "iTotalDisplayRecords": total_display_records,
+            "querySet": self.queryset,
         }
 
 
@@ -220,14 +219,14 @@ def get_model(content_type):
     :param str content_type: content type in format ``app_label.model_name``.
     :return: model class
     """
-    app_label, model_name = content_type.split('.')
+    app_label, model_name = content_type.split(".")
     app_config = apps.get_app_config(app_label)
     return app_config.get_model(model_name)
 
 
 class EnumLike:
 
-    NAME_FIELD = 'name'
+    NAME_FIELD = "name"
 
     @classmethod
     def get(cls, name):
@@ -236,30 +235,27 @@ class EnumLike:
 
     @classmethod
     def as_dict(cls):
-        return {
-            pk: name for pk, name in cls.objects.values_list('pk', cls.NAME_FIELD)
-        }
+        return {pk: name for pk, name in cls.objects.values_list("pk", cls.NAME_FIELD)}
 
     @classmethod
     def name_to_id(cls, name):
         criteria = {cls.NAME_FIELD: name}
-        obj = cls.objects.filter(**criteria).only('pk').first()
+        obj = cls.objects.filter(**criteria).only("pk").first()
         if obj is None:
-            raise ValueError(f'{name} does not exist in model {cls.__name__}')
+            raise ValueError(f"{name} does not exist in model {cls.__name__}")
         return obj.pk
 
     @classmethod
     def id_to_name(cls, obj_id):
         obj = cls.objects.filter(pk=obj_id).first()
         if obj is None:
-            return ValueError('ID {} does not exist in model {}.'.format(
-                obj_id, cls.__name__))
+            return ValueError("ID {} does not exist in model {}.".format(obj_id, cls.__name__))
         return obj.name
 
 
 def checksum(value: Union[str, bytes]) -> str:
     if not value:
-        return ''
+        return ""
     md5 = hashlib.md5()
     if type(value) == bytes:
         md5.update(value)
@@ -273,21 +269,21 @@ def format_timedelta(timedelta):
     m, s = divmod(timedelta.seconds, 60)
     h, m = divmod(m, 60)
     d = timedelta.days
-    day = '%dd' % d if d else ''
-    hour = '%dh' % h if h else ''
-    minute = '%dm' % m if m else ''
-    second = '%ds' % s if s else ''
+    day = "%dd" % d if d else ""
+    hour = "%dh" % h if h else ""
+    minute = "%dm" % m if m else ""
+    second = "%ds" % s if s else ""
     timedelta_str = day + hour + minute + second
-    return timedelta_str if timedelta_str else '0m'
+    return timedelta_str if timedelta_str else "0m"
 
 
 def timedelta2int(value):
     """convert string nh(ay):nh(our):nm(inute) to integer seconds."""
-    value = value.replace(' ', '')
-    second_regex = re.compile(r'\d+s')
-    minute_regex = re.compile(r'\d+m')
-    hour_regex = re.compile(r'\d+h')
-    day_regex = re.compile(r'\d+d')
+    value = value.replace(" ", "")
+    second_regex = re.compile(r"\d+s")
+    minute_regex = re.compile(r"\d+m")
+    hour_regex = re.compile(r"\d+h")
+    day_regex = re.compile(r"\d+d")
 
     second = second_regex.findall(value)
     seconds = int(second[0][:-1]) if second else 0

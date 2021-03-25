@@ -15,40 +15,41 @@ way to forward and backward.
 """
 
 # e.g. Remove case 1 from plan 1
-remove_case_from_plan_re = re.compile(r'^Remove case (\d+) from plan (\d+)$')
+remove_case_from_plan_re = re.compile(r"^Remove case (\d+) from plan (\d+)$")
 
 # e.g. Remove from plan 1
-case_remove_from_plan_re = re.compile(r'^Remove from plan (\d+)$')
+case_remove_from_plan_re = re.compile(r"^Remove from plan (\d+)$")
 
 # e.g. Field case_run_status changed from IDLE to RUNNING.
 # e.g. Field close_date changed from None to 2018-04-21 15:54:36.189892.
-update_property_re = re.compile(r'^Field (.+) changed from (.+) to (.+).')
+update_property_re = re.compile(r"^Field (.+) changed from (.+) to (.+).")
 
 # This does not aim to match the whole text content. Instead, just testing if
 # match the beginning part.
 # Not sure why there is space(s) before word "Case". So, handle this special
 # case as well as the fixed solution by someone else.
-case_text_change_re = r' *Case (action|effect|setup|breakdown) changed from'
+case_text_change_re = r" *Case (action|effect|setup|breakdown) changed from"
 
-case_notes_changed_re = re.compile(r'^Case notes changed from (.+) in edit page.$')
+case_notes_changed_re = re.compile(r"^Case notes changed from (.+) in edit page.$")
 
 # e.g. Case category changed from --default-- to fast in edit page.
 # e.g. Case default tester changed from None to cqi in edit page.
 case_property_changed_re = re.compile(
-    r'^Case ((?!notes|action|effect|setup|breakdown)[a-zA-Z ]+) '
-    r'changed from (.+) to (.+) in edit page.$')
+    r"^Case ((?!notes|action|effect|setup|breakdown)[a-zA-Z ]+) "
+    r"changed from (.+) to (.+) in edit page.$"
+)
 
 # e.g. Initial env group Django
-initial_env_group_re = re.compile(r'^Initial env group (.+)$')
+initial_env_group_re = re.compile(r"^Initial env group (.+)$")
 
 # e.g. Change env group status to {}
-change_env_group_status_re = re.compile(r'^Change env group status to (.+)$')
+change_env_group_status_re = re.compile(r"^Change env group status to (.+)$")
 
 # e.g. Modify name %s from to %s
-modify_name_to_re = re.compile(r'^Modify name (.+) from to (.+)$')
+modify_name_to_re = re.compile(r"^Modify name (.+) from to (.+)$")
 
 # e.g. Properties changed to %s
-properties_changed_re = re.compile(r'^Properties changed to (.+)$')
+properties_changed_re = re.compile(r"^Properties changed to (.+)$")
 
 
 class TextParser(HTMLParser):
@@ -69,32 +70,33 @@ class TextParser(HTMLParser):
             self.read_buffer.write(data)
             return
 
-        if data == ' to ':
+        if data == " to ":
             self.original_value = self.read_buffer.getvalue()
             self.read_buffer.close()
             self.read_buffer = io.StringIO()
             return
 
-        if data == ' in edit page.':
+        if data == " in edit page.":
             self.new_value = self.read_buffer.getvalue()
             self.read_buffer.close()
             return
 
-        omatch = re.match(r' *Case (action|effect|setup|breakdown) changed from',
-                          data)
+        omatch = re.match(r" *Case (action|effect|setup|breakdown) changed from", data)
         if omatch:
             self.text_name = omatch.group(1)
 
     def handle_starttag(self, tag, attrs):
-        self.read_buffer.write('<{}{}{}>'.format(
-            tag,
-            ' ' if attrs else '',
-            ' '.join([f'{name}="{value}"' for name, value in attrs])
-        ))
+        self.read_buffer.write(
+            "<{}{}{}>".format(
+                tag,
+                " " if attrs else "",
+                " ".join([f'{name}="{value}"' for name, value in attrs]),
+            )
+        )
         self.in_tag = True
 
     def handle_endtag(self, tag):
-        self.read_buffer.write(f'</{tag}>')
+        self.read_buffer.write(f"</{tag}>")
         self.in_tag = False
 
 
@@ -121,17 +123,17 @@ def migrate_case_text_changed(log):
         return None
     # For the first time to enter a text, original value shows None rather than a
     # piece of HTML
-    none_re = case_text_change_re + ' None to '
+    none_re = case_text_change_re + " None to "
     if re.match(none_re, log.action):
         # Just for conveninece to extract the content by parser below
-        log_action = log.action.replace('None', '<p>None</p>', 1)
+        log_action = log.action.replace("None", "<p>None</p>", 1)
     else:
         log_action = log.action
 
     parser = TextParser()
     parser.feed(log_action)
     log.field = parser.text_name
-    if parser.original_value != '<p>None</p>':
+    if parser.original_value != "<p>None</p>":
         log.original_value = parser.original_value
     log.new_value = parser.new_value
     return log
@@ -143,11 +145,11 @@ def migrate_case_notes_changed(log):
         return None
     changed_diff = match.group(1)
 
-    if re.match(r' *to ', changed_diff):
+    if re.match(r" *to ", changed_diff):
         # Notes is assigned text only for the first time
-        log.field = 'notes'
+        log.field = "notes"
         log.new_value = changed_diff.lstrip()
-        log.new_value = log.new_value.replace('to ', '', 1)
+        log.new_value = log.new_value.replace("to ", "", 1)
         return log
 
     # Here, migration is trying best to extract the original value and new value.
@@ -158,7 +160,7 @@ def migrate_case_notes_changed(log):
     # new value, or the word included within notes.
     # So, this regular expression tries to find the separator word "to" by assuming
     # user wrote the first letter in capital.
-    match = re.match(r'^(.+) to ([A-Z].+)$', log.action)
+    match = re.match(r"^(.+) to ([A-Z].+)$", log.action)
     if match:
         log.original_value, log.new_value = match.groups()
         return log
@@ -181,7 +183,7 @@ def migrate_initial_env_group(log):
     match = initial_env_group_re.match(log.action)
     if not match:
         return None
-    log.new_value = 'New env group {}'.format(match.group(1))
+    log.new_value = "New env group {}".format(match.group(1))
     return log
 
 
@@ -189,7 +191,7 @@ def migrate_change_env_group_status(log):
     match = change_env_group_status_re.match(log.action)
     if not match:
         return None
-    log.field = 'Env group status'
+    log.field = "Env group status"
     log.new_value = match.group(1)
     return log
 
@@ -198,7 +200,7 @@ def migrate_modify_name_to(log):
     match = modify_name_to_re.match(log.action)
     if not match:
         return None
-    log.field = 'name'
+    log.field = "name"
     log.original_value = match.group(1)
     log.new_value = match.group(2)
     return log
@@ -208,7 +210,7 @@ def migrate_properties_changed(log):
     match = properties_changed_re.match(log.action)
     if not match:
         return None
-    log.field = 'Properties'
+    log.field = "Properties"
     log.new_value = match.group(1)
     return log
 
@@ -225,7 +227,7 @@ logger = logging.getLogger(__name__)
 
 
 def migrate_logs_to_new_fields(apps, schema_editor):
-    TCMSLogModel = apps.get_model('logs', 'TCMSLogModel')
+    TCMSLogModel = apps.get_model("logs", "TCMSLogModel")
 
     migrations = [
         migrate_case_remove_from_plan,
@@ -244,12 +246,12 @@ def migrate_logs_to_new_fields(apps, schema_editor):
         results = [migrate(log) for migrate in migrations]
         results = [result for result in results if result is not None]
         if len(results) == 1:
-            logger.info('Migrate log %s', log)
+            logger.info("Migrate log %s", log)
             results[0].save()
         elif len(results) > 1:
-            logger.info('Log %s matches multiple possible migrations. Skip it.', log)
+            logger.info("Log %s matches multiple possible migrations. Skip it.", log)
         else:
-            logger.info('Log %s does not match any migrations.', log)
+            logger.info("Log %s does not match any migrations.", log)
 
 
 def noop_reverse(apps, schema_editor):
@@ -259,9 +261,7 @@ def noop_reverse(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('logs', '0002_extend_log_info_fields'),
+        ("logs", "0002_extend_log_info_fields"),
     ]
 
-    operations = [
-        migrations.RunPython(migrate_logs_to_new_fields, noop_reverse)
-    ]
+    operations = [migrations.RunPython(migrate_logs_to_new_fields, noop_reverse)]

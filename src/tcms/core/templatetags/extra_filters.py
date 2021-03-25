@@ -9,6 +9,7 @@ register = template.Library()
 @register.filter
 def timedelta2string(value: timedelta):
     from tcms.core.utils import format_timedelta
+
     return format_timedelta(value)
 
 

@@ -21,16 +21,16 @@ back manually.
 
 
 def forward(apps, schema_editor):
-    permission_model = apps.get_model('auth', 'Permission')
-    group_model = apps.get_model('auth', 'Group')
+    permission_model = apps.get_model("auth", "Permission")
+    group_model = apps.get_model("auth", "Group")
 
     perms_codename = (
-        'add_testcasebug',
-        'change_testcasebug',
-        'delete_testcasebug',
-        'add_testcasebugsystem',
-        'change_testcasebugsystem',
-        'delete_testcasebugsystem',
+        "add_testcasebug",
+        "change_testcasebug",
+        "delete_testcasebug",
+        "add_testcasebugsystem",
+        "change_testcasebugsystem",
+        "delete_testcasebugsystem",
     )
 
     for g in group_model.objects.all():
@@ -44,10 +44,7 @@ def forward(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('issuetracker', '0017_add_default_issues_display_url_fmt'),
+        ("issuetracker", "0017_add_default_issues_display_url_fmt"),
     ]
 
-    operations = [
-        migrations.RunPython(
-            forward, reverse_code=migrations.RunPython.noop)
-    ]
+    operations = [migrations.RunPython(forward, reverse_code=migrations.RunPython.noop)]

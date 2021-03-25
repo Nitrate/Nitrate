@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('management', '0009_set_unique_on_checksum'),
+        ("management", "0009_set_unique_on_checksum"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='testattachment',
-            name='create_date',
-            field=models.DateTimeField(auto_now_add=True, db_column='creation_ts'),
+            model_name="testattachment",
+            name="create_date",
+            field=models.DateTimeField(auto_now_add=True, db_column="creation_ts"),
         ),
     ]

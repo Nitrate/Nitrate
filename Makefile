@@ -120,6 +120,11 @@ quick-local-build:
 	@$(mock) --no-clean --rebuild dist/$(nvr).src.rpm
 
 
+.PHONY: format-code
+format-code:
+	@black --line-length $(shell grep "^max_line_length" tox.ini | cut -d' '  -f3) src/tcms src/tests
+
+
 .PHONY: help
 help:
 	@echo "Available targets:"

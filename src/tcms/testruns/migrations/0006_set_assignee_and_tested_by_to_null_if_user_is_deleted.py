@@ -8,18 +8,30 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('testruns', '0005_set_run_default_tester_to_null_if_user_is_deleted'),
+        ("testruns", "0005_set_run_default_tester_to_null_if_user_is_deleted"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='testcaserun',
-            name='assignee',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='case_run_assignee', to=settings.AUTH_USER_MODEL),
+            model_name="testcaserun",
+            name="assignee",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="case_run_assignee",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AlterField(
-            model_name='testcaserun',
-            name='tested_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='case_run_tester', to=settings.AUTH_USER_MODEL),
+            model_name="testcaserun",
+            name="tested_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="case_run_tester",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

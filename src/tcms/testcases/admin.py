@@ -8,25 +8,30 @@ from tcms.testcases.models import TestCaseStatus
 
 
 class TestCaseStatusAdmin(admin.ModelAdmin):
-    search_fields = (('name',))
-    list_display = ('id', 'name', 'description')
+    search_fields = ("name",)
+    list_display = ("id", "name", "description")
 
 
 class TestCaseCategoryAdmin(admin.ModelAdmin):
-    search_fields = (('name',))
-    list_display = ('id', 'name', 'product', 'description')
-    list_filter = ('product', )
+    search_fields = ("name",)
+    list_display = ("id", "name", "product", "description")
+    list_filter = ("product",)
 
 
 class TestCaseAdmin(admin.ModelAdmin):
-    search_fields = (('summary',))
-    list_display = ('case_id', 'summary', 'category', 'author', 'case_status')
-    list_filter = ('case_status', 'category')
+    search_fields = ("summary",)
+    list_display = ("case_id", "summary", "category", "author", "case_status")
+    list_filter = ("case_status", "category")
 
 
 class TestCaseTextAdmin(admin.ModelAdmin):
-    list_display = ('id', 'case')
-    exclude = ('action_checksum', 'effect_checksum', 'setup_checksum', 'breakdown_checksum')
+    list_display = ("id", "case")
+    exclude = (
+        "action_checksum",
+        "effect_checksum",
+        "setup_checksum",
+        "breakdown_checksum",
+    )
 
 
 admin.site.register(TestCaseStatus, TestCaseStatusAdmin)

@@ -27,9 +27,10 @@ def find_service(issue_tracker):
     """
     if not issue_tracker.class_path:
         raise ValueError(
-            'class_path must be set in order to find a corresponding service.'
-            ' Refer to IssueTracker.class_path help text.')
-    module_path, _, class_name = issue_tracker.class_path.rpartition('.')
+            "class_path must be set in order to find a corresponding service."
+            " Refer to IssueTracker.class_path help text."
+        )
+    module_path, _, class_name = issue_tracker.class_path.rpartition(".")
     module = importlib.import_module(module_path)
     return getattr(module, class_name)(issue_tracker)
 
@@ -77,7 +78,7 @@ class IssueTrackerService:
             issue's external tracker.
         :type issue: :class:`Issue <tcms.issuetracker.models.Issue>`
         """
-        log.info('This is default behavior of add_external_tracker which does nothing.')
+        log.info("This is default behavior of add_external_tracker which does nothing.")
 
     def make_issue_report_url(self, case_run):
         """Make issue report URL
@@ -94,14 +95,21 @@ class IssueTrackerService:
         :rtype: str
         """
         url_args = self._prepare_issue_report_url_args(case_run)
-        return '{}/{}{}'.format(
-            self.tracker_model.service_url.rstrip('/'),
-            self.tracker_model.issue_report_endpoint.lstrip('/'),
-            '?' + urllib.parse.urlencode(url_args, True) if url_args else '',
+        return "{}/{}{}".format(
+            self.tracker_model.service_url.rstrip("/"),
+            self.tracker_model.issue_report_endpoint.lstrip("/"),
+            "?" + urllib.parse.urlencode(url_args, True) if url_args else "",
         )
 
-    def add_issue(self, issue_key, case, case_run=None,
-                  summary=None, description=None, add_case_to_issue=None):
+    def add_issue(
+        self,
+        issue_key,
+        case,
+        case_run=None,
+        summary=None,
+        description=None,
+        add_case_to_issue=None,
+    ):
         """Add new issue
 
         An issue could be associated with a single case or with a case and
@@ -123,12 +131,14 @@ class IssueTrackerService:
         :rtype: :class:`Issue <tcms.issuetracker.models.Issue>`
         :raises ValidationError: if fail to validate the new issue.
         """
-        issue = Issue(issue_key=issue_key,
-                      tracker=self.tracker_model,
-                      case=case,
-                      case_run=case_run,
-                      summary=summary,
-                      description=description)
+        issue = Issue(
+            issue_key=issue_key,
+            tracker=self.tracker_model,
+            case=case,
+            case_run=case_run,
+            summary=summary,
+            description=description,
+        )
         issue.full_clean()
         issue.save()
         if self.tracker_model.allow_add_case_to_issue and add_case_to_issue:
@@ -156,9 +166,9 @@ class IssueTrackerService:
         """
         return self.tracker_model.issue_report_templ.format(
             build_name=build_name,
-            setup=case_text.setup or '# Fill setup here ...',
-            action=case_text.action or '# Fill action here ...',
-            effect=case_text.effect or '# Fill effect here ...',
+            setup=case_text.setup or "# Fill setup here ...",
+            action=case_text.action or "# Fill action here ...",
+            effect=case_text.effect or "# Fill effect here ...",
         )
 
     def get_stock_issue_report_args(self, case_run):
@@ -228,17 +238,18 @@ class IssueTrackerService:
         arg_lines = buf.readlines()
         buf.close()
         for line in arg_lines:
-            arg_name, arg_value = line.split(':', 1)
+            arg_name, arg_value = line.split(":", 1)
             arg_value = arg_value.strip()
-            is_constant_arg = arg_value != ''
+            is_constant_arg = arg_value != ""
             if is_constant_arg:
                 result[arg_name] = arg_value
             else:
                 stock_value = stock_args.get(arg_name)
                 if stock_value is None:
                     log.warning(
-                        'Nitrate does not provide issue report URL argument %s',
-                        arg_name)
+                        "Nitrate does not provide issue report URL argument %s",
+                        arg_name,
+                    )
                 else:
                     result[arg_name] = stock_value
         return result
@@ -264,8 +275,7 @@ class IssueTrackerService:
         """
         args = self.get_extra_issue_report_url_args(case_run)
         url_args = self.get_stock_issue_report_args(case_run)
-        args.update(self._fill_values_to_predefined_issue_report_url_args(
-            url_args))
+        args.update(self._fill_values_to_predefined_issue_report_url_args(url_args))
         return args
 
     def make_issues_display_url(self, issue_keys):
@@ -287,7 +297,7 @@ class IssueTrackerService:
         :rtype: str
         """
         return self.tracker_model.issues_display_url_fmt.format(
-            issue_keys=','.join(map(str, issue_keys))
+            issue_keys=",".join(map(str, issue_keys))
         )
 
 
@@ -298,10 +308,8 @@ class Bugzilla(IssueTrackerService):
         """Get extra URL arguments for reporting issue in Bugzilla"""
         args = super().get_extra_issue_report_url_args(case_run)
 
-        case_text = case_run.get_text_with_version(
-            case_text_version=case_run.case_text_version)
-        args['comment'] = self.format_issue_report_content(
-            case_run.build.name, case_text)
+        case_text = case_run.get_text_with_version(case_text_version=case_run.case_text_version)
+        args["comment"] = self.format_issue_report_content(case_run.build.name, case_text)
         return args
 
     def get_stock_issue_report_args(self, case_run):
@@ -322,12 +330,11 @@ class Bugzilla(IssueTrackerService):
         run = case_run.run
         product = run.plan.product
         args = {
-            'short_desc': f'Test case failure: {case.summary}',
-            'version': run.product_version.value,
-
+            "short_desc": f"Test case failure: {case.summary}",
+            "version": run.product_version.value,
             # product will be determined later below
             # This is the default value provided, but it could be changed below.
-            'component': list(case.component.values_list('name', flat=True)),
+            "component": list(case.component.values_list("name", flat=True)),
         }
 
         # Things could be different in real world when use various kind of
@@ -337,13 +344,15 @@ class Bugzilla(IssueTrackerService):
 
         try:
             rel = ProductIssueTrackerRelationship.objects.get(
-                product=product, issue_tracker=self.tracker_model)
+                product=product, issue_tracker=self.tracker_model
+            )
         except ProductIssueTrackerRelationship.DoesNotExist:
             log.warning(
-                'Issue tracker %r is not associated with any product. This '
-                'should not happen in practice. Please check configuration in '
-                'a concrete issue tracker\'s admin page.',
-                self.tracker_model)
+                "Issue tracker %r is not associated with any product. This "
+                "should not happen in practice. Please check configuration in "
+                "a concrete issue tracker's admin page.",
+                self.tracker_model,
+            )
             # NOTE: Nitrate does not try to be smart for the product value here.
             # When configuration is correct, product name could be another
             # choice to be the namespace or the alias. But, if config is not
@@ -353,10 +362,10 @@ class Bugzilla(IssueTrackerService):
             return args
 
         if rel.namespace:
-            args['product'] = rel.namespace
-            args['component'] = rel.alias or product.name
+            args["product"] = rel.namespace
+            args["component"] = rel.alias or product.name
         else:
-            args['product'] = rel.alias or product.name
+            args["product"] = rel.alias or product.name
 
         return args
 
@@ -367,15 +376,17 @@ class RHBugzilla(IssueTrackerService):
     def get_extra_issue_report_url_args(self, case_run):
         """Add URL arguments which are specific to Red Hat Bugzilla"""
         args = super().get_extra_issue_report_url_args(case_run)
-        args['cf_build_id'] = case_run.run.build.name
+        args["cf_build_id"] = case_run.run.build.name
         return args
 
     def link_external_tracker(self, issue: Issue) -> None:
         """Link case to issue's external tracker in remote Bugzilla service"""
-        bugzilla_external_track(self.tracker_model.api_url,
-                                self.tracker_model.credential,
-                                issue.issue_key,
-                                issue.case.pk)
+        bugzilla_external_track(
+            self.tracker_model.api_url,
+            self.tracker_model.credential,
+            issue.issue_key,
+            issue.case.pk,
+        )
 
 
 class JIRA(IssueTrackerService):

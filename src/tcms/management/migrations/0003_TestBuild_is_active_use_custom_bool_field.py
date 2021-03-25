@@ -7,13 +7,13 @@ import tcms.core.models.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('management', '0002_add_initial_data'),
+        ("management", "0002_add_initial_data"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='testbuild',
-            name='is_active',
-            field=tcms.core.models.fields.NitrateBooleanField(db_column='isactive', default=True),
+            model_name="testbuild",
+            name="is_active",
+            field=tcms.core.models.fields.NitrateBooleanField(db_column="isactive", default=True),
         ),
     ]

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-TP_PRINTABLE_CASE_TEXTS = '''
+TP_PRINTABLE_CASE_TEXTS = """
 SELECT t3.plan_id,
        test_cases.case_id,
        test_cases.summary,
@@ -27,9 +27,9 @@ FROM   test_cases
                     AND test_case_texts.case_text_version = t3.max_version
                     AND test_case_plans.plan_id = t3.plan_id )
 WHERE test_case_plans.plan_id IN (%s)
-'''
+"""
 
-TP_EXPORT_ALL_CASES_COMPONENTS = '''
+TP_EXPORT_ALL_CASES_COMPONENTS = """
 SELECT test_case_plans.plan_id,
        test_case_components.case_id,
        components.id as component_id,
@@ -40,4 +40,4 @@ INNER JOIN test_case_components ON (components.id = test_case_components.compone
 INNER JOIN products ON (products.id = components.product_id)
 INNER JOIN test_case_plans ON (test_case_components.case_id = test_case_plans.case_id)
 WHERE test_case_plans.plan_id IN (%s)
-'''
+"""

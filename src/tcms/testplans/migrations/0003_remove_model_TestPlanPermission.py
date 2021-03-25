@@ -6,19 +6,19 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('testplans', '0002_add_initial_data'),
+        ("testplans", "0002_add_initial_data"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='testplanpermission',
+            name="testplanpermission",
             unique_together=set(),
         ),
         migrations.RemoveField(
-            model_name='testplanpermission',
-            name='plan',
+            model_name="testplanpermission",
+            name="plan",
         ),
         migrations.DeleteModel(
-            name='TestPlanPermission',
+            name="TestPlanPermission",
         ),
     ]

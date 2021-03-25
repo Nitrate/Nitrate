@@ -7,13 +7,26 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('issuetracker', '0007_add_issue_report_initial_data'),
+        ("issuetracker", "0007_add_issue_report_initial_data"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='issuetracker',
-            name='name',
-            field=models.CharField(help_text='Issue tracker name.', max_length=50, unique=True, validators=[django.core.validators.MaxLengthValidator(50, message='Issue tracker name is too long.'), django.core.validators.RegexValidator('^[a-zA-Z0-9 ]+$', message='Name contains invalid characters. Name could contain lower and upper case letters, digit or space.')]),
+            model_name="issuetracker",
+            name="name",
+            field=models.CharField(
+                help_text="Issue tracker name.",
+                max_length=50,
+                unique=True,
+                validators=[
+                    django.core.validators.MaxLengthValidator(
+                        50, message="Issue tracker name is too long."
+                    ),
+                    django.core.validators.RegexValidator(
+                        "^[a-zA-Z0-9 ]+$",
+                        message="Name contains invalid characters. Name could contain lower and upper case letters, digit or space.",
+                    ),
+                ],
+            ),
         ),
     ]

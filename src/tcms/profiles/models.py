@@ -13,7 +13,7 @@ class Profiles(models.Model):
     extern_id = models.IntegerField(blank=True)
 
     class Meta:
-        db_table = 'profiles'
+        db_table = "profiles"
 
     def get_groups(self):
         q = UserGroupMap.objects.filter(user__userid=self.userid)
@@ -30,7 +30,7 @@ class Groups(models.Model):
     isactive = models.IntegerField()
 
     class Meta:
-        db_table = 'groups'
+        db_table = "groups"
 
 
 class UserGroupMap(models.Model):
@@ -41,8 +41,8 @@ class UserGroupMap(models.Model):
     grant_type = models.IntegerField(default=0)
 
     class Meta:
-        db_table = 'user_group_map'
-        unique_together = ('user', 'group')
+        db_table = "user_group_map"
+        unique_together = ("user", "group")
 
 
 #
@@ -51,18 +51,18 @@ class UserGroupMap(models.Model):
 
 
 class UserProfile(models.Model):
-    user = models.OneToOneField('auth.User', unique=True,
-                                related_name='profile',
-                                on_delete=models.CASCADE)
-    phone_number = models.CharField(blank=True, default='', max_length=128)
-    url = models.URLField(blank=True, default='')
-    im = models.CharField(blank=True, default='', max_length=128)
+    user = models.OneToOneField(
+        "auth.User", unique=True, related_name="profile", on_delete=models.CASCADE
+    )
+    phone_number = models.CharField(blank=True, default="", max_length=128)
+    url = models.URLField(blank=True, default="")
+    im = models.CharField(blank=True, default="", max_length=128)
     im_type_id = models.IntegerField(blank=True, default=1, null=True)
-    address = models.TextField(blank=True, default='')
-    notes = models.TextField(blank=True, default='')
+    address = models.TextField(blank=True, default="")
+    notes = models.TextField(blank=True, default="")
 
     class Meta:
-        db_table = 'tcms_user_profiles'
+        db_table = "tcms_user_profiles"
 
     def get_im(self):
         from .forms import IM_CHOICES
@@ -72,7 +72,7 @@ class UserProfile(models.Model):
 
         for c in IM_CHOICES:
             if self.im_type_id == c[0]:
-                return '[{}] {}'.format(c[1], self.im)
+                return "[{}] {}".format(c[1], self.im)
 
     @classmethod
     def get_user_profile(cls, user):

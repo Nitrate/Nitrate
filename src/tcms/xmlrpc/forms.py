@@ -19,22 +19,20 @@ class XMLRPCCheckboxInput(CheckboxInput):
 
 
 class NewCaseForm(XMLRPCNewCaseForm):
-    is_automated_proposed = BooleanField(label='Autoproposed',
-                                         required=False,
-                                         widget=XMLRPCCheckboxInput)
+    is_automated_proposed = BooleanField(
+        label="Autoproposed", required=False, widget=XMLRPCCheckboxInput
+    )
 
 
 class UpdateCaseForm(XMLRPCUpdateCaseForm):
-    is_automated_proposed = BooleanField(label='Autoproposed',
-                                         required=False,
-                                         widget=XMLRPCCheckboxInput)
+    is_automated_proposed = BooleanField(
+        label="Autoproposed", required=False, widget=XMLRPCCheckboxInput
+    )
 
 
 class NewPlanForm(XMLRPCNewPlanForm):
-    is_active = BooleanField(label="Active", required=False,
-                             widget=XMLRPCCheckboxInput)
+    is_active = BooleanField(label="Active", required=False, widget=XMLRPCCheckboxInput)
 
 
 class EditPlanForm(XMLRPCEditPlanForm):
-    is_active = BooleanField(label="Active", required=False,
-                             widget=XMLRPCCheckboxInput)
+    is_active = BooleanField(label="Active", required=False, widget=XMLRPCCheckboxInput)

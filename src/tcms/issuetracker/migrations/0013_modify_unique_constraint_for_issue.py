@@ -6,14 +6,20 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('testcases', '0007_set_default_tester_and_reviewer_to_null_if_user_is_deleted'),
-        ('testruns', '0006_set_assignee_and_tested_by_to_null_if_user_is_deleted'),
-        ('issuetracker', '0012_remove_two_unique_constraints_from_issue'),
+        (
+            "testcases",
+            "0007_set_default_tester_and_reviewer_to_null_if_user_is_deleted",
+        ),
+        ("testruns", "0006_set_assignee_and_tested_by_to_null_if_user_is_deleted"),
+        ("issuetracker", "0012_remove_two_unique_constraints_from_issue"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='issue',
-            unique_together={('tracker', 'issue_key', 'case'), ('tracker', 'issue_key', 'case', 'case_run')},
+            name="issue",
+            unique_together={
+                ("tracker", "issue_key", "case"),
+                ("tracker", "issue_key", "case", "case_run"),
+            },
         ),
     ]

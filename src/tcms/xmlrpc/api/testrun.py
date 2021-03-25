@@ -16,33 +16,33 @@ from tcms.xmlrpc.utils import pre_process_estimated_time
 from tcms.xmlrpc.utils import pre_process_ids
 
 __all__ = (
-    'add_cases',
-    'add_tag',
-    'create',
-    'env_value',
-    'filter',
-    'filter_count',
-    'get',
-    'get_issues',
-    'get_change_history',
-    'get_completion_report',
-    'get_env_values',
-    'get_tags',
-    'get_test_case_runs',
-    'get_test_cases',
-    'get_test_plan',
-    'link_env_value',
-    'remove_cases',
-    'remove_tag',
-    'unlink_env_value',
-    'update',
+    "add_cases",
+    "add_tag",
+    "create",
+    "env_value",
+    "filter",
+    "filter_count",
+    "get",
+    "get_issues",
+    "get_change_history",
+    "get_completion_report",
+    "get_env_values",
+    "get_tags",
+    "get_test_case_runs",
+    "get_test_cases",
+    "get_test_plan",
+    "link_env_value",
+    "remove_cases",
+    "remove_tag",
+    "unlink_env_value",
+    "update",
 )
 
-__xmlrpc_namespace__ = 'TestRun'
+__xmlrpc_namespace__ = "TestRun"
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(methodcaller('has_perm', 'testruns.add_testcaserun'))
+@user_passes_test(methodcaller("has_perm", "testruns.add_testcaserun"))
 def add_cases(request, run_ids, case_ids):
     """Add one or more cases to the selected test runs.
 
@@ -78,7 +78,7 @@ def add_cases(request, run_ids, case_ids):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(methodcaller('has_perm', 'testruns.delete_testcaserun'))
+@user_passes_test(methodcaller("has_perm", "testruns.delete_testcaserun"))
 def remove_cases(request, run_ids, case_ids):
     """Remove one or more cases from the selected test runs.
 
@@ -105,13 +105,12 @@ def remove_cases(request, run_ids, case_ids):
     """
     trs = TestRun.objects.filter(run_id__in=pre_process_ids(run_ids))
     for tr in trs.iterator():
-        crs = TestCaseRun.objects.filter(
-            run=tr, case__in=pre_process_ids(case_ids))
+        crs = TestCaseRun.objects.filter(run=tr, case__in=pre_process_ids(case_ids))
         crs.delete()
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(methodcaller('has_perm', 'testruns.add_testruntag'))
+@user_passes_test(methodcaller("has_perm", "testruns.add_testruntag"))
 def add_tag(request, run_ids, tags):
     """Add one or more tags to the selected test runs.
 
@@ -146,7 +145,7 @@ def add_tag(request, run_ids, tags):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(methodcaller('has_perm', 'testruns.add_testrun'))
+@user_passes_test(methodcaller("has_perm", "testruns.add_testrun"))
 def create(request, values):
     """Creates a new Test Run object and stores it in the database.
 
@@ -188,43 +187,42 @@ def create(request, values):
     from tcms.core import forms
     from tcms.testruns.forms import XMLRPCNewRunForm
 
-    if not values.get('product'):
-        raise ValueError('Value of product is required')
+    if not values.get("product"):
+        raise ValueError("Value of product is required")
     # TODO: XMLRPC only accept HH:MM:SS rather than DdHhMm
 
-    if values.get('estimated_time'):
-        values['estimated_time'] = pre_process_estimated_time(
-            values.get('estimated_time'))
+    if values.get("estimated_time"):
+        values["estimated_time"] = pre_process_estimated_time(values.get("estimated_time"))
 
-    if values.get('case'):
-        values['case'] = pre_process_ids(value=values['case'])
+    if values.get("case"):
+        values["case"] = pre_process_ids(value=values["case"])
 
     form = XMLRPCNewRunForm(values)
-    form.populate(product_id=values['product'])
+    form.populate(product_id=values["product"])
 
     if form.is_valid():
         tr = TestRun.objects.create(
-            product_version=form.cleaned_data['product_version'],
-            plan_text_version=form.cleaned_data['plan_text_version'],
-            stop_date=form.cleaned_data['status'] and datetime.now() or None,
-            summary=form.cleaned_data['summary'],
-            notes=form.cleaned_data['notes'],
-            estimated_time=form.cleaned_data['estimated_time'],
-            plan=form.cleaned_data['plan'],
-            build=form.cleaned_data['build'],
-            manager=form.cleaned_data['manager'],
-            default_tester=form.cleaned_data['default_tester'],
+            product_version=form.cleaned_data["product_version"],
+            plan_text_version=form.cleaned_data["plan_text_version"],
+            stop_date=form.cleaned_data["status"] and datetime.now() or None,
+            summary=form.cleaned_data["summary"],
+            notes=form.cleaned_data["notes"],
+            estimated_time=form.cleaned_data["estimated_time"],
+            plan=form.cleaned_data["plan"],
+            build=form.cleaned_data["build"],
+            manager=form.cleaned_data["manager"],
+            default_tester=form.cleaned_data["default_tester"],
         )
 
-        if form.cleaned_data['case']:
-            for c in form.cleaned_data['case']:
+        if form.cleaned_data["case"]:
+            for c in form.cleaned_data["case"]:
                 tr.add_case_run(case=c)
                 del c
 
-        if form.cleaned_data['tag']:
-            tags = form.cleaned_data['tag']
+        if form.cleaned_data["tag"]:
+            tags = form.cleaned_data["tag"]
             if isinstance(tags, str):
-                tags = [c.strip() for c in tags.split(',') if c]
+                tags = [c.strip() for c in tags.split(",") if c]
 
             for tag in tags:
                 t, c = TestTag.objects.get_or_create(name=tag)
@@ -237,7 +235,7 @@ def create(request, values):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(methodcaller('has_perm', 'testruns.change_tcmsenvrunvaluemap'))
+@user_passes_test(methodcaller("has_perm", "testruns.change_tcmsenvrunvaluemap"))
 def env_value(request, action, run_ids, env_value_ids):
     """
     Add or remove env values to the given runs, function is same as
@@ -264,14 +262,12 @@ def env_value(request, action, run_ids, env_value_ids):
     from tcms.management.models import TCMSEnvValue
 
     trs = TestRun.objects.filter(pk__in=pre_process_ids(value=run_ids))
-    evs = TCMSEnvValue.objects.filter(
-        pk__in=pre_process_ids(value=env_value_ids)
-    )
+    evs = TCMSEnvValue.objects.filter(pk__in=pre_process_ids(value=env_value_ids))
 
     for tr in trs.iterator():
         for ev in evs.iterator():
             try:
-                func = getattr(tr, action + '_env_value')
+                func = getattr(tr, action + "_env_value")
                 func(env_value=ev)
             except ObjectDoesNotExist:
                 pass
@@ -347,11 +343,11 @@ def get(request, run_id):
         return error
     response = tr.serialize()
     # get the xmlrpc tags
-    tag_ids = tr.tag.values_list('id', flat=True)
-    query = {'id__in': tag_ids}
+    tag_ids = tr.tag.values_list("id", flat=True)
+    query = {"id__in": tag_ids}
     tags = TestTag.to_xmlrpc(query)
     # cut 'id' attribute off, only leave 'name' here
-    tags_without_id = [tag['name'] for tag in tags]
+    tags_without_id = [tag["name"] for tag in tags]
     # replace tag_id list in the serialize return data
     response["tag"] = tags_without_id
     return response
@@ -377,7 +373,7 @@ def get_issues(request, run_ids):
         # Get issues belonging to run ids list 1 and 2 with string
         TestRun.get_issues('1, 2')
     """
-    query = {'case_run__run__in': pre_process_ids(run_ids)}
+    query = {"case_run__run__in": pre_process_ids(run_ids)}
     return Issue.to_xmlrpc(query)
 
 
@@ -392,7 +388,7 @@ def get_change_history(request, run_id):
     .. warning::
        NOT IMPLEMENTED - History is different than before.
     """
-    raise NotImplementedError('Not implemented RPC method')
+    raise NotImplementedError("Not implemented RPC method")
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -411,7 +407,7 @@ def get_completion_report(request, run_ids):
     .. warning::
        NOT IMPLEMENTED
     """
-    raise NotImplementedError('Not implemented RPC method')
+    raise NotImplementedError("Not implemented RPC method")
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -428,7 +424,7 @@ def get_env_values(request, run_id):
     """
     from tcms.management.models import TCMSEnvValue
 
-    query = {'testrun__pk': run_id}
+    query = {"testrun__pk": run_id}
     return TCMSEnvValue.to_xmlrpc(query)
 
 
@@ -446,8 +442,8 @@ def get_tags(request, run_id):
     """
     tr = TestRun.objects.get(run_id=run_id)
 
-    tag_ids = tr.tag.values_list('id', flat=True)
-    query = {'id__in': tag_ids}
+    tag_ids = tr.tag.values_list("id", flat=True)
+    query = {"id__in": tag_ids}
     return TestTag.to_xmlrpc(query)
 
 
@@ -464,7 +460,7 @@ def get_test_case_runs(request, run_id):
         # Get all of case runs
         TestRun.get_test_case_runs(1)
     """
-    return TestCaseRun.to_xmlrpc({'run__run_id': run_id})
+    return TestCaseRun.to_xmlrpc({"run__run_id": run_id})
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -479,16 +475,15 @@ def get_test_cases(request, run_id):
 
         TestRun.get_test_cases(1)
     """
-    tcs_serializer = TestCase.to_xmlrpc(query={'case_run__run_id': run_id})
+    tcs_serializer = TestCase.to_xmlrpc(query={"case_run__run_id": run_id})
 
-    qs = TestCaseRun.objects.filter(run_id=run_id).values(
-        'case', 'pk', 'case_run_status__name')
-    extra_info = {row['case']: row for row in qs.iterator()}
+    qs = TestCaseRun.objects.filter(run_id=run_id).values("case", "pk", "case_run_status__name")
+    extra_info = {row["case"]: row for row in qs.iterator()}
 
     for case in tcs_serializer:
-        info = extra_info[case['case_id']]
-        case['case_run_id'] = info['pk']
-        case['case_run_status'] = info['case_run_status__name']
+        info = extra_info[case["case_id"]]
+        case["case_run_id"] = info["pk"]
+        case["case_run_status"] = info["case_run_status__name"]
 
     return tcs_serializer
 
@@ -505,12 +500,11 @@ def get_test_plan(request, run_id):
 
         TestRun.get_test_plan(1)
     """
-    return TestRun.objects.select_related('plan').get(
-        run_id=run_id).plan.serialize()
+    return TestRun.objects.select_related("plan").get(run_id=run_id).plan.serialize()
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(methodcaller('has_perm', 'testruns.delete_testruntag'))
+@user_passes_test(methodcaller("has_perm", "testruns.delete_testruntag"))
 def remove_tag(request, run_ids, tags):
     """Remove a tag from a run.
 
@@ -532,12 +526,8 @@ def remove_tag(request, run_ids, tags):
         # Remove tag 'foo' and 'bar' from run list '1, 2' with String
         TestRun.remove_tag('1, 2', 'foo, bar')
     """
-    trs = TestRun.objects.filter(
-        run_id__in=pre_process_ids(value=run_ids)
-    )
-    tgs = TestTag.objects.filter(
-        name__in=TestTag.string_to_list(tags)
-    )
+    trs = TestRun.objects.filter(run_id__in=pre_process_ids(value=run_ids))
+    tgs = TestTag.objects.filter(name__in=TestTag.string_to_list(tags))
 
     for tr in trs.iterator():
         for tg in tgs.iterator():
@@ -550,7 +540,7 @@ def remove_tag(request, run_ids, tags):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(methodcaller('has_perm', 'testruns.change_testrun'))
+@user_passes_test(methodcaller("has_perm", "testruns.change_testrun"))
 def update(request, run_ids, values):
     """Updates the fields of the selected test run.
 
@@ -588,71 +578,69 @@ def update(request, run_ids, values):
     from tcms.core import forms
     from tcms.testruns.forms import XMLRPCUpdateRunForm
 
-    if (values.get('product_version') and not values.get('product')):
+    if values.get("product_version") and not values.get("product"):
         raise ValueError('Field "product" is required by product_version')
 
-    if values.get('estimated_time'):
-        values['estimated_time'] = pre_process_estimated_time(
-            values.get('estimated_time'))
+    if values.get("estimated_time"):
+        values["estimated_time"] = pre_process_estimated_time(values.get("estimated_time"))
 
     form = XMLRPCUpdateRunForm(values)
-    if values.get('product_version'):
-        form.populate(product_id=values['product'])
+    if values.get("product_version"):
+        form.populate(product_id=values["product"])
 
     if form.is_valid():
         trs = TestRun.objects.filter(pk__in=pre_process_ids(value=run_ids))
         _values = dict()
-        if form.cleaned_data['plan']:
-            _values['plan'] = form.cleaned_data['plan']
+        if form.cleaned_data["plan"]:
+            _values["plan"] = form.cleaned_data["plan"]
 
-        if form.cleaned_data['build']:
-            _values['build'] = form.cleaned_data['build']
+        if form.cleaned_data["build"]:
+            _values["build"] = form.cleaned_data["build"]
 
-        if form.cleaned_data['manager']:
-            _values['manager'] = form.cleaned_data['manager']
+        if form.cleaned_data["manager"]:
+            _values["manager"] = form.cleaned_data["manager"]
 
-        if 'default_tester' in values:
-            default_tester = form.cleaned_data['default_tester']
-            if values.get('default_tester') and default_tester:
-                _values['default_tester'] = default_tester
+        if "default_tester" in values:
+            default_tester = form.cleaned_data["default_tester"]
+            if values.get("default_tester") and default_tester:
+                _values["default_tester"] = default_tester
             else:
-                _values['default_tester'] = None
+                _values["default_tester"] = None
 
-        if form.cleaned_data['summary']:
-            _values['summary'] = form.cleaned_data['summary']
+        if form.cleaned_data["summary"]:
+            _values["summary"] = form.cleaned_data["summary"]
 
-        if values.get('estimated_time') is not None:
-            _values['estimated_time'] = form.cleaned_data['estimated_time']
+        if values.get("estimated_time") is not None:
+            _values["estimated_time"] = form.cleaned_data["estimated_time"]
 
-        if form.cleaned_data['product_version']:
-            _values['product_version'] = form.cleaned_data['product_version']
+        if form.cleaned_data["product_version"]:
+            _values["product_version"] = form.cleaned_data["product_version"]
 
-        if 'notes' in values:
-            if values['notes'] in (None, ''):
-                _values['notes'] = values['notes']
-            if form.cleaned_data['notes']:
-                _values['notes'] = form.cleaned_data['notes']
+        if "notes" in values:
+            if values["notes"] in (None, ""):
+                _values["notes"] = values["notes"]
+            if form.cleaned_data["notes"]:
+                _values["notes"] = form.cleaned_data["notes"]
 
-        if form.cleaned_data['plan_text_version']:
-            _values['plan_text_version'] = form.cleaned_data[
-                'plan_text_version']
+        if form.cleaned_data["plan_text_version"]:
+            _values["plan_text_version"] = form.cleaned_data["plan_text_version"]
 
-        if isinstance(form.cleaned_data['status'], int):
-            if form.cleaned_data['status']:
-                _values['stop_date'] = datetime.now()
+        if isinstance(form.cleaned_data["status"], int):
+            if form.cleaned_data["status"]:
+                _values["stop_date"] = datetime.now()
             else:
-                _values['stop_date'] = None
+                _values["stop_date"] = None
 
         trs.update(**_values)
     else:
         raise ValueError(forms.errors_to_list(form))
 
-    query = {'pk__in': trs.values_list('pk', flat=True)}
+    query = {"pk__in": trs.values_list("pk", flat=True)}
     return TestRun.to_xmlrpc(query)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(methodcaller('has_perm', 'testruns.add_tcmsenvrunvaluemap'))
+@user_passes_test(methodcaller("has_perm", "testruns.add_tcmsenvrunvaluemap"))
 def link_env_value(request, run_ids, env_value_ids):
     """Link env values to the given runs.
 
@@ -673,11 +661,11 @@ def link_env_value(request, run_ids, env_value_ids):
         # Add env value 1 to run id 2
         TestRun.link_env_value(2, 1)
     """
-    return env_value(request, 'add', run_ids, env_value_ids)
+    return env_value(request, "add", run_ids, env_value_ids)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(methodcaller('has_perm', 'testruns.delete_tcmsenvrunvaluemap'))
+@user_passes_test(methodcaller("has_perm", "testruns.delete_tcmsenvrunvaluemap"))
 def unlink_env_value(request, run_ids, env_value_ids):
     """Unlink env values to the given runs.
 
@@ -698,4 +686,4 @@ def unlink_env_value(request, run_ids, env_value_ids):
         # Unlink env value 1 to run id 2
         TestRun.unlink_env_value(2, 1)
     """
-    return env_value(request, 'remove', run_ids, env_value_ids)
+    return env_value(request, "remove", run_ids, env_value_ids)

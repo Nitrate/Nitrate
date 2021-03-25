@@ -5,9 +5,9 @@ from kobo.django.xmlrpc.models import XmlRpcLog
 
 
 class NitrateXmlRpcLogAdmin(admin.ModelAdmin):
-    list_display = ('happened_on', 'user_username', 'method')
+    list_display = ("happened_on", "user_username", "method")
     list_per_page = 50
-    list_filter = ('dt_inserted',)
+    list_filter = ("dt_inserted",)
 
     user_cache = {}
 
@@ -24,12 +24,12 @@ class NitrateXmlRpcLogAdmin(admin.ModelAdmin):
             NitrateXmlRpcLogAdmin.user_cache[obj.user_id] = username
         return username
 
-    user_username.short_description = 'username'
+    user_username.short_description = "username"
 
     def happened_on(self, obj):
         return obj.dt_inserted
 
-    happened_on.short_description = 'Happened On'
+    happened_on.short_description = "Happened On"
 
 
 admin.site.unregister(XmlRpcLog)

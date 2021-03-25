@@ -4,11 +4,11 @@ from http import HTTPStatus
 from django import http
 
 __all__ = (
-    'JsonResponseBadRequest',
-    'JsonResponseForbidden',
-    'JsonResponseNotFound',
-    'JsonResponseServerError',
-    'JsonResponseUnauthorized',
+    "JsonResponseBadRequest",
+    "JsonResponseForbidden",
+    "JsonResponseNotFound",
+    "JsonResponseServerError",
+    "JsonResponseUnauthorized",
 )
 
 

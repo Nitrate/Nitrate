@@ -11,10 +11,10 @@ from .models import create_link, LinkReference
 from tcms.core.responses import JsonResponseBadRequest
 
 __all__ = (
-    'AddLinkReferenceForm',
-    'AddLinkToTargetView',
-    'get',
-    'RemoveLinkReferenceView',
+    "AddLinkReferenceForm",
+    "AddLinkToTargetView",
+    "get",
+    "RemoveLinkReferenceView",
 )
 
 
@@ -36,24 +36,22 @@ class AddLinkToTargetView(PermissionRequiredMixin, generic.View):
     * url: the actual URL.
     """
 
-    permission_required = 'testruns.change_testcaserun'
+    permission_required = "testruns.change_testcaserun"
 
     def post(self, request):
         form = AddLinkReferenceForm(request.POST)
         if form.is_valid():
-            name = form.cleaned_data['name']
-            url = form.cleaned_data['url']
-            target_id = form.cleaned_data['target_id']
-            model_class = form.cleaned_data['target']
+            name = form.cleaned_data["name"]
+            url = form.cleaned_data["url"]
+            target_id = form.cleaned_data["target_id"]
+            model_class = form.cleaned_data["target"]
 
             model_instance = model_class.objects.get(pk=target_id)
             create_link(name=name, url=url, link_to=model_instance)
 
-            return JsonResponse({'name': name, 'url': url})
+            return JsonResponse({"name": name, "url": url})
         else:
-            return JsonResponseBadRequest({
-                'message': form.errors.as_text()
-            })
+            return JsonResponseBadRequest({"message": form.errors.as_text()})
 
 
 @require_GET
@@ -68,37 +66,33 @@ def get(request):
     form = BasicValidationForm(request.GET)
 
     if form.is_valid():
-        model_class = form.cleaned_data['target']
-        target_id = form.cleaned_data['target_id']
+        model_class = form.cleaned_data["target"]
+        target_id = form.cleaned_data["target_id"]
 
         try:
             model_instance = model_class.objects.get(pk=target_id)
             links = LinkReference.get_from(model_instance)
         except Exception as err:
-            return JsonResponseBadRequest({'message': str(err)})
+            return JsonResponseBadRequest({"message": str(err)})
 
         jd = []
         for link in links:
-            jd.append({'name': link.name, 'url': link.url})
+            jd.append({"name": link.name, "url": link.url})
         return JsonResponse(jd, safe=False)
 
     else:
-        return JsonResponseBadRequest({
-            'message': form_errors_to_list(form)
-        })
+        return JsonResponseBadRequest({"message": form_errors_to_list(form)})
 
 
 class RemoveLinkReferenceView(PermissionRequiredMixin, generic.View):
     """Remove a specific link with ID"""
 
-    permission_required = 'testruns.change_testcaserun'
+    permission_required = "testruns.change_testcaserun"
 
     def post(self, request, link_id):
         try:
             LinkReference.unlink(link_id)
         except Exception as err:
-            return JsonResponseBadRequest({'message': str(err)})
+            return JsonResponseBadRequest({"message": str(err)})
 
-        return JsonResponse({
-            'message': 'Link has been removed successfully.'
-        })
+        return JsonResponse({"message": "Link has been removed successfully."})

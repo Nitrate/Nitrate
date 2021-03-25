@@ -9,13 +9,14 @@ from django.conf import settings
 @enum.unique
 class AsyncTask(enum.Enum):
     """Type names of asynchronous task"""
-    DISABLED = 'DISABLED'
-    THREADING = 'THREADING'
-    CELERY = 'CELERY'
+
+    DISABLED = "DISABLED"
+    THREADING = "THREADING"
+    CELERY = "CELERY"
 
 
 if settings.ASYNC_TASK not in [item.value for item in AsyncTask]:
-    raise ValueError(f'Unknown async task type {settings.ASYNC_TASK}')
+    raise ValueError(f"Unknown async task type {settings.ASYNC_TASK}")
 
 
 class Task:
@@ -26,8 +27,9 @@ class Task:
             try:
                 import celery
             except ImportError:
-                raise ImportError('Async task is enabled and set to use celery,'
-                                  ' but it is not installed.')
+                raise ImportError(
+                    "Async task is enabled and set to use celery, but it is not installed."
+                )
             self.target = celery.shared_task(target)
         else:
             self.target = target

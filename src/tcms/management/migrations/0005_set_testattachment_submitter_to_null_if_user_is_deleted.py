@@ -8,13 +8,22 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('management', '0004_set_testenvironmentelement_parent_to_null_if_parent_is_deleted'),
+        (
+            "management",
+            "0004_set_testenvironmentelement_parent_to_null_if_parent_is_deleted",
+        ),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='testattachment',
-            name='submitter',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='attachments', to=settings.AUTH_USER_MODEL),
+            model_name="testattachment",
+            name="submitter",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="attachments",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

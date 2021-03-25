@@ -18,9 +18,8 @@ class XmlrpcAPIBaseTest(test.TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.tester = UserFactory(username='tester', email='tester@example.com')
-        cls.request = make_http_request(
-            user=cls.tester, user_perm=cls.permission)
+        cls.tester = UserFactory(username="tester", email="tester@example.com")
+        cls.request = make_http_request(user=cls.tester, user_perm=cls.permission)
 
     def assertRaisesXmlrpcFault(self, faultCode, method, *args, **kwargs):
         assert callable(method)
@@ -28,52 +27,49 @@ class XmlrpcAPIBaseTest(test.TestCase):
             method(*args, **kwargs)
         except Fault as f:
             self.assertEqual(
-                f.faultCode, faultCode,
-                f'Except raising fault error with code {faultCode},'
-                f' but {f.faultCode} is raised'
+                f.faultCode,
+                faultCode,
+                f"Except raising fault error with code {faultCode},"
+                f" but {f.faultCode} is raised",
             )
         except Exception as e:
-            self.fail('Expect raising xmlrpclib.Fault, but {} is raised and '
-                      'message is "{}".'.format(e.__class__.__name__, str(e)))
+            self.fail(
+                "Expect raising xmlrpclib.Fault, but {} is raised and "
+                'message is "{}".'.format(e.__class__.__name__, str(e))
+            )
         else:
-            self.fail('Expect to raise Fault error with faultCode {}, '
-                      'but no exception is raised.'.format(faultCode))
+            self.fail(
+                "Expect to raise Fault error with faultCode {}, "
+                "but no exception is raised.".format(faultCode)
+            )
 
     def assertXmlrpcFaultNotFound(self, func, *args, **kwargs):
-        self.assertRaisesXmlrpcFault(
-            HTTPStatus.NOT_FOUND, func, *args, **kwargs)
+        self.assertRaisesXmlrpcFault(HTTPStatus.NOT_FOUND, func, *args, **kwargs)
 
     def assertXmlrpcFaultBadRequest(self, func, *args, **kwargs):
-        self.assertRaisesXmlrpcFault(
-            HTTPStatus.BAD_REQUEST, func, *args, **kwargs)
+        self.assertRaisesXmlrpcFault(HTTPStatus.BAD_REQUEST, func, *args, **kwargs)
 
     def assertXmlrpcFaultForbidden(self, func, *args, **kwargs):
-        self.assertRaisesXmlrpcFault(
-            HTTPStatus.FORBIDDEN, func, *args, **kwargs)
+        self.assertRaisesXmlrpcFault(HTTPStatus.FORBIDDEN, func, *args, **kwargs)
 
     def assertXmlrpcFaultNotImplemented(self, func, *args, **kwargs):
-        self.assertRaisesXmlrpcFault(
-            HTTPStatus.NOT_IMPLEMENTED, func, *args, **kwargs)
+        self.assertRaisesXmlrpcFault(HTTPStatus.NOT_IMPLEMENTED, func, *args, **kwargs)
 
     def assertXmlrpcFaultConflict(self, func, *args, **kwargs):
-        self.assertRaisesXmlrpcFault(
-            HTTPStatus.CONFLICT, func, *args, **kwargs)
+        self.assertRaisesXmlrpcFault(HTTPStatus.CONFLICT, func, *args, **kwargs)
 
     def assertXmlrpcFaultInternalServerError(self, func, *args, **kwargs):
-        self.assertRaisesXmlrpcFault(
-            HTTPStatus.INTERNAL_SERVER_ERROR, func, *args, **kwargs)
+        self.assertRaisesXmlrpcFault(HTTPStatus.INTERNAL_SERVER_ERROR, func, *args, **kwargs)
 
 
 class FakeHTTPRequest:
-
     def __init__(self, user, data=None):
         self.user = user
         self.META = {}
 
 
 def create_http_user():
-    user, _ = User.objects.get_or_create(username='http_user',
-                                         email='http_user@example.com')
+    user, _ = User.objects.get_or_create(username="http_user", email="http_user@example.com")
     user.set_password(user.username)
     user.save()
     return user

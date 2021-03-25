@@ -7,26 +7,21 @@ from django.db import migrations
 
 
 def forwards(apps, schema_editor):
-    IssueTracker = apps.get_model('issuetracker', 'IssueTracker')
+    IssueTracker = apps.get_model("issuetracker", "IssueTracker")
 
-    bz = IssueTracker.objects.get(name='Bugzilla')
-    bz.class_path = 'tcms.issuetracker.services.Bugzilla'
-    bz.save(update_fields=['class_path'])
+    bz = IssueTracker.objects.get(name="Bugzilla")
+    bz.class_path = "tcms.issuetracker.services.Bugzilla"
+    bz.save(update_fields=["class_path"])
 
-    jira = IssueTracker.objects.get(name='JIRA')
-    jira.class_path = 'tcms.issuetracker.services.JIRA'
-    jira.save(update_fields=['class_path'])
+    jira = IssueTracker.objects.get(name="JIRA")
+    jira.class_path = "tcms.issuetracker.services.JIRA"
+    jira.save(update_fields=["class_path"])
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('issuetracker', '0009_alter_fields_see_details_inside'),
+        ("issuetracker", "0009_alter_fields_see_details_inside"),
     ]
 
-    operations = [
-        migrations.RunPython(
-            forwards,
-            reverse_code=migrations.RunPython.noop
-        )
-    ]
+    operations = [migrations.RunPython(forwards, reverse_code=migrations.RunPython.noop)]

@@ -20,11 +20,12 @@ def stats_case_runs_status(run_ids: List[int]) -> Dict[int, CaseRunStatusGroupBy
         total number of case runs, complete percent, and failure percent.
     :rtype: dict[int, CaseRunStatusGroupByResult]
     """
-    result = (TestCaseRun.objects
-              .filter(run__in=run_ids)
-              .values('run_id', status_name=F('case_run_status__name'))
-              .annotate(count=Count('pk'))
-              .order_by('run_id', 'status_name'))
+    result = (
+        TestCaseRun.objects.filter(run__in=run_ids)
+        .values("run_id", status_name=F("case_run_status__name"))
+        .annotate(count=Count("pk"))
+        .order_by("run_id", "status_name")
+    )
 
     # Example of final result: {
     #     # run_id: {status_1: count, ...}
@@ -36,13 +37,13 @@ def stats_case_runs_status(run_ids: List[int]) -> Dict[int, CaseRunStatusGroupBy
     if result:
         subtotal = {}
         for item in result:
-            run_id = item['run_id']
+            run_id = item["run_id"]
             status_subtotal = subtotal.setdefault(run_id, CaseRunStatusGroupByResult())
-            status_subtotal[item['status_name']] = item['count']
+            status_subtotal[item["status_name"]] = item["count"]
     else:
         subtotal = {run_id: CaseRunStatusGroupByResult() for run_id in run_ids}
 
-    stock_status_names = TestCaseRunStatus.objects.values_list('name', flat=True)
+    stock_status_names = TestCaseRunStatus.objects.values_list("name", flat=True)
 
     # Not all case runs of a test run are not in all the status, hence some
     # status could be missed in the subtotal result.
@@ -64,23 +65,28 @@ class TestCaseRunDataMixin:
         :return: the mapping between case run id and comments
         :rtype: dict
         """
-        qs = TestCaseRun.objects.filter(
-            run=run_pk,
-            comments__site=settings.SITE_ID,
-            comments__is_public=True,
-            comments__is_removed=False,
-        ).annotate(
-            submit_date=F('comments__submit_date'),
-            comment=F('comments__comment'),
-            user_name=F('comments__user_name'),
-        ).values(
-            'case_run_id',
-            'submit_date',
-            'comment',
-            'user_name',
-        ).order_by('pk')
+        qs = (
+            TestCaseRun.objects.filter(
+                run=run_pk,
+                comments__site=settings.SITE_ID,
+                comments__is_public=True,
+                comments__is_removed=False,
+            )
+            .annotate(
+                submit_date=F("comments__submit_date"),
+                comment=F("comments__comment"),
+                user_name=F("comments__user_name"),
+            )
+            .values(
+                "case_run_id",
+                "submit_date",
+                "comment",
+                "user_name",
+            )
+            .order_by("pk")
+        )
 
         return {
-            case_run_id: list(comments) for case_run_id, comments in
-            groupby(qs, itemgetter('case_run_id'))
+            case_run_id: list(comments)
+            for case_run_id, comments in groupby(qs, itemgetter("case_run_id"))
         }

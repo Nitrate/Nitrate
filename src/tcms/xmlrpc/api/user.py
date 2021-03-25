@@ -10,22 +10,16 @@ from tcms.xmlrpc.serializer import XMLRPCSerializer
 from tcms.xmlrpc.decorators import log_call
 from tcms.xmlrpc.utils import parse_bool_value
 
-__all__ = (
-    'filter',
-    'get',
-    'get_me',
-    'update',
-    'join'
-)
+__all__ = ("filter", "get", "get_me", "update", "join")
 
-__xmlrpc_namespace__ = 'User'
+__xmlrpc_namespace__ = "User"
 
 
 def get_user_dict(user):
     u = XMLRPCSerializer(model=user)
     u = u.serialize_model()
-    if 'password' in u:
-        del u['password']
+    if "password" in u:
+        del u["password"]
     return u
 
 
@@ -50,8 +44,8 @@ def filter(request, query):
 
         User.filter({'username__startswith': 'z'})
     """
-    if 'is_active' in query:
-        query['is_active'] = parse_bool_value(query['is_active'])
+    if "is_active" in query:
+        query["is_active"] = parse_bool_value(query["is_active"])
     users = User.objects.filter(**query)
     return [get_user_dict(u) for u in users]
 
@@ -118,15 +112,15 @@ def update(request, values=None, id=None):
     if values is None:
         values = {}
 
-    editable_fields = ('first_name', 'last_name', 'email', 'password')
-    can_change_user = request.user.has_perm('auth.change_user')
+    editable_fields = ("first_name", "last_name", "email", "password")
+    can_change_user = request.user.has_perm("auth.change_user")
 
     is_updating_other = request.user != user_being_updated
     # If change other's attributes, current user must have proper permission
     # Otherwise, to allow to update my own attribute without specific
     # permission assignment
     if not can_change_user and is_updating_other:
-        raise PermissionDenied('Permission denied')
+        raise PermissionDenied("Permission denied")
 
     update_fields = []
     for field in editable_fields:
@@ -134,18 +128,17 @@ def update(request, values=None, id=None):
             continue
 
         update_fields.append(field)
-        if field == 'password':
+        if field == "password":
             # FIXME: here, permission control has bug, that cause changing
             # password is not controlled under permission.
-            old_password = values.get('old_password')
+            old_password = values.get("old_password")
             if not can_change_user and not old_password:
-                raise PermissionDenied('Old password is required')
+                raise PermissionDenied("Old password is required")
 
-            if (not can_change_user and
-                    not user_being_updated.check_password(old_password)):
-                raise PermissionDenied('Password is incorrect')
+            if not can_change_user and not user_being_updated.check_password(old_password):
+                raise PermissionDenied("Password is incorrect")
 
-            user_being_updated.set_password(values['password'])
+            user_being_updated.set_password(values["password"])
         else:
             setattr(user_being_updated, field, values[field])
 
@@ -154,7 +147,7 @@ def update(request, values=None, id=None):
 
 
 @log_call(namespace=__xmlrpc_namespace__)
-@user_passes_test(methodcaller('has_perm', 'auth.change_user'))
+@user_passes_test(methodcaller("has_perm", "auth.change_user"))
 def join(request, username, groupname):
     """Add user to a group specified by name.
 

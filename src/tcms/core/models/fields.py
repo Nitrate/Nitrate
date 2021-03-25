@@ -14,6 +14,7 @@ except ImportError:
     pass
 else:
     from django.db.backends.mysql.base import django_conversions
+
     django_conversions.update({FIELD_TYPE.TIME: None})
 
 
@@ -33,7 +34,7 @@ class DurationField(IntegerField):
         elif isinstance(value, datetime.timedelta):
             return value
         else:
-            raise TypeError('Unable to convert %s to timedelta.' % value)
+            raise TypeError("Unable to convert %s to timedelta." % value)
 
     def from_db_value(self, value, *args, **kwargs):
         if value is None:
@@ -48,12 +49,11 @@ class DurationField(IntegerField):
         if isinstance(value, datetime.timedelta):
             return value.seconds + (86400 * value.days)
         else:
-            value = super().get_db_prep_value(
-                value, connection, prepared)
+            value = super().get_db_prep_value(value, connection, prepared)
             return value
 
     def formfield(self, form_class=DurationFormField, **kwargs):
-        defaults = {'help_text': 'Enter duration in the format: DDHHMM'}
+        defaults = {"help_text": "Enter duration in the format: DDHHMM"}
         defaults.update(kwargs)
         return form_class(**defaults)
 
@@ -62,9 +62,8 @@ class NitrateBooleanField(BooleanField):
     """Custom boolean field to allow accepting arbitrary bool values"""
 
     def to_python(self, value):
-        if value in (1, '1', 'true', 'True', True):
+        if value in (1, "1", "true", "True", True):
             return True
-        if value in (0, '0', 'false', 'False', False):
+        if value in (0, "0", "false", "False", False):
             return False
-        raise ValidationError(
-            f'{value} is not recognized as a bool value.')
+        raise ValidationError(f"{value} is not recognized as a bool value.")
