@@ -277,13 +277,10 @@ Nitrate.TestPlans.TreeView = {
       clearDialog();
 
       let planId = Nitrate.Utils.formSerialize(this).plan_id;
-      updateObject({
-        contentType: 'testplans.testplan',
-        objectPk: currentPlanId,
-        field: 'parent',
-        value: planId,
-        valueType: 'int',
-        callback: function () {
+      postRequest({
+        url: '/plan/' + currentPlanId.toString() + '/treeview/change-parent/',
+        data: {parent: planId},
+        success: function () {
           thisView.load(currentPlanId);
         }
       });
@@ -567,26 +564,14 @@ Nitrate.TestPlans.Details = {
 
     // Initial the enable/disble btns
     if (jQ('#btn_disable').length) {
-      jQ('#btn_disable').on('click', function (){
-        updateObject({
-          contentType: 'testplans.testplan',
-          objectPk: planId,
-          field: 'is_active',
-          value: 'False',
-          valueType: 'bool'
-        });
+      jQ('#btn_disable').on('click', function () {
+        postRequest({url: '/plan/' + planId.toString() + '/set-disable/'});
       });
     }
 
     if (jQ('#btn_enable').length) {
       jQ('#btn_enable').on('click', function () {
-        updateObject({
-          contentType: 'testplans.testplan',
-          objectPk: planId,
-          field: 'is_active',
-          value: 'True',
-          valueType: 'bool'
-        });
+        postRequest({url: '/plan/' + planId.toString() + '/set-enable/'});
       });
     }
   },
@@ -798,47 +783,51 @@ function showMoreSummary() {
 }
 
 // Deprecated. Remove when it's unusable any more.
+/**
+ * Change the order of test cases.
+ * @param {object} parameters - object containing request data.
+ * @param {number} parameters.from_plan - the plan id.
+ * @param {number[]} parameters.case - test case ids.
+ * @param {number} [parameters.sortkey=undefined] - the new sort key.
+ * @param {Function} callback - the function called when the request succeeds.
+ * @returns {boolean}
+ */
 function changeCaseOrder(parameters, callback) {
-  let nsk = '';
-  if (Object.prototype.hasOwnProperty.call(parameters, 'sortkey')) {
-    nsk = window.prompt('Enter your new order number', parameters.sortkey);   // New sort key
-    if (parseInt(nsk) === parseInt(parameters.sortkey)) {
-      showModal('Nothing changed', 'Change case order');
-      return false;
-    }
-  } else {
-    nsk = window.prompt('Enter your new order number');
-  }
-
-  if (!nsk) {
+  let promptDefault =
+    parameters.hasOwnProperty('sortkey') && parameters.sortkey !== undefined ?
+      parameters.sortkey.toString() : undefined;
+  let userInput = window.prompt('Enter a new sort key', promptDefault);
+  if (userInput.length === 0) {
     return false;
   }
 
-  if (isNaN(nsk)) {
-    showModal(
-      'The value must be an integer number and limit between 0 to 32300.',
-      'Change case order'
-    );
+  let msg = 'The input sort key ' + userInput + ' must be a number and limited in ' +
+    '[' + SORT_KEY_MIN.toString() + ', ' + SORT_KEY_MAX.toString() + '].'
+  if (! /^\d+$/.test(userInput)) {
+    showModal(msg, 'Invalid sort key');
     return false;
   }
 
-  nsk = parseInt(nsk);
-
-  if (nsk > 32300 || nsk < 0) {
-    showModal(
-      'The value must be a number and limit between 0 to 32300.',
-      'Change case order'
-    );
+  let newSortKey = parseInt(userInput);
+  if (newSortKey === parameters.sortkey) {
+    showModal('You have input a same sort key. Nothing changed.', 'Change case order');
+    return false;
+  }
+  if (!isSortKeyInAllowedRange(newSortKey)) {
+    showModal(msg, 'Invalid sort key');
     return false;
   }
 
-  updateObject({
-    contentType: 'testcases.testcaseplan',
-    objectPk: parameters.testcaseplan,
-    field: 'sortkey',
-    value: nsk,
-    valueType: 'int',
-    callback: callback
+  postRequest({
+    url: '/ajax/update/cases-sortkey/',
+    data: {
+      from_plan: parameters.from_plan,
+      case: parameters.case,
+      target_field: 'sortkey',
+      new_value: newSortKey,
+    },
+    traditional: true,
+    success: callback
   });
 }
 
@@ -967,9 +956,19 @@ function bindEventsOnLoadedCases(options) {
   return function (container, form) {
     // Observe the change sortkey
     jQ(container).parent().find('.case_sortkey.js-just-loaded').on('click', function () {
-      changeCaseOrder({'testcaseplan': jQ(this).next().html(), 'sortkey': jQ(this).html()}, function () {
-        constructPlanDetailsCasesZone(casesContainer, planId, parameters);
-      });
+      let sortKeyText = jQ(this).html();
+      let sortKey = /^\d+$/.test(sortKeyText) ? parseInt(sortKeyText) : undefined;
+
+      changeCaseOrder(
+        {
+          'from_plan': planId,
+          'case': jQ(this).parents('tr:first').prop('id'),
+          'sortkey': sortKey,
+        },
+        function () {
+          constructPlanDetailsCasesZone(casesContainer, planId, parameters);
+        }
+      );
     });
 
     jQ(container).parent().find('.change_status_selector.js-just-loaded').on('change', function () {
@@ -1050,51 +1049,6 @@ function serializeFormData(options) {
   }
 
   return formData;
-}
-
-function changeCaseOrder2(parameters, callback) {
-  let nsk = '';
-  if (Object.prototype.hasOwnProperty.call(parameters, 'sortkey')) {
-    nsk = window.prompt('Enter your new order number', parameters.sortkey);   // New sort key
-    if (parseInt(nsk) === parseInt(parameters.sortkey)) {
-      showModal('Nothing changed', 'Change case order');
-      return false;
-    }
-  } else {
-    nsk = window.prompt('Enter your new order number');
-  }
-
-  if (!nsk) {
-    return false;
-  }
-
-  if (isNaN(nsk)) {
-    showModal(
-      'The value must be a number and limit between 0 to 32300.',
-      'Change case order'
-    );
-    return false;
-  }
-
-  nsk = parseInt(nsk);
-
-  if (nsk > 32300 || nsk < 0) {
-    showModal(
-      'The value must be an integer number and limit between 0 to 32300.',
-      'Change case order'
-    );
-    return false;
-  }
-
-  parameters.target_field = 'sortkey';
-  parameters.new_value = nsk;
-
-  postRequest({
-    url: '/ajax/update/cases-sortkey/',
-    data: parameters,
-    traditional: true,
-    success: callback
-  });
 }
 
 /**
@@ -1417,19 +1371,15 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
 
       navForm.find('input.sort_list').on('click', function () {
         // NOTE: new implementation does not use testcaseplan.pk
-        let selectedCaseIDs = getSelectedCaseIDs(casesTable);
+        let selectedCaseIDs = getSelectedCaseIDs(casesTable).map(function (item) {
+          return parseInt(item);
+        });
         if (selectedCaseIDs.length === 0) {
           showModal(defaultMessages.alert.no_case_selected, 'Missing something?');
           return false;
         }
 
-        let postdata = serializeFormData({
-          'form': navForm[0],
-          'selectedCaseIDs': selectedCaseIDs,
-          'hashable': true
-        });
-
-        changeCaseOrder2(postdata, function () {
+        changeCaseOrder({from_plan: planId, case: selectedCaseIDs}, function () {
           reloadCases();
         });
       });

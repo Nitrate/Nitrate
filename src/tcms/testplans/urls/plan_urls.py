@@ -47,6 +47,16 @@ urlpatterns = [
         testruns_views.load_runs_of_one_plan,
         name="load_runs_of_one_plan_url",
     ),
+    path(
+        "<int:plan_id>/set-enable/",
+        views.SetPlanActiveView.as_view(enable=True),
+        name="plan-set-enable",
+    ),
+    path(
+        "<int:plan_id>/set-disable/",
+        views.SetPlanActiveView.as_view(enable=False),
+        name="plan-set-disable",
+    ),
     path("<int:plan_id>/treeview/", views.construct_plans_treeview, name="plan-treeview"),
     path(
         "<int:plan_id>/treeview/add-children/",
@@ -57,5 +67,10 @@ urlpatterns = [
         "<int:plan_id>/treeview/remove-children/",
         views.treeview_remove_child_plans,
         name="plan-treeview-remove-children",
+    ),
+    path(
+        "<int:plan_id>/treeview/change-parent/",
+        views.PlanTreeChangeParentView.as_view(),
+        name="plan-treeview-change-parent",
     ),
 ]

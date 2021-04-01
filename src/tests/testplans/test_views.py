@@ -21,7 +21,7 @@ from tcms.testplans.models import TCMSEnvPlanMap
 from tcms.testplans.models import TestPlan
 from tcms.testplans.models import TestPlanAttachment
 from tcms.testruns.models import TestCaseRun
-from tests import BasePlanCase, HelperAssertions, BaseCaseRun
+from tests import BasePlanCase, HelperAssertions, BaseCaseRun, AuthMixin
 from tests import factories as f
 from tests import remove_perm_from_user
 from tests import user_should_have_perm
@@ -1055,3 +1055,157 @@ class TestTreeViewRemoveChildPlan(BasePlanCase):
             url = reverse("plan-treeview-remove-children", args=[parent_plan])
             resp = self.client.post(url, data={"children": post_data})
             self.assertJsonResponse(resp, expected_json)
+
+
+class TestTreeViewChangeParent(BasePlanCase):
+    """Test change plan parent"""
+
+    auto_login = True
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.create_treeview_data()
+        user_should_have_perm(cls.tester, "testplans.change_testplan")
+
+    @staticmethod
+    def _construct_url(plan_id: int) -> str:
+        return reverse("plan-treeview-change-parent", args=[plan_id])
+
+    def test_non_existing_target_plan(self):
+        result = TestPlan.objects.aggregate(max_pk=Max("pk"))
+        resp = self.client.post(
+            self._construct_url(result["max_pk"] + 1),
+            data={
+                "parent": self.plan_3.pk,
+            },
+        )
+        self.assert404(resp)
+        json_data = json.loads(resp.content)
+        self.assertIn("Cannot change parent of plan", json_data["message"])
+
+    def test_parent_id_is_not_integer(self):
+        resp = self.client.post(
+            self._construct_url(self.plan_5.pk),
+            data={"parent": "an id"},
+        )
+        self.assertJsonResponse(
+            resp,
+            {"message": 'The given parent plan id "an id" is not a positive integer.'},
+            status_code=HTTPStatus.BAD_REQUEST,
+        )
+
+    def test_missing_parent_id(self):
+        resp = self.client.post(
+            self._construct_url(self.plan_5.pk),
+            data={},
+        )
+        self.assertJsonResponse(
+            resp,
+            {"message": "Missing parent plan id."},
+            status_code=HTTPStatus.BAD_REQUEST,
+        )
+
+    def test_parent_does_not_exist(self):
+        result = TestPlan.objects.aggregate(max_pk=Max("pk"))
+        non_existing_id = result["max_pk"] + 1
+        resp = self.client.post(
+            self._construct_url(self.plan_5.pk),
+            data={"parent": non_existing_id},
+        )
+        self.assertJsonResponse(
+            resp,
+            {"message": f"The parent plan id {non_existing_id} does not exist."},
+            status_code=HTTPStatus.BAD_REQUEST,
+        )
+
+    def test_parent_is_a_descendant_already(self):
+        resp = self.client.post(
+            self._construct_url(self.plan_4.pk),
+            data={"parent": self.plan_6.pk},
+        )
+        self.assertJsonResponse(
+            resp,
+            {
+                "message": f"The parent plan {self.plan_6.pk} is a descendant "
+                f"of plan {self.plan_4.pk} already."
+            },
+            status_code=HTTPStatus.BAD_REQUEST,
+        )
+
+    def test_change_parent(self):
+        targets = (
+            (self.plan_5, str(self.plan_5.parent.pk)),
+            (self.plan_9, "None"),
+        )
+        new_parent: TestPlan = self.plan_3
+
+        target_plan: TestPlan
+        expected_original_value: str
+
+        for target_plan, expected_original_value in targets:
+            resp = self.client.post(
+                self._construct_url(target_plan.pk),
+                data={"parent": new_parent.pk},
+            )
+            self.assert200(resp)
+
+            self.assertEqual(new_parent, TestPlan.objects.get(pk=target_plan.pk).parent)
+            self.assertTrue(
+                TCMSLogModel.objects.filter(
+                    who=self.tester,
+                    field="parent",
+                    original_value=expected_original_value,
+                    new_value=str(new_parent.pk),
+                ).exists(),
+                msg=f"Log does not exist for plan {target_plan.pk}",
+            )
+
+
+class TestEnableDisablePlanViews(AuthMixin, HelperAssertions, test.TestCase):
+    """Test enable or disable a plan"""
+
+    auto_login = True
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.plan = f.TestPlanFactory()
+        cls.plan_1 = f.TestPlanFactory(is_active=False)
+        user_should_have_perm(cls.tester, "testplans.change_testplan")
+
+    def test_target_plan_does_not_exist(self):
+        result = TestPlan.objects.aggregate(max_pk=Max("pk"))
+        plan_id = result["max_pk"] + 1
+        resp = self.client.post(reverse("plan-set-enable", args=[plan_id]))
+        self.assertJsonResponse(
+            resp,
+            {"message": f"Plan id {plan_id} does not exist."},
+            status_code=HTTPStatus.NOT_FOUND,
+        )
+
+    def test_enable_plan(self):
+        resp = self.client.post(reverse("plan-set-enable", args=[self.plan_1.pk]))
+        self.assert200(resp)
+        self.assertTrue(TestPlan.objects.get(pk=self.plan_1.pk).is_active)
+        self.assertTrue(
+            TCMSLogModel.objects.filter(
+                who=self.tester,
+                field="is_active",
+                original_value="False",
+                new_value="True",
+            ).exists()
+        )
+
+    def test_disable_plan(self):
+        resp = self.client.post(reverse("plan-set-disable", args=[self.plan.pk]))
+        self.assert200(resp)
+        self.assertFalse(TestPlan.objects.get(pk=self.plan.pk).is_active)
+        self.assertTrue(
+            TCMSLogModel.objects.filter(
+                who=self.tester,
+                field="is_active",
+                original_value="True",
+                new_value="False",
+            ).exists()
+        )

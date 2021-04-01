@@ -9,18 +9,11 @@ from django.core import serializers
 from django.urls import reverse
 from django_comments.models import Comment
 
-from tcms.logs.models import TCMSLogModel
-from tcms.management.models import Priority
 from tcms.management.models import TCMSEnvGroup
 from tcms.management.models import TCMSEnvProperty
 from tcms.testcases.forms import CaseAutomatedForm
-from tcms.testcases.forms import TestCase
-from tcms.testplans.models import TestPlan
 from tcms.testruns.models import TestCaseRun
-from tcms.testruns.models import TestCaseRunStatus
-from tests import AuthMixin, BaseCaseRun, BasePlanCase
-from tests import remove_perm_from_user
-from tests import user_should_have_perm
+from tests import BaseCaseRun, BasePlanCase
 from tests import factories as f
 
 
@@ -159,156 +152,6 @@ class TestCommentCaseRuns(BaseCaseRun):
             self.assertEqual(self.tester, comments[0].user)
 
 
-class TestUpdateObject(BasePlanCase):
-    """Test case for update"""
-
-    auto_login = True
-
-    @classmethod
-    def setUpTestData(cls):
-        super().setUpTestData()
-
-        cls.permission = "testplans.change_testplan"
-        cls.update_url = reverse("ajax-update")
-
-    def setUp(self):
-        super().setUp()
-        user_should_have_perm(self.tester, self.permission)
-
-    def test_refuse_if_missing_permission(self):
-        remove_perm_from_user(self.tester, self.permission)
-
-        response = self.client.post(
-            self.update_url,
-            {
-                "content_type": "testplans.testplan",
-                "object_pk": self.plan.pk,
-                "field": "is_active",
-                "value": "False",
-                "value_type": "bool",
-            },
-        )
-
-        self.assertJsonResponse(
-            response,
-            {"message": "Permission Denied."},
-            status_code=HTTPStatus.FORBIDDEN,
-        )
-
-    def test_update_plan_is_active(self):
-        response = self.client.post(
-            self.update_url,
-            {
-                "content_type": "testplans.testplan",
-                "object_pk": self.plan.pk,
-                "field": "is_active",
-                "value": "False",
-                "value_type": "bool",
-            },
-        )
-
-        self.assertJsonResponse(response, {})
-        plan = TestPlan.objects.get(pk=self.plan.pk)
-        self.assertFalse(plan.is_active)
-
-
-class TestAddPlanParent(AuthMixin, test.TestCase):
-    """
-    Another case of ajax.update by adding a parent plan to a plan which does
-    not have one yet
-
-    This test expects to ensure log_action succeeds by setting original_value
-    properly.
-    """
-
-    auto_login = True
-
-    @classmethod
-    def setUpTestData(cls):
-        super().setUpTestData()
-        cls.product = f.ProductFactory()
-        cls.product_version = f.VersionFactory(value="1.0", product=cls.product)
-        cls.plan = f.TestPlanFactory(product=cls.product, product_version=cls.product_version)
-        cls.parent = f.TestPlanFactory(product=cls.product, product_version=cls.product_version)
-
-    def test_set_plan_parent_for_the_first_time(self):
-        user_should_have_perm(self.tester, "testplans.change_testplan")
-
-        self.client.post(
-            reverse("ajax-update"),
-            {
-                "content_type": "testplans.testplan",
-                "object_pk": self.plan.pk,
-                "field": "parent",
-                "value": self.parent.pk,
-                "value_type": "int",
-            },
-        )
-
-        plan = TestPlan.objects.get(pk=self.plan.pk)
-        assert self.parent.pk == plan.parent.pk
-
-        log = TCMSLogModel.objects.first()
-        assert log.field == "parent"
-        assert log.original_value == "None"
-        assert log.new_value == str(self.parent.pk)
-
-
-class TestUpdateCaseRunStatus(BaseCaseRun):
-    """Test case for update_case_run_status"""
-
-    auto_login = True
-
-    @classmethod
-    def setUpTestData(cls):
-        super().setUpTestData()
-
-        cls.permission = "testruns.change_testcaserun"
-        cls.update_url = reverse("ajax-update-caserun-status")
-
-    def setUp(self):
-        super().setUp()
-        user_should_have_perm(self.tester, self.permission)
-
-    def test_refuse_if_missing_permission(self):
-        remove_perm_from_user(self.tester, self.permission)
-
-        response = self.client.post(
-            self.update_url,
-            {
-                "content_type": "testruns.testcaserun",
-                "object_pk": self.case_run_1.pk,
-                "field": "case_run_status",
-                "value": str(TestCaseRunStatus.objects.get(name="PAUSED").pk),
-                "value_type": "int",
-            },
-        )
-
-        self.assertJsonResponse(
-            response,
-            {"message": "Permission Denied."},
-            status_code=HTTPStatus.FORBIDDEN,
-        )
-
-    def test_change_case_run_status(self):
-        response = self.client.post(
-            self.update_url,
-            {
-                "content_type": "testruns.testcaserun",
-                "object_pk": self.case_run_1.pk,
-                "field": "case_run_status",
-                "value": str(TestCaseRunStatus.objects.get(name="PAUSED").pk),
-                "value_type": "int",
-            },
-        )
-
-        self.assertJsonResponse(response, {})
-        self.assertEqual(
-            "PAUSED",
-            TestCaseRun.objects.get(pk=self.case_run_1.pk).case_run_status.name,
-        )
-
-
 class TestGetForm(test.TestCase):
     """Test case for form"""
 
@@ -320,58 +163,6 @@ class TestGetForm(test.TestCase):
 
         resp_content = response.content.decode("utf-8")
         self.assertHTMLEqual(resp_content, form.as_p())
-
-
-class TestUpdateCasePriority(BasePlanCase):
-    """Test case for update_cases_default_tester"""
-
-    auto_login = True
-
-    @classmethod
-    def setUpTestData(cls):
-        super().setUpTestData()
-
-        cls.permission = "testcases.change_testcase"
-        cls.case_update_url = reverse("ajax-update-cases-default-tester")
-
-    def setUp(self):
-        super().setUp()
-        user_should_have_perm(self.tester, self.permission)
-
-    def test_refuse_if_missing_permission(self):
-        remove_perm_from_user(self.tester, self.permission)
-
-        response = self.client.post(
-            self.case_update_url,
-            {
-                "target_field": "priority",
-                "from_plan": self.plan.pk,
-                "case": [self.case_1.pk, self.case_3.pk],
-                "new_value": Priority.objects.get(value="P3").pk,
-            },
-        )
-
-        self.assertJsonResponse(
-            response,
-            {"message": "You don't have enough permission to update TestCases."},
-            status_code=HTTPStatus.FORBIDDEN,
-        )
-
-    def test_update_case_priority(self):
-        response = self.client.post(
-            self.case_update_url,
-            {
-                "target_field": "priority",
-                "from_plan": self.plan.pk,
-                "case": [self.case_1.pk, self.case_3.pk],
-                "new_value": Priority.objects.get(value="P3").pk,
-            },
-        )
-
-        self.assertJsonResponse(response, {})
-
-        for pk in (self.case_1.pk, self.case_3.pk):
-            self.assertEqual("P3", TestCase.objects.get(pk=pk).priority.value)
 
 
 class TestGetObjectInfo(BasePlanCase):

@@ -11,6 +11,28 @@ const RIGHT_ARROW = '/static/images/t1.gif';
 const DOWN_ARROW = '/static/images/t2.gif';
 
 /**
+ * @constant {number}
+ * @default
+ */
+const SORT_KEY_MIN = 0
+
+/**
+ * @constant {number}
+ * @default
+ */
+const SORT_KEY_MAX = 32300
+
+
+/**
+ * Check if a given sort key is in allowed range.
+ * @param {number} sortKey - a given sort key to test.
+ * @returns {boolean} true if the sort key is in the allowed range, otherwise false is returned.
+ */
+function isSortKeyInAllowedRange(sortKey) {
+  return sortKey >= SORT_KEY_MIN && sortKey <= SORT_KEY_MAX
+}
+
+/**
  * Utility function.
  * Set up a function callback for after the page has loaded
  *
@@ -713,44 +735,6 @@ function previewPlan(parameters, action, callback, notice, s, c) {
         constructForm(xhr.responseText, action, callback, notice, s, c)
       );
     },
-  });
-}
-
-/**
- * Update one object property at a time.
- *
- * @param {object} options - object containing properties to update object(s).
- * @param {string} [options.url=/ajax/update/] - the endpoint to update the object.
- * @param {string} options.contentType - a Django content type representation string, e.g. testplans.testplan.
- * @param {number|number[]|string|string[]} options.objectPk - the id(s) of the object being updated.
- * @param {string} [options.valueType=str] - the value type. It could be int or str generally.
- * @param {string} options.value - the new value to be updated to the specific object(s).
- * @param {string} options.field - name of the field to be updated on the object(s).
- * @param {Function} options.callback - a function bound to the jQuery Ajax success property.
- */
-function updateObject(options) {
-  let objectPks;
-
-  if (Array.isArray(options.objectPk)) {
-    let tmp = []
-    for (let i = 0; i < options.objectPk.length; i++) {
-      tmp.push(options.objectPk[i].toString());
-    }
-    objectPks = tmp.join(',');
-  } else {
-    objectPks = options.objectPk.toString();
-  }
-
-  postRequest({
-    url: options.url || '/ajax/update/',
-    success: options.callback,
-    data: {
-      content_type: options.contentType,
-      object_pk: objectPks,
-      field: options.field,
-      value: options.value,
-      value_type: options.valueType || 'str'
-    }
   });
 }
 

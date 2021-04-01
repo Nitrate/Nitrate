@@ -947,14 +947,14 @@ function updateCaseRunStatus(expansion, form) {
 
   // Update the object when changing the status
   if (caseRunStatusId !== '') {
-    updateObject({
+    postRequest({
       url: '/ajax/update/case-run-status',
-      contentType: formData.content_type,
-      objectPk: formData.object_pk,
-      field: formData.field,
-      value: caseRunStatusId,
-      valueType: 'int',
-      callback: function () {
+      data: {
+        case_run: formData.object_pk,
+        target_field: 'case_run_status',
+        new_value: caseRunStatusId,
+      },
+      success: function () {
         // Refresh the statistics section
         sendHTMLRequest({
           url: '/run/' + document.getElementById('value_run_id').value + '/statistics/',
@@ -1032,12 +1032,13 @@ function changeCaseRunOrder(runId, caseRunId, sortKey) {
     return false;
   }
 
-  updateObject({
-    contentType: 'testruns.testcaserun',
-    objectPk: caseRunId,
-    field: 'sortkey',
-    value: nsk,
-    valueType: 'int'
+  postRequest({
+    url: '/ajax/update/case-run-sort-key/',
+    data: {
+      case_run: caseRunId,
+      target_field: 'sortkey',
+      new_value: nsk,
+    },
   });
 }
 
@@ -1193,12 +1194,14 @@ function changeCaseRunAssignee() {
         return false;
       }
 
-      updateObject({
-        contentType: 'testruns.testcaserun',
-        objectPk: selectedCaseRunIDs,
-        field: 'assignee',
-        value: data[0].pk,
-        valueType: 'int'
+      postRequest({
+        url: '/ajax/update/case-run-assignee/',
+        data: {
+          case_run: selectedCaseRunIDs,
+          target_field: 'assignee',
+          new_value: data[0].pk
+        },
+        traditional: true,
       });
     },
   });
@@ -1368,12 +1371,14 @@ jQ(document).ready(function (){
     confirmDialog({
       message: defaultMessages.confirm.change_case_status,
       yesFunc: function () {
-        updateObject({
-          contentType: 'testruns.testcaserun',
-          objectPk: objectPks,
-          field: 'case_run_status',
-          value: option,
-          valueType: 'int'
+        postRequest({
+          url: '/ajax/update/case-run-status',
+          data: {
+            case_run: objectPks,
+            target_field: 'case_run_status',
+            new_value: option
+          },
+          traditional: true
         });
       }
     });
