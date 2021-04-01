@@ -441,6 +441,7 @@ class TestCaseRun(TCMSActionModel):
             .order_by("pk")
         )
         tcr: TestCaseRun
+        # FIXME: calculate the templates data lazily
         scence_templates = {
             "assignee": {
                 "template_name": "mail/change_case_run_assignee.txt",

@@ -7,7 +7,7 @@ import json
 import urllib
 
 from operator import add, itemgetter
-from typing import List, Set
+from typing import List, Set, Optional
 
 from django.utils.decorators import method_decorator
 from django.conf import settings
@@ -1014,3 +1014,82 @@ def treeview_remove_child_plans(request, plan_id: int):
             "non_descendants": sorted(child_plan_ids - direct_descendants),
         }
     )
+
+
+class PlanTreeChangeParentView(PermissionRequiredMixin, View):
+    """Plan tree view to change a plan's parent"""
+
+    permission_required = "testplans.change_testplan"
+
+    def handle_no_permission(self):
+        return JsonResponseBadRequest(
+            {"message": "You do not have permission to change the parent plan."}
+        )
+
+    def post(self, request, *args, **kwargs):
+        plan: TestPlan = TestPlan.objects.filter(pk=self.kwargs["plan_id"]).only("pk").first()
+        if plan is None:
+            return JsonResponseNotFound(
+                {
+                    "message": f"Cannot change parent of plan, "
+                    f"whose id {self.kwargs['plan_id']} does not exist."
+                }
+            )
+        user_input: Optional[str] = request.POST.get("parent")
+        if user_input is None:
+            return JsonResponseBadRequest({"message": "Missing parent plan id."})
+        if not user_input.isdigit():
+            return JsonResponseBadRequest(
+                {"message": f'The given parent plan id "{user_input}" is not a positive integer.'}
+            )
+        parent_id = int(user_input)
+        new_parent = TestPlan.objects.filter(pk=parent_id).only("parent").first()
+        if new_parent is None:
+            return JsonResponseBadRequest(
+                {"message": f"The parent plan id {parent_id} does not exist."}
+            )
+
+        descendant_ids = plan.get_descendant_ids()
+        if parent_id in descendant_ids:
+            return JsonResponseBadRequest(
+                {
+                    "message": f"The parent plan {parent_id} is a descendant of plan {plan.pk} already."
+                }
+            )
+
+        original_value = plan.parent.pk if plan.parent else "None"
+
+        plan.parent = new_parent
+        plan.save(update_fields=["parent"])
+        plan.log_action(
+            who=request.user,
+            field="parent",
+            original_value=original_value,
+            new_value=str(new_parent.pk),
+        )
+
+        return JsonResponse({})
+
+
+class SetPlanActiveView(PermissionRequiredMixin, View):
+    """Set a test plan active or inactive"""
+
+    permission_required = "testplans.change_testplan"
+    raise_exception = True
+    enable: bool = True
+
+    def post(self, request, *args, **kwargs):
+        plan_id = self.kwargs["plan_id"]
+        plan: TestPlan = TestPlan.objects.filter(pk=plan_id).only("is_active").first()
+        if not plan:
+            return JsonResponseNotFound({"message": f"Plan id {plan_id} does not exist."})
+        original_value: str = str(plan.is_active)
+        plan.is_active = self.enable
+        plan.save(update_fields=["is_active"])
+        plan.log_action(
+            who=request.user,
+            field="is_active",
+            original_value=original_value,
+            new_value=str(plan.is_active),
+        )
+        return JsonResponse({})
