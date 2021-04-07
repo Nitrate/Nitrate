@@ -25,6 +25,7 @@ const SORT_KEY_MAX = 32300
 
 /**
  * Check if a given sort key is in allowed range.
+ *
  * @param {number} sortKey - a given sort key to test.
  * @returns {boolean} true if the sort key is in the allowed range, otherwise false is returned.
  */

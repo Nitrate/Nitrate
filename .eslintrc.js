@@ -25,6 +25,10 @@ module.exports = {
     'jQ': 'readonly',
     'Nitrate': 'writable',
 
+    'SORT_KEY_MIN': 'readonly',
+    'SORT_KEY_MAX': 'readonly',
+    'isSortKeyInAllowedRange': 'readonly',
+
     'getBuildsByProductId': 'readonly',
     'getCategoriesByProductId': 'readonly',
     'getComponentsByProductId': 'readonly',
