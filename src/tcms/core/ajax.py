@@ -11,9 +11,8 @@ import operator
 import sys
 
 from functools import reduce
-from typing import Any, Dict, NewType, List, Tuple, Union
+from typing import Any, Dict, NewType, List, Optional, Tuple, Union
 
-from django import http
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.db import models
 from django.contrib.auth.models import User
@@ -22,6 +21,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import QuerySet
 from django.dispatch import Signal
 from django.http import Http404, HttpResponse, JsonResponse
+from django.http.request import HttpRequest
 from django.shortcuts import render
 from django.views import View
 from django.views.decorators.http import require_GET
@@ -358,16 +358,17 @@ LogActionParams = NewType("LogActionParams", Dict[str, Any])
 LogActionInfo = NewType("LogActionInfo", Tuple[TCMSActionModel, List[LogActionParams]])
 
 
-class ModelUpdateActionsView(PermissionRequiredMixin, View):
+class ModelPatchBaseView(PermissionRequiredMixin, View):
     """Abstract class defining interfaces to update a model properties"""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Will be set later when handle the POST request
+        # Will be set in the view method
         self.target_field = None
         self.new_value = None
         self._update_targets = None
+        self._request_data = None
 
     def handle_no_permission(self) -> JsonResponseForbidden:
         return JsonResponseForbidden({"message": "You do not have permission to update."})
@@ -429,11 +430,12 @@ class ModelUpdateActionsView(PermissionRequiredMixin, View):
     def get_update_action(self):
         return getattr(self, "_update_%s" % self.target_field, None)
 
-    def post(self, request):
-        self.target_field = self.request.POST.get("target_field")
+    def patch(self, request: HttpRequest):
+        self._request_data = json.loads(request.body)
+        self.target_field = self._request_data.get("target_field")
         if not self.target_field:
             return JsonResponseBadRequest({"message": "Missing argument target_field."})
-        self.new_value = self.request.POST.get("new_value")
+        self.new_value = self._request_data.get("new_value")
         if not self.new_value:
             return JsonResponseBadRequest({"message": "Missing argument new_value."})
 
@@ -463,15 +465,16 @@ class ModelUpdateActionsView(PermissionRequiredMixin, View):
             return resp
 
 
-class UpdateTestCaseRunPropertiesView(ModelUpdateActionsView):
+class TestCaseRunsPatchView(ModelPatchBaseView):
     """Actions to update test case runs properties"""
 
     permission_required = "testruns.change_testcaserun"
 
     def get_update_targets(self) -> QuerySet:
         if self._update_targets is None:
-            case_run_ids = [int(item) for item in self.request.POST.getlist("case_run")]
-            self._update_targets = TestCaseRun.objects.filter(pk__in=case_run_ids)
+            case_run_ids = [int(item) for item in self._request_data.get("case_run", [])]
+            if case_run_ids:
+                self._update_targets = TestCaseRun.objects.filter(pk__in=case_run_ids)
         return self._update_targets
 
     def _sendmail(self) -> None:
@@ -551,9 +554,9 @@ class UpdateTestCaseRunPropertiesView(ModelUpdateActionsView):
         self._record_log_actions(log_actions_info)
 
     def _update_sortkey(self):
-        if not self.new_value.isdigit():
+        if not isinstance(self.new_value, int):
             return JsonResponseBadRequest({"message": "The sortkey must be an integer."})
-        new_sort_key = int(self.new_value)
+        new_sort_key = self.new_value
         if not is_sort_key_in_range(new_sort_key):
             return JsonResponseBadRequest(
                 {"message": f"New sortkey is out of range {SORT_KEY_RANGE}."}
@@ -564,7 +567,7 @@ class UpdateTestCaseRunPropertiesView(ModelUpdateActionsView):
         self._simple_update(case_runs, new_sort_key)
 
 
-class UpdateTestCasePropertiesView(ModelUpdateActionsView):
+class TestCasesPatchView(ModelPatchBaseView):
     """Actions to update each possible property of TestCases
 
     Define your own method named _update_[property name] to hold specific
@@ -577,7 +580,7 @@ class UpdateTestCasePropertiesView(ModelUpdateActionsView):
         """Get selected cases to update their properties"""
         if self._update_targets is None:
             item: str
-            case_ids = [int(item) for item in self.request.POST.getlist("case")]
+            case_ids = [int(item) for item in self._request_data.get("case", [])]
             self._update_targets = TestCase.objects.filter(pk__in=case_ids)
         return self._update_targets
 
@@ -625,48 +628,20 @@ class UpdateTestCasePropertiesView(ModelUpdateActionsView):
 
         cases = self.get_update_targets().select_related("case_status").only("case_status__name")
         self._simple_update(cases, new_status)
-
-        # ###
-        # Case is moved between Cases and Reviewing Cases tabs according to the
-        # change of status. Meanwhile, the number of cases with each status
-        # should be updated also.
-
-        try:
-            plan = plan_from_request_or_none(self.request)
-        except Http404:
-            return JsonResponseBadRequest({"message": "No plan record found."})
-        else:
-            if plan is None:
-                return JsonResponseBadRequest({"message": "No plan record found."})
-
-        confirm_status_name = "CONFIRMED"
-        plan.run_case = plan.case.filter(case_status__name=confirm_status_name)
-        plan.review_case = plan.case.exclude(case_status__name=confirm_status_name)
-        run_case_count = plan.run_case.count()
-        case_count = plan.case.count()
-        # FIXME: why not calculate review_case_count or run_case_count by using
-        # substraction, which saves one SQL query.
-        review_case_count = plan.review_case.count()
-
-        return http.JsonResponse(
-            {
-                "run_case_count": run_case_count,
-                "case_count": case_count,
-                "review_case_count": review_case_count,
-            }
-        )
+        return JsonResponse({})
 
     def _update_sortkey(self):
-        if not self.new_value.isdigit():
-            return JsonResponseBadRequest({"message": "New sortkey is not a positive integer."})
-        sort_key = int(self.new_value)
-        if not is_sort_key_in_range(sort_key):
+        if not is_sort_key_in_range(self.new_value):
             return JsonResponseBadRequest(
                 {"message": f"New sortkey is out of range {SORT_KEY_RANGE}."}
             )
-        plan = plan_from_request_or_none(self.request, pk_enough=True)
+        plan_id: Optional[int] = self._request_data.get("plan")
+        if plan_id is None:
+            return JsonResponseBadRequest({"message": "Missing plan id."})
+        plan = TestPlan.objects.filter(pk=plan_id).first()
         if plan is None:
-            return JsonResponseBadRequest({"message": "No plan record found."})
+            return JsonResponseBadRequest({"message": f"No plan with id {plan_id} exists."})
+        # FIXME: read the plan id from the json data
         update_targets = self.get_update_targets()
 
         # ##
@@ -676,7 +651,7 @@ class UpdateTestCasePropertiesView(ModelUpdateActionsView):
         offset = 0
         step_length = 500
         queryset_filter = TestCasePlan.objects.filter
-        data = {self.target_field: sort_key}
+        data = {self.target_field: self.new_value}
         while 1:
             sub_cases = update_targets[offset : offset + step_length]
             case_pks = [case.pk for case in sub_cases]

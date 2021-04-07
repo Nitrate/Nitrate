@@ -7,6 +7,7 @@ import logging
 
 from operator import itemgetter, attrgetter
 from typing import Dict, List, Optional
+from django.http.request import HttpRequest
 
 from django_comments.models import Comment
 from django.conf import settings
@@ -1706,3 +1707,9 @@ def plan(request, case_id):
             "test_plans": tc.plan.select_related("author", "type", "product"),
         },
     )
+
+
+@require_GET
+def simple_subtotal_by_status(request: HttpRequest) -> HttpResponse:
+    plan_ids = [int(item) for item in request.GET.getlist("plan")] or None
+    return JsonResponse(TestCase.subtotal_by_status(plan_ids))
