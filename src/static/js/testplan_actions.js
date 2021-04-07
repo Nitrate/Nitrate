@@ -782,40 +782,38 @@ function showMoreSummary() {
   }
 }
 
-// Deprecated. Remove when it's unusable any more.
 /**
  * Change the order of test cases.
+ *
  * @param {object} parameters - object containing request data.
  * @param {number} parameters.from_plan - the plan id.
  * @param {number[]} parameters.case - test case ids.
  * @param {number} [parameters.sortkey=undefined] - the new sort key.
  * @param {Function} callback - the function called when the request succeeds.
- * @returns {boolean}
  */
 function changeCaseOrder(parameters, callback) {
   let promptDefault =
-    parameters.hasOwnProperty('sortkey') && parameters.sortkey !== undefined ?
-      parameters.sortkey.toString() : undefined;
+    parameters.sortkey !== undefined ? parameters.sortkey.toString() : undefined;
   let userInput = window.prompt('Enter a new sort key', promptDefault);
   if (userInput.length === 0) {
-    return false;
+    return;
   }
 
   let msg = 'The input sort key ' + userInput + ' must be a number and limited in ' +
     '[' + SORT_KEY_MIN.toString() + ', ' + SORT_KEY_MAX.toString() + '].'
   if (! /^\d+$/.test(userInput)) {
     showModal(msg, 'Invalid sort key');
-    return false;
+    return;
   }
 
   let newSortKey = parseInt(userInput);
   if (newSortKey === parameters.sortkey) {
     showModal('You have input a same sort key. Nothing changed.', 'Change case order');
-    return false;
+    return;
   }
   if (!isSortKeyInAllowedRange(newSortKey)) {
     showModal(msg, 'Invalid sort key');
-    return false;
+    return;
   }
 
   postRequest({
