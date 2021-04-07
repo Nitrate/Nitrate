@@ -2574,3 +2574,101 @@ class TestCaseCaseRunDetailPanelView(BaseCaseRun):
 
         for item in expected_content:
             self.assertContains(resp, item, html=True)
+
+
+class TestSubTotalByStatusView(BasePlanCase):
+    """Test view cases-subtotal-by-status"""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+
+        status_proposed = TestCaseStatus.objects.get(name="PROPOSED")
+        status_need_update = TestCaseStatus.objects.get(name="NEED_UPDATE")
+
+        cls.case_1.case_status = status_proposed
+        cls.case_1.save()
+        cls.case_2.case_status = status_proposed
+        cls.case_2.save()
+        cls.case_3.case_status = status_need_update
+        cls.case_3.save()
+
+        # Note that, no DISABLED cases
+
+        cls.another_plan = f.TestPlanFactory(
+            author=cls.tester,
+            owner=cls.tester,
+            product=cls.product,
+            product_version=cls.version,
+        )
+
+        f.TestCaseFactory(
+            case_status=status_need_update,
+            author=cls.tester,
+            default_tester=cls.tester,
+            reviewer=cls.tester,
+            plan=[cls.another_plan],
+        )
+        f.TestCaseFactory(
+            case_status=status_proposed,
+            author=cls.tester,
+            default_tester=cls.tester,
+            reviewer=cls.tester,
+            plan=[cls.another_plan],
+        )
+
+        cls.third_plan = f.TestPlanFactory(
+            author=cls.tester,
+            owner=cls.tester,
+            product=cls.product,
+            product_version=cls.version,
+        )
+        f.TestCaseFactory(
+            case_status=status_proposed,
+            author=cls.tester,
+            default_tester=cls.tester,
+            reviewer=cls.tester,
+            plan=[cls.third_plan],
+        )
+
+        cls.plan_without_cases = f.TestPlanFactory()
+
+        cls.url = reverse("cases-subtotal-by-status")
+
+    def _construct_expected_result(
+        self, proposed=0, confirmed=0, need_update=0, disabled=0, total=0
+    ):
+        return {
+            "raw": {
+                "PROPOSED": proposed,
+                "CONFIRMED": confirmed,
+                "DISABLED": disabled,
+                "NEED_UPDATE": need_update,
+            },
+            "confirmed_cases": confirmed,
+            "reviewing_cases": proposed + disabled + need_update,
+            "total": total,
+        }
+
+    def test_plan_has_no_case(self):
+        resp = self.client.get(self.url, data={"plan": self.plan_without_cases.pk})
+        self.assertJsonResponse(resp, self._construct_expected_result())
+
+    def test_subtotal_by_plan_ids(self):
+        resp = self.client.get(self.url, data={"plan": [self.plan.pk, self.another_plan.pk]})
+        self.assertJsonResponse(
+            resp,
+            self._construct_expected_result(
+                proposed=3, confirmed=4, need_update=2, disabled=0, total=9
+            ),
+        )
+
+    def test_no_plan_is_given(self):
+        resp = self.client.get(self.url)
+        # All test cases should be included. One more proposed case.
+        self.assertJsonResponse(
+            resp,
+            self._construct_expected_result(
+                proposed=4, confirmed=4, need_update=2, disabled=0, total=10
+            ),
+        )

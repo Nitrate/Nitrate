@@ -32,6 +32,7 @@ module.exports = {
     'registerProductAssociatedObjectUpdaters': 'readonly',
 
     'getRequest': 'readonly',
+    'patchRequest': 'readonly',
     'postHTMLRequest': 'readonly',
     'postRequest': 'readonly',
     'postToURL': 'readonly',

@@ -95,6 +95,44 @@ function $ajax(url, options) {
   jQ.ajax(url, options);
 }
 
+function ajaxHandler500(options) {
+  if (options.errorMessage !== undefined) {
+    showModal(options.errorMessage);
+    return;
+  }
+
+  showModal(
+    'Something wrong in the server. Please contact administrator to deal with this issue.'
+  );
+}
+
+function ajaxHandler400(options, xhr) {
+  if (options.errorMessage !== undefined) {
+    showModal(options.errorMessage);
+    return;
+  }
+  if (options.badRequestMessage !== undefined) {
+    showModal(options.badRequestMessage);
+    return;
+  }
+
+  let data = JSON.parse(xhr.responseText);
+  // response property will be deprecated from server response.
+  // TODO: after the AJAX response is unified, just use the responseJSON.message.
+  let msg = data.message || data.response || data.messages || data;
+  if (Array.isArray(msg)) {
+    showModal(msg.join('\n'));
+  } else {
+    showModal(msg);
+  }
+}
+
+function ajaxHandler403(options) {
+  showModal(
+    options.forbiddenMessage || 'You are not allowed to perform this operation.'
+  );
+}
+
 /**
  * Send a AJAX request to the backend server and handle the response. The response from backend is
  * expected to be in JSON data format.
@@ -103,6 +141,7 @@ function $ajax(url, options) {
  * @param {string} options.url - url of the resource.
  * @param {string} [options.method] - type of the request. Default is POST.
  * @param {object} [options.data] - request data.
+ * @param {string} [options.contentType] - content type of the request body.
  * @param {boolean} [options.traditional] - whether to use the traditional style of param
  *                                          serialization. Refer to traditional argument of
  *                                          jQuery.ajax.
@@ -117,54 +156,28 @@ function $ajax(url, options) {
  *                                       default callback will be hooked to reload the page.
  */
 function sendAjaxRequest(options) {
-  $ajax(options.url, {
+  const ajaxOptions = {
     type: options.method || 'post',
     dataType: 'json',
     data: options.data,
     async: !options.sync,
-    traditional: options.traditional,
     success: options.success || function () { window.location.reload(); },
     statusCode: {
-      500: function () {
-        if (options.errorMessage !== undefined) {
-          showModal(options.errorMessage);
-          return;
-        }
-
-        showModal(
-          'Something wrong in the server. ' +
-          'Please contact administrator to deal with this issue.'
-        );
-      },
+      500: function () { ajaxHandler500(options); },
       // How about 404?
       //
-      400: function (xhr) {
-        if (options.errorMessage !== undefined) {
-          showModal(options.errorMessage);
-          return;
-        }
-        if (options.badRequestMessage !== undefined) {
-          showModal(options.badRequestMessage);
-          return;
-        }
-
-        let data = JSON.parse(xhr.responseText);
-        // response property will be deprecated from server response.
-        // TODO: after the AJAX response is unified, just use the responseJSON.message.
-        let msg = data.message || data.response || data.messages || data;
-        if (Array.isArray(msg)) {
-          showModal(msg.join('\n'));
-        } else {
-          showModal(msg);
-        }
-      },
-      403: function () {
-        showModal(
-          options.forbiddenMessage || 'You are not allowed to perform this operation.'
-        );
-      }
+      400: function (xhr) { ajaxHandler400(options, xhr); },
+      403: function () { ajaxHandler403(options); }
     }
-  });
+  }
+  // Setting contentType is primarily for the PATCH request.
+  if (options.contentType) {
+    ajaxOptions.contentType = options.contentType;
+  }
+  if (options.traditional) {
+    ajaxOptions.traditional = options.traditional;
+  }
+  $ajax(options.url, ajaxOptions);
 }
 
 /**
@@ -184,6 +197,21 @@ function getRequest(options) {
  */
 function postRequest(options) {
   let forwardOptions = Object.assign({}, options, {'method': 'POST'})
+  sendAjaxRequest(forwardOptions);
+}
+
+/**
+ * Wrapper of sendAjaxRequest to send an HTTP PATCH request.
+ *
+ * @param {object} options - options for making a PATCH request.
+ */
+function patchRequest(options) {
+  let forwardOptions = Object.assign({}, options, {
+    'method': 'PATCH',
+    'contentType': 'application/json',
+    'processData': false,
+  });
+  forwardOptions.data = JSON.stringify(forwardOptions.data);
   sendAjaxRequest(forwardOptions);
 }
 

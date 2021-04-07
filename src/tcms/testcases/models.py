@@ -3,8 +3,9 @@
 import logging
 
 from datetime import datetime
+from django.db.models.aggregates import Count
 from html2text import html2text
-from typing import List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from django.conf import settings
 from django.urls import reverse
@@ -821,6 +822,30 @@ class TestCase(TCMSActionModel):
             assignees = self.case_run.values_list("assignee__email", flat=True)
             recipients.update(assignees)
         return [item for item in recipients if item]
+
+    @classmethod
+    def subtotal_by_status(
+        cls, plans: Optional[Union[List[int], QuerySet]] = None
+    ) -> Dict[str, Any]:
+        cases = TestCase.objects
+        if plans is not None:
+            cases = cases.filter(plan__in=plans)
+        stats = cases.values("case_status").annotate(count=Count("pk"))
+
+        statuss = {item.pk: item.name for item in TestCaseStatus.objects.order_by("pk")}
+        raw: Dict[str, int] = {name: 0 for name in statuss.values()}
+
+        item: Dict[str, int]
+        for item in stats:
+            raw[statuss[item["case_status"]]] = item["count"]
+
+        total = sum(raw.values())
+        return {
+            "raw": raw,
+            "confirmed_cases": raw["CONFIRMED"],
+            "reviewing_cases": total - raw["CONFIRMED"],
+            "total": total,
+        }
 
 
 class TestCaseText(TCMSActionModel):

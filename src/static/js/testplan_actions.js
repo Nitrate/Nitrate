@@ -832,11 +832,10 @@ function changeCaseOrder(parameters, callback) {
 }
 
 function changeTestCaseStatus(planId, selector, caseId, beConfirmed, wasConfirmed) {
-  postRequest({
-    url: '/ajax/update/case-status/',
+  patchRequest({
+    url: '/ajax/cases/',
     data: {
-      from_plan: planId,
-      case: caseId,
+      case: [caseId],
       target_field: 'case_status',
       new_value: selector.value,
     },
@@ -857,9 +856,16 @@ function changeTestCaseStatus(planId, selector, caseId, beConfirmed, wasConfirme
       jQ(selector).hide();
 
       if (beConfirmed || wasConfirmed) {
-        jQ('#run_case_count').text(data.run_case_count);
-        jQ('#case_count').text(data.case_count);
-        jQ('#review_case_count').text(data.review_case_count);
+        getRequest({
+          url: '/cases/subtotal/by-status/',
+          data: {'plan': planId},
+          success: function (data) {
+            jQ('#run_case_count').text(data.confirmed_cases);
+            jQ('#case_count').text(data.total);
+            jQ('#review_case_count').text(data.reviewing_cases);
+          }
+        });
+
         jQ('#' + caseId).next().remove();
         jQ('#' + caseId).remove();
 
@@ -1182,19 +1188,24 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
           message: defaultMessages.confirm.change_case_status,
           title: 'Manage Test Case Status',
           yesFunc: function () {
-            postRequest({
-              url: '/ajax/update/case-status/',
+            patchRequest({
+              url: '/ajax/cases/',
               data: {
-                'from_plan': planId,
                 'case': selectedCaseIDs,
                 'target_field': 'case_status',
                 'new_value': newStatusId
               },
-              traditional: true,
+              // traditional: true,
               success: function (data) {
-                jQ('#run_case_count').text(data.run_case_count);
-                jQ('#case_count').text(data.case_count);
-                jQ('#review_case_count').text(data.review_case_count);
+                getRequest({
+                  url: '/cases/subtotal/by-status/',
+                  data: {'plan': planId},
+                  success: function (data) {
+                    jQ('#run_case_count').text(data.confirmed_cases);
+                    jQ('#case_count').text(data.total);
+                    jQ('#review_case_count').text(data.reviewing_cases);
+                  }
+                });
 
                 reloadCases();
 
