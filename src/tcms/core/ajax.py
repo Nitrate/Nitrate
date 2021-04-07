@@ -584,12 +584,6 @@ class TestCasesPatchView(ModelPatchBaseView):
             self._update_targets = TestCase.objects.filter(pk__in=case_ids)
         return self._update_targets
 
-    def get_plan(self, pk_enough=True):
-        try:
-            return plan_from_request_or_none(self.request, pk_enough)
-        except Http404:
-            return None
-
     def _sendmail(self):
         mail_context = TestCase.mail_scene(
             objects=self._update_targets, field=self.target_field, value=self.new_value
