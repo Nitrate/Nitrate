@@ -293,6 +293,24 @@ class TestChangeCaseRunStatus(BaseCaseRun):
             ).exists()
         )
 
+    def test_avoid_updating_duplicate_status(self):
+        data = self.request_data.copy()
+        idle_status = TestCaseRunStatus.objects.get(name="IDLE")
+        # Both of the case runs' status should not be updated duplicately.
+        data["new_value"] = idle_status.pk
+        resp = self.client.patch(self.url, data=data, content_type="application/json")
+        self.assert200(resp)
+        for case_run_pk in data["case_run"]:
+            self.assertFalse(
+                TCMSLogModel.objects.filter(
+                    who=self.tester,
+                    field="case_run_status",
+                    original_value=str(self.running_status),
+                    new_value=str(idle_status),
+                    object_pk=case_run_pk,
+                ).exists()
+            )
+
 
 class TestUpdateCaseRunsSortkey(BaseCaseRun):
     """Test AJAX request /ajax/update/case-run-sortkey/"""
@@ -602,15 +620,6 @@ class TestChangeTestCaseStatus(BasePlanCase):
                 ).exists()
             )
 
-        # self.assertJsonResponse(
-        #     resp,
-        #     {
-        #         "case_count": self.plan.case.count(),
-        #         "run_case_count": self.plan.case.filter(case_status__name="CONFIRMED").count(),
-        #         "review_case_count": self.plan.case.exclude(case_status__name="CONFIRMED").count(),
-        #     },
-        # )
-
     def test_nonexistent_status(self):
         data = self.request_data.copy()
         result = TestCaseStatus.objects.aggregate(max_pk=Max("pk"))
@@ -621,6 +630,23 @@ class TestChangeTestCaseStatus(BasePlanCase):
             {"message": "The status you choose does not exist."},
             status_code=HTTPStatus.NOT_FOUND,
         )
+
+    def test_avoid_updating_duplicate_status(self):
+        data = self.request_data.copy()
+        confirmed_status = TestCaseStatus.objects.get(name="CONFIRMED")
+        data["new_value"] = confirmed_status.pk
+        resp = self.client.patch(self.url, data=data, content_type="application/json")
+        self.assert200(resp)
+        for case_pk in data["case"]:
+            self.assertFalse(
+                TCMSLogModel.objects.filter(
+                    who=self.tester,
+                    field="case_status",
+                    original_value=str(TestCase.objects.get(pk=case_pk).case_status),
+                    new_value=confirmed_status.pk,
+                    object_pk=case_pk,
+                ).exists()
+            )
 
 
 class TestChangeTestCaseSortKey(BasePlanCase):
@@ -655,17 +681,6 @@ class TestChangeTestCaseSortKey(BasePlanCase):
             TestCasePlan.objects.get(plan=self.plan, case=self.case_3).sortkey,
         )
 
-    # def test_new_sort_key_is_not_an_integer(self):
-    #     data = self.request_data.copy()
-    #     for new_value in [-1, "new sort key"]:
-    #         data["new_value"] = new_value
-    #         resp = self.client.patch(self.url, data=data, content_type="application/json")
-    #         self.assertJsonResponse(
-    #             resp,
-    #             {"message": "New sortkey is not a positive integer."},
-    #             status_code=HTTPStatus.BAD_REQUEST,
-    #         )
-
     def test_sort_key_is_out_of_range(self):
         data = self.request_data.copy()
         for sort_key in [SORT_KEY_MAX + 1, SORT_KEY_MAX + 10]:
@@ -676,6 +691,23 @@ class TestChangeTestCaseSortKey(BasePlanCase):
                 {"message": "New sortkey is out of range [0, 32300]."},
                 status_code=HTTPStatus.BAD_REQUEST,
             )
+
+    @patch("django.db.models.Manager.bulk_update")
+    def test_avoid_updating_duplicate_sort_key(self, bulk_update):
+        data = self.request_data.copy()
+        # Sort key of case_3 should not be updated.
+        new_sort_key = TestCasePlan.objects.get(plan=self.plan, case=self.case_3).sortkey
+        data["new_value"] = new_sort_key
+        resp = self.client.patch(self.url, data=data, content_type="application/json")
+        self.assert200(resp)
+
+        args, _ = bulk_update.call_args
+        changed, changed_fields = args
+        self.assertEqual(1, len(changed))  # Only sortkey of the case_1 is changed.
+        changed_rel = changed[0]
+        self.assertEqual(self.case_1, changed_rel.case)
+        self.assertEqual(new_sort_key, changed_rel.sortkey)
+        self.assertListEqual(["sortkey"], changed_fields)
 
 
 class TestModuleUpdateActions(AuthMixin, HelperAssertions, test.TestCase):
@@ -693,13 +725,16 @@ class TestModuleUpdateActions(AuthMixin, HelperAssertions, test.TestCase):
         super().setUp()
         user_should_have_perm(self.tester, self.perm)
 
-    def _request(self, target_field: Optional[str] = None):
+    def _request(
+        self, target_field: Optional[str] = None, new_status: Optional[TestCaseStatus] = None
+    ):
+        new_value = 1 if new_status is None else new_status.pk
         return self.client.patch(
             reverse("patch-cases"),
             data={
                 "case": [self.case.pk],
                 "target_field": target_field or "case_status",
-                "new_value": 1,
+                "new_value": new_value,
             },
             content_type="application/json",
         )
@@ -762,13 +797,16 @@ class TestModuleUpdateActions(AuthMixin, HelperAssertions, test.TestCase):
     @patch("tcms.core.ajax.logger")
     def test_fallback_to_warning_if_log_action_fails(self, logger, log_action):
         log_action.side_effect = ValueError("something wrong")
-        self._request()
+        new_status = TestCaseStatus.objects.exclude(pk=self.case.case_status.pk)[0]
+        resp = self._request(new_status=new_status)
+        self.assert200(resp)
         logger.warning.assert_called_once_with(
             "Failed to log update action for case run %s. Field: %s, original: %s, new: %s, by: %s",
             self.case.pk,
             "case_status",
-            str(self.case.case_status),
-            str(TestCaseStatus.objects.get(pk=1)),
+            str(TestCaseStatus.objects.get(pk=self.case.pk)),
+            str(new_status),
+            User.objects.get(pk=self.tester.pk),
         )
 
 
