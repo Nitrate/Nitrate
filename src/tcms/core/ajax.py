@@ -20,7 +20,7 @@ from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import QuerySet
 from django.dispatch import Signal
-from django.http import Http404, HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.http.request import HttpRequest
 from django.shortcuts import render
 from django.views import View
@@ -41,7 +41,6 @@ from tcms.management.models import TestTag
 from tcms.testcases.models import TestCase
 from tcms.testcases.models import TestCaseStatus
 from tcms.testcases.views import get_selected_testcases
-from tcms.testcases.views import plan_from_request_or_none
 from tcms.testplans.models import TestPlan, TestCasePlan
 from tcms.testruns import signals as run_watchers
 from tcms.testruns.models import TestRun, TestCaseRun, TestCaseRunStatus
@@ -394,6 +393,7 @@ class ModelPatchBaseView(PermissionRequiredMixin, View):
                         params["field"],
                         params["original_value"],
                         params["new_value"],
+                        params["who"],
                     )
 
     def _simple_update(
@@ -407,22 +407,42 @@ class ModelPatchBaseView(PermissionRequiredMixin, View):
         cases that update a property in a more complicated way, you have to implement the
         _update_[property name] method separately.
         """
-        log_actions_info = [
-            (
-                model,
-                [
-                    {
-                        "who": self.request.user,
-                        "field": self.target_field,
-                        "original_value": str(getattr(model, self.target_field)),
-                        "new_value": str(new_value),
-                    }
-                ],
+        log_actions_info = []
+        changed = []
+
+        for model in models:
+            original_value = str(getattr(model, self.target_field))
+
+            # "str(obj) == str(obj)" should cover most of the case of updating
+            # a model's property. For a particular case of the property is a
+            # foreign key pointing to management model like Priority, all
+            # that kind of models have __str__ define which is able to return
+            # a value properly for a call str().
+            # For any uncovered case, a new way to detect this equality should
+            # be considered instead.
+            if original_value == str(new_value):
+                continue
+
+            log_actions_info.append(
+                (
+                    model,
+                    [
+                        {
+                            "who": self.request.user,
+                            "field": self.target_field,
+                            "original_value": original_value,
+                            "new_value": str(new_value),
+                        }
+                    ],
+                )
             )
-            for model in models
-        ]
-        models.update(**{self.target_field: new_value})
-        self._record_log_actions(log_actions_info)
+
+            setattr(model, self.target_field, new_value)
+            changed.append(model)
+
+        if changed:
+            models[0].__class__.objects.bulk_update(changed, [self.target_field])
+            self._record_log_actions(log_actions_info)
 
     def get_update_targets(self) -> QuerySet:
         raise NotImplementedError("Must be implemented in subclass.")
@@ -506,13 +526,19 @@ class TestCaseRunsPatchView(ModelPatchBaseView):
         if not self._update_targets:
             return JsonResponseBadRequest({"message": "No case run is specified to update."})
         request_user: User = self.request.user
-        status = TestCaseRunStatus.objects.get(pk=int(self.new_value))
+        new_status_pk = int(self.new_value)
+        new_status = TestCaseRunStatus.objects.get(pk=new_status_pk)
         update_time = datetime.datetime.now()
 
         case_run: TestCaseRun
-
         log_actions_info = []
+        changed: List[TestCaseRun] = []
+        tested_by_changed = False
+
         for case_run in case_runs:
+            if case_run.case_run_status == new_status:
+                continue
+
             info = (
                 case_run,
                 [
@@ -533,25 +559,29 @@ class TestCaseRunsPatchView(ModelPatchBaseView):
                 ],
             )
             if case_run.tested_by != request_user:
+                tested_by_changed = True
                 info[1].append(
                     {
                         "who": request_user,
                         "field": "tested_by",
-                        "original_value": case_run.tested_by,
+                        "original_value": str(case_run.tested_by),
                         "new_value": request_user.username,
                     }
                 )
+                case_run.tested_by = request_user
             log_actions_info.append(info)
 
-        # FIXME: should close_date be set only when the complete status is set?
+            case_run.case_run_status = new_status
+            # FIXME: should close_date be set only when the complete status is set?
+            case_run.close_date = update_time
+            changed.append(case_run)
 
-        update_params = {
-            self.target_field: status,
-            "close_date": update_time,
-            "tested_by": request_user,
-        }
-        case_runs.update(**update_params)
-        self._record_log_actions(log_actions_info)
+        if changed:
+            changed_fields = [self.target_field, "close_date"]
+            if tested_by_changed:
+                changed_fields.append("tested_by")
+            TestCaseRun.objects.bulk_update(changed, changed_fields)
+            self._record_log_actions(log_actions_info)
 
     def _update_sortkey(self):
         if not isinstance(self.new_value, int):
@@ -635,25 +665,19 @@ class TestCasesPatchView(ModelPatchBaseView):
         plan = TestPlan.objects.filter(pk=plan_id).first()
         if plan is None:
             return JsonResponseBadRequest({"message": f"No plan with id {plan_id} exists."})
-        # FIXME: read the plan id from the json data
-        update_targets = self.get_update_targets()
 
-        # ##
-        # MySQL does not allow to execute UPDATE statement that contains
-        # subquery querying from same table. In this case, OperationError will
-        # be raised.
-        offset = 0
-        step_length = 500
-        queryset_filter = TestCasePlan.objects.filter
-        data = {self.target_field: self.new_value}
-        while 1:
-            sub_cases = update_targets[offset : offset + step_length]
-            case_pks = [case.pk for case in sub_cases]
-            if len(case_pks) == 0:
-                break
-            queryset_filter(plan=plan, case__in=case_pks).update(**data)
-            # Move to next batch of cases to change.
-            offset += step_length
+        cases = self.get_update_targets()
+        changed = []
+        append_changed = changed.append
+        new_sort_key = self.new_value
+
+        for tcp in TestCasePlan.objects.filter(plan=plan, case__in=cases):
+            if tcp.sortkey == new_sort_key:
+                continue
+            tcp.sortkey = new_sort_key
+            append_changed(tcp)
+
+        TestCasePlan.objects.bulk_update(changed, [self.target_field])
 
     def _update_reviewer(self):
         user = User.objects.filter(username=self.new_value).first()
