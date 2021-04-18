@@ -782,7 +782,18 @@ Nitrate.TestRuns.Details.on_load = function () {
   });
 
   jQ('.js-change-order').on('click', function (e) {
-    changeCaseRunOrder(this.dataset.runId, this.dataset.caseRunId, this.dataset.sortKey);
+    let that = this;
+    let changeFunc = function (newSortKey) {
+      patchRequest({
+        url: '/ajax/case-runs/',
+        data: {
+          case_run: [that.dataset.caseRunId],
+          target_field: 'sortkey',
+          new_value: newSortKey
+        }
+      });
+    };
+    Nitrate.Utils.changeOrderSortKey(changeFunc, parseInt(this.dataset.sortKey));
     return false;
   });
 };
@@ -1005,41 +1016,6 @@ function updateCaseRunStatus(expansion, form) {
       expansion.expand();
     }, 700);
   }
-}
-
-function changeCaseRunOrder(runId, caseRunId, sortKey) {
-  let nsk = window.prompt('Enter your new order number', sortKey); // New sort key
-
-  if (!nsk) {
-    return false;
-  }
-
-  if (isNaN(nsk)) {
-    showModal(
-      'The value must be a integer number and limit between 0 to 32300.',
-      'Input Error'
-    );
-    return false;
-  }
-
-  if (nsk > 32300 || nsk < 0) {
-    showModal('The value must be a integer number and limit between 0 to 32300.');
-    return false;
-  }
-
-  if (nsk === sortKey) {
-    showModal('Nothing changed');
-    return false;
-  }
-
-  patchRequest({
-    url: '/ajax/case-runs/',
-    data: {
-      case_run: [caseRunId],
-      target_field: 'sortkey',
-      new_value: parseInt(nsk),
-    },
-  });
 }
 
 function taggleSortCaseRun(event) {
