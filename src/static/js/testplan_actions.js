@@ -816,15 +816,14 @@ function changeCaseOrder(parameters, callback) {
     return;
   }
 
-  postRequest({
-    url: '/ajax/update/cases-sortkey/',
+  patchRequest({
+    url: '/ajax/cases/',
     data: {
-      from_plan: parameters.from_plan,
-      case: parameters.case,
+      plan: parameters.from_plan,
+      case: [parameters.case],
       target_field: 'sortkey',
       new_value: newSortKey,
     },
-    traditional: true,
     success: callback
   });
 }
@@ -1113,6 +1112,16 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
         });
       };
 
+      let patchRequestAndReloadCases = function (url, data) {
+        patchRequest({
+          url: url,
+          data: data,
+          success: function () {
+            reloadCases();
+          }
+        });
+      };
+
       // Filter cases
       navForm.on('submit', function (e) {
         e.stopPropagation();
@@ -1193,7 +1202,6 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
                 'target_field': 'case_status',
                 'new_value': newStatusId
               },
-              // traditional: true,
               success: function (data) {
                 getRequest({
                   url: '/cases/subtotal/by-status/',
@@ -1227,8 +1235,7 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
           message: defaultMessages.confirm.change_case_priority,
           title: 'Manage Test Case Priority',
           yesFunc: function () {
-            postRequestAndReloadCases('/ajax/update/cases-priority/', {
-              from_plan: planId,
+            patchRequestAndReloadCases('/ajax/cases/', {
               case: selectedCaseIDs,
               target_field: 'priority',
               new_value: newValue
@@ -1362,8 +1369,7 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
           return false;
         }
 
-        postRequestAndReloadCases(url, {
-          from_plan: planId,
+        patchRequestAndReloadCases(url, {
           case: selectedCaseIDs,
           target_field: targetField,
           new_value: emailOrUsername
@@ -1371,11 +1377,11 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
       };
 
       navForm.find('input.btn_default_tester').on('click', function () {
-        updateCasesPeople('/ajax/update/cases-default-tester/', 'default_tester');
+        updateCasesPeople('/ajax/cases/', 'default_tester');
       });
 
       navForm.find('input.btn_reviewer').on('click', function () {
-        updateCasesPeople('/ajax/update/cases-reviewer/', 'reviewer');
+        updateCasesPeople('/ajax/cases/', 'reviewer');
       });
 
       navForm.find('input.sort_list').on('click', function () {
