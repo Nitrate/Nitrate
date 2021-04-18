@@ -786,7 +786,7 @@ function showMoreSummary() {
  * Change the order of test cases.
  *
  * @param {object} parameters - object containing request data.
- * @param {number} parameters.from_plan - the plan id.
+ * @param {number} parameters.plan - the plan id.
  * @param {number[]} parameters.case - test case ids.
  * @param {number} [parameters.sortkey=undefined] - the new sort key.
  * @param {Function} callback - the function called when the request succeeds.
@@ -795,7 +795,7 @@ function changeCaseOrder(parameters, callback) {
   let promptDefault =
     parameters.sortkey !== undefined ? parameters.sortkey.toString() : undefined;
   let userInput = window.prompt('Enter a new sort key', promptDefault);
-  if (userInput.length === 0) {
+  if (!userInput || userInput.length === 0) {
     return;
   }
 
@@ -819,8 +819,8 @@ function changeCaseOrder(parameters, callback) {
   patchRequest({
     url: '/ajax/cases/',
     data: {
-      plan: parameters.from_plan,
-      case: [parameters.case],
+      plan: parameters.plan,
+      case: parameters.case,
       target_field: 'sortkey',
       new_value: newSortKey,
     },
@@ -964,8 +964,8 @@ function bindEventsOnLoadedCases(options) {
 
       changeCaseOrder(
         {
-          'from_plan': planId,
-          'case': jQ(this).parents('tr:first').prop('id'),
+          'plan': parseInt(planId),
+          'case': [jQ(this).parents('tr:first').prop('id')],
           'sortkey': sortKey,
         },
         function () {
@@ -1394,7 +1394,7 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
           return false;
         }
 
-        changeCaseOrder({from_plan: planId, case: selectedCaseIDs}, function () {
+        changeCaseOrder({plan: parseInt(planId), case: selectedCaseIDs}, function () {
           reloadCases();
         });
       });
