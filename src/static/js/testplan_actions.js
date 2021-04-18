@@ -783,49 +783,26 @@ function showMoreSummary() {
 }
 
 /**
- * Change the order of test cases.
+ * Get the function used to send an HTTP request to change test case sort key.
  *
- * @param {object} parameters - object containing request data.
- * @param {number} parameters.plan - the plan id.
- * @param {number[]} parameters.case - test case ids.
- * @param {number} [parameters.sortkey=undefined] - the new sort key.
- * @param {Function} callback - the function called when the request succeeds.
+ * @param {number} planId - the plan id associated with the cases.
+ * @param {number[]} caseIds - an array of case ids.
+ * @param {Function} successCallback - a callback hooked to jQuery.ajax success callback.
+ * @returns {Function} the function to make an HTTP request.
  */
-function changeCaseOrder(parameters, callback) {
-  let promptDefault =
-    parameters.sortkey !== undefined ? parameters.sortkey.toString() : undefined;
-  let userInput = window.prompt('Enter a new sort key', promptDefault);
-  if (!userInput || userInput.length === 0) {
-    return;
+function getChangeCasesSortKeyFunc(planId, caseIds, successCallback) {
+  return function (newSortKey){
+    patchRequest({
+      url: '/ajax/cases/',
+      data: {
+	plan: planId,
+	case: caseIds,
+	target_field: 'sortkey',
+	new_value: newSortKey,
+      },
+      success: successCallback
+    });
   }
-
-  let msg = 'The input sort key ' + userInput + ' must be a number and limited in ' +
-    '[' + SORT_KEY_MIN.toString() + ', ' + SORT_KEY_MAX.toString() + '].'
-  if (! /^\d+$/.test(userInput)) {
-    showModal(msg, 'Invalid sort key');
-    return;
-  }
-
-  let newSortKey = parseInt(userInput);
-  if (newSortKey === parameters.sortkey) {
-    showModal('You have input a same sort key. Nothing changed.', 'Change case order');
-    return;
-  }
-  if (!isSortKeyInAllowedRange(newSortKey)) {
-    showModal(msg, 'Invalid sort key');
-    return;
-  }
-
-  patchRequest({
-    url: '/ajax/cases/',
-    data: {
-      plan: parameters.plan,
-      case: parameters.case,
-      target_field: 'sortkey',
-      new_value: newSortKey,
-    },
-    success: callback
-  });
 }
 
 function changeTestCaseStatus(planId, selector, caseId, beConfirmed, wasConfirmed) {
@@ -962,16 +939,14 @@ function bindEventsOnLoadedCases(options) {
       let sortKeyText = jQ(this).html();
       let sortKey = /^\d+$/.test(sortKeyText) ? parseInt(sortKeyText) : undefined;
 
-      changeCaseOrder(
-        {
-          'plan': parseInt(planId),
-          'case': [jQ(this).parents('tr:first').prop('id')],
-          'sortkey': sortKey,
-        },
+      let changeFunc = getChangeCasesSortKeyFunc(
+        parseInt(planId),
+        [parseInt(jQ(this).parents('tr:first').prop('id'))],
         function () {
           constructPlanDetailsCasesZone(casesContainer, planId, parameters);
         }
       );
+      Nitrate.Utils.changeOrderSortKey(changeFunc, sortKey);
     });
 
     jQ(container).parent().find('.change_status_selector.js-just-loaded').on('change', function () {
@@ -1394,9 +1369,10 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
           return false;
         }
 
-        changeCaseOrder({plan: parseInt(planId), case: selectedCaseIDs}, function () {
+        let changeFunc = getChangeCasesSortKeyFunc(parseInt(planId), selectedCaseIDs, function () {
           reloadCases();
         });
+        Nitrate.Utils.changeOrderSortKey(changeFunc);
       });
 
       // Observe the batch add case button

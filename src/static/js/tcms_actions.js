@@ -80,6 +80,41 @@ Nitrate.Utils.formSerialize = function (f) {
 };
 
 /**
+ * Change objects order sort key.
+ *
+ * @param {Function} changeOrderRequestFunc
+ *   a function to be called to send an HTTP request to change test case order (the sort key).
+ * @param {number} [curSortKey=undefined]
+ *   the current sort key of the order to be shown in the prompt input dialog.
+ */
+Nitrate.Utils.changeOrderSortKey = function (changeOrderRequestFunc, curSortKey) {
+  let promptDefault = curSortKey !== undefined ? curSortKey.toString() : undefined;
+  let userInput = window.prompt('Enter a new sort key', promptDefault);
+  if (!userInput || userInput.length === 0) {
+    return;
+  }
+
+  let msg = 'The input sort key ' + userInput + ' must be a number and limited in ' +
+    '[' + SORT_KEY_MIN.toString() + ', ' + SORT_KEY_MAX.toString() + '].'
+  if (! /^\d+$/.test(userInput)) {
+    showModal(msg, 'Invalid sort key');
+    return;
+  }
+
+  let newSortKey = parseInt(userInput);
+  if (newSortKey === curSortKey) {
+    showModal('You have input a same sort key. Nothing changed.', 'Change Order');
+    return;
+  }
+  if (!isSortKeyInAllowedRange(newSortKey)) {
+    showModal(msg, 'Invalid sort key');
+    return;
+  }
+
+  changeOrderRequestFunc(newSortKey);
+}
+
+/**
  * Simple wrapper of jQuery.ajax to add header for CSRF.
  *
  * @param {string} url - a url passed to url argument of jQuery $.ajax
