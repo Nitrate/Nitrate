@@ -7,8 +7,8 @@ urlpatterns = [
     # Site entry
     path("", views.index, name="nitrate-index"),
     path("search/", views.search, name="nitrate-search"),
-    path("ajax/case-runs/", ajax.TestCaseRunsPatchView.as_view(), name="patch-case-runs"),
-    path("ajax/cases/", ajax.TestCasesPatchView.as_view(), name="patch-cases"),
+    path("ajax/case-runs/", ajax.PatchTestCaseRunsView.as_view(), name="patch-case-runs"),
+    path("ajax/cases/", ajax.PatchTestCasesView.as_view(), name="patch-cases"),
     path("ajax/form/", ajax.form, name="ajax-form"),
     path("management/getinfo/", ajax.info, name="ajax-getinfo"),
     path("management/tags/", ajax.tag),

@@ -84,7 +84,7 @@ class TestChangeCaseRunAssignee(BaseCaseRun):
         )
         self.assertJsonResponse(
             resp,
-            {"message": f"No user with id {user_id} exists."},
+            {"message": [f"No user with id {user_id} exists."]},
             status_code=HTTPStatus.BAD_REQUEST,
         )
 
@@ -102,7 +102,7 @@ class TestChangeCaseRunAssignee(BaseCaseRun):
         )
         self.assertJsonResponse(
             resp,
-            {"message": "No specified test case run exists for update."},
+            {"message": [f"Test case run {case_run_id} does not exist."]},
             status_code=HTTPStatus.BAD_REQUEST,
         )
 
@@ -267,11 +267,12 @@ class TestChangeCaseRunStatus(BaseCaseRun):
     def test_no_case_runs_to_update(self):
         data = self.request_data.copy()
         result = TestCaseRun.objects.aggregate(max_pk=Max("pk"))
-        data["case_run"] = [result["max_pk"] + 1, result["max_pk"] + 2]
+        nonexisting_pk = result["max_pk"] + 1
+        data["case_run"] = [nonexisting_pk]
         resp = self.client.patch(self.url, data=data, content_type="application/json")
         self.assertJsonResponse(
             resp,
-            {"message": "No case run is specified to update."},
+            {"message": [f"Test case run {nonexisting_pk} does not exist."]},
             status_code=HTTPStatus.BAD_REQUEST,
         )
 
@@ -325,12 +326,13 @@ class TestUpdateCaseRunsSortkey(BaseCaseRun):
         TestCaseRun.objects.all().update(sortkey=cls.original_sort_key)
         cls.url = reverse("patch-case-runs")
 
-    def test_no_case_run_is_specified(self):
+    def test_update_nonexisting_case_run(self):
         result = TestCaseRun.objects.aggregate(max_pk=Max("pk"))
+        nonexisting_pk = result["max_pk"] + 1
         resp = self.client.patch(
             self.url,
             data={
-                "case_run": [result["max_pk"] + 1],
+                "case_run": [nonexisting_pk],
                 "target_field": "sortkey",
                 "new_value": 2,
             },
@@ -338,7 +340,7 @@ class TestUpdateCaseRunsSortkey(BaseCaseRun):
         )
         self.assertJsonResponse(
             resp,
-            {"message": "No case run is specified to update."},
+            {"message": [f"Test case run {nonexisting_pk} does not exist."]},
             status_code=HTTPStatus.BAD_REQUEST,
         )
 
@@ -353,7 +355,9 @@ class TestUpdateCaseRunsSortkey(BaseCaseRun):
             content_type="application/json",
         )
         self.assertJsonResponse(
-            resp, {"message": "The sortkey must be an integer."}, status_code=HTTPStatus.BAD_REQUEST
+            resp,
+            {"message": ["Sort key must be a positive integer."]},
+            status_code=HTTPStatus.BAD_REQUEST,
         )
 
     def test_new_sort_key_is_not_in_range(self):
@@ -368,7 +372,7 @@ class TestUpdateCaseRunsSortkey(BaseCaseRun):
         )
         self.assertJsonResponse(
             resp,
-            {"message": f"New sortkey is out of range {SORT_KEY_RANGE}."},
+            {"message": [f"New sortkey is out of range {SORT_KEY_RANGE}."]},
             status_code=HTTPStatus.BAD_REQUEST,
         )
 
@@ -475,10 +479,11 @@ class TestUpdateCasesDefaultTester(AuthMixin, HelperAssertions, test.TestCase):
         self.assertJsonResponse(
             resp,
             {
-                "message": "unknown cannot be set as a default tester, "
-                "since this user does not exist."
+                "message": [
+                    "unknown cannot be set as a default tester, since this user does not exist.",
+                ]
             },
-            status_code=HTTPStatus.NOT_FOUND,
+            status_code=HTTPStatus.BAD_REQUEST,
         )
 
         case: TestCase
@@ -530,8 +535,8 @@ class TestChangeTestCasePriority(BasePlanCase):
         resp = self.client.patch(self.url, data=data, content_type="application/json")
         self.assertJsonResponse(
             resp,
-            {"message": "The priority you specified to change does not exist."},
-            status_code=HTTPStatus.NOT_FOUND,
+            {"message": ["The priority you specified to change does not exist."]},
+            status_code=HTTPStatus.BAD_REQUEST,
         )
 
 
@@ -577,8 +582,8 @@ class TestChangeTestCaseReviewer(BasePlanCase):
         resp = self.client.patch(self.url, data=data, content_type="application/json")
         self.assertJsonResponse(
             resp,
-            {"message": "Reviewer someone is not found"},
-            status_code=HTTPStatus.NOT_FOUND,
+            {"message": ["Reviewer someone is not found"]},
+            status_code=HTTPStatus.BAD_REQUEST,
         )
 
 
@@ -627,8 +632,8 @@ class TestChangeTestCaseStatus(BasePlanCase):
         resp = self.client.patch(self.url, data=data, content_type="application/json")
         self.assertJsonResponse(
             resp,
-            {"message": "The status you choose does not exist."},
-            status_code=HTTPStatus.NOT_FOUND,
+            {"message": ["The status you choose does not exist."]},
+            status_code=HTTPStatus.BAD_REQUEST,
         )
 
     def test_avoid_updating_duplicate_status(self):
@@ -688,7 +693,7 @@ class TestChangeTestCaseSortKey(BasePlanCase):
             resp = self.client.patch(self.url, data=data, content_type="application/json")
             self.assertJsonResponse(
                 resp,
-                {"message": "New sortkey is out of range [0, 32300]."},
+                {"message": ["New sortkey is out of range [0, 32300]."]},
                 status_code=HTTPStatus.BAD_REQUEST,
             )
 
@@ -743,7 +748,7 @@ class TestModuleUpdateActions(AuthMixin, HelperAssertions, test.TestCase):
         remove_perm_from_user(self.tester, self.perm)
         self.assert403(self._request())
 
-    @patch("tcms.core.ajax.TestCasesPatchView._update_case_status")
+    @patch("tcms.core.ajax.PatchTestCasesView._simple_patch")
     def test_return_default_json_if_action_returns_nothing(self, _update_case_status):
         _update_case_status.return_value = None
         self.assertJsonResponse(self._request(), {})
@@ -755,7 +760,7 @@ class TestModuleUpdateActions(AuthMixin, HelperAssertions, test.TestCase):
             status_code=HTTPStatus.BAD_REQUEST,
         )
 
-    @patch("tcms.core.ajax.TestCasesPatchView._update_case_status")
+    @patch("tcms.core.ajax.PatchTestCasesView._simple_patch")
     def test_handle_raised_error_from_action_method(self, _update_case_status):
         _update_case_status.side_effect = ValueError
 
@@ -771,7 +776,7 @@ class TestModuleUpdateActions(AuthMixin, HelperAssertions, test.TestCase):
         resp = self.client.patch(
             reverse("patch-cases"),
             data={
-                "case": self.case.pk,
+                "case": [self.case.pk],
                 "new_value": 1,
             },
             content_type="application/json",
@@ -784,13 +789,13 @@ class TestModuleUpdateActions(AuthMixin, HelperAssertions, test.TestCase):
         resp = self.client.patch(
             reverse("patch-cases"),
             data={
-                "case": self.case.pk,
+                "case": [self.case.pk],
                 "target_field": "case_status",
             },
             content_type="application/json",
         )
         self.assertJsonResponse(
-            resp, {"message": "Missing argument new_value."}, status_code=HTTPStatus.BAD_REQUEST
+            resp, {"message": ["Missing argument new_value."]}, status_code=HTTPStatus.BAD_REQUEST
         )
 
     @patch("tcms.testcases.models.TestCase.log_action")
