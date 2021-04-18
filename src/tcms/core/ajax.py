@@ -11,8 +11,9 @@ import operator
 import sys
 
 from functools import reduce
-from typing import Any, Dict, NewType, List, Optional, Tuple, Union
+from typing import Any, Dict, NewType, List, Tuple, Union
 
+from django import forms
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.db import models
 from django.contrib.auth.models import User
@@ -44,7 +45,7 @@ from tcms.testcases.views import get_selected_testcases
 from tcms.testplans.models import TestPlan, TestCasePlan
 from tcms.testruns import signals as run_watchers
 from tcms.testruns.models import TestRun, TestCaseRun, TestCaseRunStatus
-from tcms.core.utils import get_string_combinations
+from tcms.core.utils import get_string_combinations, form_error_messages_to_list
 
 post_update = Signal(providing_args=["instances", "kwargs"])
 post_update.connect(run_watchers.post_update_handler)
@@ -360,6 +361,12 @@ LogActionInfo = NewType("LogActionInfo", Tuple[TCMSActionModel, List[LogActionPa
 class ModelPatchBaseView(PermissionRequiredMixin, View):
     """Abstract class defining interfaces to update a model properties"""
 
+    simple_patches: Dict[str, Tuple[forms.Form, bool]] = {
+        # Validation form, whether to send mail
+        # "field_name": (FormClass, True or False)
+    }
+    targets_field_name: str = ""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -372,7 +379,7 @@ class ModelPatchBaseView(PermissionRequiredMixin, View):
     def handle_no_permission(self) -> JsonResponseForbidden:
         return JsonResponseForbidden({"message": "You do not have permission to update."})
 
-    def _sendmail(self):
+    def _sendmail(self, objects):
         """
         Send notification mail. For those not requiring sending a mail, the
         default implementation of this method just keeps quiet and do nothing.
@@ -444,22 +451,27 @@ class ModelPatchBaseView(PermissionRequiredMixin, View):
             models[0].__class__.objects.bulk_update(changed, [self.target_field])
             self._record_log_actions(log_actions_info)
 
-    def get_update_targets(self) -> QuerySet:
-        raise NotImplementedError("Must be implemented in subclass.")
-
-    def get_update_action(self):
-        return getattr(self, "_update_%s" % self.target_field, None)
+    def _simple_patch(self):
+        form_class, send_mail = self.simple_patches[self.target_field]
+        f = form_class(self._request_data)
+        if not f.is_valid():
+            return JsonResponseBadRequest({"message": form_error_messages_to_list(f)})
+        patch_targets = f.cleaned_data[self.targets_field_name]
+        self._simple_update(patch_targets, f.cleaned_data["new_value"])
+        if send_mail:
+            self._sendmail(patch_targets)
 
     def patch(self, request: HttpRequest):
         self._request_data = json.loads(request.body)
         self.target_field = self._request_data.get("target_field")
         if not self.target_field:
             return JsonResponseBadRequest({"message": "Missing argument target_field."})
-        self.new_value = self._request_data.get("new_value")
-        if not self.new_value:
-            return JsonResponseBadRequest({"message": "Missing argument new_value."})
 
-        action = self.get_update_action()
+        if self.target_field in self.simple_patches:
+            action = self._simple_patch
+        else:
+            action = getattr(self, "_update_%s" % self.target_field, None)
+
         if not action:
             return JsonResponseBadRequest({"message": "Not know what to update."})
 
@@ -485,57 +497,109 @@ class ModelPatchBaseView(PermissionRequiredMixin, View):
             return resp
 
 
-class TestCaseRunsPatchView(ModelPatchBaseView):
+class PatchTestCaseRunBaseForm(forms.Form):
+    case_run = forms.ModelMultipleChoiceField(
+        queryset=None,
+        error_messages={
+            "invalid_list": "Argument case_run only accepts a list of test case run pks.",
+            "required": "Missing argument case_run to patch test case runs.",
+            "invalid_pk_value": "%(pk)s is not a valid test case run pk.",
+            "invalid_choice": "Test case run %(value)s does not exist.",
+        },
+    )
+
+
+class PatchTestCaseRunAssigneeForm(PatchTestCaseRunBaseForm):
+    new_value = forms.ModelChoiceField(
+        queryset=User.objects.only("username"),
+        error_messages={
+            "required": "Missing argument new_value.",
+            "invalid_choice": None,  # Set later inside __init__
+        },
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        f = self.fields["case_run"]
+        f.queryset = TestCaseRun.objects.select_related("case", "assignee").only(
+            "case", "assignee__username"
+        )
+        f: forms.ModelChoiceField = self.fields["new_value"]
+        new_assignee_pk = self.data.get("new_value")
+        f.error_messages["invalid_choice"] = f"No user with id {new_assignee_pk} exists."
+
+
+class PatchTestCaseRunSortKeyForm(PatchTestCaseRunBaseForm):
+    new_value = forms.IntegerField(
+        min_value=SORT_KEY_MIN,
+        max_value=SORT_KEY_MAX,
+        error_messages={
+            "required": "Missing argument new_value to patch test cases.",
+            "invalid": "Sort key must be a positive integer.",
+            "min_value": f"New sortkey is out of range {SORT_KEY_RANGE}.",
+            "max_value": f"New sortkey is out of range {SORT_KEY_RANGE}.",
+        },
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["case_run"].queryset = TestCaseRun.objects.only("sortkey")
+
+
+class PatchTestCaseRunStatusForm(PatchTestCaseRunBaseForm):
+    new_value = forms.ModelChoiceField(
+        queryset=TestCaseRunStatus.objects.only("name"),
+        error_messages={
+            "required": "Missing argument new_value.",
+            "invalid_choice": None,  # Set later inside __init__
+        },
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        f = self.fields["case_run"]
+        f.queryset = TestCaseRun.objects.select_related("case_run_status", "tested_by").only(
+            "close_date", "tested_by__username", "case_run_status__name"
+        )
+        f: forms.ModelChoiceField = self.fields["new_value"]
+        new_status = self.data.get("new_value")
+        f.error_messages[
+            "invalid_choice"
+        ] = f'The test case run status "{new_status}" does not exist.'
+
+
+class PatchTestCaseRunsView(ModelPatchBaseView):
     """Actions to update test case runs properties"""
 
     permission_required = "testruns.change_testcaserun"
 
-    def get_update_targets(self) -> QuerySet:
-        if self._update_targets is None:
-            case_run_ids = [int(item) for item in self._request_data.get("case_run", [])]
-            if case_run_ids:
-                self._update_targets = TestCaseRun.objects.filter(pk__in=case_run_ids)
-        return self._update_targets
+    simple_patches = {
+        "assignee": (PatchTestCaseRunAssigneeForm, True),
+        "sortkey": (PatchTestCaseRunSortKeyForm, False),
+    }
+    targets_field_name: str = "case_run"
 
-    def _sendmail(self) -> None:
-        mail_context = TestCaseRun.mail_scene(
-            objects=self.get_update_targets(), field=self.target_field
-        )
+    def _sendmail(self, objects) -> None:
+        mail_context = TestCaseRun.mail_scene(objects=objects, field=self.target_field)
         if mail_context:
             mail_context["context"]["user"] = self.request.user
             mailto(**mail_context)
 
-    def _update_assignee(self):
-        new_assignee = User.objects.filter(pk=int(self.new_value)).only("username").first()
-        if new_assignee is None:
-            return JsonResponseBadRequest({"message": f"No user with id {self.new_value} exists."})
-        case_runs = self.get_update_targets().select_related("assignee").only("assignee__username")
-        if not case_runs:
-            return JsonResponseBadRequest(
-                {"message": "No specified test case run exists for update."}
-            )
-        self._simple_update(case_runs, new_assignee)
-        self._sendmail()
-
     def _update_case_run_status(self):
-        case_runs = (
-            self.get_update_targets()
-            .select_related("case_run_status", "tested_by")
-            .only("close_date", "tested_by__username", "case_run_status__name")
-        )
-        if not self._update_targets:
-            return JsonResponseBadRequest({"message": "No case run is specified to update."})
+        f = PatchTestCaseRunStatusForm(self._request_data)
+        if not f.is_valid():
+            return JsonResponseBadRequest({"message": form_error_messages_to_list(f)})
+
         request_user: User = self.request.user
-        new_status_pk = int(self.new_value)
-        new_status = TestCaseRunStatus.objects.get(pk=new_status_pk)
+        new_status = f.cleaned_data["new_value"]
         update_time = datetime.datetime.now()
 
-        case_run: TestCaseRun
         log_actions_info = []
         changed: List[TestCaseRun] = []
         tested_by_changed = False
 
-        for case_run in case_runs:
+        case_run: TestCaseRun
+        for case_run in f.cleaned_data["case_run"]:
             if case_run.case_run_status == new_status:
                 continue
 
@@ -546,7 +610,7 @@ class TestCaseRunsPatchView(ModelPatchBaseView):
                         "who": request_user,
                         "field": self.target_field,
                         "original_value": case_run.case_run_status.name,
-                        "new_value": TestCaseRunStatus.id_to_name(self.new_value),
+                        "new_value": str(new_status),
                     },
                     # Refactor the original code to here, but have no idea why
                     # need to set this close_date by changing a test case run's status.
@@ -583,40 +647,131 @@ class TestCaseRunsPatchView(ModelPatchBaseView):
             TestCaseRun.objects.bulk_update(changed, changed_fields)
             self._record_log_actions(log_actions_info)
 
-    def _update_sortkey(self):
-        if not isinstance(self.new_value, int):
-            return JsonResponseBadRequest({"message": "The sortkey must be an integer."})
-        new_sort_key = self.new_value
-        if not is_sort_key_in_range(new_sort_key):
-            return JsonResponseBadRequest(
-                {"message": f"New sortkey is out of range {SORT_KEY_RANGE}."}
-            )
-        case_runs = self.get_update_targets().only("sortkey")
-        if not case_runs:
-            return JsonResponseBadRequest({"message": "No case run is specified to update."})
-        self._simple_update(case_runs, new_sort_key)
+
+class PatchTestCaseBaseForm(forms.Form):
+    case = forms.ModelMultipleChoiceField(
+        queryset=None,
+        error_messages={
+            "invalid_list": "Argument case only accepts a list of test case pks.",
+            "required": "Missing argument case to patch test cases.",
+            "invalid_pk_value": "%(pk)s is not a valid case pk.",
+            "invalid_choice": "Test case %(value)s does not exist.",
+        },
+    )
 
 
-class TestCasesPatchView(ModelPatchBaseView):
-    """Actions to update each possible property of TestCases
+class PatchTestCasePriorityForm(PatchTestCaseBaseForm):
+    new_value = forms.ModelChoiceField(
+        queryset=Priority.objects.all(),
+        error_messages={
+            "required": "Missing argument new_value.",
+            "invalid_choice": "The priority you specified to change does not exist.",
+        },
+    )
 
-    Define your own method named _update_[property name] to hold specific
-    update logic.
-    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        f = self.fields["case"]
+        f.queryset = TestCase.objects.select_related("priority").only("priority__value")
+
+
+class PatchTestCaseDefaultTesterForm(PatchTestCaseBaseForm):
+    new_value = forms.ModelChoiceField(
+        queryset=User.objects.only("username"),
+        to_field_name="username",
+        error_messages={
+            "required": "Missing argument new_value.",
+            "invalid_choice": None,  # Set later inside __init__
+        },
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        f = self.fields["case"]
+        f.queryset = TestCase.objects.select_related("default_tester").only(
+            "default_tester__username"
+        )
+        f: forms.ModelChoiceField = self.fields["new_value"]
+        f.error_messages["invalid_choice"] = (
+            f"{self.data['new_value']} cannot be set as a default tester, "
+            f"since this user does not exist."
+        )
+
+
+class PatchTestCaseStatusForm(PatchTestCaseBaseForm):
+    new_value = forms.ModelChoiceField(
+        queryset=TestCaseStatus.objects.only("name"),
+        error_messages={
+            "required": "Missing argument new_value.",
+            "invalid_choice": "The status you choose does not exist.",
+        },
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        f = self.fields["case"]
+        f.queryset = TestCase.objects.select_related("case_status").only("case_status__name")
+
+
+class PatchTestCaseReviewerForm(PatchTestCaseBaseForm):
+    new_value = forms.ModelChoiceField(
+        queryset=User.objects.only("username"),
+        to_field_name="username",
+        error_messages={
+            "required": "Missing argument new_value.",
+            "invalid_choice": None,  # Set later inside __init__
+        },
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        f = self.fields["case"]
+        f.queryset = TestCase.objects.select_related("reviewer").only("reviewer__username")
+        f: forms.ModelChoiceField = self.fields["new_value"]
+        f.error_messages["invalid_choice"] = f"Reviewer {self.data['new_value']} is not found"
+
+
+class PatchTestCaseSortKeyForm(PatchTestCaseBaseForm):
+    plan = forms.ModelChoiceField(
+        queryset=TestPlan.objects.only("pk"),
+        error_messages={
+            "required": "Missing plan id.",
+            "invalid_choice": None,  # Set later inside __init__
+        },
+    )
+    new_value = forms.IntegerField(
+        min_value=SORT_KEY_MIN,
+        max_value=SORT_KEY_MAX,
+        error_messages={
+            "required": "Missing argument new_value to patch test cases.",
+            "invalid": "Sort key must be a positive integer.",
+            "min_value": f"New sortkey is out of range {SORT_KEY_RANGE}.",
+            "max_value": f"New sortkey is out of range {SORT_KEY_RANGE}.",
+        },
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["case"].queryset = TestCase.objects.only("pk")
+        f: forms.ModelChoiceField = self.fields["plan"]
+        f.error_messages["invalid_choice"] = f"No plan with id {self.data['plan']} exists."
+
+
+class PatchTestCasesView(ModelPatchBaseView):
+    """Actions to update each possible property of TestCases"""
 
     permission_required = "testcases.change_testcase"
+    simple_patches = {
+        "priority": (PatchTestCasePriorityForm, False),
+        "default_tester": (PatchTestCaseDefaultTesterForm, False),
+        "case_status": (PatchTestCaseStatusForm, False),
+        "reviewer": (PatchTestCaseReviewerForm, True),
+    }
+    targets_field_name: str = "case"
 
-    def get_update_targets(self) -> QuerySet:
-        """Get selected cases to update their properties"""
-        if self._update_targets is None:
-            item: str
-            case_ids = [int(item) for item in self._request_data.get("case", [])]
-            self._update_targets = TestCase.objects.filter(pk__in=case_ids)
-        return self._update_targets
-
-    def _sendmail(self):
+    def _sendmail(self, objects):
         mail_context = TestCase.mail_scene(
-            objects=self._update_targets, field=self.target_field, value=self.new_value
+            objects=objects, field=self.target_field, value=self.new_value
         )
         if mail_context:
             from tcms.core.mailto import mailto
@@ -624,52 +779,16 @@ class TestCasesPatchView(ModelPatchBaseView):
             mail_context["context"]["user"] = self.request.user
             mailto(**mail_context)
 
-    def _update_priority(self):
-        new_priority = Priority.objects.filter(pk=self.new_value).first()
-        if new_priority is None:
-            raise ObjectDoesNotExist("The priority you specified to change does not exist.")
-        cases = self.get_update_targets().select_related("priority").only("priority__value")
-        self._simple_update(cases, new_priority)
-
-    def _update_default_tester(self):
-        new_default_tester = User.objects.filter(username=self.new_value).first()
-        if new_default_tester is None:
-            raise ObjectDoesNotExist(
-                f"{self.new_value} cannot be set as a default tester, "
-                f"since this user does not exist."
-            )
-        cases = (
-            self.get_update_targets()
-            .select_related("default_tester")
-            .only("default_tester__username")
-        )
-        self._simple_update(cases, new_default_tester)
-
-    def _update_case_status(self):
-        new_status = TestCaseStatus.objects.filter(pk=self.new_value).first()
-        if new_status is None:
-            raise ObjectDoesNotExist("The status you choose does not exist.")
-
-        cases = self.get_update_targets().select_related("case_status").only("case_status__name")
-        self._simple_update(cases, new_status)
-        return JsonResponse({})
-
     def _update_sortkey(self):
-        if not is_sort_key_in_range(self.new_value):
-            return JsonResponseBadRequest(
-                {"message": f"New sortkey is out of range {SORT_KEY_RANGE}."}
-            )
-        plan_id: Optional[int] = self._request_data.get("plan")
-        if plan_id is None:
-            return JsonResponseBadRequest({"message": "Missing plan id."})
-        plan = TestPlan.objects.filter(pk=plan_id).first()
-        if plan is None:
-            return JsonResponseBadRequest({"message": f"No plan with id {plan_id} exists."})
+        f = PatchTestCaseSortKeyForm(self._request_data)
+        if not f.is_valid():
+            return JsonResponseBadRequest({"message": form_error_messages_to_list(f)})
 
-        cases = self.get_update_targets()
+        cases = f.cleaned_data["case"]
+        plan = f.cleaned_data["plan"]
         changed = []
         append_changed = changed.append
-        new_sort_key = self.new_value
+        new_sort_key = f.cleaned_data["new_value"]
 
         for tcp in TestCasePlan.objects.filter(plan=plan, case__in=cases):
             if tcp.sortkey == new_sort_key:
@@ -678,14 +797,6 @@ class TestCasesPatchView(ModelPatchBaseView):
             append_changed(tcp)
 
         TestCasePlan.objects.bulk_update(changed, [self.target_field])
-
-    def _update_reviewer(self):
-        user = User.objects.filter(username=self.new_value).first()
-        if user is None:
-            raise ObjectDoesNotExist(f"Reviewer {self.new_value} is not found")
-        cases = self.get_update_targets().select_related("reviewer").only("reviewer__username")
-        self._simple_update(cases, user)
-        self._sendmail()
 
 
 @require_POST
