@@ -947,12 +947,12 @@ function updateCaseRunStatus(expansion, form) {
 
   // Update the object when changing the status
   if (caseRunStatusId !== '') {
-    postRequest({
-      url: '/ajax/update/case-run-status',
+    patchRequest({
+      url: '/ajax/case-runs/',
       data: {
-        case_run: formData.object_pk,
+        case_run: [formData.object_pk],
         target_field: 'case_run_status',
-        new_value: caseRunStatusId,
+        new_value: parseInt(caseRunStatusId),
       },
       success: function () {
         // Refresh the statistics section
@@ -1032,12 +1032,12 @@ function changeCaseRunOrder(runId, caseRunId, sortKey) {
     return false;
   }
 
-  postRequest({
-    url: '/ajax/update/case-run-sort-key/',
+  patchRequest({
+    url: '/ajax/case-runs/',
     data: {
-      case_run: caseRunId,
+      case_run: [caseRunId],
       target_field: 'sortkey',
-      new_value: nsk,
+      new_value: parseInt(nsk),
     },
   });
 }
@@ -1194,14 +1194,13 @@ function changeCaseRunAssignee() {
         return false;
       }
 
-      postRequest({
-        url: '/ajax/update/case-run-assignee/',
+      patchRequest({
+        url: '/ajax/case-runs/',
         data: {
           case_run: selectedCaseRunIDs,
           target_field: 'assignee',
-          new_value: data[0].pk
+          new_value: parseInt(data[0].pk)
         },
-        traditional: true,
       });
     },
   });
@@ -1371,14 +1370,13 @@ jQ(document).ready(function (){
     confirmDialog({
       message: defaultMessages.confirm.change_case_status,
       yesFunc: function () {
-        postRequest({
-          url: '/ajax/update/case-run-status',
+        patchRequest({
+          url: '/ajax/case-runs/',
           data: {
             case_run: objectPks,
             target_field: 'case_run_status',
             new_value: option
           },
-          traditional: true
         });
       }
     });
