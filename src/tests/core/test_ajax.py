@@ -809,7 +809,7 @@ class TestModuleUpdateActions(AuthMixin, HelperAssertions, test.TestCase):
             "Failed to log update action for case run %s. Field: %s, original: %s, new: %s, by: %s",
             self.case.pk,
             "case_status",
-            str(TestCaseStatus.objects.get(pk=self.case.pk)),
+            str(TestCaseStatus.objects.get(pk=self.case.case_status.pk)),
             str(new_status),
             User.objects.get(pk=self.tester.pk),
         )
