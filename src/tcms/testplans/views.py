@@ -1026,7 +1026,7 @@ class PlanTreeChangeParentView(PermissionRequiredMixin, View):
             {"message": "You do not have permission to change the parent plan."}
         )
 
-    def post(self, request, *args, **kwargs):
+    def patch(self, request, *args, **kwargs):
         plan: TestPlan = TestPlan.objects.filter(pk=self.kwargs["plan_id"]).only("pk").first()
         if plan is None:
             return JsonResponseNotFound(
@@ -1035,10 +1035,12 @@ class PlanTreeChangeParentView(PermissionRequiredMixin, View):
                     f"whose id {self.kwargs['plan_id']} does not exist."
                 }
             )
-        user_input: Optional[str] = request.POST.get("parent")
+
+        data = json.loads(request.body)
+        user_input: Optional[str] = data.get("parent")
         if user_input is None:
             return JsonResponseBadRequest({"message": "Missing parent plan id."})
-        if not user_input.isdigit():
+        if not isinstance(user_input, int):
             return JsonResponseBadRequest(
                 {"message": f'The given parent plan id "{user_input}" is not a positive integer.'}
             )
@@ -1078,7 +1080,7 @@ class SetPlanActiveView(PermissionRequiredMixin, View):
     raise_exception = True
     enable: bool = True
 
-    def post(self, request, *args, **kwargs):
+    def patch(self, request, *args, **kwargs):
         plan_id = self.kwargs["plan_id"]
         plan: TestPlan = TestPlan.objects.filter(pk=plan_id).only("is_active").first()
         if not plan:

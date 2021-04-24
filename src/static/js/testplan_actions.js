@@ -277,9 +277,9 @@ Nitrate.TestPlans.TreeView = {
       clearDialog();
 
       let planId = Nitrate.Utils.formSerialize(this).plan_id;
-      postRequest({
+      patchRequest({
         url: '/plan/' + currentPlanId.toString() + '/treeview/change-parent/',
-        data: {parent: planId},
+        data: {parent: parseInt(planId)},
         success: function () {
           thisView.load(currentPlanId);
         }
@@ -565,13 +565,13 @@ Nitrate.TestPlans.Details = {
     // Initial the enable/disble btns
     if (jQ('#btn_disable').length) {
       jQ('#btn_disable').on('click', function () {
-        postRequest({url: '/plan/' + planId.toString() + '/set-disable/'});
+        patchRequest({url: '/plan/' + planId.toString() + '/set-disable/'});
       });
     }
 
     if (jQ('#btn_enable').length) {
       jQ('#btn_enable').on('click', function () {
-        postRequest({url: '/plan/' + planId.toString() + '/set-enable/'});
+        patchRequest({url: '/plan/' + planId.toString() + '/set-enable/'});
       });
     }
   },
@@ -795,10 +795,10 @@ function getChangeCasesSortKeyFunc(planId, caseIds, successCallback) {
     patchRequest({
       url: '/ajax/cases/',
       data: {
-	plan: planId,
-	case: caseIds,
-	target_field: 'sortkey',
-	new_value: newSortKey,
+        plan: planId,
+        case: caseIds,
+        target_field: 'sortkey',
+        new_value: newSortKey,
       },
       success: successCallback
     });
