@@ -1074,20 +1074,22 @@ class TestTreeViewChangeParent(BasePlanCase):
 
     def test_non_existing_target_plan(self):
         result = TestPlan.objects.aggregate(max_pk=Max("pk"))
-        resp = self.client.post(
+        resp = self.client.patch(
             self._construct_url(result["max_pk"] + 1),
             data={
                 "parent": self.plan_3.pk,
             },
+            content_type="application/json",
         )
         self.assert404(resp)
         json_data = json.loads(resp.content)
         self.assertIn("Cannot change parent of plan", json_data["message"])
 
     def test_parent_id_is_not_integer(self):
-        resp = self.client.post(
+        resp = self.client.patch(
             self._construct_url(self.plan_5.pk),
             data={"parent": "an id"},
+            content_type="application/json",
         )
         self.assertJsonResponse(
             resp,
@@ -1096,9 +1098,10 @@ class TestTreeViewChangeParent(BasePlanCase):
         )
 
     def test_missing_parent_id(self):
-        resp = self.client.post(
+        resp = self.client.patch(
             self._construct_url(self.plan_5.pk),
             data={},
+            content_type="application/json",
         )
         self.assertJsonResponse(
             resp,
@@ -1109,9 +1112,10 @@ class TestTreeViewChangeParent(BasePlanCase):
     def test_parent_does_not_exist(self):
         result = TestPlan.objects.aggregate(max_pk=Max("pk"))
         non_existing_id = result["max_pk"] + 1
-        resp = self.client.post(
+        resp = self.client.patch(
             self._construct_url(self.plan_5.pk),
             data={"parent": non_existing_id},
+            content_type="application/json",
         )
         self.assertJsonResponse(
             resp,
@@ -1120,9 +1124,10 @@ class TestTreeViewChangeParent(BasePlanCase):
         )
 
     def test_parent_is_a_descendant_already(self):
-        resp = self.client.post(
+        resp = self.client.patch(
             self._construct_url(self.plan_4.pk),
             data={"parent": self.plan_6.pk},
+            content_type="application/json",
         )
         self.assertJsonResponse(
             resp,
@@ -1144,9 +1149,10 @@ class TestTreeViewChangeParent(BasePlanCase):
         expected_original_value: str
 
         for target_plan, expected_original_value in targets:
-            resp = self.client.post(
+            resp = self.client.patch(
                 self._construct_url(target_plan.pk),
                 data={"parent": new_parent.pk},
+                content_type="application/json",
             )
             self.assert200(resp)
 
@@ -1177,7 +1183,7 @@ class TestEnableDisablePlanViews(AuthMixin, HelperAssertions, test.TestCase):
     def test_target_plan_does_not_exist(self):
         result = TestPlan.objects.aggregate(max_pk=Max("pk"))
         plan_id = result["max_pk"] + 1
-        resp = self.client.post(reverse("plan-set-enable", args=[plan_id]))
+        resp = self.client.patch(reverse("plan-set-enable", args=[plan_id]))
         self.assertJsonResponse(
             resp,
             {"message": f"Plan id {plan_id} does not exist."},
@@ -1185,7 +1191,7 @@ class TestEnableDisablePlanViews(AuthMixin, HelperAssertions, test.TestCase):
         )
 
     def test_enable_plan(self):
-        resp = self.client.post(reverse("plan-set-enable", args=[self.plan_1.pk]))
+        resp = self.client.patch(reverse("plan-set-enable", args=[self.plan_1.pk]))
         self.assert200(resp)
         self.assertTrue(TestPlan.objects.get(pk=self.plan_1.pk).is_active)
         self.assertTrue(
@@ -1198,7 +1204,7 @@ class TestEnableDisablePlanViews(AuthMixin, HelperAssertions, test.TestCase):
         )
 
     def test_disable_plan(self):
-        resp = self.client.post(reverse("plan-set-disable", args=[self.plan.pk]))
+        resp = self.client.patch(reverse("plan-set-disable", args=[self.plan.pk]))
         self.assert200(resp)
         self.assertFalse(TestPlan.objects.get(pk=self.plan.pk).is_active)
         self.assertTrue(
