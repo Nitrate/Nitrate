@@ -657,6 +657,30 @@ function bindRemoveCCHandler() {
   });
 }
 
+/**
+ * Get the function to send a request to change case runs order.
+ *
+ * @param {number[]} caseRunIds - an array of case run ids.
+ * @returns {(function(*=): void)|*} - the function to be called.
+ */
+Nitrate.TestRuns.getCaseRunsOrderChangeFunc = function (caseRunIds) {
+  /**
+   * Function to send a request to change case runs order.
+   *
+   * @param {number} newSortKey - the new sort key, e.g. 10.
+   */
+  return function (newSortKey) {
+    patchRequest({
+      url: '/ajax/case-runs/',
+      data: {
+        case_run: caseRunIds,
+        target_field: 'sortkey',
+        new_value: newSortKey
+      }
+    });
+  };
+};
+
 Nitrate.TestRuns.Details.on_load = function () {
   jQ('.js-add-property').on('click', function () {
     new AddEnvPropertyDialog(this.dataset.runId, this.dataset.envGroupId).open();
@@ -782,18 +806,10 @@ Nitrate.TestRuns.Details.on_load = function () {
   });
 
   jQ('.js-change-order').on('click', function (e) {
-    let that = this;
-    let changeFunc = function (newSortKey) {
-      patchRequest({
-        url: '/ajax/case-runs/',
-        data: {
-          case_run: [that.dataset.caseRunId],
-          target_field: 'sortkey',
-          new_value: newSortKey
-        }
-      });
-    };
-    Nitrate.Utils.changeOrderSortKey(changeFunc, parseInt(this.dataset.sortKey));
+    Nitrate.Utils.changeOrderSortKey(
+      Nitrate.TestRuns.getCaseRunsOrderChangeFunc([this.dataset.caseRunId]),
+      parseInt(this.dataset.sortKey)
+    );
     return false;
   });
 };
