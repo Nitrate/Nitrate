@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime, timedelta
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
@@ -159,7 +159,7 @@ class TestRun(TCMSActionModel):
     def get_absolute_url(self):
         return reverse("run-get", args=[self.pk])
 
-    def get_notification_recipients(self):
+    def get_notification_recipients(self) -> List[str]:
         """
         Get the all related mails from the run
         """

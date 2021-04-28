@@ -1,27 +1,31 @@
 # -*- coding: utf-8 -*-
-
+import datetime
 import functools
 import hashlib
 import operator
-import re
-from typing import List, Dict, Any, Union
+from typing import List, Dict, Any, Union, Optional
 
 from django.apps import apps
 from django.db.models import QuerySet
-from django.http import QueryDict
+from django.http import QueryDict, HttpRequest
 
 
-def string_to_list(strs, spliter=","):
+SECONDS_PER_DAY: int = 24 * 60 * 60
+SECONDS_PER_HOUR: int = 60 * 60
+SECONDS_PER_MINUTE: int = 60
+
+
+def string_to_list(s: Union[str, List[str], None], sep: Optional[str] = None) -> List[str]:
     """Convert the string to list"""
-    if isinstance(strs, list):
-        str_list = (item.strip() if isinstance(item, bytes) else item for item in strs)
-    elif strs.find(spliter):
-        str_list = (
-            item.strip() if isinstance(item, bytes) else item for item in strs.split(spliter)
-        )
+    if not s:
+        return []
+    sep = sep or ","
+    if isinstance(s, list):
+        return [item.strip() for item in s if item]
+    elif s.find(sep) > -1:
+        return [part.strip() for part in s.split(sep) if part]
     else:
-        str_list = (strs,)
-    return [s for s in str_list if s]
+        return [s]
 
 
 def form_errors_to_list(form):
@@ -36,7 +40,7 @@ def form_error_messages_to_list(form):
     return list(functools.reduce(operator.add, form.errors.values()))
 
 
-def get_string_combinations(s):
+def get_string_combinations(s: Union[str, None]):
     """Get the lower, upper, capitalized version of the given string
 
     :param str s: string
@@ -44,29 +48,22 @@ def get_string_combinations(s):
             & first letter uppercase form of s.
     :rtype: list[str]
     """
+    if s is None:
+        return None, None, None, None
     return s, s.lower(), s.upper(), s.capitalize()
 
 
-def calc_percent(x, y):
+def calc_percent(x: int, y: int) -> float:
     if not x or not y:
-        return 0
-
+        return 0.0
     return float(x) / y * 100
 
 
-def request_host_link(request, domain_name=None):
-    if request.is_secure():
-        protocol = "https://"
-    else:
-        protocol = "http://"
-
-    if not domain_name:
-        domain_name = request.get_host()
-
-    return protocol + domain_name
+def request_host_link(request: HttpRequest, domain_name: Optional[str] = None) -> str:
+    return f"{request.scheme}://{domain_name or request.get_host()}"
 
 
-def clean_request(request, keys=None):
+def clean_request(request: HttpRequest, keys: Optional[List[str]] = None) -> Dict[str, str]:
     """
     Clean the request strings
     """
@@ -264,7 +261,7 @@ def checksum(value: Union[str, bytes]) -> str:
     return md5.hexdigest()
 
 
-def format_timedelta(timedelta):
+def format_timedelta(timedelta: datetime.timedelta):
     """convert instance of datetime.timedelta to d(ay), h(our), m(inute)"""
     m, s = divmod(timedelta.seconds, 60)
     h, m = divmod(m, 60)
@@ -277,24 +274,68 @@ def format_timedelta(timedelta):
     return timedelta_str if timedelta_str else "0m"
 
 
-def timedelta2int(value):
-    """convert string nh(ay):nh(our):nm(inute) to integer seconds."""
-    value = value.replace(" ", "")
-    second_regex = re.compile(r"\d+s")
-    minute_regex = re.compile(r"\d+m")
-    hour_regex = re.compile(r"\d+h")
-    day_regex = re.compile(r"\d+d")
+def timedelta2int(timedelta_s: Union[str, None]) -> int:
+    """Convert timedelta to seconds
 
-    second = second_regex.findall(value)
-    seconds = int(second[0][:-1]) if second else 0
+    :param str timedelta_s: a timedelta string consisting of time parts with
+        specific unit. The time parts can be in any combination of days (d),
+        hours (h), minutes (m) and seconds (s). The order matters. The time
+        parts must be in the order of d, h, m and s. Examples, 10h30m.
+    :return: the seconds converted from the input timedelta
+    :rtype: int
+    :raise ValueError: if a time part does not present in the expected order,
+        if time part value is missed, if the input timedelta contains invalid
+        characters, if no unit is specified.
+    """
+    if not timedelta_s:
+        return 0
+    valid_chars = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "d", "h", "m", "s"}
+    days = hours = minutes = seconds = ""
+    tmp_part = ""
+    for c in timedelta_s:
+        if c in valid_chars:
+            if c == "d":
+                if hours or minutes or seconds:
+                    raise ValueError("Days presents after hours, minutes or seconds.")
+                if not tmp_part:
+                    raise ValueError("Missing value for days.")
+                days = tmp_part
+                tmp_part = ""
+            elif c == "h":
+                if minutes or seconds:
+                    raise ValueError("Hours presents after minutes or seconds.")
+                if not tmp_part:
+                    raise ValueError("Missing value for hours.")
+                hours = tmp_part
+                tmp_part = ""
+            elif c == "m":
+                if seconds:
+                    raise ValueError("Minutes presents after seconds.")
+                if not tmp_part:
+                    raise ValueError("Missing value for minutes.")
+                minutes = tmp_part
+                tmp_part = ""
+            elif c == "s":
+                if not tmp_part:
+                    raise ValueError("Missing value for seconds.")
+                seconds = tmp_part
+                tmp_part = ""
+            else:
+                tmp_part += c
+        else:
+            if c.isspace():
+                raise ValueError("timedelta cannot contain space character.")
+            else:
+                raise ValueError(f"timedelta contains invalid character: {c}")
+    if not days and not hours and not minutes and not seconds:
+        raise ValueError("No unit is specified in timedelta. Valid choices: d, h, m or s.")
 
-    minute = minute_regex.findall(value)
-    minutes = int(minute[0][:-1]) if minute else 0
+    def _int(s: str) -> int:
+        return int(s) if s else 0
 
-    hour = hour_regex.findall(value)
-    hours = int(hour[0][:-1]) if hour else 0
-
-    day = day_regex.findall(value)
-    days = int(day[0][:-1]) if day else 0
-
-    return seconds + minutes * 60 + hours * 3600 + days * 86400
+    return (
+        _int(days) * SECONDS_PER_DAY
+        + _int(hours) * SECONDS_PER_HOUR
+        + _int(minutes) * SECONDS_PER_MINUTE
+        + _int(seconds)
+    )

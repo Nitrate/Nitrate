@@ -1,19 +1,32 @@
 # -*- coding: utf-8 -*-
+import logging
 import smtplib
 import sys
 import unittest
+from datetime import timedelta
+from typing import Dict, Union
 from unittest.mock import patch, Mock
 
+import pytest
 from django import test
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core import mail
+from django.http import QueryDict
 
 from tcms.core import responses
 from tcms.core.db import GroupByResult, CaseRunStatusGroupByResult
-from tcms.core.utils import string_to_list
-from tcms.core.mailto import mailto
+from tcms.core.utils import (
+    calc_percent,
+    clean_request,
+    format_timedelta,
+    get_string_combinations,
+    request_host_link,
+    string_to_list,
+    timedelta2int,
+)
+from tcms.core.mailto import mailto, mail_notify
 from tcms.core.task import AsyncTask
 from tcms.core.task import Task
 from tcms.management.models import Classification
@@ -24,44 +37,147 @@ from tests.factories import TestPlanFactory
 PY37 = sys.version_info[:2] == (3, 7)
 
 
-class TestUtilsFunctions(unittest.TestCase):
-    def test_string_to_list(self):
-        strings = "Python,Go,,Perl,Ruby"
-        strings_list = ["Python", "Go", "Perl", "Ruby"]
-        strings_list.sort()
-        expected_strings = ["Python", "Go", "Perl", "Ruby"]
-        expected_strings.sort()
+@pytest.mark.parametrize(
+    "s,sep,expected",
+    [
+        ["", None, []],
+        [None, None, []],
+        ["python", None, ["python"]],
+        ["python,rust", None, ["python", "rust"]],
+        [",python,,rust,", None, ["python", "rust"]],
+        ["python,,rust,", None, ["python", "rust"]],
+        ["python, rust ", None, ["python", "rust"]],
+        ["python rust ", " ", ["python", "rust"]],
+        [" python   rust ", " ", ["python", "rust"]],
+        [["python", "rust"], None, ["python", "rust"]],
+        [["python", "rust"], ",", ["python", "rust"]],
+        [["\tpython", "rust\n"], None, ["python", "rust"]],
+    ],
+)
+def test_string_to_list(s, sep, expected):
+    assert expected == string_to_list(s, sep)
 
-        result = string_to_list(strings_list)
-        result.sort()
-        self.assertEqual(expected_strings, result)
 
-        result = string_to_list(strings)
-        result.sort()
-        self.assertEqual(expected_strings, result)
+@pytest.mark.parametrize(
+    "s,expected",
+    [
+        ["", ("", "", "", "")],
+        [None, (None, None, None, None)],
+        ["word", ("word", "word", "WORD", "Word")],
+        ["Word", ("Word", "word", "WORD", "Word")],
+        ["WORD", ("WORD", "word", "WORD", "Word")],
+    ],
+)
+def test_get_string_combinations(s, expected):
+    assert expected == get_string_combinations(s)
 
-        another_strings = strings.replace(",", "#")
-        result = string_to_list(another_strings, "#")
-        result.sort()
-        self.assertEqual(expected_strings, result)
 
-        strings = 1
-        self.assertRaises(AttributeError, string_to_list, strings)
+@pytest.mark.parametrize(
+    "x,y,expected",
+    [
+        [0, 0, 0.0],
+        [0, 1, 0.0],
+        [1, 0, 0.0],
+        [1, 0, 0.0],
+        [2, 10, 20.0],
+        [3, 9, 3.0 / 9 * 100],
+    ],
+)
+def test_calc_percent(x, y, expected):
+    assert expected == calc_percent(x, y)
 
-        strings = ()
-        self.assertRaises(AttributeError, string_to_list, strings)
 
-        strings = "abcdefg"
-        result = string_to_list(strings)
-        self.assertEqual([strings], result)
+@pytest.mark.parametrize(
+    "scheme,host,domain,expected",
+    [
+        ["https", "localhost", None, "https://localhost"],
+        ["https", "localhost", "host1.site", "https://host1.site"],
+        ["http", "localhost", None, "http://localhost"],
+        ["http", "localhost", "host1.site", "http://host1.site"],
+    ],
+)
+def test_request_host_link(scheme, host, domain, expected):
+    request = Mock()
+    request.scheme = scheme
+    request.get_host.return_value = host
+    assert expected == request_host_link(request, domain)
 
-        strings = "abcdefg"
-        result = string_to_list(strings)
-        self.assertEqual([strings], result)
 
-        strings = "abcdefg"
-        result = string_to_list(strings, ":")
-        self.assertEqual([strings], result)
+@pytest.mark.parametrize(
+    "query_args,keys,expected",
+    [
+        ["", None, {}],
+        # order_by is removed
+        ["lang=py&order_by=ver", None, {"lang": "py"}],
+        ["lang=py&order_by=ver", {}, {"lang": "py"}],
+        # from_plan is removed
+        ["lang=py&from_plan=1", None, {"lang": "py"}],
+        ["lang__in=py,rust,go&product=1", None, {"lang__in": ["py", "rust", "go"], "product": "1"}],
+        # clean by argument keys
+        [
+            "lang=py&order_by=ver&product=1",
+            ["lang", "product", "page"],
+            {"lang": "py", "product": "1"},
+        ],
+    ],
+)
+def test_clean_request(query_args, keys, expected):
+    request = Mock()
+    request.GET = QueryDict(query_args)
+    assert expected == clean_request(request, keys)
+
+
+@pytest.mark.parametrize(
+    "timedelta,expected",
+    [
+        ["1m", 60],
+        ["25m", 1500],
+        ["2h", 7200],
+        ["1h30m", 5400],
+        ["20h30m", 73800],
+        ["2d", 172800],
+        ["2d12h", 216000],
+        ["2d12h6m", 216360],
+        ["2d012h6m", 216360],
+        # Exception input timedeltas
+        ["", 0],
+        [None, 0],
+        ["5.5m", ValueError],
+        ["6m2d012h", ValueError],
+        ["6s12h", ValueError],
+        ["6m12d", ValueError],
+        ["6s12m", ValueError],
+        ["1d1.5h", ValueError],
+        ["30", ValueError],
+        ["d012h6m30s", ValueError],
+        ["2dh6m30s", ValueError],
+        ["2d8hm30s", ValueError],
+        ["2d8h10ms", ValueError],
+        ["2d8g10m", ValueError],
+        ["2d8h m30s", ValueError],
+        ["-20h30m", ValueError],
+    ],
+)
+def test_timedelta2int(timedelta, expected: Union[int, Exception]):
+    if isinstance(expected, int):
+        assert expected == timedelta2int(timedelta)
+    else:
+        with pytest.raises(expected):
+            timedelta2int(timedelta)
+
+
+@pytest.mark.parametrize(
+    "seconds,expected",
+    [
+        [0, "0m"],
+        [10, "10s"],
+        [75, "1m15s"],
+        [7335, "2h2m15s"],
+        [201600, "2d8h"],
+    ],
+)
+def test_format_timedelta(seconds, expected):
+    assert expected == format_timedelta(timedelta(seconds=seconds))
 
 
 class GroupByResultDictLikeTest(unittest.TestCase):
@@ -116,44 +232,17 @@ class GroupByResultDictLikeTest(unittest.TestCase):
         with self.assertRaises(KeyError):
             self.groupby_result["unknown_key"]
 
+    def test___str__(self):
+        gbr = GroupByResult({"idle": 100})
+        self.assertEqual(str(gbr._data), str(gbr))
+
+    def test___repr__(self):
+        gbr = GroupByResult({"idle": 100})
+        self.assertEqual(repr(gbr._data), repr(gbr))
+
 
 class GroupByResultCalculationTest(unittest.TestCase):
     """Test calculation of GroupByResult"""
-
-    def setUp(self):
-        self.groupby_result = GroupByResult(
-            {
-                1: 100,
-                2: 300,
-                4: 400,
-            }
-        )
-
-        self.nested_groupby_result = GroupByResult(
-            {
-                1: GroupByResult({"a": 1, "b": 2, "c": 3}),
-                2: GroupByResult({1: 1, 2: 2}),
-                3: GroupByResult({"PASSED": 10, "WAIVED": 20, "FAILED": 30, "PAUSED": 40}),
-            }
-        )
-
-    def _sample_total(self):
-        return sum(count for key, count in self.groupby_result.iteritems())
-
-    def _sample_nested_total(self):
-        total = 0
-        for key, nested_result in self.nested_groupby_result.iteritems():
-            for n, count in nested_result.iteritems():
-                total += count
-        return total
-
-    def test_total(self):
-        total = self.groupby_result.total
-        self.assertEqual(total, self._sample_total())
-
-    def test_nested_total(self):
-        total = self.nested_groupby_result.total
-        self.assertEqual(total, self._sample_nested_total())
 
     def test_get_total_after_add_data_based_on_empty_initial_data(self):
         result = GroupByResult()
@@ -178,20 +267,6 @@ class GroupByResultCalculationTest(unittest.TestCase):
         del result["FAILED"]
         self.assertEqual(10, result.total)
 
-    def test_percentage(self):
-        result = GroupByResult(
-            {
-                "IDLE": 20,
-                "PASSED": 20,
-                "RUNNING": 10,
-            }
-        )
-        self.assertEqual(40.0, result.PASSED_percent)
-
-    def test_zero_percentage(self):
-        result = GroupByResult({})
-        self.assertEqual(0.0, result.PASSED_percent)
-
     def test_arithmetic_operation(self):
         result = GroupByResult({"IDLE": 1, "RUNNING": 1, "FAILED": 2})
         result["IDLE"] += 1
@@ -200,6 +275,87 @@ class GroupByResultCalculationTest(unittest.TestCase):
         self.assertEqual(2, result["IDLE"])
         self.assertEqual(101, result["RUNNING"])
         self.assertEqual(0, result["FAILED"])
+
+
+@pytest.mark.parametrize(
+    "initial_data,total_name,expected",
+    [
+        [None, None, 0],
+        [{}, None, 0],
+        [{"python": 10}, None, 10],
+        [{"python": 10, "rust": 20}, None, 30],
+        [{"python": 10, "rust": 20, "total_count": 30}, "total_count", 30],
+        # side-effect: the given total count is not same as the actual total
+        [{"python": 10, "rust": 20, "total_count": 50}, "total_count", 50],
+        # Nested groupby results
+        [
+            {
+                1: GroupByResult({"python": 10, "rust": 20}),
+                2: GroupByResult({"go": 6, "perl": 9, "julia": 100}),
+                3: GroupByResult({"fedora": 34}),
+            },
+            None,
+            179,
+        ],
+        # side-effect: no information about if mixed int and GroupByResult
+        # values are by design or not.
+        [
+            {
+                "lang": GroupByResult({"python": 10, "rust": 20}),
+                "os": GroupByResult({"fedora": 34}),
+                "linux": 3,
+            },
+            None,
+            67,
+        ],
+        # Incorrect value type
+        [
+            {
+                "lang": GroupByResult({"python": 10, "rust": 20}),
+                "os": GroupByResult({"fedora": 34}),
+                "count": "300",
+            },
+            None,
+            TypeError,
+        ],
+    ],
+)
+def test_groupbyresult_total_property(
+    initial_data: Dict[str, int], total_name: Union[str, None], expected: int
+):
+    if isinstance(expected, int):
+        assert expected == GroupByResult(initial_data, total_name=total_name).total
+    else:
+        with pytest.raises(TypeError):
+            GroupByResult(initial_data, total_name=total_name)
+
+
+@pytest.mark.parametrize(
+    "initial_data,total_name,expected",
+    [
+        [None, None, 0.0],
+        [{}, None, 0.0],
+        [{"rust": 10}, None, 0.0],
+        [{"python": 10}, None, 100.0],
+        [{"python": 0, "rust": 0}, None, 0.0],
+        [{"python": 10, "rust": 40}, None, 20.0],
+        [{"python": 10, "rust": 20}, None, 33.3],
+        [{"Python": 10, "rust": 20}, None, 0.0],
+        [{"python": 10, "rust": 30, "total_polls": 40}, "total_polls", 25.0],
+        # inconsistent total_name is passed
+        [{"python": 10, "rust": 30, "total_polls": 40}, "total", KeyError],
+        # side-effect: total is not correct, but still calculate
+        [{"python": 10, "rust": 30, "total_polls": 100}, "total_polls", 10.0],
+    ],
+)
+def test_groupbyresult_percent_property(
+    initial_data: Dict[str, int], total_name: Union[str, None], expected: Union[float, KeyError]
+):
+    if isinstance(expected, float):
+        assert expected == GroupByResult(initial_data, total_name=total_name).python_percent
+    else:
+        with pytest.raises(expected, match="Unknown key total"):
+            GroupByResult(initial_data, total_name=total_name).python_percent
 
 
 class GroupByResultLevelTest(unittest.TestCase):
@@ -413,6 +569,19 @@ class TestAsyncTask(unittest.TestCase):
             self.assertEqual(shared_task.return_value, task.target)
             shared_task.return_value.delay.assert_called_once_with(1, a=2)
 
+    def test_celery_module_is_not_installed(self):
+        with patch.object(settings, "ASYNC_TASK", new=AsyncTask.CELERY.value):
+            # Patch sys.path in order to make it failure to import the celery module
+            with patch.object(sys, "path", new=[]):
+                self.assertRaises(ImportError, Task, Mock())
+
+    @patch("tcms.core.task.logger")
+    def test_unknown_async_task_setting(self, logger):
+        with patch.object(settings, "ASYNC_TASK", new="SOME_OTHER_ASYNC"):
+            t = Task(Mock())
+            t(1)
+            logger.warning.assert_called_once()
+
 
 class TestMailTo(test.SimpleTestCase):
     """Test mailto"""
@@ -523,3 +692,21 @@ class TestCaseRunStatusGroupbyResult(test.TestCase):
             self.result.failure_percent_in_total,
         )
         self.assertEqual(0.0, self.empty_result.failure_percent_in_total)
+
+
+@pytest.mark.parametrize("recipients", [[], ["user@example.com"]])
+@pytest.mark.parametrize("cc", [[], ["admin@example.com"]])
+@patch("tcms.core.mailto.mailto")
+def test_mail_notify(mailto, cc, recipients, caplog):
+    caplog.set_level(logging.INFO)
+    instance = Mock()
+    instance.get_notification_recipients.return_value = recipients
+    mail_notify(instance, "mail.templ", "subject", {}, cc=cc)
+
+    if not recipients:
+        assert "No recipient is found." in caplog.text
+        mailto.assert_not_called()
+    else:
+        if cc:
+            assert "Also cc ['admin@example.com']." in caplog.text
+        mailto.assert_called_once_with("mail.templ", "subject", recipients, {}, cc=cc)

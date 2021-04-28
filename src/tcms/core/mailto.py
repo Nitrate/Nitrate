@@ -19,8 +19,8 @@ def mail_notify(
     context: Dict[str, str],
     cc: Optional[List[str]] = None,
 ):
-    recipients = instance.get_notification_recipients()
-    if recipients == 0:
+    recipients: List[str] = instance.get_notification_recipients()
+    if not recipients:
         logger.info("No recipient is found. Skip sending mail to notify.")
         return
 
