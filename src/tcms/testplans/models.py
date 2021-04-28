@@ -655,7 +655,7 @@ def _listen():
 
 
 def _disconnect_signals():
-    """ used in testing """
+    """used in testing"""
     post_save.disconnect(plan_watchers.notify_on_plan_is_updated, TestPlan)
     pre_delete.disconnect(plan_watchers.load_email_settings_for_later_deletion, TestPlan)
     post_delete.disconnect(plan_watchers.notify_deletion_of_plan, TestPlan)

@@ -117,7 +117,7 @@ class PlanTests(HelperAssertions, test.TestCase):
 
 
 class TestPlanModel(test.TestCase):
-    """ Test some model operations directly without a view """
+    """Test some model operations directly without a view"""
 
     @classmethod
     def setUpTestData(cls):

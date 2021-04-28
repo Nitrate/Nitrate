@@ -227,12 +227,12 @@ class TestGetProduct(XmlrpcAPIBaseTest):
 
 @unittest.skip("TODO: test case is not implemented yet.")
 class TestComponentMethods(test.TestCase):
-    """TODO: """
+    """TODO:"""
 
 
 @unittest.skip("TODO: test case is not implemented yet.")
 class TestGetAllCasesTags(test.TestCase):
-    """TODO: """
+    """TODO:"""
 
 
 class TestGetTestCases(XmlrpcAPIBaseTest):
@@ -301,21 +301,21 @@ class TestGetTestCases(XmlrpcAPIBaseTest):
 
 @unittest.skip("TODO: test case is not implemented yet.")
 class TestGetTestRuns(test.TestCase):
-    """TODO: """
+    """TODO:"""
 
 
 @unittest.skip("TODO: test case is not implemented yet.")
 class TestGetText(test.TestCase):
-    """TODO: """
+    """TODO:"""
 
 
 @unittest.skip("TODO: test case is not implemented yet.")
 class TestRemoveTag(test.TestCase):
-    """TODO: """
+    """TODO:"""
 
 
 class TestUpdate(test.TestCase):
-    """ Tests the XMLRPM testplan.update method """
+    """Tests the XMLRPM testplan.update method"""
 
     @classmethod
     def setUpTestData(cls):
