@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import enum
+import logging
 import threading
 
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 
 @enum.unique
@@ -15,12 +18,12 @@ class AsyncTask(enum.Enum):
     CELERY = "CELERY"
 
 
-if settings.ASYNC_TASK not in [item.value for item in AsyncTask]:
+if settings.ASYNC_TASK not in [item.value for item in AsyncTask]:  # pragma: no cover
     raise ValueError(f"Unknown async task type {settings.ASYNC_TASK}")
 
 
 class Task:
-    """"""
+    """Proxy of an asynchronous task"""
 
     def __init__(self, target):
         if settings.ASYNC_TASK == AsyncTask.CELERY.value:
@@ -43,3 +46,9 @@ class Task:
             thread.start()
         elif settings.ASYNC_TASK == AsyncTask.CELERY.value:
             return self.target.delay(*args, **kwargs)
+        else:
+            logger.warning(
+                "Unknown ASYNC_TASK: %s. Don't know how to run %s.",
+                settings.ASYNC_TASK,
+                self.target,
+            )

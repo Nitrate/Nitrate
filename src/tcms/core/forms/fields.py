@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import re
-
 from django import forms
+from django.core.validators import validate_email
 from django.db.models import Q
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
-from django.utils.translation import gettext_lazy as _
 
 from tcms.core.utils import string_to_list, timedelta2int
 
@@ -52,37 +50,28 @@ class DurationField(forms.CharField):
     estimated_time using integer mix with d(ay), h(our), m(inute)
     """
 
-    default_error_messages = {
-        "invalid": _("Enter a valid estimated time. e.g. 12h45m"),
-    }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def validate(self, value):
-        super().validate(value)
-        estimated_time_regex = re.compile(r"^(\d+[d])?(\d+[h])?(\d+[m])?(\d+[s])?$")
-        match = estimated_time_regex.match(value.replace(" ", ""))
-
-        if not match:
-            raise forms.ValidationError(self.error_messages["invalid"])
-
     def clean(self, value):
         value = super().clean(value)
-        return timedelta2int(value)
+        try:
+            return timedelta2int(value)
+        except ValueError as e:
+            raise forms.ValidationError(str(e)) from e
 
 
-class MultipleEmailField(forms.EmailField):
+class MultipleEmailField(forms.CharField):
     def clean(self, value):
         """
         Validates that the input matches the regular expression. Returns a
         Unicode object.
         """
-        value = super(forms.CharField, self).clean(value)
+        value = super().clean(value)
         if value == "":
             return value
-
-        return [v for v in string_to_list(strs=value) if self.regex.search(v)]
+        result = []
+        for mail_addr in string_to_list(value):
+            validate_email(mail_addr)
+            result.append(mail_addr)
+        return result
 
 
 class StripURLField(forms.URLField):

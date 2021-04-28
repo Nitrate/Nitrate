@@ -554,7 +554,7 @@ class TestPlan(TCMSActionModel):
         ancestor_ids = self.get_ancestor_ids()
         return TestPlan.objects.filter(pk__in=ancestor_ids)
 
-    def get_notification_recipients(self):
+    def get_notification_recipients(self) -> List[str]:
         recipients = set()
         emailing = self.email_settings
         if emailing.auto_to_plan_owner and self.owner:

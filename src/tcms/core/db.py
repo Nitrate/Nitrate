@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from collections.abc import Iterator
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from tcms.core.tcms_router import connection
 
 __all__ = (
@@ -42,7 +44,12 @@ class SQLExecution:
         from underlying DBAPI ``fetchone``.
     """
 
-    def __init__(self, sql, params=None, with_field_name=True):
+    def __init__(
+        self,
+        sql: str,
+        params: Optional[Union[List[Any], Tuple[Any]]] = None,
+        with_field_name: bool = True,
+    ):
         """Initialize and execute SQL query"""
         self.cursor = connection.reader_cursor
         if params is None:
@@ -51,14 +58,11 @@ class SQLExecution:
             self.cursor.execute(sql, params)
         self.field_names = [field[0] for field in self.cursor.description]
 
+        self._with_field_name = with_field_name
         if with_field_name:
             self.rows = self._rows_with_field_name
         else:
             self.rows = self._raw_rows
-
-    @property
-    def rowcount(self):
-        return self.cursor.rowcount
 
     @property
     def _rows_with_field_name(self):
@@ -79,8 +83,11 @@ class SQLExecution:
     @property
     def scalar(self):
         row = next(self.rows)
-        for key, value in row.items():
-            return value
+        if self._with_field_name:
+            for _, value in row.items():
+                return value
+        else:
+            return row[0]
 
 
 # TODO: redesign GroupByResult, major goal is to distiguish level node and
@@ -120,9 +127,9 @@ class GroupByResult:
     :type data: dict or iterable
     """
 
-    def __init__(self, data=None, total_name=None):
+    def __init__(self, data: Optional[Dict[Any, Any]] = None, total_name: Optional[str] = None):
         self._total_name = total_name
-        self._data = {} if data is None else dict(data)
+        self._data: Dict[Any, Any] = {} if data is None else dict(data)
         self._total_result = self._get_total()
 
         self._meta = {}
@@ -159,7 +166,7 @@ class GroupByResult:
     def __repr__(self):
         return self._data.__repr__()
 
-    def get(self, key, default=None):
+    def get(self, key: str, default: Optional[int] = None) -> Optional[int]:
         return self._data.get(key, default)
 
     def iteritems(self):
@@ -178,13 +185,13 @@ class GroupByResult:
         return len(self._data) == 0
 
     @property
-    def total(self):
+    def total(self) -> int:
         return self._total_result
 
     def _update_total_result(self):
         self._total_result = self._get_total()
 
-    def _get_total(self):
+    def _get_total(self) -> int:
         """Get the total value of this GROUP BY result
 
         Total value comes from two situations. One is that there is no total
@@ -208,10 +215,12 @@ class GroupByResult:
                     total += subtotal
                 elif isinstance(subtotal, GroupByResult):
                     total += subtotal.total
+                else:
+                    raise TypeError(f"Value {subtotal} is neither in type int nor GroupByResult.")
 
         return total
 
-    def _get_percent(self, key):
+    def _get_percent(self, key) -> float:
         """Percentage of a subtotal
 
         :param str key: name of subtotal whose percentage will be calculated
@@ -220,16 +229,13 @@ class GroupByResult:
         """
         total = self._total_result
         if total == 0:
-            return 0
+            return 0.0
         subtotal = self[key]
-        if total == 0:
-            return 0
-        else:
-            return round(subtotal * 100.0 / total, 1)
+        return round(subtotal * 100.0 / total, 1)
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Union[int, float]:
         if name.endswith("_percent"):
-            key, identifier = name.split("_")
+            key, _ = name.split("_")
             if key in self._data:
                 return self._get_percent(key)
         return 0
@@ -272,13 +278,13 @@ class GroupByResult:
 # TODO: key_conv and value_name are not used, maybe the rest as well.
 # we should probably remove them
 def get_groupby_result(
-    sql,
-    params,
-    key_name=None,
-    key_conv=None,
-    value_name=None,
-    with_rollup=False,
-    rollup_name=None,
+    sql: str,
+    params: List[Union[int, str]],
+    key_name: Optional[str] = None,
+    key_conv: Optional[Callable[[Any], Any]] = None,
+    value_name: Optional[str] = None,
+    with_rollup: bool = False,
+    rollup_name: Optional[str] = None,
 ):
     """Get mapping between GROUP BY field and total count
 
@@ -305,6 +311,7 @@ def get_groupby_result(
     :type key_conv: callable object
     :param value_name: the field name of total count. Default to total_count if
         not specified.
+    :type value_name: str or None
     :param bool with_rollup: whether ``WITH ROLLUP`` is used in ``GROUP BY`` in
         a raw SQL. Default to ``False``.
     :param str rollup_name: name associated with ROLLUP field. Default to
@@ -313,7 +320,7 @@ def get_groupby_result(
     :rtype: dict
     """
 
-    def _key_conv(value):
+    def _key_conv(value: Any) -> Any:
         if key_conv is not None:
             if not hasattr(key_conv, "__call__"):
                 raise ValueError("key_conv is not a callable object")
@@ -328,7 +335,7 @@ def get_groupby_result(
     if with_rollup:
         _rollup_name = "TOTAL" if rollup_name is None else rollup_name
 
-    def _rows_generator():
+    def _rows_generator() -> Iterator:
         sql_executor = SQLExecution(sql, params)
         for row in sql_executor.rows:
             key, value = row[_key_name], row[_value_name]
