@@ -24,7 +24,7 @@ from tests.xmlrpc.utils import make_http_request, XmlrpcAPIBaseTest
 
 
 class TestNotificationRemoveCC(test.TestCase):
-    """ Tests the XML-RPC testcase.notication_remove_cc method """
+    """Tests the XML-RPC testcase.notication_remove_cc method"""
 
     @classmethod
     def setUpTestData(cls):
@@ -45,7 +45,7 @@ class TestNotificationRemoveCC(test.TestCase):
 
 
 class TestUnlinkPlan(test.TestCase):
-    """ Test the XML-RPC method testcase.unlink_plan() """
+    """Test the XML-RPC method testcase.unlink_plan()"""
 
     @classmethod
     def setUpTestData(cls):
@@ -75,7 +75,7 @@ class TestUnlinkPlan(test.TestCase):
 
 
 class TestLinkPlan(XmlrpcAPIBaseTest):
-    """ Test the XML-RPC method testcase.link_plan() """
+    """Test the XML-RPC method testcase.link_plan()"""
 
     permission = "testcases.add_testcaseplan"
 
