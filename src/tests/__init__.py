@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import contextlib
 import json
 import re
 
@@ -28,6 +29,12 @@ __all__ = (
     "encode",
     "HelperAssertions",
 )
+
+
+@contextlib.contextmanager
+def no_raised_error():
+    """Make it easy to write the parametrized test case"""
+    yield
 
 
 def encode(s):

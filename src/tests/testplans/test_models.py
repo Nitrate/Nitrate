@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from textwrap import dedent
+from typing import List, Optional
 
+import pytest
 from django.core import mail
 from django import test
 
@@ -273,3 +275,94 @@ class TestPlanTreeView(BasePlanCase):
         for parent_plan, expected in test_data:
             plan: TestPlan = TestPlan.objects.get(pk=parent_plan)
             self.assertListEqual(expected, sorted(plan.get_descendant_ids(True)))
+
+
+@pytest.fixture
+def tester(django_user_model):
+    return django_user_model.objects.create(username="tester", email="tester@example.com")
+
+
+@pytest.mark.parametrize(
+    "text,expected",
+    [
+        [[], None],
+        [["add first text", "the second one"], "the second one"],
+    ],
+)
+@pytest.mark.django_db()
+def test_plan_latest_text(text: List[str], expected, tester):
+    plan = f.TestPlanFactory()
+
+    for item in text:
+        plan.add_text(tester, item)
+
+    if expected is None:
+        assert expected == plan.latest_text()
+    else:
+        assert expected == plan.latest_text().plan_text
+
+
+@pytest.mark.parametrize(
+    "text,expected",
+    [
+        [[], False],
+        [["add first text"], True],
+        [["add first text", "the second one"], True],
+    ],
+)
+@pytest.mark.django_db()
+def test_plan_text_exist(text: List[str], expected, tester):
+    plan = f.TestPlanFactory()
+
+    for item in text:
+        plan.add_text(tester, item)
+
+    assert expected == plan.text_exist()
+
+from tcms.core.utils import checksum
+
+@pytest.mark.parametrize(
+    "text,expected",
+    [
+        [[], None],
+        [["add first text"], checksum("add first text")],
+        [["add first text", "the second one"], checksum("the second one")],
+    ],
+)
+@pytest.mark.django_db()
+def test_plan_text_checksum(text: List[str], expected, tester):
+    plan = f.TestPlanFactory()
+
+    for item in text:
+        plan.add_text(tester, item)
+
+    assert expected == plan.text_checksum()
+
+
+@pytest.mark.parametrize(
+    "text_version,text,expected",
+    [
+        [None, [], None],
+        [None, ["first"], "first"],
+        [None, ["first", "second"], "second"],
+        [1, [], None],
+        [1, ["first"], "first"],
+        [1, ["first", "second"], "first"],
+        [2, [], None],
+        [2, ["first"], None],
+        [2, ["first", "second"], "second"],
+    ],
+)
+@pytest.mark.django_db()
+def test_plan_get_text_with_version(text_version: Optional[int], text: List[str], expected, tester):
+    plan = f.TestPlanFactory()
+
+    for item in text:
+        plan.add_text(tester, item)
+
+    the_text = plan.get_text_with_version(text_version)
+
+    if expected is None:
+        assert the_text is None
+    else:
+        assert expected == the_text.plan_text

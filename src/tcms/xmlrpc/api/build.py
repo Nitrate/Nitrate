@@ -176,6 +176,9 @@ def update(request, build_id, values):
     """
     tb = TestBuild.objects.get(build_id=build_id)
 
+    if not values:
+        return tb.serialize()
+
     def _update_value(obj, name, value):
         setattr(obj, name, value)
         update_fields.append(name)

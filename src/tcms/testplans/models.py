@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from textwrap import dedent
-from typing import List
+from typing import List, Optional
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
@@ -143,32 +143,15 @@ class TestPlan(TCMSActionModel):
             queryset = queryset.extra(select=select)
         return queryset
 
-    def confirmed_case(self):
-        return self.case.filter(case_status__name="CONFIRMED")
-
     def latest_text(self):
-        try:
-            return self.text.select_related("author").order_by("-plan_text_version")[0]
-        except IndexError:
-            return None
-        except ObjectDoesNotExist:
-            return None
+        return self.text.select_related("author").order_by("-plan_text_version").first()
 
-    def text_exist(self):
-        try:
-            return self.text.exists()
-        except IndexError:
-            return False
-        except ObjectDoesNotExist:
-            return False
+    def text_exist(self) -> bool:
+        return self.text.exists()
 
-    def text_checksum(self):
-        try:
-            return self.text.order_by("-plan_text_version").only("checksum")[0].checksum
-        except IndexError:
-            return None
-        except ObjectDoesNotExist:
-            return None
+    def text_checksum(self) -> Optional[str]:
+        text = self.text.order_by("-plan_text_version").only("checksum").first()
+        return text.checksum if text else None
 
     def get_text_with_version(self, plan_text_version=None):
         if plan_text_version:
