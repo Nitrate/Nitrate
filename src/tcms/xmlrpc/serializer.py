@@ -35,13 +35,6 @@ def encode_utf8(value):
     return value if value is None else value.encode("utf-8")
 
 
-def int_to_str(value):
-    if value is None:
-        return value
-    delta = timedelta(seconds=value)
-    return timedelta_to_str(delta)
-
-
 def datetime_to_str(value):
     if value is None:
         return value

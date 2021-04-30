@@ -1,174 +1,115 @@
 # -*- coding: utf-8 -*-
 
-import unittest
-
-from django import test
+import pytest
 from django.db.models import ObjectDoesNotExist
 
-from tests.factories import ProductFactory
+from tcms.management.models import Classification, Product
+from tests import no_raised_error
 import tcms.xmlrpc.utils as U
 
 
-class TestParseBool(unittest.TestCase):
-    def test_parse_bool_value_with_rejected_args(self):
-        rejected_args = (
-            3,
-            -1,
-            "",
-            "True",
-            "False",
-            "yes",
-            "no",
-            "33",
-            "-11",
-            [],
-            (),
-            {},
-            None,
-        )
-        for arg in rejected_args:
-            self.assertRaisesRegex(ValueError, "Unacceptable bool value.", U.parse_bool_value, arg)
-
-    def test_parse_bool_value(self):
-        self.assertFalse(U.parse_bool_value(0))
-        self.assertFalse(U.parse_bool_value("0"))
-        self.assertFalse(U.parse_bool_value(False))
-
-        self.assertTrue(U.parse_bool_value(1))
-        self.assertTrue(U.parse_bool_value("1"))
-        self.assertTrue(U.parse_bool_value(True))
-
-
-class TestPreCheckProduct(test.TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.product = ProductFactory(name="World Of Warcraft")
-
-    def test_pre_check_product_with_dict(self):
-        product = U.pre_check_product({"product": self.product.pk})
-        self.assertEqual(product.name, "World Of Warcraft")
-
-        product = U.pre_check_product({"product": "World Of Warcraft"})
-        self.assertEqual(product.name, "World Of Warcraft")
-
-    def test_pre_check_product_with_no_key(self):
-        self.assertRaises(ValueError, U.pre_check_product, {})
-
-    def test_pre_check_product_with_illegal_types(self):
-        types = (
-            (),
-            [],
-            True,
-            False,
-            self,
-        )
-        for arg in types:
-            self.assertRaisesRegex(
-                ValueError,
-                "The type of product is not recognizable.",
-                U.pre_check_product,
-                arg,
-            )
-
-    def test_pre_check_product_with_number(self):
-        product = U.pre_check_product(self.product.pk)
-        self.assertEqual(product.name, "World Of Warcraft")
-
-        self.assertRaises(ObjectDoesNotExist, U.pre_check_product, str(self.product.pk))
-
-    def test_pre_check_product_with_name(self):
-        product = U.pre_check_product("World Of Warcraft")
-        self.assertEqual(product.name, "World Of Warcraft")
-
-    def test_pre_check_product_with_no_exist(self):
-        self.assertRaises(ObjectDoesNotExist, U.pre_check_product, {"product": 9999})
-        self.assertRaises(ObjectDoesNotExist, U.pre_check_product, {"product": "unknown name"})
+@pytest.mark.parametrize(
+    "input_value,expected",
+    [
+        [3, ValueError],
+        [-1, ValueError],
+        ["", ValueError],
+        ["True", ValueError],
+        ["False", ValueError],
+        ["yes", ValueError],
+        ["no", ValueError],
+        ["33", ValueError],
+        [[], ValueError],
+        [(), ValueError],
+        [{}, ValueError],
+        [None, ValueError],
+        [0, False],
+        ["0", False],
+        [False, False],
+        [1, True],
+        ["1", True],
+        [True, True],
+    ],
+)
+def test_parse_tool_value(input_value, expected):
+    if expected == ValueError:
+        with pytest.raises(expected, match="Unacceptable bool value."):
+            U.parse_bool_value(input_value)
+    else:
+        U.parse_bool_value(input_value)
 
 
-class TestPreProcessIds(unittest.TestCase):
-    def test_pre_process_ids_with_list(self):
-        ids = U.pre_process_ids(["1", "2", "3"])
-        self.assertEqual(ids, [1, 2, 3])
+@pytest.mark.parametrize(
+    "input_value,expected",
+    [
+        [1, no_raised_error()],
+        ["World Of Warcraft", no_raised_error()],
+        [{"product": "World Of Warcraft"}, no_raised_error()],
+        [{"product": 1}, no_raised_error()],
+        # invalid input value
+        ["1", pytest.raises(ObjectDoesNotExist)],
+        [{"product": 9999}, pytest.raises(ObjectDoesNotExist)],
+        [{"product": "unknown name"}, pytest.raises(ObjectDoesNotExist)],
+        [(), pytest.raises(ValueError, match="product is not recognizable")],
+        [[], pytest.raises(ValueError, match="product is not recognizable")],
+        [True, pytest.raises(ValueError, match="product is not recognizable")],
+        [False, pytest.raises(ValueError, match="product is not recognizable")],
+        [object(), pytest.raises(ValueError, match="product is not recognizable")],
+        [{}, pytest.raises(ValueError)],
+    ],
+)
+@pytest.mark.django_db()
+def test_pre_check_product(input_value, expected):
+    product = Product.objects.create(
+        pk=1,
+        name="World Of Warcraft",
+        classification=Classification.objects.create(name="web"),
+    )
 
-    def test_pre_process_ids_with_str(self):
-        ids = U.pre_process_ids("1")
-        self.assertEqual(ids, [1])
-
-        ids = U.pre_process_ids("1,2,3,4")
-        self.assertEqual(ids, [1, 2, 3, 4])
-
-    def test_pre_process_ids_with_int(self):
-        ids = U.pre_process_ids(1)
-        self.assertEqual(ids, [1])
-
-    def test_pre_process_ids_with_others(self):
-        self.assertRaisesRegex(TypeError, "Unrecognizable type of ids", U.pre_process_ids, (1,))
-
-        self.assertRaisesRegex(TypeError, "Unrecognizable type of ids", U.pre_process_ids, {"a": 1})
-
-    def test_pre_process_ids_with_string(self):
-        self.assertRaises(ValueError, U.pre_process_ids, ["a", "b"])
-        self.assertRaises(ValueError, U.pre_process_ids, "1@2@3@4")
+    with expected:
+        assert product == U.pre_check_product(input_value)
 
 
-class TestEstimatedTime(unittest.TestCase):
-    def test_pre_process_estimated_time(self):
-        bad_args = ([], (), {}, True, False, 0, 1, -1)
-        for arg in bad_args:
-            self.assertRaisesRegex(
-                ValueError,
-                "Invaild estimated_time format.",
-                U.pre_process_estimated_time,
-                arg,
-            )
+@pytest.mark.parametrize(
+    "input_value,expected,raised_error",
+    [
+        [["1", "2", "3"], [1, 2, 3], no_raised_error()],
+        ["1", [1], no_raised_error()],
+        ["1,2,3,4", [1, 2, 3, 4], no_raised_error()],
+        [1, [1], no_raised_error()],
+        [(1,), None, pytest.raises(TypeError, match="Unrecognizable type of ids")],
+        [{"a": 1}, None, pytest.raises(TypeError, match="Unrecognizable type of ids")],
+        [["a", "b"], None, pytest.raises(ValueError)],
+        ["1@2@3@4", None, pytest.raises(ValueError)],
+    ],
+)
+def test_pre_process_ids(input_value, expected, raised_error):
+    with raised_error:
+        assert expected == U.pre_process_ids(input_value)
 
-    def test_pre_process_estimated_time_with_empty(self):
-        time = U.pre_process_estimated_time("")
-        self.assertEqual("", time)
 
-    def test_pre_process_estimated_time_with_bad_form(self):
-        self.assertRaisesRegex(
-            ValueError,
-            "Invaild estimated_time format.",
-            U.pre_process_estimated_time,
-            "aaaaaa",
-        )
-
-    def test_pre_process_estimated_time_with_time_string(self):
-        time = U.pre_process_estimated_time("13:22:54")
-        self.assertEqual(time, "13h22m54s")
-
-        time = U.pre_process_estimated_time("1d13h22m54s")
-        self.assertEqual(time, "1d13h22m54s")
-
-    def test_pre_process_estimated_time_with_upper_string(self):
-        self.assertRaisesRegex(
-            ValueError,
-            "Invaild estimated_time format.",
-            U.pre_process_estimated_time,
-            "1D13H22M54S",
-        )
-
-    def test_pre_process_estimated_time_with_string(self):
-        self.assertRaisesRegex(
-            ValueError,
-            "Invaild estimated_time format.",
-            U.pre_process_estimated_time,
-            "aa:bb:cc",
-        )
-
-    def test_pre_process_estimated_time_with_mhs(self):
-        self.assertRaisesRegex(
-            ValueError,
-            "Invaild estimated_time format.",
-            U.pre_process_estimated_time,
-            "ambhcs",
-        )
-
-    def test_pre_process_estimated_time_with_symbols(self):
-        self.assertRaisesRegex(
-            ValueError,
-            "Invaild estimated_time format.",
-            U.pre_process_estimated_time,
-            "aa@bb@cc",
-        )
+@pytest.mark.parametrize(
+    "input_value,expected,raised_error",
+    [
+        ["", "", no_raised_error()],
+        ["13:22:54", "13h22m54s", no_raised_error()],
+        ["1d13h22m54s", "1d13h22m54s", no_raised_error()],
+        # invalid input value
+        ["aa@bb@cc", None, pytest.raises(ValueError, match="Invaild estimated_time format")],
+        ["ambhcs", None, pytest.raises(ValueError, match="Invaild estimated_time format")],
+        ["aa:bb:cc", None, pytest.raises(ValueError, match="Invaild estimated_time format")],
+        ["1D13H22M54S", None, pytest.raises(ValueError, match="Invaild estimated_time format")],
+        ["aaaaaa", None, pytest.raises(ValueError, match="Invaild estimated_time format")],
+        [[], None, pytest.raises(ValueError, match="Invaild estimated_time format")],
+        [(), None, pytest.raises(ValueError, match="Invaild estimated_time format")],
+        [{}, None, pytest.raises(ValueError, match="Invaild estimated_time format")],
+        [True, None, pytest.raises(ValueError, match="Invaild estimated_time format")],
+        [False, None, pytest.raises(ValueError, match="Invaild estimated_time format")],
+        [0, None, pytest.raises(ValueError, match="Invaild estimated_time format")],
+        [1, None, pytest.raises(ValueError, match="Invaild estimated_time format")],
+        [-1, None, pytest.raises(ValueError, match="Invaild estimated_time format")],
+    ],
+)
+def test_pre_process_estimated_time(input_value, expected, raised_error):
+    with raised_error:
+        U.pre_process_estimated_time(input_value)

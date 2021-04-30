@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
 
+import pytest
 import unittest
+from unittest.mock import Mock
+from typing import Any, Dict
 
 from django.test import TestCase
 
 from tcms.xmlrpc.api import build
+from tcms.management.models import Classification, Product, TestBuild
 
-from tests import encode, factories as f
+from tests import encode, factories as f, user_should_have_perm
 from tests.xmlrpc.utils import make_http_request
 from tests.xmlrpc.utils import XmlrpcAPIBaseTest
 
@@ -305,3 +309,36 @@ class TestBuildCheck(XmlrpcAPIBaseTest):
         self.assertEqual(b["product_id"], self.product.pk)
         self.assertEqual(b["description"], "testing ...")
         self.assertEqual(b["is_active"], True)
+
+
+@pytest.mark.parametrize(
+    "values",
+    [
+        {},
+        {"product": "coolapp"},
+        {"name": "devbuild"},
+        {"description": "a long description"},
+        {"is_active": True},
+        {"is_active": False},
+        {"name": "alpha-build", "description": "desc", "is_active": False},
+    ],
+)
+@pytest.mark.django_db()
+def test_update(values: Dict[str, Any], django_user_model):
+    user = django_user_model.objects.create(username="tester", email="tester@localhost")
+    user_should_have_perm(user, "management.change_testbuild")
+
+    classification = Classification.objects.create(name="webapp")
+    Product.objects.create(pk=1, name="coolapp", classification=classification)
+    tb = TestBuild.objects.create(
+        name="coming-release",
+        product=Product.objects.create(pk=2, name="nitrate", classification=classification),
+    )
+
+    request = Mock(user=user)
+    if values:
+        updated_build = build.update(request, tb.pk, values)
+        for field_name, new_value in values.items():
+            assert new_value == updated_build[field_name]
+    else:
+        assert tb.serialize() == build.update(request, tb.pk, values)
