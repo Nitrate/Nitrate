@@ -27,7 +27,7 @@ from tcms.testcases import signals as case_watchers
 
 
 try:
-    from tcms.core.contrib.plugins_support.signals import register_model
+    from tcms.plugins_support.signals import register_model
 except ImportError:
     register_model = None
 

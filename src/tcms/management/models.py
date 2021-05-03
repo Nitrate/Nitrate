@@ -12,7 +12,7 @@ from tcms.core.models.fields import NitrateBooleanField
 
 # FIXME: plugins_support is no longer available. dead code here.
 try:
-    from tcms.core.contrib.plugins_support.signals import register_model
+    from tcms.plugins_support.signals import register_model
 except ImportError:
     register_model = None
 
