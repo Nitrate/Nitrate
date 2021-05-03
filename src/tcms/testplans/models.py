@@ -26,7 +26,7 @@ from tcms.testcases.models import TestCaseStatus
 from tcms.testplans import signals as plan_watchers
 
 try:
-    from tcms.core.contrib.plugins_support.signals import register_model
+    from tcms.plugins_support.signals import register_model
 except ImportError:
     register_model = None
 

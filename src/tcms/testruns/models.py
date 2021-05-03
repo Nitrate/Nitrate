@@ -25,7 +25,7 @@ from tcms.issuetracker.models import Issue
 
 
 try:
-    from tcms.core.contrib.plugins_support.signals import register_model
+    from tcms.plugins_support.signals import register_model
 except ImportError:
     register_model = None
 
