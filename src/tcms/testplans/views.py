@@ -79,7 +79,7 @@ class CreateNewPlanView(PermissionRequiredMixin, View):
     permission_required = (
         "testplans.add_testplan",
         "testplans.add_testplantext",
-        "management.add_tcmsenvplanmap",
+        "testplans.add_tcmsenvplanmap",
     )
 
     def make_response(self, form):
@@ -106,9 +106,19 @@ class CreateNewPlanView(PermissionRequiredMixin, View):
 
         # Process the upload plan document
         if form.cleaned_data.get("upload_plan_text"):
-            # Set the summary form field to the uploaded text
-            form.data["text"] = form.cleaned_data["text"]
-            return self.make_response(form)
+            # A document is uploaded to provide the document content. Load the
+            # page again in order to show the content.
+            initial_data = {
+                "name": form.cleaned_data["name"],
+                "type": form.cleaned_data["type"].pk,
+                "product": form.cleaned_data["product"].pk,
+                "product_version": form.cleaned_data["product_version"].pk,
+                "extra_link": form.cleaned_data["extra_link"],
+                "text": form.cleaned_data["text"],
+            }
+            if form.cleaned_data["env_group"]:
+                initial_data["env_group"] = form.cleaned_data["env_group"].pk
+            return self.make_response(NewPlanForm(initial=initial_data))
 
         # Process the test plan submit to the form
         tp = TestPlan.objects.create(

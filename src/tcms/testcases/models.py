@@ -23,6 +23,7 @@ from tcms.core.utils import checksum
 from tcms.core.utils import format_timedelta
 from tcms.issuetracker.models import Issue
 from tcms.issuetracker.services import find_service
+from tcms.management.models import Component
 from tcms.testcases import signals as case_watchers
 
 
@@ -414,7 +415,7 @@ class TestCase(TCMSActionModel):
 
         return issue
 
-    def add_component(self, component):
+    def add_component(self, component: Component):
         """Add a component
 
         Relationship between case and component is unique. A same component
@@ -455,17 +456,17 @@ class TestCase(TCMSActionModel):
 
     def add_text(
         self,
-        action,
-        effect,
-        setup,
-        breakdown,
+        action: str,
+        effect: str,
+        setup: str,
+        breakdown: str,
         author=None,
         create_date=None,
-        case_text_version=1,
-        action_checksum=None,
-        effect_checksum=None,
-        setup_checksum=None,
-        breakdown_checksum=None,
+        case_text_version: int = 1,
+        action_checksum: Optional[str] = None,
+        effect_checksum: Optional[str] = None,
+        setup_checksum: Optional[str] = None,
+        breakdown_checksum: Optional[str] = None,
     ):
         if not author:
             author = self.author
@@ -540,7 +541,7 @@ class TestCase(TCMSActionModel):
         next_ = TestCase.objects.get(pk=pk_list[next_pk])
         return prev, next_
 
-    def get_text_with_version(self, case_text_version=None):
+    def get_text_with_version(self, case_text_version: Optional[int] = None):
         if case_text_version:
             try:
                 return TestCaseText.objects.get(

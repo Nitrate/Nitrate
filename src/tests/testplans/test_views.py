@@ -2,30 +2,36 @@
 
 import json
 import os
+import tempfile
 import xml.etree.ElementTree as et
 import urllib
-
 from http import HTTPStatus
+from textwrap import dedent
+from typing import Dict, List, Optional
+from unittest.mock import Mock
 
 from django import test
 from django.db.models import Max
 from django.urls import reverse
 from django.test.client import Client
+import pytest
+from uuslug.uuslug import slugify
+from pytest_django.asserts import assertContains, assertNotContains
 
 from tcms.logs.models import TCMSLogModel
-from tcms.management.models import Product
-from tcms.management.models import Version
+from tcms.management.models import Product, TCMSEnvGroup, Version
 from tcms.testcases.models import TestCase
 from tcms.testcases.models import TestCasePlan
 from tcms.testplans.models import TCMSEnvPlanMap
 from tcms.testplans.models import TestPlan
 from tcms.testplans.models import TestPlanAttachment
 from tcms.testruns.models import TestCaseRun
-from tests import BasePlanCase, HelperAssertions, BaseCaseRun, AuthMixin
+from tests import BaseDataContext, BasePlanCase, HelperAssertions, BaseCaseRun, AuthMixin
 from tests import factories as f
 from tests import remove_perm_from_user
 from tests import user_should_have_perm
 from tests.testcases.test_views import PlanCaseExportTestHelper
+from tcms.testplans.views import update_plan_email_settings
 
 
 class PlanTests(HelperAssertions, test.TestCase):
@@ -62,19 +68,6 @@ class PlanTests(HelperAssertions, test.TestCase):
     def test_search_plans(self):
         location = reverse("plans-all")
         response = self.c.get(location, {"action": "search", "type": self.test_plan.type.pk})
-        self.assert200(response)
-
-    def test_plan_new_get(self):
-        location = reverse("plans-new")
-        response = self.c.get(location, follow=True)
-        self.assert200(response)
-
-    def test_plan_details(self):
-        location = reverse("plan-get", args=[self.plan_id])
-        response = self.c.get(location)
-        self.assert301(response)
-
-        response = self.c.get(location, follow=True)
         self.assert200(response)
 
     def test_plan_delete(self):
@@ -149,13 +142,13 @@ class TestImportCasesToPlan(BasePlanCase):
     def setUpTestData(cls):
         super().setUpTestData()
         user_should_have_perm(cls.tester, "testcases.add_testcaseplan")
+        cls.url = reverse("plan-import-cases", args=[cls.plan.pk])
 
     def test_import_cases(self):
-        location = reverse("plan-import-cases", args=[self.plan.pk])
         filename = os.path.join(TESTS_DATA_DIR, "cases-to-import.xml")
 
         with open(filename, "r") as fin:
-            response = self.client.post(location, {"xml_file": fin})
+            response = self.client.post(self.url, {"xml_file": fin})
 
         self.assertRedirects(
             response,
@@ -166,6 +159,22 @@ class TestImportCasesToPlan(BasePlanCase):
         summary = "Remove this case from a test plan"
         has_case = TestCase.objects.filter(summary=summary).exists()
         self.assertTrue(has_case)
+
+    def test_invalid_input_xml_file(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            input_file = os.path.join(tmp_dir, "input.xml")
+            with open(input_file, "w") as f:
+                f.write(
+                    dedent(
+                        """\
+                        <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+                        <testopia version="1.1"></testopia>
+                        """
+                    )
+                )
+            with open(input_file, "r") as f:
+                response = self.client.post(self.url, {"xml_file": f})
+            self.assertContains(response, "No case found")
 
 
 class TestDeleteCasesFromPlan(BasePlanCase):
@@ -753,7 +762,7 @@ class TestPlansPagesView(BasePlanCase):
             )
 
 
-class TestExport(PlanCaseExportTestHelper, BasePlanCase):
+class TestExportView(PlanCaseExportTestHelper, BasePlanCase):
     """Test export view method"""
 
     @classmethod
@@ -785,9 +794,14 @@ class TestExport(PlanCaseExportTestHelper, BasePlanCase):
             plan=[cls.plan_export],
         )
 
+        cls.url = reverse("plans-export")
+
+    def test_no_plan_is_passed(self):
+        response = self.client.get(self.url)
+        self.assertContains(response, "At least one target is required")
+
     def test_export(self):
-        location = reverse("plans-export")
-        response = self.client.get(location, {"plan": self.plan_export.pk})
+        response = self.client.get(self.url, {"plan": self.plan_export.pk})
         self.assert200(response)
 
         xmldoc = et.fromstring(response.content)
@@ -1215,3 +1229,217 @@ class TestEnableDisablePlanViews(AuthMixin, HelperAssertions, test.TestCase):
                 new_value="False",
             ).exists()
         )
+
+
+@pytest.mark.parametrize("plan_id", [1, 2])
+@pytest.mark.parametrize("slug", [None, "plan---1", slugify("plan 1")])
+def test_plan_get(plan_id: int, slug: Optional[str], base_data: BaseDataContext, client):
+    plan = base_data.plan_creator(pk=1, name="plan 1")
+
+    urlconf_args = [plan_id]
+    if slug is not None:
+        urlconf_args.append(slug)
+
+    response = client.get(reverse("plan-get", args=urlconf_args))
+
+    if plan_id == 2:
+        assert HTTPStatus.NOT_FOUND == response.status_code
+        return
+
+    if slug is None or slug == "plan---1":
+        assert HTTPStatus.MOVED_PERMANENTLY == response.status_code
+        assert plan.get_absolute_url() == response.url
+        return
+
+    assert HTTPStatus.OK == response.status_code
+
+
+@pytest.mark.parametrize("notify_on_plan_update", [True, False])
+@pytest.mark.parametrize("notify_on_plan_delete", [True, False])
+@pytest.mark.parametrize("notify_on_case_update", [True, False])
+@pytest.mark.parametrize("auto_to_plan_owner", [True, False])
+@pytest.mark.parametrize("auto_to_plan_author", [True, False])
+@pytest.mark.parametrize("auto_to_case_owner", [True, False])
+@pytest.mark.parametrize("auto_to_case_default_tester", [True, False])
+def test_update_plan_email_settings(
+    notify_on_plan_update: bool,
+    notify_on_plan_delete: bool,
+    notify_on_case_update: bool,
+    auto_to_plan_owner: bool,
+    auto_to_plan_author: bool,
+    auto_to_case_owner: bool,
+    auto_to_case_default_tester: bool,
+    base_data: BaseDataContext,
+):
+    plan = base_data.plan_creator(pk=1, name="plan 1")
+
+    form = Mock(
+        cleaned_data={
+            "notify_on_plan_update": notify_on_plan_update,
+            "notify_on_plan_delete": notify_on_plan_delete,
+            "notify_on_case_update": notify_on_case_update,
+            "auto_to_plan_owner": auto_to_plan_owner,
+            "auto_to_plan_author": auto_to_plan_author,
+            "auto_to_case_owner": auto_to_case_owner,
+            "auto_to_case_default_tester": auto_to_case_default_tester,
+        }
+    )
+    update_plan_email_settings(plan, form)
+
+    plan: TestPlan = TestPlan.objects.get(pk=1)
+
+    for var_name, var_value in locals().items():
+        if var_name.startswith("notify_on_") or var_name.startswith("auto_to_"):
+            assert var_value == getattr(plan.email_settings, var_name)
+
+
+@pytest.mark.parametrize("query_args", [None, {"plan": [1]}, {"plan": [1, 2]}])
+def test_plan_printable_page(
+    query_args: Optional[Dict[str, List[int]]], client, tester, base_data: BaseDataContext
+):
+    plan: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
+    case_1: TestCase = base_data.case_creator(pk=1, summary="case 1")
+    plan.add_case(case_1)
+    case_2: TestCase = base_data.case_creator(pk=2, summary="case 2")
+    plan.add_case(case_2)
+    case_2.add_text(
+        "case 2 action", "case 2 effect", "case 2 setup", "case 2 breakdown", author=tester
+    )
+
+    plan_2: TestPlan = base_data.plan_creator(pk=2, name="plan 2")
+    case_3: TestCase = base_data.case_creator(pk=3, summary="case 3")
+    plan_2.add_case(case_3)
+    case_3.add_text("action", "effect", "setup", "breakdown", author=tester)
+    case_3.add_text("action 3", "effect 3", "setup 3", "breakdown 3", author=tester)
+
+    response = client.get(reverse("plans-printable"), data=query_args)
+
+    if query_args is None:
+        assertContains(response, "At least one target is required")
+        return
+
+    for plan_id in query_args["plan"]:
+        if plan_id == 1:
+            assertContains(response, f"<h1>[{plan.pk}] <b>{plan.name}</b></h1>", html=True)
+            assertContains(response, f"<li>[{case_2.pk}] {case_2.summary}</li>", html=True)
+            assertContains(response, "case 2 action")
+            assertContains(response, "case 2 effect")
+            assertContains(response, "case 2 setup")
+            assertContains(response, "case 2 breakdown")
+
+        elif plan_id == 2:
+            assertContains(response, f"<h1>[{plan_2.pk}] <b>{plan_2.name}</b></h1>", html=True)
+            assertContains(response, f"<li>[{case_3.pk}] {case_3.summary}</li>", html=True)
+            assertContains(response, "action 3")
+            assertContains(response, "effect 3")
+            assertContains(response, "setup 3")
+            assertContains(response, "breakdown 3")
+
+    # case 1 does not have text, so not included in the printable page.
+    assertNotContains(response, f"<li>[{case_1.pk}] {case_1.summary}</li>", html=True)
+
+
+def test_get_create_new_plan_page(logged_in_tester, client):
+    user_should_have_perm(logged_in_tester, "testplans.add_testplan")
+    user_should_have_perm(logged_in_tester, "testplans.add_testplantext")
+    user_should_have_perm(logged_in_tester, "testplans.add_tcmsenvplanmap")
+    response = client.get(reverse("plans-new"))
+    assertContains(response, "<h2>Create New Test Plan</h2>", html=True)
+
+
+@pytest.mark.parametrize("extra_link", [None, "https://srv1.example.com/"])
+@pytest.mark.parametrize("env_group", [None, 1])
+def test_creat_a_new_plan(
+    extra_link: Optional[str],
+    env_group: Optional[int],
+    logged_in_tester,
+    base_data: BaseDataContext,
+    client,
+):
+    user_should_have_perm(logged_in_tester, "testplans.add_testplan")
+    user_should_have_perm(logged_in_tester, "testplans.add_testplantext")
+    user_should_have_perm(logged_in_tester, "testplans.add_tcmsenvplanmap")
+
+    env_group: TCMSEnvGroup = TCMSEnvGroup.objects.create(pk=1, name="os", manager=logged_in_tester)
+
+    data = {
+        "name": "A new plan",
+        "product": base_data.product.pk,
+        "product_version": base_data.product_version.pk,
+        "type": base_data.plan_type_smoke.pk,
+    }
+    if extra_link is not None:
+        data["extra_link"] = extra_link
+    if env_group is not None:
+        data["env_group"] = env_group.pk
+    response = client.post(reverse("plans-new"), data=data)
+
+    assert HTTPStatus.FOUND == response.status_code
+
+    new_plan: Optional[TestPlan] = TestPlan.objects.order_by("-pk").first()
+    assert reverse("plan-get", args=[new_plan.pk]) == response.url
+
+    assert "A new plan" == new_plan.name
+    assert base_data.product == new_plan.product
+    assert base_data.product_version == new_plan.product_version
+    assert base_data.plan_type_smoke == new_plan.type
+    assert new_plan.text_exist()
+    assert "" == new_plan.text.first().plan_text
+    assert logged_in_tester == new_plan.author
+    assert logged_in_tester == new_plan.owner
+    assert new_plan.parent is None
+
+    if extra_link is None:
+        assert "" == new_plan.extra_link
+    else:
+        assert extra_link == new_plan.extra_link
+
+    has = TCMSEnvPlanMap.objects.filter(plan=new_plan, group=env_group).exists()
+    if env_group is None:
+        assert not has
+    else:
+        assert has
+
+
+DATA_DIR: str = os.path.join(os.path.dirname(__file__), "data")
+PLAN_DOCUMENT_ODT: str = os.path.join(DATA_DIR, "plan-document.odt")
+PLAN_DOCUMENT_TXT: str = os.path.join(DATA_DIR, "plan-document.txt")
+PLAN_DOCUMENT_HTML: str = os.path.join(DATA_DIR, "plan-document.html")
+
+
+@pytest.mark.parametrize("upload_file", [PLAN_DOCUMENT_ODT, PLAN_DOCUMENT_TXT, PLAN_DOCUMENT_HTML])
+def test_upload_a_plan_document_to_create_new_plan(
+    upload_file: str, logged_in_tester, base_data: BaseDataContext, client
+):
+    user_should_have_perm(logged_in_tester, "testplans.add_testplan")
+    user_should_have_perm(logged_in_tester, "testplans.add_testplantext")
+    user_should_have_perm(logged_in_tester, "testplans.add_tcmsenvplanmap")
+
+    with open(upload_file, "rb") as f:
+        data = {
+            "name": "A new plan",
+            "product": base_data.product.pk,
+            "product_version": base_data.product_version.pk,
+            "type": base_data.plan_type_smoke.pk,
+            "upload_plan_text": f,
+        }
+        response = client.post(reverse("plans-new"), data=data)
+
+        assert HTTPStatus.OK == response.status_code
+        assert "This is a cool Web application" in response.content.decode()
+
+
+def test_create_new_plan_with_invalid_args(logged_in_tester, base_data: BaseDataContext, client):
+    user_should_have_perm(logged_in_tester, "testplans.add_testplan")
+    user_should_have_perm(logged_in_tester, "testplans.add_testplantext")
+    user_should_have_perm(logged_in_tester, "testplans.add_tcmsenvplanmap")
+
+    # Missing product_vesion
+    data = {
+        "name": "A new plan",
+        "product": base_data.product.pk,
+        "type": base_data.plan_type_smoke.pk,
+    }
+    response = client.post(reverse("plans-new"), data=data)
+
+    assert HTTPStatus.OK == response.status_code
