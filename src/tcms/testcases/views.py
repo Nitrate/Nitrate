@@ -1253,6 +1253,7 @@ def clone(request, template_name="case/clone.html"):
             src_plan = plan_from_request_or_none(request)
             dest_case = None
 
+            src_cases: TestCase
             for src_case in src_cases:
                 author = None if keep_orig_author else request.user
                 default_tester = None if keep_orig_default_tester else request.user

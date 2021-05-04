@@ -2,12 +2,13 @@
 
 from datetime import datetime
 from textwrap import dedent
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from django.db.models import Max
+from django.db.models import Max, QuerySet
 from django.db.models.signals import post_save, post_delete, pre_delete, pre_save
 from django.dispatch import receiver
 from django.shortcuts import get_object_or_404
@@ -18,7 +19,7 @@ from tcms.core.models import TCMSActionModel
 from tcms.core.raw_sql import RawSQL
 from tcms.core.utils import checksum
 from tcms.core.tcms_router import connection
-from tcms.management.models import Version
+from tcms.management.models import TCMSEnvGroup, TestTag, Version, TestAttachment
 from tcms.testcases.models import TestCase
 from tcms.testcases.models import TestCaseCategory
 from tcms.testcases.models import TestCasePlan
@@ -127,11 +128,11 @@ class TestPlan(TCMSActionModel):
     @classmethod
     def apply_subtotal(
         cls,
-        queryset,
+        queryset: QuerySet,
         cases_count: bool = False,
         runs_count: bool = False,
         children_count: bool = False,
-    ):
+    ) -> QuerySet:
         select = {}
         if cases_count:
             select["cases_count"] = RawSQL.num_cases
@@ -164,12 +165,15 @@ class TestPlan(TCMSActionModel):
 
     def add_text(
         self,
-        author,
-        plan_text,
+        author: User,
+        plan_text: str,
         create_date=datetime.now(),
         plan_text_version=None,
         text_checksum=None,
     ):
+        if plan_text is None:
+            return None
+
         if not plan_text_version:
             latest_text = self.latest_text()
             if latest_text:
@@ -191,12 +195,9 @@ class TestPlan(TCMSActionModel):
             checksum=text_checksum or checksum(plan_text),
         )
 
-    def add_case(self, case, sortkey=1):
+    def add_case(self, case: TestCase, sortkey: Union[int, None] = 1):
         """Add a case"""
-        tcp, is_created = TestCasePlan.objects.get_or_create(
-            plan=self,
-            case=case,
-        )
+        tcp, is_created = TestCasePlan.objects.get_or_create(plan=self, case=case)
         if is_created:
             tcp.sortkey = sortkey
             tcp.save(update_fields=["sortkey"])
@@ -210,28 +211,24 @@ class TestPlan(TCMSActionModel):
         except Exception:
             return False
 
-    def add_env_group(self, env_group):
+    def add_env_group(self, env_group: TCMSEnvGroup):
         # Create the env plan map
         return TCMSEnvPlanMap.objects.create(
             plan=self,
             group=env_group,
         )
 
-    def add_attachment(self, attachment):
+    def add_attachment(self, attachment: TestAttachment):
         return TestPlanAttachment.objects.create(
             plan=self,
             attachment=attachment,
         )
 
-    def add_tag(self, tag):
+    def add_tag(self, tag: TestTag):
         return TestPlanTag.objects.get_or_create(plan=self, tag=tag)
 
-    def remove_tag(self, tag):
-        cursor = connection.writer_cursor
-        cursor.execute(
-            "DELETE from test_plan_tags WHERE plan_id = %s AND tag_id = %s",
-            (self.pk, tag.pk),
-        )
+    def remove_tag(self, tag: TestTag):
+        TestPlanTag.objects.filter(plan=self, tag=tag).delete()
 
     def remove_component(self, component):
         try:
@@ -255,7 +252,7 @@ class TestPlan(TCMSActionModel):
             },
         )
 
-    def get_case_sortkey(self):
+    def get_case_sortkey(self) -> Optional[int]:
         """
         Get case sortkey.
         """
@@ -316,16 +313,25 @@ class TestPlan(TCMSActionModel):
         if not copy_texts and not default_text_author:
             raise ValueError("Missing default text author when not copy texts.")
 
-        if not copy_cases and not default_component_initial_owner:
-            raise ValueError("Missing default component initial owner when not copy cases.")
+        if copy_cases and not default_component_initial_owner:
+            raise ValueError("Missing default component initial owner when copy cases.")
 
+        copied_create_date = datetime(
+            self.create_date.year,
+            self.create_date.month,
+            self.create_date.day,
+            hour=self.create_date.hour,
+            minute=self.create_date.minute,
+            second=self.create_date.second,
+            microsecond=self.create_date.microsecond,
+        )
         tp_dest = TestPlan.objects.create(
             name=new_name or self.make_cloned_name(),
             product=product or self.product,
             author=new_original_author or self.author,
             type=self.type,
             product_version=version or self.product_version,
-            create_date=self.create_date,
+            create_date=copied_create_date,
             is_active=self.is_active,
             extra_link=self.extra_link,
             parent=self if set_parent else None,
@@ -369,7 +375,7 @@ class TestPlan(TCMSActionModel):
                     default_tester = new_case_default_tester or tpcase_src.default_tester
 
                     tc_category, b_created = TestCaseCategory.objects.get_or_create(
-                        name=tpcase_src.category.name, product=product
+                        name=tpcase_src.category.name, product=product or self.product
                     )
 
                     tpcase_dest = TestCase.objects.create(
@@ -645,5 +651,5 @@ def _disconnect_signals():
     pre_save.disconnect(plan_watchers.pre_save_clean, TestPlan)
 
 
-if settings.LISTENING_MODEL_SIGNAL:
+if settings.LISTENING_MODEL_SIGNAL:  # pragma: no cover
     _listen()

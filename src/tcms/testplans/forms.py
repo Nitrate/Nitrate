@@ -1,13 +1,21 @@
 # -*- coding: utf-8 -*-
 
+import logging
+import io
+
 from django import forms
-from odf.odf2xhtml import ODF2XHTML, load
+from odf.odf2xhtml import ODF2XHTML
+
+from django.core.files.uploadedfile import UploadedFile as DjUploadedFile
+from tinymce.widgets import TinyMCE
 
 from tcms.core.forms.fields import UserField, StripURLField
-from tinymce.widgets import TinyMCE
 from tcms.management.models import Component, Product, Version, TCMSEnvGroup, TestTag
 from tcms.testplans.importer import clean_xml_file
-from .models import TestPlan, TestPlanType
+from tcms.testplans.models import TestPlan, TestPlanType
+
+logger = logging.getLogger(__name__)
+
 
 # ===========Plan Fields==============
 
@@ -21,11 +29,11 @@ MIMETYPE_OPENDOCUMENT = "application/vnd.oasis.opendocument.text"
 class UploadedFile:
     """Base class for all classes representing a concrete uploaded file"""
 
-    def __init__(self, uploaded_file):
-        self.uploaded_file = uploaded_file
+    def __init__(self, uploaded_file: DjUploadedFile):
+        self.uploaded_file: DjUploadedFile = uploaded_file
 
     def get_content(self):
-        raise NotImplementedError("Must be implemented in subclass.")
+        raise NotImplementedError("Must be implemented in subclass.")  # pragma: no cover
 
 
 class UploadedPlainTextFile(UploadedFile):
@@ -79,8 +87,8 @@ class UploadedODTFile(UploadedFile):
         embedable = True
         odhandler = ODF2XHTML(generatecss, embedable)
 
-        doc = load(self.uploaded_file)
-        return odhandler.odf2xhtml(doc)
+        with io.BytesIO(self.uploaded_file.read()) as buf:
+            return odhandler.odf2xhtml(buf)
 
 
 class PlanFileField(forms.FileField):
@@ -112,7 +120,8 @@ class PlanFileField(forms.FileField):
         if data.content_type in self.ODT_CONTENT_TYPES:
             try:
                 return UploadedODTFile(data).get_content()
-            except Exception:
+            except Exception as e:
+                logger.error("Failed to get the uploaded ODT file content: %s", e)
                 raise forms.ValidationError(self.error_messages["unexcept_odf_error"])
 
         if data.content_type == MIMETYPE_HTML:
