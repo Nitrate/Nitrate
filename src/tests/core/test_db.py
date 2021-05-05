@@ -27,7 +27,7 @@ from tests import factories as f
         ],
         [
             False,
-            "SELECT summary FROM test_cases WHERE summary = ?",
+            "SELECT summary FROM test_cases WHERE summary = %s",
             ("case 2",),
             [("case 2",)],
             "case 2",
@@ -82,7 +82,7 @@ def test_execute_sql(
         [
             "SELECT priority.value, COUNT(test_cases.case_id) AS total_count "
             "FROM priority JOIN test_cases on priority.id = test_cases.priority_id "
-            "GROUP BY priority.id HAVING priority.value = ?",
+            "GROUP BY priority.id HAVING priority.value = %s",
             ["P1"],
             "value",
             None,
