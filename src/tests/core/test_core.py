@@ -571,8 +571,8 @@ class TestAsyncTask(unittest.TestCase):
 
     def test_celery_module_is_not_installed(self):
         with patch.object(settings, "ASYNC_TASK", new=AsyncTask.CELERY.value):
-            # Patch sys.path in order to make it failure to import the celery module
-            with patch.object(sys, "path", new=[]):
+            # Patch sys.modules in order to make it failure to import the celery module
+            with patch.dict(sys.modules, values={"celery": None}):
                 self.assertRaises(ImportError, Task, Mock())
 
     @patch("tcms.core.task.logger")
