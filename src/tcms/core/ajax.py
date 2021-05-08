@@ -57,10 +57,6 @@ SORT_KEY_MAX = 32300
 SORT_KEY_RANGE = [SORT_KEY_MIN, SORT_KEY_MAX]
 
 
-def is_sort_key_in_range(sort_key: int) -> bool:
-    return SORT_KEY_MIN <= sort_key <= SORT_KEY_MAX
-
-
 def strip_parameters(request_data, skip_parameters):
     """
     Helper method which will remove the dict items listed in skip_parameters
