@@ -10,7 +10,7 @@ from django.contrib.auth.models import User
 import pytest
 from django import test
 from tcms.core.utils import string_to_list
-from tcms.management.models import TCMSEnvProperty, TCMSEnvValue, TestBuild, TestTag, Version
+from tcms.management.models import TCMSEnvProperty, TCMSEnvValue, TestTag, Version
 from tcms.testplans.models import TestPlan
 from tcms.testruns.models import TCMSEnvRunValueMap, TestCaseRun, TestRun, TestRunTag
 
@@ -159,15 +159,13 @@ def test_add_cases(run_ids, case_ids, tester, base_data: BaseDataContext):
         assert not TestCaseRun.objects.filter(run=run_2).exists()
         return
 
-    for run_id, case_id in itertools.product(
-        pre_process_ids(run_ids), pre_process_ids(case_ids)
-    ):
+    for run_id, case_id in itertools.product(pre_process_ids(run_ids), pre_process_ids(case_ids)):
         assert TestCaseRun.objects.filter(run_id=run_id, case_id=case_id).exists()
 
 
 @pytest.mark.parametrize("run_ids", ["", 1, [1, 2]])
 @pytest.mark.parametrize("case_ids", ["", 1, [2, 3]])
-def test_remove_cases(run_ids, case_ids, tester, base_data:BaseDataContext):
+def test_remove_cases(run_ids, case_ids, tester, base_data: BaseDataContext):
     plan: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
     case_1: TestCase = base_data.case_creator(pk=1, summary="case 1")
     case_2: TestCase = base_data.case_creator(pk=2, summary="case 2")
@@ -192,9 +190,7 @@ def test_remove_cases(run_ids, case_ids, tester, base_data:BaseDataContext):
         assert TestCaseRun.objects.filter(run=run_2, case=case_3).exists()
         return
 
-    for run_id, case_id in itertools.product(
-        pre_process_ids(run_ids), pre_process_ids(case_ids)
-    ):
+    for run_id, case_id in itertools.product(pre_process_ids(run_ids), pre_process_ids(case_ids)):
         assert not TestCaseRun.objects.filter(run_id=run_id, case_id=case_id).exists()
 
 
@@ -204,7 +200,7 @@ def test_add_tag(
     run_ids: Union[int, List[int]],
     tags: Union[str, List[str]],
     tester,
-    base_data: BaseDataContext
+    base_data: BaseDataContext,
 ):
     plan: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
     run_1: TestRun = base_data.run_creator(pk=1, plan=plan)
@@ -232,10 +228,10 @@ def test_remove_tag(
     run_ids: Union[int, List[int]],
     tags: Union[str, List[str]],
     tester,
-    base_data: BaseDataContext
+    base_data: BaseDataContext,
 ):
     plan: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
-    run_1: TestRun = base_data.run_creator(pk=1, plan=plan)
+    base_data.run_creator(pk=1, plan=plan)
     run_2: TestRun = base_data.run_creator(pk=2, plan=plan)
 
     run_2.add_tag(TestTag.objects.create(name="tag1"))
@@ -262,7 +258,7 @@ def test_add_env_value(
     run_ids: Union[str, int, List[int]],
     env_value_ids: Union[str, int, List[int]],
     tester,
-    base_data: BaseDataContext
+    base_data: BaseDataContext,
 ):
     plan: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
     run_1: TestRun = base_data.run_creator(pk=1, plan=plan)
@@ -296,9 +292,7 @@ def test_add_env_value(
                 run_id=run_id, value_id=env_value_id
             ).exists()
         else:
-            assert TCMSEnvRunValueMap.objects.filter(
-                run_id=run_id, value_id=env_value_id
-            ).exists()
+            assert TCMSEnvRunValueMap.objects.filter(run_id=run_id, value_id=env_value_id).exists()
 
 
 @pytest.mark.parametrize("target_func", [testrun_api.env_value, testrun_api.unlink_env_value])
@@ -309,7 +303,7 @@ def test_remove_env_value(
     run_ids: Union[str, int, List[int]],
     env_value_ids: Union[str, int, List[int]],
     tester,
-    base_data: BaseDataContext
+    base_data: BaseDataContext,
 ):
     plan: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
     run_1: TestRun = base_data.run_creator(pk=1, plan=plan)
@@ -388,7 +382,7 @@ def test_filter_and_get_count(
                     "property_id": 1,
                     "property": "py",
                 },
-            ]
+            ],
         ],
     ],
 )
@@ -508,9 +502,7 @@ def test_get_test_cases(run_id, expected, tester, base_data: BaseDataContext):
     base_data.run_creator(pk=2, plan=plan)
 
     request = make_http_request(tester)
-    result = sorted(
-        testrun_api.get_test_cases(request, run_id), key=operator.itemgetter("case_id")
-    )
+    result = sorted(testrun_api.get_test_cases(request, run_id), key=operator.itemgetter("case_id"))
     for expected_case, result_case in zip(expected, result):
         assert expected_case["case_id"] == result_case["case_id"]
         assert expected_case["case_run_id"] == result_case["case_run_id"]
@@ -559,7 +551,7 @@ def test_get_plan(run_id, expected, tester, base_data: BaseDataContext):
             {"product_version": 3},
             pytest.raises(
                 xmlrpc.client.Fault, match='Field "product" is required by product_version'
-            )
+            ),
         ],
         [1, {"estimated_time": "8640020"}, pytest.raises(xmlrpc.client.Fault)],
         # Nonexisting build id
@@ -585,18 +577,14 @@ def test_update(
     )
     run_1.add_case_run(case_1)
 
-    run_2: TestRun = base_data.run_creator(
-        pk=2, plan=plan, build=base_data.alpha_build
-    )
+    run_2: TestRun = base_data.run_creator(pk=2, plan=plan, build=base_data.alpha_build)
     run_2.add_case_run(case_1)
 
     plan_2: TestPlan = base_data.plan_creator(pk=2, name="plan 1")
     plan_2.add_text(tester, "document content")
 
     User.objects.create(pk=2, username="user1", email="user1@example.com")
-    Version.objects.create(
-        pk=3, value="pre-release", product=base_data.product
-    )
+    Version.objects.create(pk=3, value="pre-release", product=base_data.product)
 
     request = make_http_request(tester, "testruns.change_testrun")
 
@@ -608,9 +596,9 @@ def test_update(
     updated_runs: List[Dict[str, Any]] = testrun_api.update(request, run_ids, values)
 
     if values.get("status") == 1:
-        assert updated_runs[0]["stop_date"] is not None, (
-            "stop_date is not set when status is set to 1"
-        )
+        assert (
+            updated_runs[0]["stop_date"] is not None
+        ), "stop_date is not set when status is set to 1"
     else:
         for run in updated_runs:
             for field_name, field_value in expected.items():
@@ -629,10 +617,12 @@ def test_update(
         [{"product": 1, "product_version": 1000}, pytest.raises(xmlrpc.client.Fault)],
     ],
 )
-def test_create(extra_optional_fields, expected: Dict[str, Any], tester, base_data: BaseDataContext):
+def test_create(
+    extra_optional_fields, expected: Dict[str, Any], tester, base_data: BaseDataContext
+):
     plan: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
-    case_1: TestCase = base_data.case_creator(pk=1, summary="case 1")
-    case_2: TestCase = base_data.case_creator(pk=2, summary="case 2")
+    base_data.case_creator(pk=1, summary="case 1")
+    base_data.case_creator(pk=2, summary="case 2")
 
     summary = "new test run"
     values: Dict[str, Any] = {
@@ -669,12 +659,13 @@ def test_create(extra_optional_fields, expected: Dict[str, Any], tester, base_da
                 .order_by("case_id")
             )
         elif field_name == "tag":
-            assert list(
-                TestRunTag.objects.filter(
-                    run_id=new_run["run_id"], tag__name__in=field_value
-                ).values_list("tag__pk", flat=True)
-                .order_by("tag__pk")
-            ) == new_run["tag"]
+            assert (
+                list(
+                    TestRunTag.objects.filter(run_id=new_run["run_id"], tag__name__in=field_value)
+                    .values_list("tag__pk", flat=True)
+                    .order_by("tag__pk")
+                )
+                == new_run["tag"]
+            )
         else:
             assert field_value == new_run[field_name]
-
