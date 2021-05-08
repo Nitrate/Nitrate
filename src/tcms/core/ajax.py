@@ -12,6 +12,7 @@ import sys
 
 from functools import reduce
 from typing import Any, Dict, NewType, List, Tuple, Union
+from collections.abc import Iterable
 
 from django import forms
 from django.contrib.auth.mixins import PermissionRequiredMixin
@@ -21,7 +22,7 @@ from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import QuerySet
 from django.dispatch import Signal
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, QueryDict
 from django.http.request import HttpRequest
 from django.shortcuts import render
 from django.views import View
@@ -57,7 +58,10 @@ SORT_KEY_MAX = 32300
 SORT_KEY_RANGE = [SORT_KEY_MIN, SORT_KEY_MAX]
 
 
-def strip_parameters(request_data, skip_parameters):
+def strip_parameters(
+    request_data: Union[QueryDict, Dict[str, Any]],
+    skip_parameters: Iterable[str],
+) -> Dict[str, Any]:
     """
     Helper method which will remove the dict items listed in skip_parameters
     @return - dict
