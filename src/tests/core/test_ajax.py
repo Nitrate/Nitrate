@@ -1,59 +1,57 @@
 # -*- coding: utf-8 -*-
 import json
-import unittest
+from collections.abc import Iterable
 from http import HTTPStatus
 from operator import itemgetter
 from textwrap import dedent
-from typing import Optional, List
+from typing import Optional, List, Union, Dict, Any
 from unittest.mock import patch
 
+import pytest
 from bs4 import BeautifulSoup
 from django import test
 from django.contrib.auth.models import User
 from django.core import mail, serializers
 from django.core.mail import EmailMessage
 from django.db.models import Max
+from django.http import QueryDict
 from django.urls import reverse
 from tcms.core.ajax import strip_parameters, SORT_KEY_MAX, SORT_KEY_RANGE
 from tcms.logs.models import TCMSLogModel
 from tcms.management.models import (
-    Priority,
-    Version,
-    TestBuild,
     Component,
-    TestEnvironment,
+    Priority,
     TCMSEnvGroup,
     TCMSEnvProperty,
     TCMSEnvValue,
+    TestBuild,
+    TestEnvironment,
+    TestTag,
+    Version,
 )
 from tcms.testcases.models import TestCase, TestCaseStatus, TestCasePlan, TestCaseCategory
 from tcms.testruns.models import TestCaseRun, TestCaseRunStatus
-from tests import factories as f, BasePlanCase, BaseCaseRun, remove_perm_from_user
+from tests import factories as f, BasePlanCase, BaseCaseRun, remove_perm_from_user, BaseDataContext
 from tests import AuthMixin, HelperAssertions, user_should_have_perm
 
 
-class TestStripParameters(unittest.TestCase):
-    def setUp(self):
-        self.request_dict = {
-            "name__startswith": "something",
-            "info_type": "tags",
-            "format": "ulli",
-            "case__plan": 1,
-            "field": "tag__name",
-        }
-        self.internal_parameters = ("info_type", "field", "format")
-
-    def test_remove_parameters_in_dict(self):
-        simplified_dict = strip_parameters(self.request_dict, self.internal_parameters)
-        for p in self.internal_parameters:
-            self.assertFalse(p in simplified_dict)
-
-        self.assertEqual("something", simplified_dict["name__startswith"])
-        self.assertEqual(1, simplified_dict["case__plan"])
-
-    def test_remove_parameters_not_in_dict(self):
-        simplified_dict = strip_parameters(self.request_dict, ["non-existing-parameter"])
-        self.assertEqual(self.request_dict, simplified_dict)
+@pytest.mark.parametrize(
+    "data,skip_params,expected",
+    [
+        [{}, ["type"], {}],
+        [QueryDict(""), ["type"], {}],
+        [{"name": "abc"}, [], {"name": "abc"}],
+        [{"name": "abc"}, ["type"], {"name": "abc"}],
+        [{"name": "abc", "type": ""}, ["type"], {"name": "abc"}],
+        [{"name": "", "type": ""}, ["type"], {}],
+        [QueryDict("lang=py&ver=3.9&info="), ["ver"], {"lang": "py"}],
+        [QueryDict("lang=py&ver=3.9&info="), ("ver",), {"lang": "py"}],
+    ],
+)
+def test_strip_parameters(
+    data: Union[QueryDict, Dict[str, Any]], skip_params: Iterable[str], expected: Dict[str, Any]
+):
+    assert expected == strip_parameters(data, skip_params)
 
 
 class TestChangeCaseRunAssignee(BaseCaseRun):
@@ -969,3 +967,50 @@ class TestAjaxGetInfo(HelperAssertions, test.TestCase):
 
     def test_get_env_values_without_specifying_property_id(self):
         self._assert_request_data({"info_type": "env_values"}, [])
+
+
+@pytest.mark.parametrize(
+    "criteria,expected_username",
+    [
+        [{"username": "user1"}, "user1"],
+        [{"email__contains": "myhome.io"}, "user2"],
+    ],
+)
+def test_get_users_info(criteria, expected_username, base_data: BaseDataContext, client):
+    User.objects.create(username="user1", email="user1@localhost")
+    User.objects.create(username="user2", email="user2@myhome.io")
+    data = {"info_type": "users"}
+    data.update(criteria)
+    response = client.get(reverse("ajax-getinfo"), data=data)
+
+    test_data = sorted(json.loads(response.content), key=itemgetter("pk"))
+    expected = sorted(
+        json.loads(
+            serializers.serialize(
+                "json", User.objects.filter(username=expected_username), fields=("name", "value")
+            )
+        ),
+        key=itemgetter("pk"),
+    )
+    assert expected == test_data
+
+
+@pytest.mark.parametrize(
+    "criteria,expected_tags",
+    [
+        [{}, ["python", "rust", "ruby", "perl"]],
+        [{"name__startswith": "ru"}, ["rust", "ruby"]],
+    ],
+)
+@pytest.mark.django_db
+def test_get_tags_info(criteria: Dict[str, str], expected_tags: List[str], client):
+    for tag in ("python", "rust", "ruby", "perl"):
+        TestTag.objects.create(name=tag)
+
+    data = {"info_type": "tags"}
+    data.update(criteria)
+    response = client.get(reverse("ajax-getinfo"), data=data)
+
+    got = sorted(item["fields"]["name"] for item in json.loads(response.content))
+    expected = sorted(expected_tags)
+    assert expected == got
