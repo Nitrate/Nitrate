@@ -6,6 +6,7 @@ import re
 
 from functools import partial
 from http import HTTPStatus
+from typing import Callable
 from urllib.parse import urlparse, parse_qs
 
 from django import test
@@ -372,6 +373,11 @@ class BaseDataContext:
     plan_type_function: TestPlanType = None
     plan_type_smoke: TestPlanType = None
     plan_type_regression: TestPlanType = None
+
+    # for run and case run
+    case_run_status_idle = None
+    case_run_status_running = None
+    case_run_status_failed = None
 
     # helper actions
     plan_creator = None

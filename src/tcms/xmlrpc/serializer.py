@@ -6,6 +6,7 @@ from collections import OrderedDict
 from datetime import datetime
 from datetime import timedelta
 from itertools import groupby
+from typing import Optional
 
 from django.db.models import ObjectDoesNotExist
 from django.db.models.fields.related import ForeignKey
@@ -41,15 +42,11 @@ def datetime_to_str(value):
     return datetime.strftime(value, "%Y-%m-%d %H:%M:%S")
 
 
-def timedelta_to_str(value):
+def timedelta_to_str(value: Optional[timedelta]):
     if value is None:
         return value
-
-    total_seconds = value.seconds + (value.days * SECONDS_PER_DAY)
-    hours = total_seconds / SECONDS_PER_HOUR
-    # minutes - Total seconds subtract the used hours
-    minutes = total_seconds / SECONDS_PER_MIN - total_seconds / SECONDS_PER_HOUR * 60
-    seconds = total_seconds % SECONDS_PER_MIN
+    minutes, seconds = divmod(value.seconds, 60)
+    hours, minutes = divmod(minutes, 60)
     return "%02i:%02i:%02i" % (hours, minutes, seconds)
 
 

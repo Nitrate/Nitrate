@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Optional, List
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
 from django.urls import reverse
 from django.db import models
@@ -15,11 +16,12 @@ from django_comments.models import Comment
 
 from tcms.core.utils import EnumLike
 from tcms.linkreference.models import LinkReference
+from tcms.management.models import TCMSEnvValue, TestBuild, TestTag
 from tcms.core.models.fields import DurationField
 from tcms.core.models import TCMSActionModel
 from tcms.core.tcms_router import connection
 from tcms.core.utils import format_timedelta
-from tcms.testcases.models import TestCaseText, NoneText
+from tcms.testcases.models import TestCase, TestCaseText, NoneText
 from tcms.testruns import signals as run_watchers
 from tcms.issuetracker.models import Issue
 
@@ -176,13 +178,13 @@ class TestRun(TCMSActionModel):
     # FIXME: rewrite to use multiple values INSERT statement
     def add_case_run(
         self,
-        case,
-        case_run_status=1,
-        assignee=None,
-        case_text_version=None,
-        build=None,
-        notes=None,
-        sortkey=0,
+        case: TestCase,
+        case_run_status: int = 1,
+        assignee: Optional[User] = None,
+        case_text_version: Optional[int] = None,
+        build: Optional[TestBuild] = None,
+        notes: Optional[str] = None,
+        sortkey: int = 0,
     ):
         _case_text_version = case_text_version
         if not _case_text_version:
@@ -213,7 +215,7 @@ class TestRun(TCMSActionModel):
             close_date=None,
         )
 
-    def add_tag(self, tag):
+    def add_tag(self, tag: TestTag):
         return TestRunTag.objects.get_or_create(run=self, tag=tag)
 
     def add_cc(self, user):
@@ -222,7 +224,7 @@ class TestRun(TCMSActionModel):
             user=user,
         )
 
-    def add_env_value(self, env_value):
+    def add_env_value(self, env_value: TCMSEnvValue):
         return TCMSEnvRunValueMap.objects.get_or_create(run=self, value=env_value)
 
     def remove_tag(self, tag):
@@ -239,11 +241,8 @@ class TestRun(TCMSActionModel):
             (self.run_id, user.id),
         )
 
-    def remove_env_value(self, env_value):
-        run_env_value = TCMSEnvRunValueMap.objects.get(
-            run=self,
-            value=env_value,
-        )
+    def remove_env_value(self, env_value: TCMSEnvValue):
+        run_env_value = TCMSEnvRunValueMap.objects.get(run=self, value=env_value)
         run_env_value.delete()
 
     def get_issues_count(self):

@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import unittest
+from datetime import timedelta
+
+import pytest
 from django import test
 
 from tcms.management.models import Product
 from tcms.testcases.models import TestCase
 from tcms.testplans.models import TestPlan
-from tcms.xmlrpc.serializer import QuerySetBasedXMLRPCSerializer
+from tcms.xmlrpc.serializer import QuerySetBasedXMLRPCSerializer, timedelta_to_str
 from tcms.xmlrpc.serializer import XMLRPCSerializer
 from tcms.xmlrpc.serializer import datetime_to_str
 from tcms.xmlrpc.serializer import do_nothing
@@ -274,3 +277,24 @@ class TestQuerySetBasedSerializer(test.TestCase):
         serializer = MockTestCaseSerializer(TestCase, cases)
         result = serializer.serialize_queryset()
         self.assertEqual(0, len(result))
+
+
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        [None, None],
+        [timedelta(seconds=0), "00:00:00"],
+        [timedelta(seconds=30), "00:00:30"],
+        [timedelta(seconds=60), "00:01:00"],
+        [timedelta(seconds=80), "00:01:20"],
+        [timedelta(seconds=120), "00:02:00"],
+        [timedelta(seconds=1740), "00:29:00"],
+        [timedelta(seconds=1751), "00:29:11"],
+        [timedelta(seconds=7200), "02:00:00"],
+        [timedelta(seconds=9753), "02:42:33"],
+        [timedelta(seconds=86400), "00:00:00"],
+    ],
+)
+def test_timedelta_to_str(value, expected):
+    assert expected == timedelta_to_str(value)
+

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from http import HTTPStatus
+from typing import Optional
 from xmlrpc.client import Fault
 
 from django import test
@@ -75,7 +76,7 @@ def create_http_user():
     return user
 
 
-def make_http_request(user=None, user_perm=None, data=None):
+def make_http_request(user: Optional[User] = None, user_perm: Optional[str] = None, data=None):
     """Factory method to make instance of FakeHTTPRequest
 
     :param user: a user bound to created fake HTTP request. That simulates a
