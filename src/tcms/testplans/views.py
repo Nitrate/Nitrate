@@ -267,27 +267,6 @@ class SearchPlansPagesView(SimplePlansFilterView):
         return JsonResponse(json.loads(resp_data))
 
 
-class FilterPlansForTreeView(SimplePlansFilterView):
-    """Filter plans for displaying plans tree view"""
-
-    def get(self, request, *args, **kwargs):
-        _, plans = self.filter_plans()
-        data = [
-            {
-                "pk": plan.pk,
-                "name": plan.name,
-                "is_active": plan.is_active,
-                "parent_id": plan.parent_id,
-                "num_cases": plan.cases_count,
-                "num_runs": plan.runs_count,
-                "num_children": plan.children_count,
-                "get_url_path": plan.get_absolute_url(),
-            }
-            for plan in plans
-        ]
-        return JsonResponse(data, safe=False)
-
-
 def get(request, plan_id, slug=None, template_name="plan/get.html"):
     """Display the plan details."""
     SUB_MODULE_NAME = "plans"

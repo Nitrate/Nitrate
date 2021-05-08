@@ -6,11 +6,6 @@ from .. import views
 urlpatterns = [
     path("", views.SearchPlansView.as_view(), name="plans-all"),
     path("pages/", views.SearchPlansPagesView.as_view(), name="plans-pages"),
-    path(
-        "filter-for-treeview/",
-        views.FilterPlansForTreeView.as_view(),
-        name="plans-for-treeview",
-    ),
     # # FIXME: probably should move to testcases app
     path(
         "clone-cases/",
