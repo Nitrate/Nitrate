@@ -297,4 +297,3 @@ class TestQuerySetBasedSerializer(test.TestCase):
 )
 def test_timedelta_to_str(value, expected):
     assert expected == timedelta_to_str(value)
-

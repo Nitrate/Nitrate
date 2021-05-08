@@ -6,7 +6,6 @@ import re
 
 from functools import partial
 from http import HTTPStatus
-from typing import Callable
 from urllib.parse import urlparse, parse_qs
 
 from django import test
