@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os.path
+from typing import List
 
 from django.core.cache import cache
 from django.db import models
@@ -394,7 +395,7 @@ class TestTag(TCMSActionModel):
         return self.name
 
     @classmethod
-    def string_to_list(cls, string):
+    def string_to_list(cls, string) -> List[str]:
         from tcms.core.utils import string_to_list
 
         return string_to_list(string)

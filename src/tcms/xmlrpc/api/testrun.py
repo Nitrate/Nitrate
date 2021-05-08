@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
+import logging
 from operator import methodcaller
+from typing import List
 
 from django.core.exceptions import ObjectDoesNotExist
 from kobo.django.xmlrpc.decorators import user_passes_test
 
 from tcms.issuetracker.models import Issue
-from tcms.management.models import TestTag
+from tcms.management.models import TestTag, TCMSEnvValue
 from tcms.testcases.models import TestCase
 from tcms.testruns.models import TestCaseRun
 from tcms.testruns.models import TestRun
@@ -39,6 +41,8 @@ __all__ = (
 )
 
 __xmlrpc_namespace__ = "TestRun"
+
+logger = logging.getLogger(__name__)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -73,8 +77,6 @@ def add_cases(request, run_ids, case_ids):
     for tr in trs.iterator():
         for tc in tcs.iterator():
             tr.add_case_run(case=tc)
-
-    return
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -134,14 +136,13 @@ def add_tag(request, run_ids, tags):
         TestPlan.add_tag('1, 2', 'foo, bar')
     """
     trs = TestRun.objects.filter(pk__in=pre_process_ids(value=run_ids))
-    tags = TestTag.string_to_list(tags)
+    tags: List[str] = TestTag.string_to_list(tags)
 
     for tag in tags:
-        t, c = TestTag.objects.get_or_create(name=tag)
+        t, _ = TestTag.objects.get_or_create(name=tag)
+        tr: TestRun
         for tr in trs.iterator():
             tr.add_tag(tag=t)
-
-    return
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -221,8 +222,7 @@ def create(request, values):
 
         if form.cleaned_data["tag"]:
             tags = form.cleaned_data["tag"]
-            if isinstance(tags, str):
-                tags = [c.strip() for c in tags.split(",") if c]
+            tags = [c.strip() for c in tags.split(",") if c]
 
             for tag in tags:
                 t, c = TestTag.objects.get_or_create(name=tag)
@@ -232,6 +232,24 @@ def create(request, values):
         raise ValueError(forms.errors_to_list(form))
 
     return tr.serialize()
+
+
+def __env_value_operation(request, action: str, run_ids, env_value_ids):
+    trs = TestRun.objects.filter(pk__in=pre_process_ids(value=run_ids))
+    evs = TCMSEnvValue.objects.filter(pk__in=pre_process_ids(value=env_value_ids))
+    for tr in trs.iterator():
+        for ev in evs.iterator():
+            try:
+                func = getattr(tr, action + "_env_value")
+                func(env_value=ev)
+            except ObjectDoesNotExist:
+                logger.debug(
+                    "User %s wants to remove property value %r from test run %r, "
+                    "however this test run does not have that value.",
+                    request.user,
+                    ev,
+                    tr,
+                )
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -259,20 +277,7 @@ def env_value(request, action, run_ids, env_value_ids):
         # Add env value 20 to run id 8
         TestRun.env_value('add', 8, 20)
     """
-    from tcms.management.models import TCMSEnvValue
-
-    trs = TestRun.objects.filter(pk__in=pre_process_ids(value=run_ids))
-    evs = TCMSEnvValue.objects.filter(pk__in=pre_process_ids(value=env_value_ids))
-
-    for tr in trs.iterator():
-        for ev in evs.iterator():
-            try:
-                func = getattr(tr, action + "_env_value")
-                func(env_value=ev)
-            except ObjectDoesNotExist:
-                pass
-
-    return
+    __env_value_operation(request, action, run_ids, env_value_ids)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -388,7 +393,7 @@ def get_change_history(request, run_id):
     .. warning::
        NOT IMPLEMENTED - History is different than before.
     """
-    raise NotImplementedError("Not implemented RPC method")
+    raise NotImplementedError("Not implemented RPC method")  # pragma: no cover
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -407,7 +412,7 @@ def get_completion_report(request, run_ids):
     .. warning::
        NOT IMPLEMENTED
     """
-    raise NotImplementedError("Not implemented RPC method")
+    raise NotImplementedError("Not implemented RPC method")  # pragma: no cover
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -415,14 +420,16 @@ def get_env_values(request, run_id):
     """Get the list of env values to this run.
 
     :param int run_id: run ID.
-    :return: a mapping representing found :class:`TCMSEnvValue`.
-    :rtype: dict
+    :return: a list of mappings representing found :class:`TCMSEnvValue`.
+    :rtype: List[dict]
 
     Example::
 
         TestRun.get_env_values(8)
     """
     from tcms.management.models import TCMSEnvValue
+
+    # FIXME: return [] if run_id is None or ""
 
     query = {"testrun__pk": run_id}
     return TCMSEnvValue.to_xmlrpc(query)
@@ -529,14 +536,10 @@ def remove_tag(request, run_ids, tags):
     trs = TestRun.objects.filter(run_id__in=pre_process_ids(value=run_ids))
     tgs = TestTag.objects.filter(name__in=TestTag.string_to_list(tags))
 
+    tr: TestRun
     for tr in trs.iterator():
         for tg in tgs.iterator():
-            try:
-                tr.remove_tag(tag=tg)
-            except ObjectDoesNotExist:
-                pass
-
-    return
+            tr.remove_tag(tag=tg)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -661,7 +664,7 @@ def link_env_value(request, run_ids, env_value_ids):
         # Add env value 1 to run id 2
         TestRun.link_env_value(2, 1)
     """
-    return env_value(request, "add", run_ids, env_value_ids)
+    return __env_value_operation(request, "add", run_ids, env_value_ids)
 
 
 @log_call(namespace=__xmlrpc_namespace__)
@@ -686,4 +689,4 @@ def unlink_env_value(request, run_ids, env_value_ids):
         # Unlink env value 1 to run id 2
         TestRun.unlink_env_value(2, 1)
     """
-    return env_value(request, "remove", run_ids, env_value_ids)
+    return __env_value_operation(request, "remove", run_ids, env_value_ids)

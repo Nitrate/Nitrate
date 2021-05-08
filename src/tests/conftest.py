@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from tcms.management.models import Classification, Product, Version, Priority, TestBuild
 from tcms.testcases.models import TestCaseStatus, TestCase, TestCaseCategory
 from tcms.testplans.models import TestPlan, TestPlanType
-from tcms.testruns.models import TestRun
+from tcms.testruns.models import TestCaseRun, TestCaseRunStatus, TestRun
 from tests import BaseDataContext
 
 
@@ -33,13 +33,11 @@ def base_data(tester):
     c = BaseDataContext()
     c.classification = Classification.objects.create(name="webapp")
     c.product = Product.objects.create(pk=1, name="nitrate", classification=c.classification)
-    c.product_version = Version.objects.create(value="4.5", product=c.product)
+    c.product_version = Version.objects.create(pk=2, value="4.5", product=c.product)
 
-    c.dev_build, _ = TestBuild.objects.get_or_create(name="dev_build", product=c.product)
-    c.alpha_build, _ = TestBuild.objects.get_or_create(name="alpha_build", product=c.product)
-    c.candidate_build, _ = TestBuild.objects.get_or_create(
-        name="candidate_build", product=c.product
-    )
+    c.dev_build = TestBuild.objects.create(pk=2, name="dev_build", product=c.product)
+    c.alpha_build = TestBuild.objects.create(pk=3, name="alpha_build", product=c.product)
+    c.candidate_build = TestBuild.objects.create(pk=4, name="candidate_build", product=c.product)
 
     c.p1, _ = Priority.objects.get_or_create(value="P1")
     c.p2, _ = Priority.objects.get_or_create(value="P2")
@@ -60,6 +58,10 @@ def base_data(tester):
     c.plan_type_function, _ = TestPlanType.objects.get_or_create(name="Function")
     c.plan_type_smoke, _ = TestPlanType.objects.get_or_create(name="Smoke")
     c.plan_type_regression, _ = TestPlanType.objects.get_or_create(name="Regression")
+
+    c.case_run_status_idle, _ = TestCaseRunStatus.objects.get_or_create(name="IDLE")
+    c.case_run_status_running, _ = TestCaseRunStatus.objects.get_or_create(name="RUNNING")
+    c.case_run_status_failed, _ = TestCaseRunStatus.objects.get_or_create(name="FAILED")
 
     c.plan_creator = partial(
         TestPlan.objects.create,
