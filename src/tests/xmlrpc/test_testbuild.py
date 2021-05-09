@@ -2,15 +2,14 @@
 
 import pytest
 import unittest
+import xmlrpc.client
 from unittest.mock import Mock
-from typing import Any, Dict
-
-from django.test import TestCase
+from typing import Any, Callable, Dict
 
 from tcms.xmlrpc.api import build
 from tcms.management.models import Classification, Product, TestBuild
 
-from tests import encode, factories as f, user_should_have_perm
+from tests import BaseDataContext, encode, factories as f, user_should_have_perm
 from tests.xmlrpc.utils import make_http_request
 from tests.xmlrpc.utils import XmlrpcAPIBaseTest
 
@@ -165,35 +164,30 @@ class TestBuildUpdate(XmlrpcAPIBaseTest):
         self.assertEqual(b["description"], "Update from unittest.")
 
 
-class TestBuildGet(XmlrpcAPIBaseTest):
-    @classmethod
-    def setUpTestData(cls):
-        cls.product = f.ProductFactory()
-        cls.build = f.TestBuildFactory(description="for testing", product=cls.product)
+@pytest.mark.parametrize("test_api", [build.get, build.lookup_name_by_id])
+@pytest.mark.parametrize(
+    "build_id,expected",
+    [
+        [2, 2],
+        [100, pytest.raises(xmlrpc.client.Fault)],  # non-existing build id
+        ["", pytest.raises(xmlrpc.client.Fault)],
+        [None, pytest.raises(xmlrpc.client.Fault)],
+    ],
+)
+def test_get(test_api: Callable, build_id: int, expected, tester, base_data: BaseDataContext):
+    request = make_http_request(tester)
 
-    @unittest.skip("TODO: fix get to make this test pass.")
-    def test_build_get_with_no_args(self):
-        bad_args = (None, [], (), {})
-        for arg in bad_args:
-            self.assertXmlrpcFaultBadRequest(build.get, None, arg)
-
-    @unittest.skip("TODO: fix get to make this test pass.")
-    def test_build_get_with_non_integer(self):
-        bad_args = (True, False, (1,), dict(a=1), -1, 0.7, "", "AA")
-        for arg in bad_args:
-            self.assertXmlrpcFaultBadRequest(build.get, None, arg)
-
-    def test_build_get_with_non_exist_id(self):
-        self.assertXmlrpcFaultNotFound(build.get, None, 9999)
-
-    def test_build_get_with_id(self):
-        b = build.get(None, self.build.pk)
-        self.assertIsNotNone(b)
-        self.assertEqual(b["build_id"], self.build.pk)
-        self.assertEqual(b["name"], self.build.name)
-        self.assertEqual(b["product_id"], self.product.pk)
-        self.assertEqual(b["description"], "for testing")
-        self.assertTrue(b["is_active"])
+    if isinstance(expected, int):
+        result: Dict[str, Any] = test_api(request, build_id)
+        b: TestBuild = TestBuild.objects.get(pk=build_id)
+        assert b.pk == result["build_id"]
+        assert b.name == result["name"]
+        assert b.product.pk == result["product_id"]
+        assert b.description == result["description"]
+        assert b.is_active == result["is_active"]
+    else:
+        with expected:
+            test_api(request, build_id)
 
 
 class TestBuildGetCaseRuns(XmlrpcAPIBaseTest):
@@ -258,57 +252,37 @@ class TestBuildGetRuns(XmlrpcAPIBaseTest):
         self.assertEqual(b[0]["summary"], self.test_run.summary)
 
 
-@unittest.skip("Ignored. API is deprecated.")
-class TestBuildLookupID(TestCase):
-    """DEPRECATED API"""
+@pytest.mark.parametrize("test_api", [build.check_build, build.lookup_id_by_name])
+@pytest.mark.parametrize(
+    "name,product,expected",
+    [
+        ["", "nitrate", pytest.raises(xmlrpc.client.Fault)],
+        [None, "nitrate", pytest.raises(xmlrpc.client.Fault)],
+        ["dev_build", "", pytest.raises(xmlrpc.client.Fault)],
+        ["dev_build", None, pytest.raises(xmlrpc.client.Fault)],
+        ["xxx", "nitrate", pytest.raises(xmlrpc.client.Fault)],
+        ["dev_build", "xxx", pytest.raises(xmlrpc.client.Fault)],
+        ["alpha_build", "xxx", pytest.raises(xmlrpc.client.Fault)],
+        ["dev_build", "nitrate", "dev_build"],
+    ],
+)
+def test_check_build(
+    test_api: Callable, name, product, expected, tester, base_data: BaseDataContext
+):
+    request = make_http_request(tester)
 
+    if isinstance(expected, str):
+        result: Dict[str, Any] = test_api(request, name, product)
 
-@unittest.skip("Ignored. API is deprecated.")
-class TestBuildLookupName(TestCase):
-    """DEPRECATED API"""
-
-
-class TestBuildCheck(XmlrpcAPIBaseTest):
-    @classmethod
-    def setUpTestData(cls):
-        cls.product = f.ProductFactory()
-        cls.build = f.TestBuildFactory(description="testing ...", product=cls.product)
-
-    @unittest.skip("TODO: fix check_build to make this test pass.")
-    def test_build_get_with_no_args(self):
-        bad_args = (None, [], (), {})
-        for arg in bad_args:
-            self.assertXmlrpcFaultBadRequest(build.check_build, None, arg, self.product.pk)
-            self.assertXmlrpcFaultBadRequest(build.check_build, None, "B5", arg)
-
-    def test_build_get_with_non_exist_build_name(self):
-        self.assertXmlrpcFaultNotFound(build.check_build, None, "AAAAAAAAAAAAAA", self.product.pk)
-
-    def test_build_get_with_non_exist_product_id(self):
-        self.assertXmlrpcFaultNotFound(build.check_build, None, "B5", 9999999)
-
-    def test_build_get_with_non_exist_product_name(self):
-        self.assertXmlrpcFaultNotFound(build.check_build, None, "B5", "AAAAAAAAAAAAAAAA")
-
-    @unittest.skip("TODO: fix check_build to make this test pass.")
-    def test_build_get_with_empty(self):
-        self.assertXmlrpcFaultBadRequest(build.check_build, None, "", self.product.pk)
-        self.assertXmlrpcFaultBadRequest(build.check_build, None, "         ", self.product.pk)
-
-    @unittest.skip("TODO: fix check_build to make this test pass.")
-    def test_build_get_with_illegal_args(self):
-        bad_args = (self, 0.7, False, True, 1, -1, 0, (1,), dict(a=1))
-        for arg in bad_args:
-            self.assertXmlrpcFaultBadRequest(build.check_build, None, arg, self.product.pk)
-
-    def test_build_get(self):
-        b = build.check_build(None, self.build.name, self.product.pk)
-        self.assertIsNotNone(b)
-        self.assertEqual(b["build_id"], self.build.pk)
-        self.assertEqual(b["name"], self.build.name)
-        self.assertEqual(b["product_id"], self.product.pk)
-        self.assertEqual(b["description"], "testing ...")
-        self.assertEqual(b["is_active"], True)
+        b: TestBuild = TestBuild.objects.get(name=name, product__name=product)
+        assert b.pk == result["build_id"]
+        assert b.name == result["name"]
+        assert b.product.pk == result["product_id"]
+        assert b.description == result["description"]
+        assert b.is_active == result["is_active"]
+    else:
+        with expected:
+            test_api(request, name, product)
 
 
 @pytest.mark.parametrize(
