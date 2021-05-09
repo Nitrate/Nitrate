@@ -49,7 +49,7 @@ from tests import AuthMixin, HelperAssertions, user_should_have_perm
     ],
 )
 def test_strip_parameters(
-    data: Union[QueryDict, Dict[str, Any]], skip_params: Iterable[str], expected: Dict[str, Any]
+    data: Union[QueryDict, Dict[str, Any]], skip_params: Iterable, expected: Dict[str, Any]
 ):
     assert expected == strip_parameters(data, skip_params)
 

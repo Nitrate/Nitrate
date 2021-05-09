@@ -60,7 +60,7 @@ SORT_KEY_RANGE = [SORT_KEY_MIN, SORT_KEY_MAX]
 
 def strip_parameters(
     request_data: Union[QueryDict, Dict[str, Any]],
-    skip_parameters: Iterable[str],
+    skip_parameters: Iterable,
 ) -> Dict[str, Any]:
     """
     Helper method which will remove the dict items listed in skip_parameters
