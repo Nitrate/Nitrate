@@ -406,10 +406,10 @@ def test_get_env_values(run_id, expected, tester, base_data: BaseDataContext):
     [
         [2, []],
         [100, []],  # nonexisting run id.
-        [1, [{"id": 1, "name": "tag1"}, {"id": 2, "name": "tag2"}]],
+        [1, ["tag1", "tag2"]],
     ],
 )
-def test_get_tags(run_id, expected, tester, base_data: BaseDataContext):
+def test_get_tags(run_id: int, expected, tester, base_data: BaseDataContext):
     plan: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
     run_1: TestRun = base_data.run_creator(pk=1, plan=plan)
 
@@ -425,10 +425,13 @@ def test_get_tags(run_id, expected, tester, base_data: BaseDataContext):
             testrun_api.get_tags(request, run_id)
         assert HTTPStatus.NOT_FOUND == exc.value.faultCode
     else:
-        assert expected == sorted(
-            testrun_api.get_tags(request, run_id),
-            key=lambda item: item["id"],
-        )
+        assert expected == [
+            item["name"]
+            for item in sorted(
+                testrun_api.get_tags(request, run_id),
+                key=lambda item: item["id"],
+            )
+        ]
 
 
 @pytest.mark.parametrize(
@@ -450,8 +453,22 @@ def test_get_test_case_runs(run_id, expected, tester, base_data: BaseDataContext
 
     base_data.run_creator(pk=1, plan=plan)
     run_2: TestRun = base_data.run_creator(pk=2, plan=plan)
-    run_2.add_case_run(case_1)
-    run_2.add_case_run(case_2)
+    TestCaseRun.objects.create(
+        pk=1,
+        run=run_2,
+        case=case_1,
+        case_text_version=1,
+        build=base_data.dev_build,
+        case_run_status=base_data.case_run_status_running,
+    )
+    TestCaseRun.objects.create(
+        pk=2,
+        run=run_2,
+        case=case_2,
+        case_text_version=1,
+        build=base_data.dev_build,
+        case_run_status=base_data.case_run_status_idle,
+    )
 
     request = make_http_request(tester)
 
