@@ -4,6 +4,7 @@ from datetime import timedelta
 from textwrap import dedent
 from unittest.mock import patch
 
+import pytest
 from django.contrib.auth.models import User
 from django.core import mail
 from django.db.models import Max
@@ -20,7 +21,9 @@ from tcms.testcases.models import TestCaseCategory
 from tcms.testcases.models import TestCaseStatus
 from tcms.testcases.models import TestCaseText
 from tcms.testcases.models import TestCaseEmailSettings
-from tests import factories as f, BaseCaseRun, BasePlanCase
+from tcms.testplans.models import TestPlan
+from tcms.testruns.models import TestRun
+from tests import factories as f, BaseCaseRun, BasePlanCase, BaseDataContext
 
 
 class TestCaseRemoveIssue(BasePlanCase):
@@ -751,3 +754,53 @@ class TestDeleteCase(test.TestCase):
 
         self.assertFalse(TestCase.objects.filter(pk=self.case_3.pk).exists())
         self.assertFalse(TestCaseEmailSettings.objects.filter(pk=self.case_3.emailing.pk).exists())
+
+
+@pytest.mark.parametrize("auto_to_case_author", [True, False])
+@pytest.mark.parametrize("auto_to_case_tester", [True, False])
+@pytest.mark.parametrize("auto_to_run_manager", [True, False])
+@pytest.mark.parametrize("auto_to_run_tester", [True, False])
+@pytest.mark.parametrize("auto_to_case_run_assignee", [True, False])
+def test_case_get_notification_recipients(
+    auto_to_case_author: bool,
+    auto_to_case_tester: bool,
+    auto_to_run_manager: bool,
+    auto_to_run_tester: bool,
+    auto_to_case_run_assignee: bool,
+    base_data: BaseDataContext,
+):
+    user_1: User = User.objects.create_user(username="user1", email="user1@example.com")
+    plan: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
+    case_1: TestCase = base_data.case_creator(pk=1, summary="case 1", default_tester=user_1)
+    plan.add_case(case_1)
+
+    manager: User = User.objects.create_user(username="manager1", email="manager1@example.com")
+    run_tester: User = User.objects.create_user(
+        username="run_tester", email="run_tester@example.com"
+    )
+    run_1: TestRun = base_data.run_creator(
+        pk=1, summary="run 1", plan=plan, manager=manager, default_tester=run_tester
+    )
+    run_1.add_case_run(case_1, assignee=run_tester)
+
+    emailing = case_1.emailing
+    emailing.auto_to_case_author = auto_to_case_author
+    emailing.auto_to_case_tester = auto_to_case_tester
+    emailing.auto_to_run_manager = auto_to_run_manager
+    emailing.auto_to_run_tester = auto_to_run_tester
+    emailing.auto_to_case_run_assignee = auto_to_case_run_assignee
+
+    recipients = case_1.get_notification_recipients()
+
+    if auto_to_case_author:
+        assert case_1.author.email in recipients
+    if auto_to_case_tester:
+        if case_1.default_tester:
+            assert case_1.default_tester.email in recipients
+        else:
+            assert case_1.default_tester.email not in recipients
+    if auto_to_run_manager:
+        assert run_1.manager.email in recipients
+    if auto_to_run_tester or auto_to_case_run_assignee:
+        assert 1 == recipients.count(run_tester.email)
+        assert run_tester.email in recipients
