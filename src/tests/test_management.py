@@ -1001,7 +1001,9 @@ class TestDeleteProduct(HelperAssertions, test.TestCase):
 
 def test_component_admin_changelist(tester, base_data: BaseDataContext, client):
     """Test custom ComponentAdmin.get_queryset works well"""
-    admin = User.objects.create_superuser(username="admin")
+    admin = User.objects.create_superuser(
+        username="admin", email="admin@example.com", password="pass"
+    )
     admin.set_password("admin")
     admin.save()
     client.login(username="admin", password="admin")
