@@ -35,7 +35,6 @@ jobs:
             python-nitrate-tcms.spec
           make tarball srpm
           copr-cli --conf ./copr_conf build \
-            -r fedora-32-x86_64 \
             -r fedora-33-x86_64 \
             -r fedora-34-x86_64 \
             cqi/python-nitrate-tcms-testing dist/python-nitrate-tcms-*.src.rpm
