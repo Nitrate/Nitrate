@@ -14,10 +14,12 @@ from unittest.mock import patch
 from xml.etree import ElementTree
 
 from bs4 import BeautifulSoup
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import Max, QuerySet
 from django.utils import formats
 from django.urls import reverse
 from django.contrib.auth.models import User
+from django_comments.models import Comment
 
 from tcms.issuetracker.models import Issue
 from tcms.linkreference.models import create_link
@@ -1504,3 +1506,64 @@ class TestRunStatisticsView(BaseCaseRun):
 
         for item in content:
             self.assertContains(response, item, html=True)
+
+
+class TestCommentCaseRuns(BaseCaseRun):
+    """Test case for ajax.comment_case_runs"""
+
+    auto_login = True
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.many_comments_url = reverse("caserun-comment-caseruns")
+
+    def test_refuse_if_missing_comment(self):
+        response = self.client.post(
+            self.many_comments_url, {"run": [self.case_run_1.pk, self.case_run_2.pk]}
+        )
+        self.assertJsonResponse(
+            response, {"message": ["Comment is needed."]}, status_code=HTTPStatus.BAD_REQUEST
+        )
+
+    def test_refuse_if_missing_no_case_run_pk(self):
+        response = self.client.post(self.many_comments_url, {"comment": "new comment", "run": []})
+        self.assertJsonResponse(
+            response,
+            {"message": ["No test case run id is passed to comment out."]},
+            status_code=HTTPStatus.BAD_REQUEST,
+        )
+
+        response = self.client.post(self.many_comments_url, {"comment": "new comment"})
+        self.assertJsonResponse(
+            response,
+            {"message": ["No test case run id is passed to comment out."]},
+            status_code=HTTPStatus.BAD_REQUEST,
+        )
+
+    def test_refuse_if_passed_case_run_pks_not_exist(self):
+        response = self.client.post(
+            self.many_comments_url,
+            {"comment": "new comment", "run": [99999998]},
+        )
+        self.assertJsonResponse(
+            response,
+            {"message": ["Test case run 99999998 does not exist."]},
+            status_code=HTTPStatus.BAD_REQUEST,
+        )
+
+    def test_add_comment_to_case_runs(self):
+        new_comment = "new comment"
+        response = self.client.post(
+            self.many_comments_url,
+            {"comment": new_comment, "run": [self.case_run_1.pk, self.case_run_2.pk]},
+        )
+        self.assertJsonResponse(response, {})
+
+        # Assert comments are added
+        case_run_ct = ContentType.objects.get_for_model(TestCaseRun)
+
+        for case_run_pk in (self.case_run_1.pk, self.case_run_2.pk):
+            comments = Comment.objects.filter(object_pk=case_run_pk, content_type=case_run_ct)
+            self.assertEqual(new_comment, comments[0].comment)
+            self.assertEqual(self.tester, comments[0].user)

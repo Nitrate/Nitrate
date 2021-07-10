@@ -27,9 +27,6 @@ from django.http.request import HttpRequest
 from django.shortcuts import render
 from django.views import View
 from django.views.decorators.http import require_GET
-from django.views.decorators.http import require_POST
-
-import tcms.comments.models
 
 from tcms.core.mailto import mailto
 from tcms.core.models import TCMSActionModel
@@ -797,28 +794,3 @@ class PatchTestCasesView(ModelPatchBaseView):
             append_changed(tcp)
 
         TestCasePlan.objects.bulk_update(changed, [self.target_field])
-
-
-@require_POST
-def comment_case_runs(request):
-    """
-    Add comment to one or more caseruns at a time.
-    """
-    data = request.POST.copy()
-    comment = data.get("comment", None)
-    if not comment:
-        return JsonResponseBadRequest({"message": "Comments needed"})
-    run_ids = [int(item) for item in data.getlist("run")]
-    if not run_ids:
-        return JsonResponseBadRequest({"message": "No runs selected."})
-    case_run_ids = TestCaseRun.objects.filter(pk__in=run_ids).values_list("pk", flat=True)
-    if not case_run_ids:
-        return JsonResponseBadRequest({"message": "No caserun found."})
-    tcms.comments.models.add_comment(
-        request.user,
-        "testruns.testcaserun",
-        case_run_ids,
-        comment,
-        request.META.get("REMOTE_ADDR"),
-    )
-    return JsonResponse({})

@@ -27,11 +27,6 @@ urlpatterns = [
     # Testruns zone
     path("run/", include("tcms.testruns.urls.run_urls")),
     path("runs/", include("tcms.testruns.urls.runs_urls")),
-    path(
-        "caserun/comment-many/",
-        tcms_core_ajax.comment_case_runs,
-        name="caserun-comment-caseruns",
-    ),
     path("accounts/", include("tcms.profiles.urls")),
     path("linkref/", include("tcms.linkreference.urls")),
     path("comments/", include("tcms.comments.urls")),
