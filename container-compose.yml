@@ -18,7 +18,7 @@ services:
     image: rabbitmq:3.8.12-alpine
     restart: always
     environment:
-      RABBITMQ_DEFAULT_VHOST=myvhost
+      RABBITMQ_DEFAULT_VHOST: myvhost
 
   worker:
     depends_on:
