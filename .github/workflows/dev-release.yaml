@@ -23,7 +23,7 @@ jobs:
         echo "NITRATE_LAST_COMMIT=${last_commit}" >> $GITHUB_ENV
     - name: Build the package
       run: |
-        docker run --name package-build -v $(pwd):/code:Z registry.fedoraproject.org/fedora:33 /bin/bash -c "
+        docker run --name package-build -v $(pwd):/code:Z registry.fedoraproject.org/fedora:34 /bin/bash -c "
           set -ex
           dnf install -y git make rpmdevtools copr-cli rpm-build python3
           cd /code
