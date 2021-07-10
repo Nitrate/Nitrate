@@ -582,7 +582,7 @@ class PatchTestCaseRunsView(ModelPatchBaseView):
     def _sendmail(self, objects) -> None:
         mail_context = TestCaseRun.mail_scene(objects=objects, field=self.target_field)
         if mail_context:
-            mail_context["context"]["user"] = self.request.user
+            mail_context["context"]["user"] = self.request.user.username
             mailto(**mail_context)
 
     def _update_case_run_status(self):
