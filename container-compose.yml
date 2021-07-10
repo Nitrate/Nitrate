@@ -54,8 +54,8 @@ services:
       NITRATE_DB_NAME: nitrate
       NITRATE_DB_USER: root
       NITRATE_SECRET_KEY: do-not-use-this-key-for-production
-      NITRATE_MIGRATE_DB: yes
-      NITRATE_SET_DEFAULT_PERMS: yes
+      NITRATE_MIGRATE_DB: 1
+      NITRATE_SET_DEFAULT_PERMS: 1
       NITRATE_SUPERUSER_USERNAME: admin
       NITRATE_SUPERUSER_PASSWORD: admin
       NITRATE_SUPERUSER_EMAIL: admin@example.com
