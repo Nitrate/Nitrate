@@ -1325,7 +1325,7 @@ function showCommentForm() {
         commentTextbox.value = '';
 
         postRequest({
-          url: '/caserun/comment-many/',
+          url: '/runs/case-runs/comment-many/',
           data: {comment: comment, run: caseRunIds},
           traditional: true,
         });

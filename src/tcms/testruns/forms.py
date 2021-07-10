@@ -14,8 +14,7 @@ from tcms.management.models import (
 )
 from tcms.testplans.models import TestPlan
 from tcms.testcases.models import TestCase
-from .models import TestRun, TestCaseRunStatus
-
+from .models import TestRun, TestCaseRunStatus, TestCaseRun
 
 STATUS_CHOICES = (("", "---------"), ("running", "Running"), ("finished", "Finished"))
 
@@ -307,6 +306,19 @@ class ChangeRunEnvValueForm(forms.Form):
 # ===========================================================================
 # Case run form
 # ===========================================================================
+
+
+class CommentCaseRunsForm(forms.Form):
+    run = forms.ModelMultipleChoiceField(
+        queryset=TestCaseRun.objects.only("pk"),
+        error_messages={
+            "required": "No test case run id is passed to comment out.",
+            "invalid_choice": "Test case run %(value)s does not exist.",
+            "invalid_pk_value": "%(pk)s is not a valid test case run id.",
+        },
+    )
+    comment = forms.CharField(error_messages={"required": "Comment is needed."})
+
 
 # =========== Forms for create/update ==============
 

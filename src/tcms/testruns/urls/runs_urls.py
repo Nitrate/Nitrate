@@ -22,4 +22,5 @@ urlpatterns = [
         views.DeleteRunEnvValueView.as_view(),
         name="runs-delete-env-value",
     ),
+    path("case-runs/comment-many/", views.comment_case_runs, name="caserun-comment-caseruns"),
 ]

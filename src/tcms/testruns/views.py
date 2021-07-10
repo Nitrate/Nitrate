@@ -37,6 +37,7 @@ from django.views.generic.base import TemplateView, View
 
 from django_comments.models import Comment
 
+from tcms.comments.models import add_comment
 from tcms.core.raw_sql import RawSQL
 from tcms.core.responses import JsonResponseBadRequest
 
@@ -60,6 +61,7 @@ from tcms.testruns.forms import (
     PlanFilterRunForm,
     RunAndEnvValueForm,
     ChangeRunEnvValueForm,
+    CommentCaseRunsForm,
 )
 from tcms.testruns.forms import NewRunForm, SearchRunForm, EditRunForm, RunCloneForm
 from tcms.testruns.helpers.serializer import TCR2File
@@ -1401,3 +1403,19 @@ class FileIssueForCaseRun(RedirectView):
         case_run = get_object_or_404(TestCaseRun, pk=case_run_id)
         bz_model = IssueTracker.objects.get(pk=tracker_id)
         return find_service(bz_model).make_issue_report_url(case_run)
+
+
+@require_POST
+def comment_case_runs(request):
+    """Add comment to one or more case runs at a time."""
+    form = CommentCaseRunsForm(request.POST)
+    if not form.is_valid():
+        return JsonResponseBadRequest({"message": form_error_messages_to_list(form)})
+    add_comment(
+        request.user,
+        "testruns.testcaserun",
+        [cr.pk for cr in form.cleaned_data["run"]],
+        form.cleaned_data["comment"],
+        request.META.get("REMOTE_ADDR"),
+    )
+    return JsonResponse({})
