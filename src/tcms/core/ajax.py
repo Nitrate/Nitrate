@@ -35,9 +35,18 @@ from tcms.core.responses import (
     JsonResponseBadRequest,
     JsonResponseNotFound,
 )
-from tcms.management.models import Priority
-from tcms.management.models import TestTag
-from tcms.testcases.models import TestCase
+from tcms.management.models import (
+    Component,
+    Priority,
+    TCMSEnvGroup,
+    TCMSEnvProperty,
+    TCMSEnvValue,
+    TestBuild,
+    TestEnvironment,
+    TestTag,
+    Version,
+)
+from tcms.testcases.models import TestCase, TestCaseCategory
 from tcms.testcases.models import TestCaseStatus
 from tcms.testcases.views import get_selected_testcases
 from tcms.testplans.models import TestPlan, TestCasePlan
@@ -71,96 +80,66 @@ def strip_parameters(
     return parameters
 
 
+class ObjectsInfo(object):
+    def __init__(self, request, product_ids=None):
+        self.request = request
+        self.product_ids = product_ids
+        self.internal_parameters = ("info_type", "field", "format")
+
+    def builds(self):
+        query = {
+            "product_ids": self.product_ids,
+            "is_active": self.request.GET.get("is_active"),
+        }
+        return TestBuild.list(query)
+
+    def categories(self):
+        return TestCaseCategory.objects.filter(product__in=self.product_ids)
+
+    def components(self):
+        return Component.objects.filter(product__in=self.product_ids)
+
+    def envs(self):
+        return TestEnvironment.objects.filter(product__in=self.product_ids)
+
+    def env_groups(self):
+        return TCMSEnvGroup.objects.all()
+
+    def env_properties(self):
+        if self.request.GET.get("env_group_id"):
+            env_group = TCMSEnvGroup.objects.get(id=self.request.GET["env_group_id"])
+            return env_group.property.all()
+        else:
+            return TCMSEnvProperty.objects.all()
+
+    def env_values(self):
+        return TCMSEnvValue.objects.filter(property__id=self.request.GET.get("env_property_id"))
+
+    def tags(self):
+        query = strip_parameters(self.request.GET, self.internal_parameters)
+        tags = TestTag.objects
+        # Generate the string combination, because we are using
+        # case sensitive table
+        if query.get("name__startswith"):
+            seq = get_string_combinations(query["name__startswith"])
+            criteria = reduce(operator.or_, (models.Q(name__startswith=item) for item in seq))
+            tags = tags.filter(criteria)
+            del query["name__startswith"]
+
+        tags = tags.filter(**query).distinct()
+        return tags
+
+    def users(self):
+        query = strip_parameters(self.request.GET, self.internal_parameters)
+        return User.objects.filter(**query)
+
+    def versions(self):
+        return Version.objects.filter(product__in=self.product_ids)
+
+
 @require_GET
 def info(request):
     """Return misc information"""
-
-    class Objects:
-        __all__ = [
-            "builds",
-            "categories",
-            "components",
-            "envs",
-            "env_groups",
-            "env_properties",
-            "env_values",
-            "tags",
-            "users",
-            "versions",
-        ]
-
-        def __init__(self, request, product_ids=None):
-            self.request = request
-            self.product_ids = product_ids
-            self.internal_parameters = ("info_type", "field", "format")
-
-        def builds(self):
-            from tcms.management.models import TestBuild
-
-            query = {
-                "product_ids": self.product_ids,
-                "is_active": self.request.GET.get("is_active"),
-            }
-            return TestBuild.list(query)
-
-        def categories(self):
-            from tcms.testcases.models import TestCaseCategory
-
-            return TestCaseCategory.objects.filter(product__in=self.product_ids)
-
-        def components(self):
-            from tcms.management.models import Component
-
-            return Component.objects.filter(product__in=self.product_ids)
-
-        def envs(self):
-            from tcms.management.models import TestEnvironment
-
-            return TestEnvironment.objects.filter(product__in=self.product_ids)
-
-        def env_groups(self):
-            from tcms.management.models import TCMSEnvGroup
-
-            return TCMSEnvGroup.objects.all()
-
-        def env_properties(self):
-            from tcms.management.models import TCMSEnvGroup, TCMSEnvProperty
-
-            if self.request.GET.get("env_group_id"):
-                env_group = TCMSEnvGroup.objects.get(id=self.request.GET["env_group_id"])
-                return env_group.property.all()
-            else:
-                return TCMSEnvProperty.objects.all()
-
-        def env_values(self):
-            from tcms.management.models import TCMSEnvValue
-
-            return TCMSEnvValue.objects.filter(property__id=self.request.GET.get("env_property_id"))
-
-        def tags(self):
-            query = strip_parameters(request.GET, self.internal_parameters)
-            tags = TestTag.objects
-            # Generate the string combination, because we are using
-            # case sensitive table
-            if query.get("name__startswith"):
-                seq = get_string_combinations(query["name__startswith"])
-                criteria = reduce(operator.or_, (models.Q(name__startswith=item) for item in seq))
-                tags = tags.filter(criteria)
-                del query["name__startswith"]
-
-            tags = tags.filter(**query).distinct()
-            return tags
-
-        def users(self):
-            from django.contrib.auth.models import User
-
-            query = strip_parameters(self.request.GET, self.internal_parameters)
-            return User.objects.filter(**query)
-
-        def versions(self):
-            from tcms.management.models import Version
-
-            return Version.objects.filter(product__in=self.product_ids)
 
     product_ids = []
     for s in request.GET.getlist("product_id"):
@@ -175,28 +154,28 @@ def info(request):
     if info_type is None:
         return JsonResponseBadRequest({"message": "Missing parameter info_type."})
 
-    objects = Objects(request=request, product_ids=product_ids)
+    objects = ObjectsInfo(request=request, product_ids=product_ids)
     obj = getattr(objects, info_type, None)
 
-    if obj:
-        if request.GET.get("format") == "ulli":
-            field = request.GET.get("field", "name")
-            response_str = "<ul>"
-            for o in obj():
-                response_str += "<li>" + getattr(o, field, None) + "</li>"
-            response_str += "</ul>"
-            return HttpResponse(response_str)
+    if obj is None:
+        return JsonResponseBadRequest({"message": "Unrecognizable infotype"})
 
-        return JsonResponse(
-            json.loads(
-                serializers.serialize(
-                    request.GET.get("format", "json"), obj(), fields=("name", "value")
-                )
-            ),
-            safe=False,
-        )
+    if request.GET.get("format") == "ulli":
+        field = request.GET.get("field", "name")
+        content = ["<ul>"]
+        for o in obj():
+            content.append(f"<li>{getattr(o, field, None)}</li>")
+        content.append("</ul>")
+        return HttpResponse("".join(content))
 
-    return JsonResponseBadRequest({"message": "Unrecognizable infotype"})
+    return JsonResponse(
+        json.loads(
+            serializers.serialize(
+                request.GET.get("format", "json"), obj(), fields=("name", "value")
+            )
+        ),
+        safe=False,
+    )
 
 
 @require_GET
