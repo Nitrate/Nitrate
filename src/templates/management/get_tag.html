@@ -17,13 +17,15 @@
 				<td><a href="{% url "cases-search" %}?a=search&tag__name__in={{ tag }}"  title="{{ tag.num_cases }} cases tagged {{ tag }}">{{ tag.num_cases }}</a></td>
 				<td><a href="{% url "runs-all" %}?action=search&tag__name__in={{ tag }}"  title="{{ tag.num_runs }} runs tagged {{ tag }}">{{ tag.num_runs }}</a></td>
 				{% if object.plan_id and perms.testplans.delete_testplantag %}
-				<td><a href="#tag" class="remove js-remove-tag" title="remmove tag from this plan">Remove</a>
-				<a href="#tag" class="edit js-edit-tag" title="edit tag">Edit</a>
+				<td>
+					<a href="javascript:void(0)" class="remove js-remove-tag" title="remmove tag from this plan">Remove</a>
+					<a href="javascript:void(0)" class="edit js-edit-tag" title="edit tag">Edit</a>
 				</td>
 				{% else %}
 				{% if object.case_id and perms.testcases.delete_testcasetag %}
-				<td><a href="#tag" class="remove js-remove-tag" title="remmove tag from this case">Remove</a>
-				<a href="#tag" class="edit js-edit-tag" title="edit tag">Edit</a>
+				<td>
+					<a href="javascript:void(0)" class="remove js-remove-tag" title="remmove tag from this case">Remove</a>
+					<a href="javascript:void(0)" class="edit js-edit-tag" title="edit tag">Edit</a>
 				</td>
 				{% else %}
 				<td><span class="disabled grey">Remove</span></td>
@@ -45,7 +47,7 @@
 						{% if object.case_id %}<input type="hidden" name="case" value="{{ object.case_id }}" />{% endif %}
 						{% if object.run_id %}<input type="hidden" name="run" value="{{ object.run_id }}" />{% endif %}
 						<input id="id_tags" type="text" name="tags" />
-						<a href="#tag" class="addlink" id="js-add-tag">Add</a>
+						<a href="javascript:void(0)" class="addlink" id="js-add-tag">Add</a>
 						<div id="id_tags_autocomplete"></div>
 						{# <div id="ajax_indicator" class="ajax_loading" style="display:none;"></div> #}
 				</div>
