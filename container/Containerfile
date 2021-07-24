@@ -36,7 +36,7 @@ RUN dnf --setopt=deltarpm=0 --setopt=install_weak_deps=false --nodocs \
     fi && \
     dnf clean all
 
-RUN cp /usr/share/nitrate/nitrate-httpd.conf /etc/httpd/conf/httpd.conf
+RUN cp /usr/share/nitrate/conf/nitrate-httpd.conf /etc/httpd/conf/httpd.conf
 
 # Disable event module and enable prefork module
 RUN sed -i -e 's/^#\(LoadModule mpm_prefork_module .\+\.so\)$/\1/' \
@@ -53,7 +53,6 @@ RUN mkdir /nitrate-config
 
 # For mod_wsgi to store socket file.
 # https://modwsgi.readthedocs.io/en/master/configuration-directives/WSGISocketPrefix.html#wsgisocketprefix
-COPY nitrate-httpd.conf /etc/httpd/conf/httpd.conf
 RUN mkdir ${wsgi_dir} && chown apache:apache ${wsgi_dir}
 
 # Prepare for running entrypoint script
