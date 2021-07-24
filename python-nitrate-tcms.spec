@@ -96,11 +96,11 @@ cd -
 %install
 %py3_install
 
-mkdir -p %{buildroot}%{_sysconfdir}/httpd/conf.d
-mv contrib/conf/%{codename}-httpd.conf \
-	%{buildroot}%{_sysconfdir}/httpd/conf.d/%{codename}.conf
-
 data_root=%{buildroot}%{_datadir}/nitrate
+mkdir -p ${data_root}
+
+mkdir ${data_root}/conf
+cp contrib/conf/* ${data_root}/conf
 
 # Install static files.
 static_root=${data_root}/static
@@ -126,7 +126,6 @@ cp -r src/templates/* $templates_root
 %{_datadir}/nitrate
 %{python3_sitelib}/tcms/
 %{python3_sitelib}/%{egginfo_name}-%{version}-py*.egg-info/
-%config(noreplace) %{_sysconfdir}/httpd/conf.d/%{codename}.conf
 
 %files -n %{pypi_name}-doc
 %doc docs/target/html

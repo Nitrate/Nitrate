@@ -3,6 +3,7 @@ FROM registry.fedoraproject.org/fedora:33
 ARG version=latest
 ARG vcs_url="https://github.com/Nitrate/Nitrate"
 ARG build_latest=no
+ARG wsgi_dir=/var/run/wsgi
 
 LABEL \
     name=Nitrate \
@@ -16,6 +17,9 @@ LABEL \
     description="\
 Nitrate is a new test plan, test run and test case management system, which is \
 written in Python and Django (the Python web framework)."
+
+ENV PYTHONPATH=/nitrate-config
+ENV DJANGO_SETTINGS_MODULE=tcms.settings.product
 
 RUN dnf --setopt=deltarpm=0 --setopt=install_weak_deps=false --nodocs \
         install -y dnf-utils httpd python3-mod_wsgi && \
@@ -33,6 +37,8 @@ RUN dnf --setopt=deltarpm=0 --setopt=install_weak_deps=false --nodocs \
     dnf clean all && \
     rm -rf /var/cache/dnf
 
+RUN cp /usr/share/nitrate/nitrate-httpd.conf /etc/httpd/conf/httpd.conf
+
 # Disable event module and enable prefork module
 RUN sed -i -e 's/^#\(LoadModule mpm_prefork_module .\+\.so\)$/\1/' \
         /etc/httpd/conf.modules.d/00-mpm.conf && \
@@ -46,12 +52,17 @@ RUN mkdir -p /var/nitrate/uploads && \
 # Directory holding customized settings module.
 RUN mkdir /nitrate-config
 
-VOLUME ["/var/log/httpd", "/var/nitrate/uploads", "/nitrate-config"]
+# For mod_wsgi to store socket file.
+# https://modwsgi.readthedocs.io/en/master/configuration-directives/WSGISocketPrefix.html#wsgisocketprefix
+COPY nitrate-httpd.conf /etc/httpd/conf/httpd.conf
+RUN mkdir ${wsgi_dir} && chown apache:apache ${wsgi_dir}
 
 # Prepare for running entrypoint script
 RUN mkdir /bootstrap
 ADD init.py entrypoint.sh /bootstrap/
 
-ENV PYTHONPATH=/nitrate-config DJANGO_SETTINGS_MODULE=tcms.settings.product
-EXPOSE 80
+EXPOSE 8080
+USER apache
+VOLUME ["/var/log/httpd", "/var/nitrate/uploads", "/nitrate-config"]
+
 ENTRYPOINT "/bootstrap/entrypoint.sh"
