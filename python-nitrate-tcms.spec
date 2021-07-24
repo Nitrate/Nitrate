@@ -96,29 +96,26 @@ cd -
 %install
 %py3_install
 
-data_root=%{buildroot}%{_datadir}/nitrate
-mkdir -p ${data_root}
+data_dir=%{buildroot}%{_datadir}/nitrate
+%{__mkdir_p} ${data_dir}
 
-mkdir ${data_root}/conf
-cp contrib/conf/* ${data_root}/conf
-
-# Install static files.
-static_root=${data_root}/static
-mkdir -p $static_root
-
-echo "STATIC_ROOT = '${static_root}'" >> src/tcms/settings/common.py
-
-NITRATE_DB_ENGINE=sqlite \
-PYTHONPATH=src/ \
-NITRATE_SECRET_KEY=key-for-running-tests \
-python3 src/manage.py collectstatic \
-	--settings=tcms.settings.product \
-    --noinput
+%{__mkdir} ${data_dir}/conf
+%{__cp} contrib/conf/* ${data_dir}/conf
 
 # Install templates files.
-templates_root=${data_root}/templates/
-mkdir -p $templates_root
-cp -r src/templates/* $templates_root
+%{__mkdir} ${data_dir}/templates
+%{__cp} -r src/templates/* ${data_dir}/templates
+
+# Install static files.
+%{__mkdir} ${data_dir}/static
+
+echo "STATIC_ROOT = '${data_dir}/static'" >> src/tcms/settings/common.py
+
+PYTHONPATH=src/ \
+NITRATE_DB_ENGINE=sqlite \
+NITRATE_SECRET_KEY=some-key \
+%{__python3} src/manage.py collectstatic \
+--settings=tcms.settings.product --noinput
 
 %files -n python3-%{pypi_name}
 %doc AUTHORS CHANGELOG.rst README.rst VERSION.txt
