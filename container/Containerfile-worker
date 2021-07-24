@@ -27,8 +27,7 @@ RUN dnf --setopt=deltarpm=0 --setopt=install_weak_deps=false --nodocs install -y
     if [[ "${build_latest}" == "yes" ]]; then \
         dnf copr remove -y cqi/python-nitrate-tcms-testing; \
     fi && \
-    dnf clean all && \
-    rm -rf /var/cache/dnf
+    dnf clean all
 
 # Directory holding customized settings module.
 RUN mkdir /nitrate-config
