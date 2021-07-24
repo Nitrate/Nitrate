@@ -42,7 +42,7 @@ services:
     restart: always
     image: "${DOCKER_ORG:-quay.io/nitrate}/nitrate:${IMAGE_VERSION:-latest}"
     ports:
-    - "8001:80"
+    - "8001:8080"
     volumes:
     - "./contrib/compose/web_custom_conf.py:/nitrate-config/nitrate_custom_conf.py:Z"
     - "nitrate_uploads:/code/uploads:Z"
