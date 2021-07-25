@@ -733,7 +733,7 @@ function constructTagZone(container, parameters) {
         constructTagZone(container, Nitrate.Utils.formSerialize(this));
       });
 
-      jQ('#tag_count').text(jQ('#id_tag_form').find('tbody').data('count'));
+      jQ('#tag_count').text(jQ('tbody#tag').prop('count'));
     },
   });
 }

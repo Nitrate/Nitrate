@@ -9,7 +9,7 @@
 				<th>Action</th>
 			</tr>
 		</thead>
-		<tbody data-count='{{ tags.count }}'>
+		<tbody id='tag' count='{{ tags.count }}'>
 			{% for tag in tags %}
 			<tr class="{% cycle 'even' 'odd'%} js-one-tag" data-param="{{ tag }}">
 				<td><span class="tagvalue">{{ tag }}</span></td>
