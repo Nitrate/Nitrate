@@ -42,7 +42,6 @@
 			<div class="addtag">
 				<form id="id_tag_form">
 					<span class="tit">Add Tag</span>
-					<input type="hidden" name="a" value="add">
 					{% if object.plan_id %}<input type="hidden" name="plan" value="{{ object.plan_id }}" />{% endif %}
 					{% if object.case_id %}<input type="hidden" name="case" value="{{ object.case_id }}" />{% endif %}
 					{% if object.run_id %}<input type="hidden" name="run" value="{{ object.run_id }}" />{% endif %}
@@ -56,14 +55,3 @@
 		</tr>
 	</tbody>
 </table>
-<script type="text/javascript">
-	jQ('.js-remove-tag').on('click', function() {
-		removeTag(jQ('#tag')[0], jQ(this).parents('.js-one-tag').attr('data-param'));
-	});
-	jQ('.js-edit-tag').on('click', function() {
-		editTag(jQ('#tag')[0], jQ(this).parents('.js-one-tag').attr('data-param'));
-	});
-	jQ('#js-add-tag').on('click', function() {
-		addTag(jQ('#tag')[0]);
-	});
-</script>

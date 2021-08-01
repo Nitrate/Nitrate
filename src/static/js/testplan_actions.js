@@ -603,8 +603,11 @@ Nitrate.TestPlans.Details = {
   'on_load': function () {
     let planId = Nitrate.TestPlans.Instance.pk;
 
+    let tagsView = new PlanTagsView(planId);
+    tagsView.get();
+    Nitrate.TestPlans.Details.tagsView = tagsView;
+
     // Initial the contents
-    constructTagZone(jQ('#tag')[0], {plan: planId});
     constructPlanComponentsZone('components');
 
     Nitrate.TestPlans.Details.observeEvents(planId);

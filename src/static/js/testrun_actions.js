@@ -537,12 +537,6 @@ Nitrate.TestRuns.Details.registerEventHandlersForCaseRunDetail = function (expan
   });
 };
 
-function bindRemoveTagHandler() {
-  jQ('.js-remove-tag').on('click', function () {
-    operateTagOnRun(jQ('.js-tag-ul')[0], this.dataset.runId, this.dataset.tag, 'remove');
-  });
-}
-
 function bindEnvPropertyHandlers() {
   jQ('.js-edit-property').on('click', function () {
     let dataset = this.dataset
@@ -682,6 +676,10 @@ Nitrate.TestRuns.getCaseRunsOrderChangeFunc = function (caseRunIds) {
 };
 
 Nitrate.TestRuns.Details.on_load = function () {
+  // The run id is not necessary for binding the event handlers.
+  let tagsView = new RunTagsView();
+  tagsView.bindEventHandlers();
+
   jQ('.js-add-property').on('click', function () {
     new AddEnvPropertyDialog(this.dataset.runId, this.dataset.envGroupId).open();
   });
@@ -767,14 +765,6 @@ Nitrate.TestRuns.Details.on_load = function () {
   jQ('#btn_export_csv, #btn_export_xml').on('click', function () {
     let url = this.dataset.actionUrl + '&' + jQ('input[name=case_run]').serialize();
     window.location.assign(url);
-  });
-
-  bindRemoveTagHandler();
-  jQ('.js-add-tag').on('click', function () {
-    let tag = window.prompt('Please type new tag.');
-    if (tag.length > 0) {
-      operateTagOnRun(jQ('.js-tag-ul')[0], this.dataset.runId, tag, 'add');
-    }
   });
 
   jQ('.js-del-case').on('click', function () {
@@ -1119,25 +1109,6 @@ function addPropertyToEnv(runId, envValueId) {
       jQ('#env_area').html(data.fragment);
       bindEnvPropertyHandlers();
     },
-  });
-}
-
-/**
- * Operator tags on a test run.
- *
- * @param {HTMLElement} container - the element containing the tag list.
- * @param {string|number} runId - the run id to update the associated tags.
- * @param {string} tag - the tag name to operate on.
- * @param {string} action - the operation, which should be add or remove.
- */
-function operateTagOnRun(container, runId, tag, action) {
-  sendHTMLRequest({
-    url: '/management/tags/',
-    data: {a: action, run: runId, tags: tag},
-    container: container,
-    callbackAfterFillIn: function () {
-      bindRemoveTagHandler();
-    }
   });
 }
 

@@ -691,91 +691,6 @@ function postToURL(path, params, method) {
   form.submit();
 }
 
-function constructTagZone(container, parameters) {
-  jQ(container).html(constructAjaxLoading());
-
-  sendHTMLRequest({
-    url: '/management/tags/',
-    data: parameters,
-    container: container,
-    callbackAfterFillIn: function () {
-      jQ('#id_tags').autocomplete({
-        'minLength': 2,
-        'appendTo': '#id_tags_autocomplete',
-        'source': function (request, response) {
-          sendHTMLRequest({
-            url: '/management/getinfo/',
-            data: {
-              name__startswith: request.term,
-              info_type: 'tags',
-              format: 'ulli',
-              field: 'name'
-            },
-            success: function (data) {
-              let processedData = [];
-              if (data.indexOf('<li>') > -1) {
-                processedData = data
-                  .slice(data.indexOf('<li>') + 4, data.lastIndexOf('</li>'))
-                  .split('<li>')
-                  .join('')
-                  .split('</li>');
-              }
-              response(processedData);
-            }
-          });
-        },
-      });
-
-      jQ('#id_tag_form').on('submit', function (e) {
-        e.stopPropagation();
-        e.preventDefault();
-
-        constructTagZone(container, Nitrate.Utils.formSerialize(this));
-      });
-
-      jQ('#tag_count').text(jQ('#id_tag_form').find('tbody').data('count'));
-    },
-  });
-}
-
-
-function addTag(container) {
-  let tagName = jQ('#id_tags').prop('value');
-  if (!tagName.length) {
-    jQ('#id_tags').focus();
-  } else {
-    constructTagZone(container, Nitrate.Utils.formSerialize(jQ('#id_tag_form')[0]));
-  }
-}
-
-function removeTag(container, tag) {
-  jQ('#id_tag_form').parent().find('input[name="a"]')[0].value = 'remove';
-
-  let parameters = Nitrate.Utils.formSerialize(jQ('#id_tag_form')[0]);
-  parameters.tags = tag;
-
-  constructTagZone(container, parameters);
-}
-
-function editTag(container, tag) {
-  let nt = prompt(defaultMessages.prompt.edit_tag, tag);
-  if (!nt) {
-    return false;
-  }
-
-  let parameters = Nitrate.Utils.formSerialize(jQ('#id_tag_form')[0]);
-  parameters.tags = nt;
-
-  sendHTMLRequest({
-    url: '/management/tags/',
-    data: parameters,
-    container: container,
-    callbackAfterFillIn: function () {
-      removeTag(container, tag);
-    }
-  });
-}
-
 /**
  * Preview Plan
  *
@@ -1048,3 +963,333 @@ Nitrate.DataTable = {
     },
   }
 };
+
+
+/**
+ * A base tags view.
+ *
+ * The implementation of the tags views is closely related to the existing functionalities inside
+ * the tags table and UL list in a specific plan, case and run.
+ *
+ * @class
+ */
+class TagsBaseView {
+  /**
+   * Construct a tags view object.
+   *
+   * @param {number|string} objectId - the object id whose tags are managed in this view.
+   */
+  constructor(objectId) {
+    this.objectId = objectId;
+    this.addEndpoint = this.removeEndpoint = '/management/tags/';
+  }
+
+  /**
+   * Get the HTML element containing the tags view.
+   *
+   * @returns {HTMLElement} the HTML element representing the container.
+   */
+  getContainer() {
+    return document.getElementById('tag');
+  }
+}
+
+/**
+ * A tags table view.
+ *
+ * This class provides common functions to operate tags.
+ *
+ * @class
+ */
+class TagsTableView extends TagsBaseView {
+  /**
+   * Construct a tags table view object.
+   *
+   * @param {number|string} objectId - the object id whose tags are managed in this view.
+   */
+  constructor(objectId) {
+    super(objectId);
+    this.getEndpoint = '/management/tags/';
+  }
+
+  /**
+   * Bind event handlers on the elements inside the view.
+   */
+  bindEventHandlers() {
+    let self = this;
+
+    jQ('#id_tags').autocomplete({
+      'minLength': 2,
+      'appendTo': '#id_tags_autocomplete',
+      'source': function (request, response) {
+        sendHTMLRequest({
+          url: '/management/getinfo/',
+          data: {
+            name__startswith: request.term,
+            info_type: 'tags',
+            format: 'ulli',
+            field: 'name'
+          },
+          success: function (data) {
+            let processedData = [];
+            if (data.indexOf('<li>') > -1) {
+              processedData = data
+                .slice(data.indexOf('<li>') + 4, data.lastIndexOf('</li>'))
+                .split('<li>')
+                .join('')
+                .split('</li>');
+            }
+            response(processedData);
+          }
+        });
+      },
+    });
+
+    jQ('#id_tag_form').on('submit', function (e) {
+      e.stopPropagation();
+      e.preventDefault();
+      self.addTag();
+    });
+
+    jQ('.js-remove-tag').on('click', function () {
+      let thisTag = jQ(this).parents('.js-one-tag').data('param');
+      self.removeTag(thisTag);
+    });
+
+    jQ('.js-edit-tag').on('click', function () {
+      let thisTag = jQ(this).parents('.js-one-tag').data('param');
+      self.editTag(thisTag);
+    });
+
+    jQ('#js-add-tag').on('click', function () {
+      self.addTag();
+    });
+
+    jQ('#tag_count').text(jQ('#id_tag_form').find('tbody').data('count'));
+  }
+
+
+  /**
+   * Get the HTTP request data to get tags.
+   *
+   * Both plan and case tags view class have to implement this method to provide
+   * specific data, which should include plan or case id.
+   */
+  getGetRequestData() {
+    throw new Error('Must be implemented in subclass.');
+  }
+
+
+  /**
+   * Send an HTTP GET request to get and show the tags.
+   */
+  get() {
+    let self = this;
+    sendHTMLRequest({
+      url: self.getEndpoint,
+      data: self.getGetRequestData(),
+      container: self.getContainer(),
+      callbackAfterFillIn: function () {
+        self.bindEventHandlers();
+      }
+    });
+  }
+
+
+  /**
+   * Get the data from the form.
+   *
+   * @returns {object} the form data.
+   */
+  getFormData() {
+    let form = document.getElementById('id_tag_form')
+      , inputs = form.elements
+      , numInputs = inputs.length
+      , data = {}
+      ;
+    for (let i = 0; i < numInputs; i++) {
+      let elem = inputs[i];
+      data[elem.name] = elem.value;
+    }
+    return data;
+  }
+
+
+  /**
+   * Add a tag.
+   *
+   * @param {string} [tag] - optionally specify a tag to add.
+   * @param {Function} [successCallback]
+   *   an optional callback function to be called after the tags are shown. This
+   *   argument is added and intented to be used with the argument tag together to
+   *   implement the editTag function.
+   */
+  addTag(tag, successCallback) {
+    let self = this
+      , container = self.getContainer()
+      , formData = this.getFormData()
+      ;
+
+    formData.a = 'add';
+    if (tag) {
+      formData.tags = tag;
+    }
+
+    jQ(container).html(constructAjaxLoading());
+    sendHTMLRequest({
+      url: self.addEndpoint,
+      data: formData,
+      container: container,
+      callbackAfterFillIn: function () {
+        self.bindEventHandlers();
+        if (successCallback) {
+          successCallback();
+        }
+      }
+    });
+  }
+
+  /**
+   * Edit a tag.
+   *
+   * @param {string} originalTag - the tag to be edited. Note that, this tag is not actually be
+   *   edited. Instead, this edit operation will add a new tag and remove this originalTag.
+   */
+  editTag(originalTag) {
+    let newTag = prompt(defaultMessages.prompt.edit_tag, originalTag);
+    if (!newTag || newTag === originalTag) {
+      return;
+    }
+
+    let self = this;
+
+    this.addTag(newTag, function () {
+      self.removeTag(originalTag);
+    });
+  }
+
+  /**
+   * Remove tag.
+   *
+   * @param {string} tag - remove this tag from the object.
+   */
+  removeTag(tag) {
+    let self = this
+      , container = self.getContainer()
+      , formData = this.getFormData()
+      ;
+
+    formData.a = 'remove';
+    formData.tags = tag;
+
+    jQ(container).html(constructAjaxLoading());
+    sendHTMLRequest({
+      url: self.removeEndpoint,
+      data: formData,
+      container: container,
+      callbackAfterFillIn: function () {
+        self.bindEventHandlers();
+      }
+    });
+  }
+}
+
+/**
+ * A tags view representing the tags table inside a test case Web page.
+ */
+class CaseTagsView extends TagsTableView {
+  /**
+   * Return the GET HTTP request data to get the tags table.
+   *
+   * For a test case, the HTTP request requires passing the case id in argument `case`.
+   *
+   * @returns {object} the data containing case id to get tags.
+   */
+  getGetRequestData() {
+    return {case: this.objectId};
+  }
+}
+
+/**
+ * A tags view representing the tags table inside a test plan Web page.
+ */
+class PlanTagsView extends TagsTableView {
+  /**
+   * Return the GET HTTP request data to get the tags table.
+   *
+   * For a test plan, the HTTP request requires passing the plan id in argument `plan`.
+   *
+   * @returns {object} the data containing plan id to get tags.
+   */
+  getGetRequestData() {
+    return {plan: this.objectId};
+  }
+}
+
+// UL list view inside a test run page
+
+/**
+ * A tags view representing the UL list inside a test run Web page.
+ */
+class RunTagsView extends TagsBaseView {
+  /**
+   * Return the container element including the UL list of tags.
+   *
+   * @returns {HTMLElement} the container element.
+   */
+  getContainer() {
+    return jQ('.js-tag-ul')[0];
+  }
+
+  /**
+   * Add a tag to the UL list.
+   */
+  addTag() {
+    let self = this;
+    let newTag = window.prompt('Please type new tag.');
+    if (! newTag) {
+      return;
+    }
+    sendHTMLRequest({
+      url: this.addEndpoint,
+      data: {a: 'add', run: this.objectId, tags: newTag},
+      container: self.getContainer(),
+      callbackAfterFillIn: function () {
+        self.bindEventHandlers();
+      }
+    });
+  }
+
+  /**
+   * Remove a tag from the UL list.
+   *
+   * @param {string} tag - the tag to be removed.
+   */
+  removeTag(tag) {
+    let self = this;
+    sendHTMLRequest({
+      url: this.removeEndpoint,
+      data: {a: 'remove', run: this.objectId, tags: tag},
+      container: self.getContainer(),
+      callbackAfterFillIn: function () {
+        self.bindEventHandlers();
+      }
+    });
+  }
+
+  /**
+   * Bind event handlers on the elements which manipulate tags.
+   */
+  bindEventHandlers() {
+    jQ('.js-add-tag').on('click', function () {
+      let view = new RunTagsView(this.dataset.runId);
+      view.addTag();
+    });
+
+    let container = this.getContainer();
+    jQ(container).find('.js-remove-tag').on('click', function () {
+      let view = new RunTagsView(this.dataset.runId);
+      view.removeTag(this.dataset.tag);
+    });
+  }
+}
