@@ -167,7 +167,8 @@ Nitrate.TestCases.Details.bindIssueOperationHandlers = function () {
 Nitrate.TestCases.Details.on_load = function () {
   let caseId = Nitrate.TestCases.Instance.pk;
 
-  constructTagZone(jQ('#tag')[0], {'case': caseId});
+  let tagsView = new CaseTagsView(caseId);
+  tagsView.get();
 
   jQ('li.tab a').on('click', function () {
     jQ('div.tab_list').hide();

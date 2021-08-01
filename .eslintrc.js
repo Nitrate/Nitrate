@@ -46,13 +46,16 @@ module.exports = {
     'submitComment': 'readonly',
     'updateCommentsCount': 'readonly',
 
+    'CaseTagsView': 'readonly',
+    'PlanTagsView': 'readonly',
+    'RunTagsView': 'readonly',
+
     'blinddownAllCases': 'readonly',
     'blindupAllCases': 'readonly',
     'clearDialog': 'readonly',
     'confirmDialog': 'readonly',
     'constructAjaxLoading': 'readonly',
     'constructForm': 'readonly',
-    'constructTagZone': 'readonly',
     'defaultMessages': 'readonly',
     'emptySelect': 'readonly',
     'getDialog': 'readonly',
