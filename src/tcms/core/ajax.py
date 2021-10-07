@@ -270,16 +270,23 @@ def _generate_tags_response(request: HttpRequest, objs: QuerySet, template: str)
     # Response for the operation for a single plan, case and run.
     if len(objs) == 1:
         single_obj = objs[0]
-        tags = single_obj.tag.extra(
-            select={
-                "num_plans": "SELECT COUNT(*) FROM test_plan_tags "
-                             "WHERE test_tags.tag_id = test_plan_tags.tag_id",
-                "num_cases": "SELECT COUNT(*) FROM test_case_tags "
-                             "WHERE test_tags.tag_id = test_case_tags.tag_id",
-                "num_runs": "SELECT COUNT(*) FROM test_run_tags "
-                            "WHERE test_tags.tag_id = test_run_tags.tag_id",
-            }
-        )
+        tags = single_obj.tag
+        # The tags are rendered as a UL list where the associated number of
+        # plans, cases and runs are not necessary. But, they are needed by the
+        # tags table for a single plan or case.
+        if not isinstance(single_obj, TestRun):
+            tags = tags.extra(
+                select={
+                    "num_plans": "SELECT COUNT(*) FROM test_plan_tags "
+                                 "WHERE test_tags.tag_id = test_plan_tags.tag_id",
+                    "num_cases": "SELECT COUNT(*) FROM test_case_tags "
+                                 "WHERE test_tags.tag_id = test_case_tags.tag_id",
+                    "num_runs": "SELECT COUNT(*) FROM test_run_tags "
+                                "WHERE test_tags.tag_id = test_run_tags.tag_id",
+                }
+            )
+        else:
+            tags = tags.all()
         return render(request, template, context={"tags": tags, "object": single_obj})
 
     # Defense, in case some corner case is not covered yet.
