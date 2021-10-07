@@ -1450,40 +1450,15 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
               return false;
             }
 
-            let params = Object.assign(
-              serializeFormData({
-                'form': navForm[0],
-                'selectedCaseIDs': selectedCaseIDs,
-                'hashable': true
-              }),
-              {
-                tags: tagData.tags, a: 'add', t: 'json', f: 'serialized'
-              }
-            );
-
-            /*
-            * Two reasons to force to remove plan from parameters here.
-            * 1. plan is added in previous cases filter. As the design
-            *    of Show More, previous filter criteria is added for
-            *    selecting all cases with same filter criteria.
-            * 2. existing plan confuses tag view method due to it
-            *    applies to both plan and case to add tag. Thus, the
-            *    existing plan will cause it to add tag to all cases of
-            *    that plan always.
-            *
-            * Placing this line of code is not a good idea. But, it
-            * works well for the current implementation. Possible
-            * solution to avoid this might to split the tag view method
-            * to add tags to plans and cases, respectively. Why to make
-            * change to tag view method? That is, according to the
-            * cases filter implementation, plan must exist in the
-            * filter criteria as a parameter.
-            */
-            delete params.plan;
-
             sendHTMLRequest({
               url: '/management/tags/',
-              data: params,
+              data: {
+                case: selectedCaseIDs,
+                tags: tagData.tags,
+                a: 'add',
+                t: 'json',
+                f: 'serialized'
+              },
               traditional: true,
               success: function (data, textStatus, xhr) {
                 clearDialog(getDialog());
