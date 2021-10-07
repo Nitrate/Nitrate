@@ -209,123 +209,96 @@ def form(request):
     return HttpResponse(html())
 
 
-def tag(request, template_name="management/get_tag.html"):
+def _get_tagging_objects(request: HttpRequest, template_name: str) -> Tuple[str, QuerySet]:
+    data = request.GET
+    if "plan" in data:
+        obj_pks = data.getlist("plan")
+        return template_name, TestPlan.objects.filter(pk__in=obj_pks)
+    elif "case" in data:
+        return template_name, get_selected_testcases(request)
+    elif "run" in data:
+        obj_pks = data.getlist("run")
+        return "run/tag_list.html", TestRun.objects.filter(pk__in=obj_pks)
+    else:
+        raise ValueError(
+            "Cannot find parameter plan, case or run from the request querystring."
+        )
+
+
+def _take_action_on_tags(action: str, objs: QuerySet, tags: List[str]) -> None:
+    """Add or remove tags from specific objects
+
+    .. note::
+       The try-except block around the ``add_tag`` and ``remove_tag`` is removed,
+       since it is really not helpful for the error handling. Hopefully, the
+       implementation of tag operations can be redesigned and rewritten in the future.
+
+    :raises RuntimeError: for backward compatibility with the previous code to
+        return a string when any error is raised during the operation, although
+        the returned string value is not used any more and it does not make sense
+        to return such a string.
+    """
+    if action == "add":
+        for tag_str in tags:
+            tag, c = TestTag.objects.get_or_create(name=tag_str)
+            for o in objs:
+                o.add_tag(tag)
+    elif action == "remove":
+        objs = objs.filter(tag__name__in=tags).distinct()
+
+        if not objs:
+            raise RuntimeError("Tags does not exist in current selected plan.")
+        else:
+            for tag_str in tags:
+                try:
+                    tag = TestTag.objects.filter(name=tag_str)[0]
+                except IndexError:
+                    raise RuntimeError(
+                        f"Tag {tag_str} does not exist in current selected plan."
+                    )
+                for o in objs:
+                    o.remove_tag(tag)
+    else:
+        raise ValueError(f"Unknown action {action} on tags.")
+
+
+def _generate_tags_response(request: HttpRequest, objs: QuerySet, template: str) -> HttpResponse:
+    # Empty JSON response is required for adding tag to selected cases in a test plan page.
+    if request.GET.get("t") == "json" and request.GET.get("f") == "serialized":
+        return JsonResponse({})
+
+    # Response for the operation for a single plan, case and run.
+    if len(objs) == 1:
+        single_obj = objs[0]
+        tags = single_obj.tag.extra(
+            select={
+                "num_plans": "SELECT COUNT(*) FROM test_plan_tags "
+                             "WHERE test_tags.tag_id = test_plan_tags.tag_id",
+                "num_cases": "SELECT COUNT(*) FROM test_case_tags "
+                             "WHERE test_tags.tag_id = test_case_tags.tag_id",
+                "num_runs": "SELECT COUNT(*) FROM test_run_tags "
+                            "WHERE test_tags.tag_id = test_run_tags.tag_id",
+            }
+        )
+        return render(request, template, context={"tags": tags, "object": single_obj})
+
+    # Defense, in case some corner case is not covered yet.
+    raise RuntimeError("Nitrate does not know how to render the tags.")
+
+
+def manage_tags(request: HttpRequest, template_name="management/get_tag.html"):
     """Get tags for test plan or test case"""
 
-    class Objects:
-        __all__ = ["plan", "case", "run"]
-
-        def __init__(self, request, template_name):
-            self.request = request
-            self.template_name = template_name
-            for o in self.__all__:
-                if request.GET.get(o):
-                    self.object = o
-                    self.object_pks = request.GET.getlist(o)
-                    break
-
-        def get(self):
-            func = getattr(self, self.object)
-            return func()
-
-        def plan(self):
-            return self.template_name, TestPlan.objects.filter(pk__in=self.object_pks)
-
-        def case(self):
-            return self.template_name, get_selected_testcases(self.request)
-
-        def run(self):
-            self.template_name = "run/tag_list.html"
-            return self.template_name, TestRun.objects.filter(pk__in=self.object_pks)
-
-    class TagActions:
-        __all__ = ["add", "remove"]
-
-        def __init__(self, obj, tag):
-            self.obj = obj
-            self.tag = TestTag.string_to_list(tag)
-            self.request = request
-
-        def add(self):
-            for tag_str in self.tag:
-                try:
-                    tag, c = TestTag.objects.get_or_create(name=tag_str)
-                    for o in self.obj:
-                        o.add_tag(tag)
-                except Exception:
-                    return "Error when adding %s" % self.tag
-
-            return True, self.obj
-
-        def remove(self):
-            self.obj = self.obj.filter(tag__name__in=self.tag).distinct()
-
-            if not self.obj:
-                return "Tags does not exist in current selected plan."
-
-            else:
-                for tag_str in self.tag:
-                    try:
-                        tag = TestTag.objects.filter(name=tag_str)[0]
-                    except IndexError:
-                        return f"Tag {tag_str} does not exist in current selected plan."
-
-                    for o in self.obj:
-                        try:
-                            o.remove_tag(tag)
-                        except Exception:
-                            return "Remove tag %s error." % tag
-                return True, self.obj
-
-    objects = Objects(request, template_name)
-    template_name, obj = objects.get()
+    template_name, objs = _get_tagging_objects(request, template_name)
 
     q_tag = request.GET.get("tags")
     q_action = request.GET.get("a")
     if q_action:
-        tag_actions = TagActions(obj=obj, tag=q_tag)
-        func = getattr(tag_actions, q_action)
-        response = func()
-        if not response[0]:
-            return JsonResponse({})
-
-    del q_tag, q_action
-
-    # Response to batch operations
-    if request.GET.get("t") == "json":
-        if request.GET.get("f") == "serialized":
-            return JsonResponse(
-                # FIXME: this line of code depends on the existence of `a`
-                # argument in query string. So, if a does not appear in the
-                # query string, error will happen here
-                json.loads(serializers.serialize(request.GET["t"], response[1])),
-                safe=False,
-            )
-
-        return JsonResponse({})
-
-    # Response the single operation
-    if len(obj) == 1:
-        tags = obj[0].tag.all()
-        tags = tags.extra(
-            select={
-                "num_plans": "SELECT COUNT(*) FROM test_plan_tags "
-                "WHERE test_tags.tag_id = test_plan_tags.tag_id",
-                "num_cases": "SELECT COUNT(*) FROM test_case_tags "
-                "WHERE test_tags.tag_id = test_case_tags.tag_id",
-                "num_runs": "SELECT COUNT(*) FROM test_run_tags "
-                "WHERE test_tags.tag_id = test_run_tags.tag_id",
-            }
-        )
-
-        context_data = {
-            "tags": tags,
-            "object": obj[0],
-        }
-        return render(request, template_name, context=context_data)
-
-    # Why return an empty response originally?
-    return JsonResponse({})
+        try:
+            _take_action_on_tags(q_action, objs, TestTag.string_to_list(q_tag))
+        except (ValueError, RuntimeError) as e:
+            return JsonResponseBadRequest({"message": str(e)})
+    return _generate_tags_response(request, objs, template_name)
 
 
 LogActionParams = NewType("LogActionParams", Dict[str, Any])

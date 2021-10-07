@@ -11,7 +11,7 @@ urlpatterns = [
     path("ajax/cases/", ajax.PatchTestCasesView.as_view(), name="patch-cases"),
     path("ajax/form/", ajax.form, name="ajax-form"),
     path("management/getinfo/", ajax.info, name="ajax-getinfo"),
-    path("management/tags/", ajax.tag),
+    path("management/tags/", ajax.manage_tags),
     # Attached file zone
     path("management/uploadfile/", files.UploadFileView.as_view(), name="upload-file"),
     path("management/checkfile/<int:file_id>/", files.check_file, name="check-file"),
