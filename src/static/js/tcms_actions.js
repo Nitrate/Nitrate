@@ -1136,7 +1136,7 @@ class TagsTableView extends TagsBaseView {
     }
 
     jQ(container).html(constructAjaxLoading());
-    sendHTMLRequest({
+    postHTMLRequest({
       url: self.addEndpoint,
       data: formData,
       container: container,
@@ -1183,7 +1183,7 @@ class TagsTableView extends TagsBaseView {
     formData.tags = tag;
 
     jQ(container).html(constructAjaxLoading());
-    sendHTMLRequest({
+    postHTMLRequest({
       url: self.removeEndpoint,
       data: formData,
       container: container,
@@ -1250,7 +1250,7 @@ class RunTagsView extends TagsBaseView {
     if (! newTag) {
       return;
     }
-    sendHTMLRequest({
+    postHTMLRequest({
       url: this.addEndpoint,
       data: {a: 'add', run: this.objectId, tags: newTag},
       container: self.getContainer(),
@@ -1267,7 +1267,7 @@ class RunTagsView extends TagsBaseView {
    */
   removeTag(tag) {
     let self = this;
-    sendHTMLRequest({
+    postHTMLRequest({
       url: this.removeEndpoint,
       data: {a: 'remove', run: this.objectId, tags: tag},
       container: self.getContainer(),

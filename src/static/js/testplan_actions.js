@@ -1450,7 +1450,7 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
               return false;
             }
 
-            sendHTMLRequest({
+            postHTMLRequest({
               url: '/management/tags/',
               data: {
                 case: selectedCaseIDs,
