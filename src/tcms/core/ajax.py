@@ -26,7 +26,7 @@ from django.http import HttpResponse, JsonResponse, QueryDict
 from django.http.request import HttpRequest
 from django.shortcuts import render
 from django.views import View
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET, require_http_methods
 
 from tcms.core.mailto import mailto
 from tcms.core.models import TCMSActionModel
@@ -210,7 +210,7 @@ def form(request):
 
 
 def _get_tagging_objects(request: HttpRequest, template_name: str) -> Tuple[str, QuerySet]:
-    data = request.GET
+    data = request.GET or request.POST
     if "plan" in data:
         obj_pks = data.getlist("plan")
         return template_name, TestPlan.objects.filter(pk__in=obj_pks)
@@ -220,9 +220,7 @@ def _get_tagging_objects(request: HttpRequest, template_name: str) -> Tuple[str,
         obj_pks = data.getlist("run")
         return "run/tag_list.html", TestRun.objects.filter(pk__in=obj_pks)
     else:
-        raise ValueError(
-            "Cannot find parameter plan, case or run from the request querystring."
-        )
+        raise ValueError("Cannot find parameter plan, case or run from the request querystring.")
 
 
 def _take_action_on_tags(action: str, objs: QuerySet, tags: List[str]) -> None:
@@ -253,9 +251,7 @@ def _take_action_on_tags(action: str, objs: QuerySet, tags: List[str]) -> None:
                 try:
                     tag = TestTag.objects.filter(name=tag_str)[0]
                 except IndexError:
-                    raise RuntimeError(
-                        f"Tag {tag_str} does not exist in current selected plan."
-                    )
+                    raise RuntimeError(f"Tag {tag_str} does not exist in current selected plan.")
                 for o in objs:
                     o.remove_tag(tag)
     else:
@@ -264,7 +260,8 @@ def _take_action_on_tags(action: str, objs: QuerySet, tags: List[str]) -> None:
 
 def _generate_tags_response(request: HttpRequest, objs: QuerySet, template: str) -> HttpResponse:
     # Empty JSON response is required for adding tag to selected cases in a test plan page.
-    if request.GET.get("t") == "json" and request.GET.get("f") == "serialized":
+    data = request.GET or request.POST
+    if data.get("t") == "json" and data.get("f") == "serialized":
         return JsonResponse({})
 
     # Response for the operation for a single plan, case and run.
@@ -278,11 +275,11 @@ def _generate_tags_response(request: HttpRequest, objs: QuerySet, template: str)
             tags = tags.extra(
                 select={
                     "num_plans": "SELECT COUNT(*) FROM test_plan_tags "
-                                 "WHERE test_tags.tag_id = test_plan_tags.tag_id",
+                    "WHERE test_tags.tag_id = test_plan_tags.tag_id",
                     "num_cases": "SELECT COUNT(*) FROM test_case_tags "
-                                 "WHERE test_tags.tag_id = test_case_tags.tag_id",
+                    "WHERE test_tags.tag_id = test_case_tags.tag_id",
                     "num_runs": "SELECT COUNT(*) FROM test_run_tags "
-                                "WHERE test_tags.tag_id = test_run_tags.tag_id",
+                    "WHERE test_tags.tag_id = test_run_tags.tag_id",
                 }
             )
         else:
@@ -293,18 +290,28 @@ def _generate_tags_response(request: HttpRequest, objs: QuerySet, template: str)
     raise RuntimeError("Nitrate does not know how to render the tags.")
 
 
+@require_http_methods(["GET", "POST"])
 def manage_tags(request: HttpRequest, template_name="management/get_tag.html"):
-    """Get tags for test plan or test case"""
+    """Get or update tags on specific plans, cases or runs.
 
+    This view function is for two kind of tag operation cases:
+
+    For GET request, return the rendered HTML of tags of a specific plan, case and run.
+
+    For POST request, accept additional arguments to add or remove tags from specific
+    plans, cases and runs.
+    """
     template_name, objs = _get_tagging_objects(request, template_name)
 
-    q_tag = request.GET.get("tags")
-    q_action = request.GET.get("a")
-    if q_action:
-        try:
-            _take_action_on_tags(q_action, objs, TestTag.string_to_list(q_tag))
-        except (ValueError, RuntimeError) as e:
-            return JsonResponseBadRequest({"message": str(e)})
+    if request.method == "POST":
+        q_tag = request.POST.get("tags")
+        q_action = request.POST.get("a")
+        if q_action:
+            try:
+                _take_action_on_tags(q_action, objs, TestTag.string_to_list(q_tag))
+            except (ValueError, RuntimeError) as e:
+                return JsonResponseBadRequest({"message": str(e)})
+
     return _generate_tags_response(request, objs, template_name)
 
 
