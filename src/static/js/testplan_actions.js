@@ -1540,16 +1540,26 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
         renderTagForm(c, {case: selectedCaseIDs}, function (e) {
           e.stopPropagation();
           e.preventDefault();
-
-          let data = Nitrate.Utils.formSerialize(this);
           clearDialog(c);
 
-          if (data.o_tag === undefined || data.o_tag.length === 0) {
+          let selectedOpts = this.tags.selectedOptions
+            , selectedTags = [];
+          for (let i = 0; i < selectedOpts.length; i++) {
+            selectedTags.push(selectedOpts[i].text);
+          }
+
+          if (selectedTags.length === 0) {
             return true;
           }
 
-          data.case = selectedCaseIDs;
-          postRequestAndReloadCases('/cases/tag/', data);
+          let params = {
+            a: 'remove',
+            case: selectedCaseIDs,
+            tags: selectedTags,
+            t: 'json',
+            f: 'serialized'
+          };
+          postRequestAndReloadCases('/management/tags/', params);
         });
       });
 
@@ -1655,8 +1665,8 @@ function renderTagForm(container, parameters, formObserve) {
   }
   jQ(container).show();
 
-  postHTMLRequest({
-    url: '/cases/tag/',
+  sendHTMLRequest({
+    url: '/cases/tag-candidates-for-removal/',
     data: parameters,
     traditional: true,
     container: d,
@@ -1669,8 +1679,7 @@ function renderTagForm(container, parameters, formObserve) {
       a.on('click', function () { h.val('remove'); });
       jQ(container).html(
         constructForm(
-          d.html(), Nitrate.http.URLConf.reverse({name: 'cases_tag'}), formObserve,
-          'Press "Ctrl" to select multiple default component', c[0]
+          d.html(), '', formObserve, 'Press "Ctrl" to select multiple default component', c[0]
         )
       );
     }

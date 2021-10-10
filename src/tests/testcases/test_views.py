@@ -4,7 +4,6 @@ import json
 import unittest
 import xml.etree.ElementTree
 from datetime import datetime, timedelta
-from http import HTTPStatus
 from operator import attrgetter, itemgetter
 from unittest.mock import patch
 
@@ -27,11 +26,10 @@ from tcms.issuetracker.models import Issue, IssueTracker
 from tcms.logs.models import TCMSLogModel
 from tcms.management.models import TestTag, Component, Priority
 from tcms.testcases.fields import MultipleEmailField
-from tcms.testcases.forms import CaseTagForm, CaseNotifyForm
+from tcms.testcases.forms import CaseNotifyForm
 from tcms.testcases.models import TestCase, TestCaseStatus, TestCaseCategory
 from tcms.testcases.models import TestCaseComponent
 from tcms.testcases.models import TestCasePlan
-from tcms.testcases.models import TestCaseTag
 from tcms.testcases.views import (
     calculate_for_testcases,
     plan_from_request_or_none,
@@ -192,35 +190,6 @@ class TestMultipleEmailField(unittest.TestCase):
         self.assertRaisesRegex(
             ValidationError, "is not a valid string value", self.field.clean, object()
         )
-
-
-class CaseTagFormTest(test.TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.tag_1 = f.TestTagFactory(name="tag one")
-        cls.tag_2 = f.TestTagFactory(name="tag two")
-        cls.tag_3 = f.TestTagFactory(name="tag three")
-
-        cls.cases = []
-        for i in range(5):
-            case = f.TestCaseFactory(summary="test_case_number_%d" % i)
-            case.add_tag(cls.tag_1)
-            if i % 2 == 0:
-                case.add_tag(cls.tag_2)
-            if i % 3 == 0:
-                case.add_tag(cls.tag_3)
-            cls.cases.append(case)
-
-    def test_populate_from_cases_contains_all_three_tags(self):
-        case_ids = [case.pk for case in self.cases]
-        form = CaseTagForm()
-        form.populate(case_ids=case_ids)
-
-        self.assertEqual(3, len(form.fields["o_tag"].queryset))
-        form_tags = form.fields["o_tag"].queryset.values_list("name", flat=True)
-        self.assertIn(self.tag_1.name, form_tags)
-        self.assertIn(self.tag_2.name, form_tags)
-        self.assertIn(self.tag_3.name, form_tags)
 
 
 # ### Test cases for view methods ###
@@ -578,7 +547,7 @@ class TestOperateCasePlans(BasePlanCase):
         self.assertIn("Nonexistent plan ids", data["message"][0])
 
 
-class TestOperateCaseTag(BasePlanCase):
+class GetTagCandidatesForRemoval(BasePlanCase):
     """Test remove tags to and from cases in a plan"""
 
     @classmethod
@@ -595,71 +564,22 @@ class TestOperateCaseTag(BasePlanCase):
         f.TestCaseTagFactory(case=cls.case_3, tag=cls.tag_rhel)
         f.TestCaseTagFactory(case=cls.case_3, tag=cls.tag_python)
 
-        cls.cases_tag_url = reverse("cases-tag")
+        cls.url = reverse("cases-tag-candidates-for-removal")
 
-    def test_show_cases_list(self):
-        response = self.client.post(self.cases_tag_url, {"case": [self.case_1.pk, self.case_3.pk]})
+    def test_show_tag_candidates(self):
+        response = self.client.get(self.url, {"case": [self.case_1.pk, self.case_3.pk]})
 
         tags = (
             TestTag.objects.filter(cases__in=[self.case_1, self.case_3]).order_by("name").distinct()
         )
-        tag_options = [f'<option value="{tag.pk}">{tag.name}</option>' for tag in tags]
+        tag_options = "".join(f'<option value="{tag.pk}">{tag.name}</option>' for tag in tags)
 
         self.assertContains(
             response,
-            f'<p><label for="id_o_tag">Tags:</label>'
-            f'<select multiple="multiple" id="id_o_tag" name="o_tag">'
-            f'{"".join(tag_options)}'
-            f"</select></p>",
+            f'<p><label for="id_tags">Tags:</label>'
+            f'<select multiple="multiple" id="id_tags" name="tags">{tag_options}</select>'
+            f"</p>",
             html=True,
-        )
-
-    def test_remove_tags_from_cases(self):
-        tags_to_remove = [self.tag_rhel.pk, self.tag_python.pk]
-        remove_from_cases = [self.case_1.pk, self.case_3.pk]
-        response = self.client.post(
-            self.cases_tag_url,
-            {"a": "remove", "o_tag": tags_to_remove, "case": remove_from_cases},
-        )
-
-        data = json.loads(response.content)
-        self.assertEqual({}, data)
-
-        self.assertFalse(
-            TestCaseTag.objects.filter(case=self.case_1.pk, tag=self.tag_rhel.pk).exists()
-        )
-        self.assertFalse(
-            TestCaseTag.objects.filter(case=self.case_1.pk, tag=self.tag_python.pk).exists()
-        )
-        self.assertFalse(
-            TestCaseTag.objects.filter(case=self.case_3.pk, tag=self.tag_rhel.pk).exists()
-        )
-        self.assertFalse(
-            TestCaseTag.objects.filter(case=self.case_3.pk, tag=self.tag_python.pk).exists()
-        )
-
-    @patch(
-        "tcms.testcases.models.TestCase.remove_tag",
-        side_effect=ValueError("value error"),
-    )
-    def test_ensure_response_if_error_happens_when_remove_tag(self, remove_tag):
-        # This test does not care about what tags are removed from which cases
-        response = self.client.post(
-            self.cases_tag_url,
-            {"a": "remove", "o_tag": self.tag_fedora.pk, "case": self.case_1.pk},
-        )
-
-        remove_tag.assert_called_once()
-
-        self.assertJsonResponse(
-            response,
-            {
-                "message": f"Failed to remove tag {self.tag_fedora.name} "
-                f"from case {self.case_1.pk}",
-                "case": self.case_1.pk,
-                "tag": self.tag_fedora.pk,
-            },
-            status_code=HTTPStatus.BAD_REQUEST,
         )
 
 

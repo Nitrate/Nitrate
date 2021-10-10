@@ -13,7 +13,11 @@ urlpatterns = [
         views.ChangeCaseAutomatedPropertyView.as_view(),
         name="cases-automated",
     ),
-    path("tag/", views.tag, name="cases-tag"),
+    path(
+        "tag-candidates-for-removal/",
+        views.tag_candidates_list_for_removal,
+        name="cases-tag-candidates-for-removal",
+    ),
     path("category/", views.category, name="cases-category"),
     path("clone/", views.clone, name="cases-clone"),
     path("printable/", views.printable, name="cases-printable"),

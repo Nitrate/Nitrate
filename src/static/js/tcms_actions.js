@@ -387,7 +387,6 @@ const defaultMessages = {
       case_plan: '/case/$id/plan/',
       cases_automated: '/cases/automated/',
       cases_component: '/cases/component/',
-      cases_tag: '/cases/tag/',
       change_case_order: '/case/$id/changecaseorder/',
       change_case_run_order: '/run/$id/changecaserunorder/',
       change_case_run_status: '/run/$id/execute/changestatus/',

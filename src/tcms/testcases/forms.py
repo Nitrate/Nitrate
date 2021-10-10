@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import re
-from typing import List
+from typing import List, Optional
 
 from django import forms
 from django.core.validators import MaxLengthValidator
+from django.db.models import QuerySet
 
 from tinymce.widgets import TinyMCE
 
@@ -589,17 +590,17 @@ class CaseCategoryForm(forms.Form):
 
 
 class CaseTagForm(forms.Form):
-    o_tag = forms.ModelMultipleChoiceField(
+    tags = forms.ModelMultipleChoiceField(
         label="Tags",
         queryset=TestTag.objects.none(),
         required=False,
     )
 
-    def populate(self, case_ids=None):
-        if case_ids:
+    def populate(self, cases: Optional[QuerySet] = None):
+        if cases is not None:
             # note: backwards relationship filter. TestCaseTag -> TestTag
-            self.fields["o_tag"].queryset = (
-                TestTag.objects.filter(cases__in=case_ids).order_by("name").distinct()
+            self.fields["tags"].queryset = (
+                TestTag.objects.filter(cases__in=cases).order_by("name").distinct()
             )
 
 

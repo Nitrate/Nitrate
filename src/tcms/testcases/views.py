@@ -36,7 +36,7 @@ from tcms.core.utils import form_error_messages_to_list
 from tcms.core.views import prompt
 from tcms.issuetracker.models import IssueTracker
 from tcms.logs.models import TCMSLogModel
-from tcms.management.models import Priority, TestTag
+from tcms.management.models import Priority
 from tcms.search.order import apply_order
 from tcms.search.views import remove_from_request_path
 from tcms.testcases.data import get_exported_cases_and_related_data
@@ -1334,32 +1334,11 @@ def clone(request, template_name="case/clone.html"):
     return render(request, template_name, context=context_data)
 
 
-@require_POST
-def tag(request):
+@require_GET
+def tag_candidates_list_for_removal(request):
     """Remove tags from selected cases in plan page"""
-
-    # FIXME: It's unnecessary to check existance of each case Id. Because, in
-    # the following iteration through queried testcases, this problem is solved
-    # naturally.
-    tcs = get_selected_testcases(request)
-    if not tcs:
-        raise Http404
-
-    if request.POST.get("a") == "remove":
-        tag_ids = request.POST.getlist("o_tag")
-        tags = TestTag.objects.filter(pk__in=tag_ids)
-        for tc in tcs:
-            for tag in tags:
-                try:
-                    tc.remove_tag(tag=tag)
-                except Exception:
-                    msg = f"Failed to remove tag {tag.name} from case {tc.pk}"
-                    logger.error(msg)
-                    return JsonResponseBadRequest({"message": msg, "case": tc.pk, "tag": tag.pk})
-        return JsonResponse({})
-
-    form = CaseTagForm(initial={"tag": request.POST.get("o_tag")})
-    form.populate(case_ids=tcs)
+    form = CaseTagForm()
+    form.populate(get_selected_testcases(request))
     return HttpResponse(form.as_p())
 
 
