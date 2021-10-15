@@ -148,13 +148,17 @@ class TestUserUpdate(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.user = f.UserFactory(username="bob", email="bob@example.com")
+        cls.user = User.objects.create(username="bob", email="bob@example.com")
         cls.user.set_password(cls.user.username)
         cls.user.save()
 
+        cls.user_with_perm = User.objects.create(username="mike", email="mike@example.com")
+        cls.user_with_perm.set_password(cls.user_with_perm.username)
+        cls.user_with_perm.save()
+        user_should_have_perm(cls.user_with_perm, "auth.change_user")
+
         cls.another_user = f.UserFactory()
 
-        cls.http_req = make_http_request(user=cls.user)
         cls.user_new_attrs = {
             "first_name": "new first name",
             "last_name": "new last name",
@@ -162,63 +166,62 @@ class TestUserUpdate(XmlrpcAPIBaseTest):
         }
 
     def test_update_myself(self):
-        data = XUser.update(self.http_req, self.user_new_attrs, self.http_req.user.pk)
-        self.assertEqual(data["first_name"], self.user_new_attrs["first_name"])
-        self.assertEqual(data["last_name"], self.user_new_attrs["last_name"])
-        self.assertEqual(data["email"], self.user_new_attrs["email"])
+        request = make_http_request(user=self.user)
+        data = XUser.update(request, self.user_new_attrs, request.user.pk)
+        user: User = User.objects.get(pk=request.user.pk)
+        self.assertEqual(data["first_name"], user.first_name)
+        self.assertEqual(data["last_name"], user.last_name)
+        self.assertEqual(data["email"], user.email)
 
-    def test_update_myself_without_passing_id(self):
-        data = XUser.update(self.http_req, self.user_new_attrs)
-        self.assertEqual(data["first_name"], self.user_new_attrs["first_name"])
-        self.assertEqual(data["last_name"], self.user_new_attrs["last_name"])
-        self.assertEqual(data["email"], self.user_new_attrs["email"])
+    def test_update_myself_without_passing_my_id(self):
+        request = make_http_request(user=self.user)
+        data = XUser.update(request, self.user_new_attrs)
+        user: User = User.objects.get(pk=request.user.pk)
+        self.assertEqual(data["first_name"], user.first_name)
+        self.assertEqual(data["last_name"], user.last_name)
+        self.assertEqual(data["email"], user.email)
 
-    def test_update_other_missing_permission(self):
+    def test_cannot_update_other_user_without_permission(self):
         new_values = {"some_attr": "xxx"}
-        self.assertXmlrpcFaultForbidden(
-            XUser.update, self.http_req, new_values, self.another_user.pk
-        )
+        request = make_http_request(user=self.user)
+        self.assertXmlrpcFaultForbidden(XUser.update, request, new_values, self.another_user.pk)
 
     def test_update_other_with_proper_permission(self):
-        user_should_have_perm(self.http_req.user, "auth.change_user")
+        request = make_http_request(user=self.user_with_perm)
+        data = XUser.update(request, self.user_new_attrs, self.user.pk)
+        user: User = User.objects.get(pk=self.user.pk)
+        self.assertEqual(data["first_name"], user.first_name)
+        self.assertEqual(data["last_name"], user.last_name)
+        self.assertEqual(data["email"], user.email)
 
-        data = XUser.update(self.http_req, self.user_new_attrs, self.user.pk)
-        updated_user = User.objects.get(pk=self.user.pk)
-        self.assertEqual(data["first_name"], updated_user.first_name)
-        self.assertEqual(data["last_name"], updated_user.last_name)
-        self.assertEqual(data["email"], updated_user.email)
-
-    def test_update_password(self):
-        test_user = self.http_req.user
-
-        # make sure user who is shooting the request has proper permission to
-        # update an user's attributes, whatever itself or others.
-        user_should_have_perm(test_user, "auth.change_user")
-
+    def test_update_user_own_password_with_perm_set(self) -> None:
         user_new_attrs = self.user_new_attrs.copy()
         new_password = "new password"
         user_new_attrs["password"] = new_password
 
-        self.assertXmlrpcFaultForbidden(XUser.update, self.http_req, user_new_attrs, test_user.pk)
+        request = make_http_request(user=self.user_with_perm)
+        XUser.update(request, user_new_attrs)
 
-        user_new_attrs["old_password"] = "invalid old password"
-        self.assertXmlrpcFaultForbidden(XUser.update, self.http_req, user_new_attrs, test_user.pk)
+        user: User = User.objects.get(pk=request.user.pk)
+        self.assertTrue(user.check_password(new_password))
 
-        user_new_attrs["old_password"] = test_user.username
-        data = XUser.update(self.http_req, user_new_attrs, test_user.pk)
-        self.assertNotIn("password", data)
-        self.assertEqual(data["first_name"], user_new_attrs["first_name"])
-        self.assertEqual(data["last_name"], user_new_attrs["last_name"])
-        self.assertEqual(data["email"], user_new_attrs["email"])
+    def test_update_user_own_password_without_perm_set(self) -> None:
+        user_new_attrs = self.user_new_attrs.copy()
+        new_password = "new password"
+        user_new_attrs["password"] = new_password
+        user_new_attrs["old_password"] = self.user.username
 
-        user = User.objects.get(pk=test_user.pk)
+        request = make_http_request(user=self.user)
+        XUser.update(request, user_new_attrs)
+
+        user: User = User.objects.get(pk=request.user.pk)
         self.assertTrue(user.check_password(new_password))
 
     def test_do_nothing(self):
-        original_user = self.http_req.user
-        XUser.update(self.http_req)
-        updated_user = User.objects.get(pk=self.http_req.user.pk)
-
+        original_user = self.user
+        request = make_http_request(user=self.user)
+        XUser.update(request)
+        updated_user = User.objects.get(pk=request.user.pk)
         self.assertEqual(original_user.first_name, updated_user.first_name)
         self.assertEqual(original_user.last_name, updated_user.last_name)
         self.assertEqual(original_user.email, updated_user.email)
