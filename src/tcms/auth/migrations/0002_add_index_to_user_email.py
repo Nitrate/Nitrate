@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("tcms.core.contrib.auth", "0001_initial"),
+        ("tcms_auth", "0001_initial"),
     ]
 
     operations = [migrations.RunSQL("CREATE INDEX idx_user_email ON auth_user (email)")]

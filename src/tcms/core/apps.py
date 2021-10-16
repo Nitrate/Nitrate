@@ -109,7 +109,7 @@ def ensure_django_comment_object_pk_is_int(*args, **kwargs):
 
 
 class AppConfig(DjangoAppConfig):
-    label = "core"
+    label = "tcms_core"
     name = "tcms.core"
     verbose_name = _("Core App")
 
