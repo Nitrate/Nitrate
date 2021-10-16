@@ -11,7 +11,8 @@ xmlrpc_module_path = os.path.dirname(__file__)
 
 
 class AppConfig(DjangoAppConfig):
-    label = name = "tcms.xmlrpc"
+    name = "tcms.xmlrpc"
+    label = "tcms_xmlrpc"
     verbose_name = _("Nitrate XMLRPC APIs")
 
     def ready(self):

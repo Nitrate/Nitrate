@@ -24,7 +24,7 @@ def patch_user_model_clean():
 
 class AppConfig(DjangoAppConfig):
     name = "tcms.auth"
-    label = "tcms.core.contrib.auth"
+    label = "tcms_auth"
     verbose_name = _("Core auth")
 
     def ready(self):
