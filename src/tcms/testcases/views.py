@@ -768,7 +768,7 @@ class TestCaseCaseRunDetailPanelView(
         this_cls = TestCaseCaseRunDetailPanelView
         data = super(this_cls, self).get_context_data(**kwargs)
 
-        case = get_object_or_404(TestCase.objects.only("pk"), pk=self.case_id)
+        case: TestCase = get_object_or_404(TestCase.objects.only("pk"), pk=self.case_id)
         case_run = get_object_or_404(TestCaseRun, pk=self.case_run_id, case=case)
 
         # Data of TestCase
@@ -798,6 +798,8 @@ class TestCaseCaseRunDetailPanelView(
                 "test_case_run_status": caserun_status,
                 "grouped_case_issues": issues,
                 "has_issue_trackers": has_issue_trackers,
+                "components": case.component.order_by("name"),
+                "tags": case.tag.order_by("name"),
             }
         )
 
