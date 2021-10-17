@@ -2488,7 +2488,7 @@ class TestCaseCaseRunDetailPanelView(BaseCaseRun):
             f"{self.attachment_screenshort.file_name}"
             f"</a></li>"
             f"</ul>",
-            '<ul class="ul-no-format"><li>db</li><li>web</li><li>dist</li></ul>',
+            '<ul class="ul-no-format"><li>db</li><li>dist</li><li>web</li></ul>',
             '<ul class="ul-no-format"><li>python</li><li>webapp</li></ul>',
         ]
 

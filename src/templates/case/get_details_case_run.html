@@ -197,7 +197,7 @@
 						<td>
 							<h4 class="borderB">Component</h4>
 							<ul class="ul-no-format">
-								{% for component in test_case.component.all %}
+								{% for component in components %}
 								<li>{{ component.name }}</li>
 								{% empty %}
 								<li class="grey">No component found</li>
@@ -208,7 +208,7 @@
 						<td>
 							<h4 class="borderB">Tag:</h4>
 							<ul class="ul-no-format">
-								{% for tag in test_case.tag.all %}
+								{% for tag in tags %}
 								<li>{{ tag }}</li>
 								{% empty %}
 								<li class="grey">No tag found</li>
