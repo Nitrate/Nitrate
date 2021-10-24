@@ -54,7 +54,8 @@ from tcms.testruns import signals as run_watchers
 from tcms.testruns.models import TestRun, TestCaseRun, TestCaseRunStatus
 from tcms.core.utils import get_string_combinations, form_error_messages_to_list
 
-post_update = Signal(providing_args=["instances", "kwargs"])
+# Arguments: instances, kwargs
+post_update = Signal()
 post_update.connect(run_watchers.post_update_handler)
 
 logger = logging.getLogger(__name__)
