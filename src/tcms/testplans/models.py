@@ -539,7 +539,7 @@ class TestPlan(TCMSActionModel):
             result.remove(self.pk)
             return result
 
-    def get_ancestors(self):
+    def get_ancestors(self) -> QuerySet:
         ancestor_ids = self.get_ancestor_ids()
         return TestPlan.objects.filter(pk__in=ancestor_ids)
 
