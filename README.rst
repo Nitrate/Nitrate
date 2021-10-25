@@ -5,7 +5,10 @@ Nitrate - Test Case Management System
    :alt: PyPI
    :target: https://pypi.python.org/pypi/nitrate-tcms
 .. image:: https://img.shields.io/pypi/pyversions/nitrate-tcms
-   :alt: PyPI - Python Version
+   :alt: Python Versions
+   :target: https://pypi.python.org/pypi/nitrate-tcms
+.. image:: https://img.shields.io/pypi/djversions/nitrate-tcms?label=django
+   :alt: Django Versions
    :target: https://pypi.python.org/pypi/nitrate-tcms
 .. image:: https://quay.io/repository/nitrate/nitrate/status
    :target: https://quay.io/repository/nitrate/nitrate/
