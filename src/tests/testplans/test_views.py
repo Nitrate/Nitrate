@@ -457,16 +457,18 @@ class TestCloneView(BasePlanCase):
         )
 
         plans_li = [
-            """<li>
-    <span class="lab-50">{}</span>
-    <span class="lab-100">{}</span>
-    <span>
-        <a href="" title="{} ({})">{}</a>
-    </span>
-</li>""".format(
+            """\
+            <li>
+                <span class="lab-50">{}</span>
+                <span class="lab-100">{}</span>
+                <span>
+                    <a href="" title="{} ({})">{}</a>
+                </span>
+            </li>
+            """.format(
                 plan.pk, plan.type, plan.name, plan.author.email, plan.name
             )
-            for plan in (self.plan, self.another_plan)
+            for plan in (self.another_plan, self.plan)
         ]
 
         self.assertContains(

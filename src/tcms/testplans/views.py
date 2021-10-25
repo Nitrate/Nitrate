@@ -495,7 +495,7 @@ def clone(request, template_name="plan/clone.html"):
             "At least one plan is required by clone function.",
         )
 
-    tps = TestPlan.objects.filter(pk__in=req_data.getlist("plan"))
+    tps = TestPlan.objects.filter(pk__in=req_data.getlist("plan")).order_by("-pk")
 
     if not tps:
         return prompt.info(
