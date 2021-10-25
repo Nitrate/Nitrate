@@ -4,6 +4,9 @@ Nitrate - Test Case Management System
 .. image:: https://img.shields.io/pypi/v/nitrate-tcms
    :alt: PyPI
    :target: https://pypi.python.org/pypi/nitrate-tcms
+.. image:: https://img.shields.io/pypi/pyversions/nitrate-tcms
+   :alt: PyPI - Python Version
+   :target: https://pypi.python.org/pypi/nitrate-tcms
 .. image:: https://quay.io/repository/nitrate/nitrate/status
    :target: https://quay.io/repository/nitrate/nitrate/
 .. image::  https://readthedocs.org/projects/nitrate/badge/?version=latest
