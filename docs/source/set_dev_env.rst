@@ -21,8 +21,8 @@ to your local system.
 Create a virtual environment
 ----------------------------
 
-Install database and devel packages. For development, SQLite is good enough as a
-database backend, however this guide uses PostgreSQL to serve the database to
+Install database and devel packages. For development, SQLite is good enough as
+a database backend, however this guide uses PostgreSQL to serve the database to
 show more what Nitrate provides to help developers.
 
 .. code-block:: shell

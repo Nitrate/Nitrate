@@ -76,11 +76,11 @@ Infrastructure improvements
 * A new entrypoint is added to the released container image. It is responsbile
   for initializing the instance on-demand by defining specific environment
   variables, for example, setting ``NITRATE_MIGRATE_DB`` to run database
-  migration. For full detailed information, please refer to the `image registry`_.
-  These variables are useful for the first run particularly, or make it easy
-  to initialize to run in a non-production environment. Be careful of setting
-  these variables, use them when you really know what you want to do and what
-  will happen.
+  migration. For full detailed information, please refer to the
+  `image registry`_. These variables are useful for the first run particularly,
+  or make it easy to initialize to run in a non-production environment. Be
+  careful of setting these variables, use them when you really know what you
+  want to do and what will happen.
 
 * Nitrate is able to be fully customized by mounting a container's volume and
   provide a custom settings Python module.

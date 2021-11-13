@@ -48,7 +48,8 @@ A new script is added for running tests for the matrix defined in
 ``.travis.yml``, which is cleaned up for defining test matrix clearly and
 easily.
 
-Tests now run in docker image and with SQLite, MySQL, MariaDB and PostgreSQL. Refer to ``.travis.yml`` to know which versions of database are used.
+Tests now run in docker image and with SQLite, MySQL, MariaDB and PostgreSQL.
+Refer to ``.travis.yml`` to know which versions of database are used.
 
 Database Migration
 ------------------
@@ -61,7 +62,8 @@ Change Log
 
 * Update Dockerfiles (Chenxiong Qi)
 * Clean .coveragerc (Chenxiong Qi)
-* Work with social-app-django to allow login with social accounts (Chenxiong Qi)
+* Work with social-app-django to allow login with social accounts
+  (Chenxiong Qi)
 * Display login, logout and register links according to new auth backends
   config (Chenxiong Qi)
 * Fix overrided authenticate method in custom backends (Chenxiong Qi)

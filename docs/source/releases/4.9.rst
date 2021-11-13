@@ -14,8 +14,8 @@ Fedora 33 buildroot is added to CI and Copr. Since this release, f33 package
 will be built in `Fedora Copr`_.
 
 The CI has been migrated to GitHub workflow. The whole CI related stuff are
-simplified a lot. Now, the tox is the unified way to run tests from either local
-development environment or the GitHub workflow.
+simplified a lot. Now, the tox is the unified way to run tests from either
+local development environment or the GitHub workflow.
 
 Many bugs are fixed in the JavaScript codebase and the issue tracker, one big
 issue is that it is unusable to file an issue from a case run detail pane.
@@ -47,25 +47,31 @@ Run migrations::
 Change Log
 ----------
 
-* Remove duplicate SQL queries during loading case run detail pane (Chenxiong Qi)
+* Remove duplicate SQL queries during loading case run detail pane
+  (Chenxiong Qi)
 * Fix wrong issue link in case run detail pane (Chenxiong Qi)
 * Massive cleanup by removing extra whitespaces from templates (Chenxiong Qi)
 * Fix urllib.parse import (Chenxiong Qi)
 * Fix filing issue from a case run (Chenxiong Qi)
-* Do not allow adding issue to disabled issue tracker for a case run (Chenxiong Qi)
+* Do not allow adding issue to disabled issue tracker for a case run
+  (Chenxiong Qi)
 * Remove incorrect attribute from case run's case id cell (Chenxiong Qi)
-* Do not allow adding issue to test case to disabled issue tracker (Chenxiong Qi)
+* Do not allow adding issue to test case to disabled issue tracker
+  (Chenxiong Qi)
 * Remove unused code from testruns app (Chenxiong Qi)
 * Remove duplicate logs table templates (Chenxiong Qi)
 * Case run change logs are shown correctly under Case Runs tab (Chenxiong Qi)
-* JS: refresh the whole property values list after adding a value (Chenxiong Qi)
-* JS: avoid registering event handler multiple times after adding a new property (Chenxiong Qi)
+* JS: refresh the whole property values list after adding a value
+  (Chenxiong Qi)
+* JS: avoid registering event handler multiple times after adding a new
+  property (Chenxiong Qi)
 * Fix incorrect add_property URL reference (Chenxiong Qi)
 * Fix template plan/edit.html (Chenxiong Qi)
 * Refresh run statistics after changing case run status (Chenxiong Qi)
 * JS: refactor detail expansion (Chenxiong Qi)
 * Do not expand next if the last case run is updated (Chenxiong Qi)
-* JS: use meaningful data attribute names in case run detail pane (Chenxiong Qi)
+* JS: use meaningful data attribute names in case run detail pane
+  (Chenxiong Qi)
 * JS: allow to change case run status without comment (Chenxiong Qi)
 * JS: fix wrong plan advanced search pagination info (Chenxiong Qi)
 * Add tox and tox-docker extra deps list (Chenxiong Qi)
@@ -75,7 +81,8 @@ Change Log
 * Fix report overall (Chenxiong Qi)
 * JS: fix error when save an environment group (Chenxiong Qi)
 * JS: fix wrong use of this keyword management_actions (Chenxiong Qi)
-* JS: update issues number correctly after the last issue is removed from a case run (Chenxiong Qi)
+* JS: update issues number correctly after the last issue is removed from a
+  case run (Chenxiong Qi)
 * Fix case run status button CSS style for disabled (Chenxiong Qi)
 * JS: rewrite constructAjaxLoading using DOM API (Chenxiong Qi)
 * JS: reload case run detail pane only once (Chenxiong Qi)
@@ -139,7 +146,8 @@ Change Log
 * Give base class to HelperAssertions (Chenxiong Qi)
 * Rewrite test data to make it easier to read (Chenxiong Qi)
 * Declarative auto login for tests (Chenxiong Qi)
-* Pass missing request argument to backend.authentication (`#498`_) (Chenxiong Qi)
+* Pass missing request argument to backend.authentication (`#498`_)
+  (Chenxiong Qi)
 * Encode author email in My Plans querystring (`#262`_) (Chenxiong Qi)
 * Reduce SQL queries count in recent page (`#754`_) (Chenxiong Qi)
 * Allow to query case runs subtotal by status for multiple runs (Chenxiong Qi)

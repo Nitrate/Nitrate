@@ -126,8 +126,8 @@ Happy hacking.
 
        tox
 
-#. when your code is ready, commit your changes and sign-off the commit, push to
-   your cloned repository, and make a pull request to ``develop`` branch.
+#. when your code is ready, commit your changes and sign-off the commit, push
+   to your cloned repository, and make a pull request to ``develop`` branch.
 
 
 Commit message format
@@ -152,8 +152,8 @@ done by specifying option ``-s`` to ``git commit``, for example::
 
     git commit -s -m "commit message"
 
-The sign-off means you have read and agree to `Developer Certificate of Origin`_.
-Nitrate uses version 1.1::
+The sign-off means you have read and agree to `Developer Certificate of
+Origin`_. Nitrate uses version 1.1::
 
     Developer Certificate of Origin
     Version 1.1

@@ -71,10 +71,11 @@ Change Log
 - Remove py36 from running tests with django 1.10 (Chenxiong Qi)
 - Ignore more directories when make tags file (Chenxiong Qi)
 - Add test for django 1.11 - `#247`_ (Chenxiong Qi)
-- Show status name rather than id in case run change log - `#43`_ (Chenxiong Qi)
+- Show status name rather than id in case run change log - `#43`_
+  (Chenxiong Qi)
 - Refactor upload_file (Chenxiong Qi)
-- Fix hardcode to show priorities in advanced search - `rhbz#1139932`_ (Chenxiong
-  Qi)
+- Fix hardcode to show priorities in advanced search - `rhbz#1139932`_
+  (Chenxiong Qi)
 - Fix Makefile to run tests (Chenxiong Qi)
 - Recover tests to run with pytest (Chenxiong Qi)
 - Run flake8 from tox (Chenxiong Qi)

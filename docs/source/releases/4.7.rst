@@ -32,9 +32,11 @@ Refer to :ref:`deployment` for details of installation.
 Database Migration
 ------------------
 
-There is database migrations. Run command to do the migration::
+There is database migrations. Run command to do the migration:
 
-	django-admin --settings=tcms.settings.produce migrate
+.. code-block::
+
+    django-admin --settings=tcms.settings.produce migrate
 
 Change Log
 ----------
@@ -59,7 +61,8 @@ Change Log
 * Ensure celery is installed in tox testenv (Chenxiong Qi)
 * JS: rewrite product associated objects updater - `#600`_ (Chenxiong Qi)
 * JS: use jQuery on to listen events in templates (Chenxiong Qi)
-* JS: merge toggleTestCasePane and toggleTestCaseReviewPane - `#618`_ (Chenxiong Qi)
+* JS: merge toggleTestCasePane and toggleTestCaseReviewPane - `#618`_
+  (Chenxiong Qi)
 * JS: use one line to set disabled property (Chenxiong Qi)
 * Add missing csrf_token (Chenxiong Qi)
 * JS: cleanup product associated objects updater functions (Chenxiong Qi)

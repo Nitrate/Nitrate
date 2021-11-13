@@ -172,5 +172,5 @@ where you pass the latest version to the ``--image`` parameter;
 How To Configure
 ----------------
 
-All configuration needs to go into ``mynitrate/settings.py`` **BEFORE** you build the
-Docker image and push it to GCE.
+All configuration needs to go into ``mynitrate/settings.py`` **BEFORE** you
+build the Docker image and push it to GCE.
