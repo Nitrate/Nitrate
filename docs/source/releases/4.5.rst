@@ -31,9 +31,12 @@ Run Django ``migrate`` command to apply database migrations.
 Change Log
 ----------
 
-* Fix wrong parameter passed to backend while typing tag name - `#516`_ (Chenxiong Qi)
-* Fix get error message when default tester does not exist - `#515`_ (Chenxiong Qi)
-* Show cases correctly in page /plan/id/chooseruns/ if SelectAll is checked - `#506`_ (Chenxiong Qi)
+* Fix wrong parameter passed to backend while typing tag name - `#516`_
+  (Chenxiong Qi)
+* Fix get error message when default tester does not exist - `#515`_
+  (Chenxiong Qi)
+* Show cases correctly in page /plan/id/chooseruns/ if SelectAll is checked -
+  `#506`_ (Chenxiong Qi)
 * Fix default_tester in both defer and select_related - `#512`_ (Chenxiong Qi)
 * Avoid to add existing email address to user - `#430`_ (Chenxiong Qi)
 * Remove future-breakpoint from devtools (Chenxiong Qi)
@@ -60,7 +63,8 @@ Change Log
 * Reduce the size of testbox (Chenxiong Qi)
 * Massive improvements to the tests run in Travis-CI (Chenxiong Qi)
 * Pull image on-demand in Travis-CI (Chenxiong Qi)
-* Upgrade django-debug-toolbar vesion and add psycopg2 in requirements (Chenxiong Qi)
+* Upgrade django-debug-toolbar vesion and add psycopg2 in requirements
+  (Chenxiong Qi)
 * Do not limit version of django-debug-toolbar (Chenxiong Qi)
 * Remove trailing line breakers (Chenxiong Qi)
 * Remove clean_assignee from XMLRPCNewCaseRunForm (Chenxiong Qi)
@@ -72,7 +76,8 @@ Change Log
 * Clean more code accessing HTTPStatus (Chenxiong Qi)
 * Add missing imports (Chenxiong Qi)
 * Import http status code from correct module (Chenxiong Qi)
-* Allow specifying release version for up-release-container target (Chenxiong Qi)
+* Allow specifying release version for up-release-container target
+  (Chenxiong Qi)
 * Prebuild testenv images (Chenxiong Qi)
 * Upgrade django-contrib-comments to 1.9.1 (Chenxiong Qi)
 * Make it much clear for travis-ci testenv matrix comments (Chenxiong Qi)

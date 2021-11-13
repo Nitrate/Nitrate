@@ -31,7 +31,8 @@ Change Log
 
 * Refine and add new targets to Makefile (Chenxiong Qi)
 * Upgrade base image to fedora:31 for dev and release images (Chenxiong Qi)
-* Do not install dependencies from PyPI during building release image (Chenxiong Qi)
+* Do not install dependencies from PyPI during building release image
+  (Chenxiong Qi)
 * Cleanup, rename and fix SPEC (Chenxiong Qi)
 * Add missing src/manage.py (Chenxiong Qi)
 

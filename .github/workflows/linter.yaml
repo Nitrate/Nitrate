@@ -42,6 +42,21 @@ jobs:
           python3 -m pip install tox
       - run: tox -e docs
 
+  doc8:
+    name: Run doc8 checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install doc8
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install tox
+      - run: tox -e doc8
+
   eslint:
     name: Lint JavaScript code
     runs-on: ubuntu-latest

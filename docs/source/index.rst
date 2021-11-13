@@ -122,6 +122,5 @@ Table of Content
    contribution
    install/index
    configuration
-   guide/index
    api/index
    releases/index

@@ -56,10 +56,12 @@ dependencies. See :ref:`setup_on_fedora` for more information. Then::
 Initialize database
 -------------------
 
-Database is required by Nitrate. Django ORM supports many database backends, but
-for the moment we recommend you to use MySQL because some parts of Nitrate do not
-use the ORM layer but instead hand-crafted SQL queries!
-Create database and user for Nitrate in MySQL::
+Database is required by Nitrate. Django ORM supports many database backends,
+but for the moment we recommend you to use MySQL because some parts of Nitrate
+do not use the ORM layer but instead hand-crafted SQL queries! Create database
+and user for Nitrate in MySQL:
+
+.. code-block::
 
     mysql> create database nitrate;
     mysql> GRANT all privileges on nitrate.* to nitrate@'%' identified by 'password';
@@ -135,7 +137,9 @@ Create upload directory and change owner & group to ``apache``::
 Configure Apache and mod_wsgi
 -----------------------------
 
-``/etc/httpd/conf.d/nitrate.conf``::
+``/etc/httpd/conf.d/nitrate.conf``:
+
+.. code-block::
 
     WSGIDaemonProcess nitrateapp python-path=/var/www/html/mynitrate:/var/www/html/mynitrate/venv/lib/python2.7/site-packages
     WSGIProcessGroup nitrateapp

@@ -42,7 +42,8 @@ Change Log
 * Avoid submitting issue key when press enter (Chenxiong Qi)
 * Add missing csrf check for attachment upload (Chenxiong Qi)
 * Remove Django 2.0 from project classifiers (Chenxiong Qi)
-* Fix log_action to handle None original value correctly - `#610`_ (Chenxiong Qi)
+* Fix log_action to handle None original value correctly - `#610`_
+  (Chenxiong Qi)
 * Comment out all selected case runs correctly - `#609`_ (Chenxiong Qi)
 * Enable CSRF - `#501`_ (Chenxiong Qi)
 * JS: clean some code (Chenxiong Qi)
@@ -74,7 +75,8 @@ Change Log
 * JS: start to test js code with qunit (Chenxiong Qi)
 * JS: rewrite serializeCaseRunFromInputList (Chenxiong Qi)
 * Fix test run clone page (Chenxiong Qi)
-* JS: call callback properly when succeed to submit a comment to a case run (Chenxiong Qi)
+* JS: call callback properly when succeed to submit a comment to a case run
+  (Chenxiong Qi)
 * Fix location to load django jQuery lib (Chenxiong Qi)
 * JS: fix location to load django admin jquery (Chenxiong Qi)
 * JS: use let to declare global variable jQ (Chenxiong Qi)
@@ -94,7 +96,8 @@ Change Log
 * Remove unused CSS from templates (Chenxiong Qi)
 * Convert some templates from dos to unix format (Chenxiong Qi)
 * Use static template tag - `#480`_ (Chenxiong Qi)
-* Replace deprecated inspect.getargspec with inspect.getfullargspec - `#458`_ (Chenxiong Qi)
+* Replace deprecated inspect.getargspec with inspect.getfullargspec - `#458`_
+  (Chenxiong Qi)
 * Write tests for log_call and fix it (Chenxiong Qi)
 * Fix typo in log_call docstring (Chenxiong Qi)
 * JS: remove unused function (Chenxiong Qi)

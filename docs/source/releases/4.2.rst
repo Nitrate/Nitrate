@@ -11,8 +11,7 @@ Highlighted
 Issue tracker is rewritten thoroughly. With new issue tracker, it is doable to
 add, disable and remove issue tracker for specific products dynamically without
 the need to change source code. It is also extensible by writing your own issue
-tracker service class to work with specific issue tracker instance. Refer to
-:ref:`issuetracker`.
+tracker service class to work with specific issue tracker instance.
 
 Migration
 ---------
@@ -80,7 +79,8 @@ Change Log
 - Add test for #181, fails only on MySQL (atodorov)
 - Name Nitrate (Chenxiong Qi)
 - Do not allow adding duplicate components to a case - `#281`_ (Chenxiong Qi)
-- Fix "Update versions failed" when create a plan from am empty db - `#287`_ (Chenxiong Qi)
+- Fix "Update versions failed" when create a plan from am empty db - `#287`_
+  (Chenxiong Qi)
 - Add missing migration for using custom NitrateBooleanField (Chenxiong Qi)
 - Fix: Tree view shows spinner and never loads (`#290`_) (Chenxiong Qi)
 - Redefine Json bad request and server error response (Chenxiong Qi)
@@ -102,7 +102,8 @@ Change Log
 - Restructure list of dependencies (Chenxiong Qi)
 - Rewrite XMLRPC API in order to publish - `#275`_ (Chenxiong Qi)
 - Publish XMLRPC API documentation - `#276`_ (Chenxiong Qi)
-- Replace old kobo user_passes_test with django permission_required (Chenxiong Qi)
+- Replace old kobo user_passes_test with django permission_required
+  (Chenxiong Qi)
 - Install sphinx theme sphinx_rtd_theme explicitly (Chenxiong Qi)
 - Show correct project name Nitrate in documentation (Chenxiong Qi)
 - Remove ChangeLog from docs (Chenxiong Qi)

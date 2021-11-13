@@ -5,7 +5,8 @@
 
 *Jun 27, 2020*
 
-This is a quick fix of the artifacts to make Nitrate run well in release container.
+This is a quick fix of the artifacts to make Nitrate run well in release
+container.
 
 Get and install
 ---------------

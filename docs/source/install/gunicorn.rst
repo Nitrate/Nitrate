@@ -137,7 +137,9 @@ Once your local Nitrate instance has been configured then create the database::
 
     (myNitrate)$ PYTHONPATH=. django-admin migrate --settings mynitrate.settings
 
-Then create the first user account on your Nitrate instance::
+Then create the first user account on your Nitrate instance:
+
+.. code-block::
 
     (myNitrate)$ PYTHONPATH=. django-admin createsuperuser --settings mynitrate.settings
     Username (leave blank to use 'atodorov'):
@@ -157,5 +159,5 @@ Afterwards start Gunicorn::
 Deployment to production
 ------------------------
 
-Gunicorn advises to use Nginx as an HTTP proxy sitting at the front. For more details
-refer to http://gunicorn.org/#deployment.
+Gunicorn advises to use Nginx as an HTTP proxy sitting at the front. For more
+details refer to http://gunicorn.org/#deployment.

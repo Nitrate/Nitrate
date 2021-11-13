@@ -107,7 +107,8 @@ subpackages include:
 * ``krbauth``: needed when the ``KerberosBackend`` authentication backend is
   enabled.
 
-* ``socialauth``: needed when the social-based authentication backend is enabled.
+* ``socialauth``: needed when the social-based authentication backend is
+  enabled.
 
 * ``async``: needed when to run asynchronous tasks as Celery tasks.
 

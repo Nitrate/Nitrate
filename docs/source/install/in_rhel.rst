@@ -89,10 +89,10 @@ Like on RHEL6.3, the root path is located in::
 
     /usr/lib/python2.6/site-packages/nitrate-3.8.6-py2.6.egg/tcms
 
-As we plan to deploy an example server for nitrate, we can use product.py as the
-default settings. After backed up the product.py, please modify
-settings based on your custom configurations in settings/product.py.
-For more information see :ref:`configuration`!
+As we plan to deploy an example server for nitrate, we can use product.py as
+the default settings. After backed up the product.py, please modify settings
+based on your custom configurations in settings/product.py. For more
+information see :ref:`configuration`!
 
 
 Use cache (Optional)
@@ -151,8 +151,8 @@ Reference: https://docs.djangoproject.com/en/1.5/howto/static-files/deployment/
 Deploy with Apache
 ~~~~~~~~~~~~~~~~~~
 
-Deploying Django projects with Apache and mod_wsgi is the recommended way to get
-them into production.
+Deploying Django projects with Apache and mod_wsgi is the recommended way to
+get them into production.
 
 Create wsgi.conf in /etc/httpd/conf.d/ which include one line::
 

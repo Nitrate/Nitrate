@@ -19,9 +19,11 @@ subpackages include:
   enabled, or the issue tracker is configured to work with a Bugzilla
   instance.
 
-* ``krbauth``: needed when the ``KerberosBackend`` authentication backend is enabled.
+* ``krbauth``: needed when the ``KerberosBackend`` authentication backend is
+  enabled.
 
-* ``socialauth``: needed when the social-based authentication backend is enabled.
+* ``socialauth``: needed when the social-based authentication backend is
+  enabled.
 
 * ``async``: needed when to run asynchronous tasks as Celery tasks.
 
