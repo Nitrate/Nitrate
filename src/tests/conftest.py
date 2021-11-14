@@ -3,12 +3,11 @@ from functools import partial
 import pytest
 from django.contrib.auth.models import User
 
-from tcms.management.models import Classification, Product, Version, Priority, TestBuild
-from tcms.testcases.models import TestCaseStatus, TestCase, TestCaseCategory
+from tcms.management.models import Classification, Priority, Product, TestBuild, Version
+from tcms.testcases.models import TestCase, TestCaseCategory, TestCaseStatus
 from tcms.testplans.models import TestPlan, TestPlanType
 from tcms.testruns.models import TestCaseRunStatus, TestRun
 from tests import BaseDataContext
-
 
 TESTER_PASSWORD = "password"
 

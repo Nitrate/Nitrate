@@ -3,10 +3,8 @@
 from django.forms import BooleanField
 from django.forms.widgets import CheckboxInput
 
-from tcms.testcases.forms import XMLRPCNewCaseForm
-from tcms.testcases.forms import XMLRPCUpdateCaseForm
-from tcms.testplans.forms import XMLRPCNewPlanForm
-from tcms.testplans.forms import XMLRPCEditPlanForm
+from tcms.testcases.forms import XMLRPCNewCaseForm, XMLRPCUpdateCaseForm
+from tcms.testplans.forms import XMLRPCEditPlanForm, XMLRPCNewPlanForm
 from tcms.xmlrpc.utils import parse_bool_value
 
 

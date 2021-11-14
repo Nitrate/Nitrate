@@ -3,24 +3,25 @@
 import itertools
 import operator
 import xmlrpc.client
-from typing import Any, Callable, ContextManager, Dict, List, Union
 from http import HTTPStatus
-from django.contrib.auth.models import User
+from typing import Any, Callable, ContextManager, Dict, List, Union
 
 import pytest
 from django import test
+from django.contrib.auth.models import User
+
 from tcms.core.utils import string_to_list
 from tcms.management.models import TCMSEnvProperty, TCMSEnvValue, TestTag, Version
+from tcms.testcases.models import TestCase
 from tcms.testplans.models import TestPlan
 from tcms.testruns.models import TCMSEnvRunValueMap, TestCaseRun, TestRun, TestRunTag
-
-from tcms.testcases.models import TestCase
 from tcms.xmlrpc.api import testrun as testrun_api
 from tcms.xmlrpc.serializer import datetime_to_str
 from tcms.xmlrpc.utils import pre_process_ids
-from tests import BaseDataContext, factories as f, user_should_have_perm
-from tests.xmlrpc.utils import make_http_request
-from tests.xmlrpc.utils import XmlrpcAPIBaseTest
+from tests import BaseDataContext
+from tests import factories as f
+from tests import user_should_have_perm
+from tests.xmlrpc.utils import XmlrpcAPIBaseTest, make_http_request
 
 
 class TestGet(test.TestCase):

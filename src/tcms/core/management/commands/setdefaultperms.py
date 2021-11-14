@@ -2,9 +2,8 @@
 
 import logging
 
+from django.contrib.auth.models import Group, Permission
 from django.core.management.base import BaseCommand, CommandError
-from django.contrib.auth.models import Group
-from django.contrib.auth.models import Permission
 
 logger = logging.getLogger(__name__)
 

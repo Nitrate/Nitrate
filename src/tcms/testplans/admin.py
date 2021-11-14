@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.contrib import admin
 
-from tcms.testplans.models import TestPlanType
-from tcms.testplans.models import TestPlan
+from tcms.testplans.models import TestPlan, TestPlanType
 
 
 class TestPlanTypeAdmin(admin.ModelAdmin):

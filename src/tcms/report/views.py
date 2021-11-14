@@ -2,37 +2,35 @@
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Prefetch
-from django.urls import reverse
 from django.http import Http404
 from django.shortcuts import render
+from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
-from django.views.generic import TemplateView
-from django.views.generic import View
+from django.views.generic import TemplateView, View
 from django_comments.models import Comment
 
-from tcms.issuetracker.models import Issue
-from .forms import CustomSearchDetailsForm
-from tcms.management.models import Priority
-from tcms.management.models import Product
-from tcms.testruns.models import TestCaseRunStatus, TestCaseRun
 from tcms.core.db import workaround_single_value_for_in_clause
+from tcms.issuetracker.models import Issue
+from tcms.management.models import Priority, Product
 from tcms.report import data as stats
-from tcms.report.forms import TestingReportForm
-from tcms.report.forms import TestingReportCaseRunsListForm
-from tcms.report.data import CustomDetailsReportData
-from tcms.report.data import CustomReportData
-from tcms.report.data import overview_view_get_running_runs_count
-from tcms.report.data import TestingReportByCasePriorityData
-from tcms.report.data import TestingReportByCaseRunTesterData
-from tcms.report.data import TestingReportByPlanBuildData
-from tcms.report.data import TestingReportByPlanBuildDetailData
-from tcms.report.data import TestingReportByPlanTagsData
-from tcms.report.data import TestingReportByPlanTagsDetailData
-from tcms.report.data import TestingReportCaseRunsData
-from tcms.report.forms import CustomSearchForm
+from tcms.report.data import (
+    CustomDetailsReportData,
+    CustomReportData,
+    TestingReportByCasePriorityData,
+    TestingReportByCaseRunTesterData,
+    TestingReportByPlanBuildData,
+    TestingReportByPlanBuildDetailData,
+    TestingReportByPlanTagsData,
+    TestingReportByPlanTagsDetailData,
+    TestingReportCaseRunsData,
+    overview_view_get_running_runs_count,
+)
+from tcms.report.forms import CustomSearchForm, TestingReportCaseRunsListForm, TestingReportForm
 from tcms.search.views import fmt_queries, remove_from_request_path
+from tcms.testruns.models import TestCaseRun, TestCaseRunStatus
 
+from .forms import CustomSearchDetailsForm
 
 MODULE_NAME = "report"
 

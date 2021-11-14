@@ -2,13 +2,12 @@
 
 import re
 
+from django.http import Http404, HttpResponseRedirect
 from django.urls import reverse
-from django.http import HttpResponseRedirect
 from django.views.decorators.http import require_GET
-from django.http import Http404
 
-from tcms.testplans.models import TestPlan
 from tcms.testcases.models import TestCase
+from tcms.testplans.models import TestPlan
 from tcms.testruns.models import TestRun
 
 

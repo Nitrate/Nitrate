@@ -2,12 +2,12 @@
 
 from operator import methodcaller
 
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group, User
 from django.core.exceptions import PermissionDenied
 from kobo.django.xmlrpc.decorators import user_passes_test
 
-from tcms.xmlrpc.serializer import XMLRPCSerializer
 from tcms.xmlrpc.decorators import log_call
+from tcms.xmlrpc.serializer import XMLRPCSerializer
 from tcms.xmlrpc.utils import parse_bool_value
 
 __all__ = ("filter", "get", "get_me", "update", "join")

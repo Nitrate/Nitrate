@@ -3,17 +3,11 @@
 from django.contrib.auth.decorators import permission_required
 from django.core.exceptions import ObjectDoesNotExist
 
-from tcms.management.models import Component
-from tcms.management.models import Product
-from tcms.management.models import TestTag
+from tcms.management.models import Component, Product, TestTag
 from tcms.testplans.importer import clean_xml_file
-from tcms.testplans.models import TestPlan, TestPlanType, TCMSEnvPlanMap
+from tcms.testplans.models import TCMSEnvPlanMap, TestPlan, TestPlanType
 from tcms.xmlrpc.decorators import log_call
-from tcms.xmlrpc.utils import (
-    deprecate_critetion_attachment,
-    pre_process_ids,
-    distinct_count,
-)
+from tcms.xmlrpc.utils import deprecate_critetion_attachment, distinct_count, pre_process_ids
 
 __all__ = (
     "add_tag",

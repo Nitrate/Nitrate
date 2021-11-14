@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from tcms.xmlrpc.serializer import XMLRPCSerializer
 from tcms.testcases.models import TestCase, TestCasePlan
 from tcms.testplans.models import TestPlan
 from tcms.xmlrpc.decorators import log_call
-
+from tcms.xmlrpc.serializer import XMLRPCSerializer
 
 __all__ = ("get", "update")
 

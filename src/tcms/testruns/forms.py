@@ -3,18 +3,12 @@
 from django import forms
 from django.contrib.auth.models import User
 
-from tcms.core.forms import UserField, DurationField
-from tcms.management.models import (
-    Product,
-    Version,
-    TestBuild,
-    TCMSEnvGroup,
-    TestTag,
-    TCMSEnvValue,
-)
-from tcms.testplans.models import TestPlan
+from tcms.core.forms import DurationField, UserField
+from tcms.management.models import Product, TCMSEnvGroup, TCMSEnvValue, TestBuild, TestTag, Version
 from tcms.testcases.models import TestCase
-from .models import TestRun, TestCaseRunStatus, TestCaseRun
+from tcms.testplans.models import TestPlan
+
+from .models import TestCaseRun, TestCaseRunStatus, TestRun
 
 STATUS_CHOICES = (("", "---------"), ("running", "Running"), ("finished", "Finished"))
 

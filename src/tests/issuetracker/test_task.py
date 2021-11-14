@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-
 from unittest.mock import patch
+
 from tcms.issuetracker.task import bugzilla_external_track
 
 

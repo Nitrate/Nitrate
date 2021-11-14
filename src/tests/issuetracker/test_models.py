@@ -4,13 +4,13 @@ import io
 import os
 import re
 import tempfile
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from django import test
 
+import tests.factories as f
 from tcms.issuetracker.models import CredentialTypes
 from tests import HelperAssertions
-import tests.factories as f
 
 
 class TestIssueTrackerValidation(HelperAssertions, test.TestCase):

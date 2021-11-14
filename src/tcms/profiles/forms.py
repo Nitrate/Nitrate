@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from django.utils.translation import gettext_lazy as _
-from django.core.exceptions import ObjectDoesNotExist
 from django import forms
-from django.contrib.auth.models import User
 from django.contrib.auth import get_backends
+from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
+from django.utils.translation import gettext_lazy as _
 
-from .models import UserProfile
 from tcms.core.forms import StripURLField
 
+from .models import UserProfile
 
 IM_CHOICES = ((1, "IRC"), (2, "Jabber"), (3, "MSN"), (4, "Yahoo messenger"), (5, "ICQ"))
 

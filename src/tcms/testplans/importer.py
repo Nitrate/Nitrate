@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import xmltodict
-
-from django.contrib.auth.models import User
 from django.conf import settings
+from django.contrib.auth.models import User
 
-from tcms.management.models import Priority
-from tcms.management.models import TestTag
+from tcms.management.models import Priority, TestTag
 from tcms.testcases.models import TestCaseStatus
 
 

@@ -4,32 +4,26 @@ import csv
 import json
 import os
 import tempfile
-
 from datetime import datetime, timedelta
 from http import HTTPStatus
 from operator import attrgetter
 from typing import List, Union
-
 from unittest.mock import patch
 from xml.etree import ElementTree
 
 from bs4 import BeautifulSoup
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Max, QuerySet
-from django.utils import formats
 from django.urls import reverse
-from django.contrib.auth.models import User
+from django.utils import formats
 from django_comments.models import Comment
 
 from tcms.issuetracker.models import Issue
 from tcms.linkreference.models import create_link
-from tcms.testruns.models import TCMSEnvRunValueMap
-from tcms.testruns.models import TestCaseRun
-from tcms.testruns.models import TestCaseRunStatus
-from tcms.testruns.models import TestRun
+from tcms.testruns.models import TCMSEnvRunValueMap, TestCaseRun, TestCaseRunStatus, TestRun
+from tests import BaseCaseRun, BasePlanCase
 from tests import factories as f
-from tests import BaseCaseRun
-from tests import BasePlanCase
 from tests import user_should_have_perm
 
 

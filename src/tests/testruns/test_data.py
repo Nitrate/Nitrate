@@ -1,16 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import operator
-
 from datetime import datetime
 from unittest.mock import patch
 
 from tcms.comments.models import add_comment
-from tcms.testruns.data import TestCaseRunDataMixin
-from tcms.testruns.data import stats_case_runs_status
+from tcms.testruns.data import TestCaseRunDataMixin, stats_case_runs_status
+from tests import BaseCaseRun, BasePlanCase
 from tests import factories as f
-from tests import BaseCaseRun
-from tests import BasePlanCase
 
 
 class TestGetCaseRunsStatsByStatusFromEmptyTestRun(BasePlanCase):

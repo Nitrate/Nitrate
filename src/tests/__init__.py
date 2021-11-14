@@ -3,19 +3,17 @@
 import contextlib
 import json
 import re
-
 from functools import partial
 from http import HTTPStatus
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs, urlparse
 
 from django import test
-from django.contrib.auth.models import Permission
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Permission, User
 from django.core.exceptions import ValidationError
 from django.db.models import Max
 from django.test import SimpleTestCase
 
-from tcms.management.models import Version, Classification, Product
+from tcms.management.models import Classification, Product, Version
 from tcms.testcases.models import TestCaseStatus
 from tcms.testplans.models import TestPlan, TestPlanType
 from tcms.testruns.models import TestCaseRunStatus

@@ -2,9 +2,9 @@
 
 from django.contrib.auth.decorators import permission_required
 
-from tcms.xmlrpc.decorators import log_call
 from tcms.management.models import TestBuild
-from tcms.xmlrpc.utils import pre_check_product, parse_bool_value
+from tcms.xmlrpc.decorators import log_call
+from tcms.xmlrpc.utils import parse_bool_value, pre_check_product
 
 __all__ = (
     "check_build",

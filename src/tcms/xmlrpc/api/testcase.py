@@ -1,25 +1,25 @@
 # -*- coding: utf-8 -*-
 
 import itertools
+
 from django.contrib.auth.decorators import permission_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms import EmailField
 
 import tcms.comments.models
-
-from tcms.issuetracker.models import Issue
-from tcms.issuetracker.models import IssueTracker
+from tcms.core.utils import form_error_messages_to_list, timedelta2int
+from tcms.issuetracker.models import Issue, IssueTracker
 from tcms.management.models import TestTag
-from tcms.testcases.models import TestCase
-from tcms.testcases.models import TestCasePlan
+from tcms.testcases.forms import CaseIssueForm
+from tcms.testcases.models import TestCase, TestCasePlan
 from tcms.testplans.models import TestPlan
 from tcms.xmlrpc.decorators import log_call
-from tcms.xmlrpc.utils import deprecate_critetion_attachment, distinct_count
-from tcms.xmlrpc.utils import pre_process_estimated_time
-from tcms.xmlrpc.utils import pre_process_ids
-from tcms.testcases.forms import CaseIssueForm
-from tcms.core.utils import form_error_messages_to_list, timedelta2int
-
+from tcms.xmlrpc.utils import (
+    deprecate_critetion_attachment,
+    distinct_count,
+    pre_process_estimated_time,
+    pre_process_ids,
+)
 
 __all__ = (
     "add_comment",

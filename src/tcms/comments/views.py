@@ -2,17 +2,16 @@
 
 import logging
 
+import django_comments.signals
 from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.http import JsonResponse
 from django.views import generic
 from django.views.decorators.http import require_POST
-
-import django_comments.signals
 from django_comments.views.moderation import perform_delete
 
-from tcms.comments.models import post_comment
 from tcms.comments.exceptions import InvalidCommentPostRequest
+from tcms.comments.models import post_comment
 from tcms.core.responses import JsonResponseBadRequest
 
 log = logging.getLogger(__name__)

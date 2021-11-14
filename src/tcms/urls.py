@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
 from django.conf import settings
-from django.urls import include, path
 from django.contrib import admin
+from django.urls import include, path
 from django.views.i18n import JavaScriptCatalog
-
-from tcms.testruns import views as testruns_views
-from tcms.core import ajax as tcms_core_ajax
 
 # XML RPC handler
 from kobo.django.xmlrpc.views import XMLRPCHandlerFactory
+
+from tcms.core import ajax as tcms_core_ajax
+from tcms.testruns import views as testruns_views
 
 xmlrpc_handler = XMLRPCHandlerFactory("TCMS_XML_RPC")
 

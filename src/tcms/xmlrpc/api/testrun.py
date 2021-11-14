@@ -8,14 +8,11 @@ from django.core.exceptions import ObjectDoesNotExist
 from kobo.django.xmlrpc.decorators import user_passes_test
 
 from tcms.issuetracker.models import Issue
-from tcms.management.models import TestTag, TCMSEnvValue
+from tcms.management.models import TCMSEnvValue, TestTag
 from tcms.testcases.models import TestCase
-from tcms.testruns.models import TestCaseRun
-from tcms.testruns.models import TestRun
+from tcms.testruns.models import TestCaseRun, TestRun
 from tcms.xmlrpc.decorators import log_call
-from tcms.xmlrpc.utils import distinct_count
-from tcms.xmlrpc.utils import pre_process_estimated_time
-from tcms.xmlrpc.utils import pre_process_ids
+from tcms.xmlrpc.utils import distinct_count, pre_process_estimated_time, pre_process_ids
 
 __all__ = (
     "add_cases",
@@ -185,6 +182,7 @@ def create(request, values):
         TestRun.create(values)
     """
     from datetime import datetime
+
     from tcms.core import forms
     from tcms.testruns.forms import XMLRPCNewRunForm
 
@@ -578,6 +576,7 @@ def update(request, run_ids, values):
         TestRun.update([1, 2], {'status': 1})
     """
     from datetime import datetime
+
     from tcms.core import forms
     from tcms.testruns.forms import XMLRPCUpdateRunForm
 

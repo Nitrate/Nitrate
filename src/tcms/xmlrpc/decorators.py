@@ -2,12 +2,10 @@
 
 import inspect
 import logging
-
 from functools import wraps
 
 from django.conf import settings
 from kobo.django.xmlrpc.models import XmlRpcLog
-
 
 __all__ = ("log_call",)
 

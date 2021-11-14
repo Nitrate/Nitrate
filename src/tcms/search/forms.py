@@ -6,7 +6,7 @@ from typing import Callable, List, Union
 from django import forms
 from django.http import QueryDict
 
-from tcms.management.models import Product, TestBuild, Component, Version, Priority
+from tcms.management.models import Component, Priority, Product, TestBuild, Version
 from tcms.testcases.forms import IssueKeyField
 from tcms.testcases.models import TestCaseCategory, TestCaseStatus
 from tcms.testplans.models import TestPlanType

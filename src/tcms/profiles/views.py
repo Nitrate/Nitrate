@@ -4,20 +4,17 @@ from django import http
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Count, Q
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
-from django.db.models import Q, Count
-from django.shortcuts import render
 from django.views.decorators.csrf import csrf_protect
-from django.views.decorators.http import require_http_methods
-from django.views.decorators.http import require_GET
-from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_GET, require_http_methods
 
+from tcms.profiles.forms import UserProfileForm
+from tcms.profiles.models import UserProfile
 from tcms.testplans.models import TestPlan
 from tcms.testruns.data import stats_case_runs_status
 from tcms.testruns.models import TestRun
-from tcms.profiles.models import UserProfile
-from tcms.profiles.forms import UserProfileForm
-
 
 MODULE_NAME = "profile"
 

@@ -2,7 +2,6 @@
 
 import operator
 import unittest
-
 from operator import itemgetter
 
 from django.contrib.auth.models import User
@@ -11,8 +10,7 @@ from django.test import TestCase
 
 from tcms.xmlrpc.api import product
 from tests import factories as f
-from tests.xmlrpc.utils import make_http_request
-from tests.xmlrpc.utils import XmlrpcAPIBaseTest
+from tests.xmlrpc.utils import XmlrpcAPIBaseTest, make_http_request
 
 
 def get_max_user_id():

@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from django.urls import path, re_path
 from django.contrib.auth import views as django_auth_views
+from django.urls import path, re_path
+
+from tcms.auth import views as tcms_auth_views
 from tcms.auth.views import LoginView as NitrateLoginView
 
 from . import views
-from tcms.auth import views as tcms_auth_views
 
 urlpatterns = [
     path("profile/", views.redirect_to_profile, name="user-profile-redirect"),

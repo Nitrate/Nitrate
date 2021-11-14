@@ -3,9 +3,9 @@
 import pytest
 from django.db.models import ObjectDoesNotExist
 
+import tcms.xmlrpc.utils as U
 from tcms.management.models import Classification, Product
 from tests import no_raised_error
-import tcms.xmlrpc.utils as U
 
 
 @pytest.mark.parametrize(

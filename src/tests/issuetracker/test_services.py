@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import unittest
+from unittest.mock import Mock
 
 from django import test
-from unittest.mock import Mock
 
 from tcms.issuetracker import services
 from tcms.issuetracker.services import IssueTrackerService
-from tests import factories as f, BaseCaseRun
+from tests import BaseCaseRun
+from tests import factories as f
 
 
 class TestFindService(test.TestCase):

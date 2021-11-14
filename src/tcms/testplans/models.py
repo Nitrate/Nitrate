@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import Max, QuerySet
-from django.db.models.signals import post_save, post_delete, pre_delete, pre_save
+from django.db.models.signals import post_delete, post_save, pre_delete, pre_save
 from django.dispatch import receiver
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -17,13 +17,10 @@ from uuslug import slugify
 
 from tcms.core.models import TCMSActionModel
 from tcms.core.raw_sql import RawSQL
-from tcms.core.utils import checksum
 from tcms.core.tcms_router import connection
-from tcms.management.models import TCMSEnvGroup, TestTag, Version, TestAttachment
-from tcms.testcases.models import TestCase
-from tcms.testcases.models import TestCaseCategory
-from tcms.testcases.models import TestCasePlan
-from tcms.testcases.models import TestCaseStatus
+from tcms.core.utils import checksum
+from tcms.management.models import TCMSEnvGroup, TestAttachment, TestTag, Version
+from tcms.testcases.models import TestCase, TestCaseCategory, TestCasePlan, TestCaseStatus
 from tcms.testplans import signals as plan_watchers
 
 try:

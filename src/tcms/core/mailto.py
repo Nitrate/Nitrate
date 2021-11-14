@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import smtplib
 import logging
+import smtplib
+from typing import Dict, List, Optional
 
 from django.conf import settings
 from django.core.mail import EmailMessage
 from django.template import loader
+
 from tcms.core.task import Task
-from typing import Dict, Optional, List
 
 logger = logging.getLogger(__name__)
 

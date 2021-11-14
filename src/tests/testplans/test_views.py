@@ -3,35 +3,31 @@
 import json
 import os
 import tempfile
-import xml.etree.ElementTree as et
 import urllib
+import xml.etree.ElementTree as et
 from http import HTTPStatus
 from textwrap import dedent
 from typing import Dict, List, Optional
 from unittest.mock import Mock
 
+import pytest
 from django import test
 from django.db.models import Max
-from django.urls import reverse
 from django.test.client import Client
-import pytest
-from uuslug.uuslug import slugify
+from django.urls import reverse
 from pytest_django.asserts import assertContains, assertNotContains
+from uuslug.uuslug import slugify
 
 from tcms.logs.models import TCMSLogModel
 from tcms.management.models import Product, TCMSEnvGroup, Version
-from tcms.testcases.models import TestCase
-from tcms.testcases.models import TestCasePlan
-from tcms.testplans.models import TCMSEnvPlanMap
-from tcms.testplans.models import TestPlan
-from tcms.testplans.models import TestPlanAttachment
-from tcms.testruns.models import TestCaseRun
-from tests import BaseDataContext, BasePlanCase, HelperAssertions, BaseCaseRun, AuthMixin
-from tests import factories as f
-from tests import remove_perm_from_user
-from tests import user_should_have_perm
-from tests.testcases.test_views import PlanCaseExportTestHelper
+from tcms.testcases.models import TestCase, TestCasePlan
+from tcms.testplans.models import TCMSEnvPlanMap, TestPlan, TestPlanAttachment
 from tcms.testplans.views import update_plan_email_settings
+from tcms.testruns.models import TestCaseRun
+from tests import AuthMixin, BaseCaseRun, BaseDataContext, BasePlanCase, HelperAssertions
+from tests import factories as f
+from tests import remove_perm_from_user, user_should_have_perm
+from tests.testcases.test_views import PlanCaseExportTestHelper
 
 
 class PlanTests(HelperAssertions, test.TestCase):

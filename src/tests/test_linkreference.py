@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 
 import json
-import unittest
 import unittest.mock
 
 from django import test
 from django.urls import reverse
-from tcms.linkreference.models import create_link, LinkReference
+
 from tcms.linkreference.forms import TargetCharField
-from tests import AuthMixin, HelperAssertions, user_should_have_perm
+from tcms.linkreference.models import LinkReference, create_link
+from tests import AuthMixin, HelperAssertions
 from tests import factories as f
+from tests import user_should_have_perm
 
 
 class TestTargetCharField(unittest.TestCase):

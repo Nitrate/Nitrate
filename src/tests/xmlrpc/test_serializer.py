@@ -9,14 +9,17 @@ from django import test
 from tcms.management.models import Product
 from tcms.testcases.models import TestCase
 from tcms.testplans.models import TestPlan
-from tcms.xmlrpc.serializer import QuerySetBasedXMLRPCSerializer, timedelta_to_str
-from tcms.xmlrpc.serializer import XMLRPCSerializer
-from tcms.xmlrpc.serializer import datetime_to_str
-from tcms.xmlrpc.serializer import do_nothing
-from tcms.xmlrpc.serializer import encode_utf8
-from tcms.xmlrpc.serializer import to_str
-
-from tests import encode, factories as f
+from tcms.xmlrpc.serializer import (
+    QuerySetBasedXMLRPCSerializer,
+    XMLRPCSerializer,
+    datetime_to_str,
+    do_nothing,
+    encode_utf8,
+    timedelta_to_str,
+    to_str,
+)
+from tests import encode
+from tests import factories as f
 
 
 class TestXMLSerializer(test.TestCase):

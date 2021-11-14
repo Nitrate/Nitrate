@@ -3,7 +3,6 @@
 import os
 import sys
 import traceback
-
 from functools import wraps
 from http import HTTPStatus
 from xmlrpc.client import Fault
@@ -12,7 +11,6 @@ import django.core.exceptions
 import django.db.models
 import django.db.utils
 from django.conf import settings
-
 
 __filters__ = ("wrap_exceptions",)
 

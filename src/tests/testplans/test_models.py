@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 from textwrap import dedent
-from typing import List, Optional, Union, Dict, Tuple
-from _pytest.python_api import RaisesContext
-from django.contrib.auth.models import User
+from typing import Dict, List, Optional, Tuple, Union
 
 import pytest
-from django.core import mail
+from _pytest.python_api import RaisesContext
 from django import test
+from django.contrib.auth.models import User
+from django.core import mail
 from django.db.models import QuerySet
 from django.db.utils import IntegrityError
 
@@ -21,10 +21,12 @@ from tcms.testplans.models import (
     TestPlanTag,
     TestPlanText,
     _disconnect_signals,
+    _listen,
 )
-from tcms.testplans.models import _listen
 from tcms.testruns.models import TestRun
-from tests import factories as f, BasePlanCase, BaseDataContext, no_raised_error
+from tests import BaseDataContext, BasePlanCase
+from tests import factories as f
+from tests import no_raised_error
 
 
 class TestSendEmailOnPlanUpdated(test.TestCase):

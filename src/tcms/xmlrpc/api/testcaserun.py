@@ -3,16 +3,15 @@
 from django.contrib.auth.decorators import permission_required
 
 import tcms.comments.models
-
 from tcms.core.utils import form_error_messages_to_list
 from tcms.issuetracker.models import Issue
 from tcms.issuetracker.services import find_service
-from tcms.linkreference.models import create_link, LinkReference
+from tcms.linkreference.models import LinkReference, create_link
 from tcms.testcases.forms import CaseRunIssueForm
 from tcms.testruns.models import TestCaseRun, TestCaseRunStatus
 from tcms.xmlrpc.decorators import log_call
 from tcms.xmlrpc.serializer import XMLRPCSerializer
-from tcms.xmlrpc.utils import pre_process_ids, distinct_count
+from tcms.xmlrpc.utils import distinct_count, pre_process_ids
 
 __all__ = (
     "add_comment",
@@ -538,6 +537,7 @@ def update(request, case_run_ids, values):
         TestCaseRun.update([12345, 23456], {'assignee': 2206})
     """
     from datetime import datetime
+
     from tcms.core import forms
     from tcms.testruns.forms import XMLRPCUpdateCaseRunForm
 

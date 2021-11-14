@@ -8,7 +8,6 @@ import csv
 from django.template import Template
 from django.template.loader import get_template
 
-
 # TODO: rewrite export module to export TestCaseRuns, TestPlans and other
 # Nitrate objects.
 

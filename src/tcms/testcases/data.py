@@ -5,17 +5,12 @@ from operator import itemgetter
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-
 from django_comments.models import Comment
 
 from tcms.logs.models import TCMSLogModel
 from tcms.management.models import Component
 from tcms.testcases import sqls
-from tcms.testcases.models import NoneText
-from tcms.testcases.models import TestCase
-from tcms.testcases.models import TestCaseStatus
-from tcms.testcases.models import TestCaseTag
-from tcms.testcases.models import TestCaseText
+from tcms.testcases.models import NoneText, TestCase, TestCaseStatus, TestCaseTag, TestCaseText
 from tcms.testruns.models import TestCaseRun
 
 

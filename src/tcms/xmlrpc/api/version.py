@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from tcms.xmlrpc.decorators import log_call
 from tcms.xmlrpc import get_version
+from tcms.xmlrpc.decorators import log_call
 
 __all__ = ("get",)
 

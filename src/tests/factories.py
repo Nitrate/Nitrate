@@ -4,13 +4,12 @@ import hashlib
 from datetime import datetime, timedelta
 
 import factory
-
 from factory.django import DjangoModelFactory
 
+from tcms.issuetracker.models import CredentialTypes
 from tcms.management.models import Priority
 from tcms.testcases.models import TestCaseStatus
 from tcms.testruns.models import TestCaseRunStatus
-from tcms.issuetracker.models import CredentialTypes
 
 
 def md5_hash(s):

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import threading
+from importlib import import_module
 
 from django.conf import settings
-from importlib import import_module
 
 
 class NewThread(threading.Thread):

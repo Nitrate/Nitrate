@@ -3,13 +3,13 @@
 import os.path
 from typing import List
 
+from django.conf import settings
 from django.core.cache import cache
 from django.db import models
-from django.conf import settings
 
 from tcms.core.models import TCMSActionModel
-from tcms.core.utils import calc_percent
 from tcms.core.models.fields import NitrateBooleanField
+from tcms.core.utils import calc_percent
 
 # FIXME: plugins_support is no longer available. dead code here.
 try:

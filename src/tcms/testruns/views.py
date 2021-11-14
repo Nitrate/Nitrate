@@ -8,9 +8,7 @@ import logging
 import operator
 import time
 import urllib
-
-from operator import attrgetter
-from operator import itemgetter
+from operator import attrgetter, itemgetter
 
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
@@ -18,59 +16,50 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
-from django.urls import reverse
 from django.db import transaction
-from django.db.models import Count, QuerySet
-from django.db.models import Q
-from django.http import HttpResponse, HttpResponseRedirect, Http404
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from django.shortcuts import render
+from django.db.models import Count, Q, QuerySet
+from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
+from django.shortcuts import get_object_or_404, render
 from django.template.loader import get_template
+from django.urls import reverse
 from django.utils.encoding import smart_str
 from django.views.decorators.csrf import csrf_protect
-from django.views.decorators.http import require_GET
-from django.views.decorators.http import require_POST
-from django.views.decorators.http import require_http_methods
-from django.views.generic import RedirectView, FormView
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
+from django.views.generic import FormView, RedirectView
 from django.views.generic.base import TemplateView, View
-
 from django_comments.models import Comment
 
 from tcms.comments.models import add_comment
 from tcms.core.raw_sql import RawSQL
 from tcms.core.responses import JsonResponseBadRequest
-
-from tcms.issuetracker.models import Issue
-from tcms.issuetracker.models import IssueTracker
-from tcms.issuetracker.services import find_service
 from tcms.core.tcms_router import connection
-from tcms.core.utils import clean_request, form_error_messages_to_list
-from tcms.core.utils import DataTableResult
-from tcms.core.utils import format_timedelta
+from tcms.core.utils import (
+    DataTableResult,
+    clean_request,
+    form_error_messages_to_list,
+    format_timedelta,
+)
 from tcms.core.views import prompt
-from tcms.management.models import Priority, TestTag, TCMSEnvGroup
-from tcms.testcases.models import TestCase
-from tcms.testcases.models import TestCasePlan, TestCaseStatus
+from tcms.issuetracker.models import Issue, IssueTracker
+from tcms.issuetracker.services import find_service
+from tcms.management.models import Priority, TCMSEnvGroup, TestTag
+from tcms.testcases.models import TestCase, TestCasePlan, TestCaseStatus
 from tcms.testcases.views import get_selected_testcases
 from tcms.testplans.models import TestPlan
-from tcms.testruns.data import stats_case_runs_status
-from tcms.testruns.data import TestCaseRunDataMixin
+from tcms.testruns.data import TestCaseRunDataMixin, stats_case_runs_status
 from tcms.testruns.forms import (
-    MulitpleRunsCloneForm,
-    PlanFilterRunForm,
-    RunAndEnvValueForm,
     ChangeRunEnvValueForm,
     CommentCaseRunsForm,
+    EditRunForm,
+    MulitpleRunsCloneForm,
+    NewRunForm,
+    PlanFilterRunForm,
+    RunAndEnvValueForm,
+    RunCloneForm,
+    SearchRunForm,
 )
-from tcms.testruns.forms import NewRunForm, SearchRunForm, EditRunForm, RunCloneForm
 from tcms.testruns.helpers.serializer import TCR2File
-from tcms.testruns.models import (
-    TestRun,
-    TestCaseRun,
-    TestCaseRunStatus,
-    TCMSEnvRunValueMap,
-)
+from tcms.testruns.models import TCMSEnvRunValueMap, TestCaseRun, TestCaseRunStatus, TestRun
 
 MODULE_NAME = "testruns"
 

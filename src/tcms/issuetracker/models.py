@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import configparser
+import enum
 import logging
 import os
 import re
-import enum
-
 from datetime import datetime
 from typing import Dict
 

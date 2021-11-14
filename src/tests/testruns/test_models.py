@@ -4,9 +4,10 @@ from django import test
 from django.core import mail
 from django.db.models.signals import post_save
 
-from tcms.testruns.signals import mail_notify_on_test_run_creation_or_update
 from tcms.testruns.models import TestRun
-from tests import factories as f, BaseCaseRun
+from tcms.testruns.signals import mail_notify_on_test_run_creation_or_update
+from tests import BaseCaseRun
+from tests import factories as f
 
 
 class TestRunGetIssuesCount(BaseCaseRun):

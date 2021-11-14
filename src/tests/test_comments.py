@@ -9,7 +9,9 @@ from django_comments.models import Comment
 
 from tcms.comments import get_form
 from tcms.comments.models import add_comment
-from tests import factories as f, user_should_have_perm, HelperAssertions, AuthMixin
+from tests import AuthMixin, HelperAssertions
+from tests import factories as f
+from tests import user_should_have_perm
 
 
 class TestPostComment(AuthMixin, HelperAssertions, test.TestCase):

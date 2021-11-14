@@ -5,25 +5,29 @@ from textwrap import dedent
 from unittest.mock import patch
 
 import pytest
+from django import test
 from django.contrib.auth.models import User
 from django.core import mail
 from django.db.models import Max
-from django.db.models.signals import post_save, post_delete, pre_save
-from django import test
+from django.db.models.signals import post_delete, post_save, pre_save
 
 from tcms.core.utils import checksum
 from tcms.issuetracker.models import Issue
-from tcms.management.models import Priority, Component, Product
+from tcms.management.models import Component, Priority, Product
 from tcms.testcases import signals as case_watchers
-from tcms.testcases.models import _listen
-from tcms.testcases.models import TestCase, TestCasePlan
-from tcms.testcases.models import TestCaseCategory
-from tcms.testcases.models import TestCaseStatus
-from tcms.testcases.models import TestCaseText
-from tcms.testcases.models import TestCaseEmailSettings
+from tcms.testcases.models import (
+    TestCase,
+    TestCaseCategory,
+    TestCaseEmailSettings,
+    TestCasePlan,
+    TestCaseStatus,
+    TestCaseText,
+    _listen,
+)
 from tcms.testplans.models import TestPlan
 from tcms.testruns.models import TestRun
-from tests import factories as f, BaseCaseRun, BasePlanCase, BaseDataContext
+from tests import BaseCaseRun, BaseDataContext, BasePlanCase
+from tests import factories as f
 
 
 class TestCaseRemoveIssue(BasePlanCase):

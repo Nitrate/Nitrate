@@ -2,8 +2,7 @@
 import datetime
 
 from django.core.exceptions import ValidationError
-from django.db.models.fields import IntegerField
-from django.db.models.fields import BooleanField
+from django.db.models.fields import BooleanField, IntegerField
 
 from tcms.core.forms.fields import DurationField as DurationFormField
 

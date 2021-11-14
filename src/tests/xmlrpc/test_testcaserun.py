@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-
 from datetime import datetime
 
 from tcms.issuetracker.models import Issue
 from tcms.linkreference.models import LinkReference
 from tcms.testruns.models import TestCaseRunStatus
 from tcms.xmlrpc.api import testcaserun
-from tests import encode, factories as f
-from tests.xmlrpc.utils import make_http_request
-from tests.xmlrpc.utils import XmlrpcAPIBaseTest
+from tests import encode
+from tests import factories as f
+from tests.xmlrpc.utils import XmlrpcAPIBaseTest, make_http_request
 
 
 class TestCaseRunCreate(XmlrpcAPIBaseTest):
