@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
 
-import logging
 import io
+import logging
 
 from django import forms
-from odf.odf2xhtml import ODF2XHTML
-
 from django.core.files.uploadedfile import UploadedFile as DjUploadedFile
+from odf.odf2xhtml import ODF2XHTML
 from tinymce.widgets import TinyMCE
 
-from tcms.core.forms.fields import UserField, StripURLField
-from tcms.management.models import Component, Product, Version, TCMSEnvGroup, TestTag
+from tcms.core.forms.fields import StripURLField, UserField
+from tcms.management.models import Component, Product, TCMSEnvGroup, TestTag, Version
 from tcms.testplans.importer import clean_xml_file
 from tcms.testplans.models import TestPlan, TestPlanType
 
@@ -57,8 +56,9 @@ class UploadedHTMLFile(UploadedFile):
     """
 
     def get_content(self):
-        from bs4 import BeautifulSoup
         from itertools import chain
+
+        from bs4 import BeautifulSoup
 
         soup = BeautifulSoup(self.uploaded_file.read(), "html.parser")
         find_all = soup.body.find_all

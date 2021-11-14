@@ -2,27 +2,22 @@
 
 from collections import namedtuple
 from itertools import chain
-from operator import attrgetter
-from operator import itemgetter
-
+from operator import attrgetter, itemgetter
 
 from django.contrib.auth.models import User
 from django.db.models import Count
 
-from tcms.core.db import get_groupby_result
-from tcms.core.db import GroupByResult
-from tcms.core.db import SQLExecution
-from tcms.core.db import workaround_single_value_for_in_clause
-from tcms.management.models import Priority
-from tcms.management.models import TestBuild
-from tcms.management.models import TestTag
+from tcms.core.db import (
+    GroupByResult,
+    SQLExecution,
+    get_groupby_result,
+    workaround_single_value_for_in_clause,
+)
+from tcms.management.models import Priority, TestBuild, TestTag
 from tcms.report import sqls
 from tcms.testcases.models import TestCase
 from tcms.testplans.models import TestPlan
-from tcms.testruns.models import TestCaseRun
-from tcms.testruns.models import TestCaseRunStatus
-from tcms.testruns.models import TestRun
-
+from tcms.testruns.models import TestCaseRun, TestCaseRunStatus, TestRun
 
 __all__ = (
     "CustomDetailsReportData",

@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import io
-
 from xml.etree import ElementTree
 from xml.sax.saxutils import escape
 
 from tcms.linkreference.models import create_link
 from tcms.testruns.helpers.serializer import TCR2File
 from tcms.testruns.models import TestCaseRun
-from tests import factories as f, BaseCaseRun
+from tests import BaseCaseRun
+from tests import factories as f
 
 
 def escape_entities(text):

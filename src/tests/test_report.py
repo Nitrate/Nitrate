@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime
+
 from django.db.models import Max
 from django.urls import reverse
+
+from tcms.management.models import Product, TestBuild
 from tcms.testcases.models import TestCase
-
 from tcms.testplans.models import TestPlan
-
-from tcms.management.models import Product
-from tcms.management.models import TestBuild
 from tcms.testruns.models import TestCaseRunStatus, TestRun
-from tests import BaseCaseRun, factories as f
+from tests import BaseCaseRun
+from tests import factories as f
 
 
 class TestReportOverall(BaseCaseRun):

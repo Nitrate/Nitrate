@@ -1,28 +1,21 @@
 # -*- coding: utf-8 -*-
 
 import logging
-
 from operator import attrgetter
 
 from django import forms
 from django.contrib.auth.decorators import permission_required
 from django.core.validators import ValidationError
 from django.http import JsonResponse
-from django.shortcuts import Http404
-from django.shortcuts import get_object_or_404
+from django.shortcuts import Http404, get_object_or_404
 from django.views.decorators.http import require_GET
-from tcms.core.responses import (
-    JsonResponseBadRequest,
-    JsonResponseForbidden,
-    JsonResponseNotFound,
-)
 
+from tcms.core.responses import JsonResponseBadRequest, JsonResponseForbidden, JsonResponseNotFound
+from tcms.core.utils import form_error_messages_to_list
 from tcms.issuetracker.models import Issue
 from tcms.issuetracker.services import find_service
 from tcms.testcases.forms import CaseRunIssueForm
-from tcms.testruns.models import TestCaseRun
-from tcms.testruns.models import TestRun
-from tcms.core.utils import form_error_messages_to_list
+from tcms.testruns.models import TestCaseRun, TestRun
 
 logger = logging.getLogger(__name__)
 

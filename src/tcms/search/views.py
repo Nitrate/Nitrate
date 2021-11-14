@@ -7,7 +7,7 @@ import json
 import time
 from collections import namedtuple
 from typing import Dict, List, Union
-from urllib.parse import urlparse, parse_qsl, urlencode
+from urllib.parse import parse_qsl, urlencode, urlparse
 
 from django.db.models.query import QuerySet
 from django.http import HttpRequest, JsonResponse
@@ -17,14 +17,12 @@ from django.views.decorators.http import require_GET
 
 from tcms.core.raw_sql import RawSQL
 from tcms.core.utils import DataTableResult
-from tcms.management.models import Priority
-from tcms.management.models import Product
-from tcms.search.forms import CaseForm, RunForm, PlanForm
+from tcms.management.models import Priority, Product
+from tcms.search.forms import CaseForm, PlanForm, RunForm
 from tcms.search.order import order_targets
 from tcms.search.query import SmartDjangoQuery
 from tcms.testcases.models import TestCase
-from tcms.testplans.models import TestPlan
-from tcms.testplans.models import TestPlanType
+from tcms.testplans.models import TestPlan, TestPlanType
 from tcms.testruns.models import TestRun
 
 SearchInfo = namedtuple("SearchInfo", ["column_names", "template_file"])

@@ -3,10 +3,9 @@
 from django.conf import settings
 from django.contrib import auth
 from django.contrib.auth.views import LoginView as DjangoLoginView
-from django.urls import reverse
 from django.shortcuts import redirect, render
-from django.views.decorators.http import require_GET
-from django.views.decorators.http import require_http_methods
+from django.urls import reverse
+from django.views.decorators.http import require_GET, require_http_methods
 
 from tcms.auth.forms import RegistrationForm
 from tcms.auth.models import UserActivateKey

@@ -1,26 +1,30 @@
 # -*- coding: utf-8 -*-
 
-from unittest.mock import patch
 from http import HTTPStatus
+from unittest.mock import patch
 
 from django import test
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.urls import reverse
 from django.test import TestCase
 from django.test.client import Client
+from django.urls import reverse
 from pytest_django.asserts import assertContains
 
 from tcms.logs.models import TCMSLogModel
-from tcms.management.models import Component, Product, Version, TCMSEnvValue
-from tcms.management.models import TCMSEnvGroup
-from tcms.management.models import TCMSEnvGroupPropertyMap
-from tcms.management.models import TCMSEnvProperty
-from tcms.testplans.models import TestPlan, _listen, _disconnect_signals
-from tests import BaseDataContext, HelperAssertions, AuthMixin
+from tcms.management.models import (
+    Component,
+    Product,
+    TCMSEnvGroup,
+    TCMSEnvGroupPropertyMap,
+    TCMSEnvProperty,
+    TCMSEnvValue,
+    Version,
+)
+from tcms.testplans.models import TestPlan, _disconnect_signals, _listen
+from tests import AuthMixin, BaseDataContext, HelperAssertions
 from tests import factories as f
-from tests import remove_perm_from_user
-from tests import user_should_have_perm
+from tests import remove_perm_from_user, user_should_have_perm
 
 
 class TestVisitAndSearchGroupPage(TestCase):

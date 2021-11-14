@@ -4,7 +4,7 @@ from collections.abc import Iterable
 from http import HTTPStatus
 from operator import itemgetter
 from textwrap import dedent
-from typing import Optional, List, Union, Dict, Any
+from typing import Any, Dict, List, Optional, Union
 from unittest.mock import patch
 
 import pytest
@@ -16,7 +16,8 @@ from django.core.mail import EmailMessage
 from django.db.models import Max
 from django.http import QueryDict
 from django.urls import reverse
-from tcms.core.ajax import strip_parameters, SORT_KEY_MAX, SORT_KEY_RANGE
+
+from tcms.core.ajax import SORT_KEY_MAX, SORT_KEY_RANGE, strip_parameters
 from tcms.logs.models import TCMSLogModel
 from tcms.management.models import (
     Component,
@@ -29,10 +30,11 @@ from tcms.management.models import (
     TestTag,
     Version,
 )
-from tcms.testcases.models import TestCase, TestCaseStatus, TestCasePlan, TestCaseCategory
+from tcms.testcases.models import TestCase, TestCaseCategory, TestCasePlan, TestCaseStatus
 from tcms.testruns.models import TestCaseRun, TestCaseRunStatus
-from tests import factories as f, BasePlanCase, BaseCaseRun, remove_perm_from_user, BaseDataContext
-from tests import AuthMixin, HelperAssertions, user_should_have_perm
+from tests import AuthMixin, BaseCaseRun, BaseDataContext, BasePlanCase, HelperAssertions
+from tests import factories as f
+from tests import remove_perm_from_user, user_should_have_perm
 
 
 @pytest.mark.parametrize(

@@ -2,9 +2,7 @@
 
 import operator
 from collections import OrderedDict
-
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 from itertools import groupby
 from typing import Optional
 

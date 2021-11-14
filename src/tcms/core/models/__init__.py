@@ -1,13 +1,18 @@
 # -*- coding: utf-8 -*-
+# isort: skip_file
 
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
 
+# This line cannot move to the below according to the isort linter.
+# Resolve it firstly, then apply isort again.
 from .base import TCMSContentTypeBaseModel  # noqa
-from .base import UrlMixin
+
 from tcms.logs.views import TCMSLog
 from tcms.testruns import signals as run_watchers  # noqa
 from tcms.xmlrpc.serializer import XMLRPCSerializer
+
+from .base import UrlMixin
 
 User._meta.ordering = ["username"]
 

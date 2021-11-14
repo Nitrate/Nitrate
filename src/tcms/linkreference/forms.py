@@ -6,8 +6,8 @@ Define forms for each request for validating request arguments
 
 from django import forms
 
-from tcms.testruns.models import TestCaseRun
 from tcms.core.forms.fields import StripURLField
+from tcms.testruns.models import TestCaseRun
 
 __all__ = (
     "BasicValidationForm",

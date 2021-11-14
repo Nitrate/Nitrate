@@ -1,17 +1,15 @@
 # -*- coding: utf-8 -*-
 import hashlib
-import os
 import logging
+import os
 import time
 import urllib.parse
-
 from http import HTTPStatus
 
 from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.files.uploadedfile import UploadedFile
-from django.http import HttpResponse, HttpResponseRedirect, Http404
-from django.http import JsonResponse
+from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils.decorators import method_decorator
@@ -21,9 +19,9 @@ from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_GET, require_POST
 
 from tcms.core.views import prompt
+from tcms.management.models import TestAttachment, TestAttachmentData
 from tcms.testcases.models import TestCase, TestCaseAttachment
 from tcms.testplans.models import TestPlan, TestPlanAttachment
-from tcms.management.models import TestAttachment, TestAttachmentData
 
 log = logging.getLogger(__name__)
 

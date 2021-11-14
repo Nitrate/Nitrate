@@ -5,7 +5,7 @@ import sys
 import unittest
 from datetime import timedelta
 from typing import Dict, Union
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
 import pytest
 from django import test
@@ -16,7 +16,9 @@ from django.core import mail
 from django.http import QueryDict
 
 from tcms.core import responses
-from tcms.core.db import GroupByResult, CaseRunStatusGroupByResult
+from tcms.core.db import CaseRunStatusGroupByResult, GroupByResult
+from tcms.core.mailto import mail_notify, mailto
+from tcms.core.task import AsyncTask, Task
 from tcms.core.utils import (
     calc_percent,
     clean_request,
@@ -26,13 +28,9 @@ from tcms.core.utils import (
     string_to_list,
     timedelta2int,
 )
-from tcms.core.mailto import mailto, mail_notify
-from tcms.core.task import AsyncTask
-from tcms.core.task import Task
 from tcms.management.models import Classification
 from tests import HelperAssertions
 from tests.factories import TestPlanFactory
-
 
 PY37 = sys.version_info[:2] == (3, 7)
 

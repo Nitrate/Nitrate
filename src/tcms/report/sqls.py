@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from collections import namedtuple
 
+from collections import namedtuple
 
 SQLStatement = namedtuple("SQLStatement", "sql_template, default_joins, default_where")
 

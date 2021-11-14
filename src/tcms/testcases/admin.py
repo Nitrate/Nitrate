@@ -2,9 +2,7 @@
 from django.contrib import admin
 
 from tcms.testcases import models
-from tcms.testcases.models import TestCase
-from tcms.testcases.models import TestCaseCategory
-from tcms.testcases.models import TestCaseStatus
+from tcms.testcases.models import TestCase, TestCaseCategory, TestCaseStatus
 
 
 class TestCaseStatusAdmin(admin.ModelAdmin):

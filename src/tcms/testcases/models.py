@@ -1,31 +1,26 @@
 # -*- coding: utf-8 -*-
 
 import logging
-
 from datetime import datetime
-from django.db.models.aggregates import Count
-from html2text import html2text
 from typing import Any, Dict, List, Optional, Union
 
 from django.conf import settings
-from django.urls import reverse
+from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
 from django.db.models import Max, ObjectDoesNotExist, QuerySet
-from django.db.models.signals import post_save, post_delete, pre_save
-from django.contrib.contenttypes.fields import GenericRelation
+from django.db.models.aggregates import Count
+from django.db.models.signals import post_delete, post_save, pre_save
+from django.urls import reverse
 from django.utils.encoding import smart_str
+from html2text import html2text
 
-from tcms.core.models import TCMSActionModel
-from tcms.core.models import TCMSContentTypeBaseModel
+from tcms.core.models import TCMSActionModel, TCMSContentTypeBaseModel
 from tcms.core.models.fields import DurationField
-from tcms.core.utils import EnumLike
-from tcms.core.utils import checksum
-from tcms.core.utils import format_timedelta
+from tcms.core.utils import EnumLike, checksum, format_timedelta
 from tcms.issuetracker.models import Issue
 from tcms.issuetracker.services import find_service
 from tcms.management.models import Component
 from tcms.testcases import signals as case_watchers
-
 
 try:
     from tcms.plugins_support.signals import register_model

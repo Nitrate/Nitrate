@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import io
 import importlib
+import io
 import logging
-
 import urllib.parse
-from tcms.issuetracker.task import bugzilla_external_track
-from tcms.issuetracker.models import Issue, IssueTracker
-from tcms.issuetracker.models import ProductIssueTrackerRelationship
 
+from tcms.issuetracker.models import Issue, IssueTracker, ProductIssueTrackerRelationship
+from tcms.issuetracker.task import bugzilla_external_track
 
 log = logging.getLogger(__name__)
 

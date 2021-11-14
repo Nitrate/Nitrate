@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from django.contrib.auth.models import Group
 from unittest.mock import patch
+
 from django import test
+from django.contrib.auth.models import Group
 from django.core.management import call_command
 
 from tcms.core.management.commands import setdefaultperms

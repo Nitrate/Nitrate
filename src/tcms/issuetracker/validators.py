@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import io
 import importlib
+import io
 import re
 
 from django.core.exceptions import ValidationError

@@ -1,5 +1,5 @@
 from django import http
-from django.template import loader, TemplateDoesNotExist
+from django.template import TemplateDoesNotExist, loader
 from django.views.decorators.csrf import requires_csrf_token
 
 

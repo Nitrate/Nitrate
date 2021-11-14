@@ -3,12 +3,11 @@ import datetime
 import functools
 import hashlib
 import operator
-from typing import List, Dict, Any, Union, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from django.apps import apps
 from django.db.models import QuerySet
-from django.http import QueryDict, HttpRequest
-
+from django.http import HttpRequest, QueryDict
 
 SECONDS_PER_DAY: int = 24 * 60 * 60
 SECONDS_PER_HOUR: int = 60 * 60

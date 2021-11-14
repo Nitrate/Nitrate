@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 
 from tcms.management.models import Product
 from tcms.xmlrpc.decorators import log_call
-from tcms.xmlrpc.utils import pre_check_product, parse_bool_value
+from tcms.xmlrpc.utils import parse_bool_value, pre_check_product
 
 __all__ = (
     "check_category",
@@ -528,8 +528,8 @@ def add_version(request, values):
         Product.add_version({'value': 'devel', 'product': 1})
         [['__all__', 'Version with this Product and Value already exists.']]
     """
-    from tcms.management.forms import VersionForm
     from tcms.core import forms
+    from tcms.management.forms import VersionForm
 
     product = pre_check_product(values)
     form_values = values.copy()

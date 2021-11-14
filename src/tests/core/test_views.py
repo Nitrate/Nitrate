@@ -13,10 +13,9 @@ from django.urls import reverse
 from kobo.django.xmlrpc.models import XmlRpcLog
 from pytest_django import asserts
 
-from tcms.core.forms import MultipleEmailField, DurationField, UserField, ModelChoiceField
+from tcms.core.forms import DurationField, ModelChoiceField, MultipleEmailField, UserField
 from tcms.core.templatetags.report_tags import percentage
-from tcms.management.models import TCMSEnvGroup
-from tcms.management.models import TCMSEnvProperty
+from tcms.management.models import TCMSEnvGroup, TCMSEnvProperty
 from tcms.testcases.forms import CaseAutomatedForm
 from tests import BaseCaseRun, BasePlanCase
 from tests import factories as f

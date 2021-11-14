@@ -5,49 +5,53 @@ import functools
 import itertools
 import json
 import urllib
-
 from operator import add, itemgetter
-from typing import List, Set, Optional
+from typing import List, Optional, Set
 
-from django.utils.decorators import method_decorator
 from django.conf import settings
-from django.contrib.auth.decorators import permission_required, login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
-from django.urls import reverse
-from django.http import Http404, HttpResponsePermanentRedirect, HttpRequest
-from django.http import HttpResponse, HttpResponseRedirect
-from django.http import HttpResponseBadRequest, JsonResponse
+from django.http import (
+    Http404,
+    HttpRequest,
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponsePermanentRedirect,
+    HttpResponseRedirect,
+    JsonResponse,
+)
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import get_template
+from django.urls import reverse
+from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
-from django.views.decorators.http import require_http_methods, require_GET, require_POST
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from django.views.generic import View
 from django.views.generic.base import TemplateView
 from uuslug import slugify
 
 from tcms.core.db import SQLExecution
 from tcms.core.models import TCMSLog
-from tcms.core.utils import checksum
-from tcms.core.utils import DataTableResult
 from tcms.core.responses import JsonResponseBadRequest, JsonResponseNotFound
+from tcms.core.utils import DataTableResult, checksum
 from tcms.core.views import prompt
-from tcms.management.models import TCMSEnvGroup, Component
+from tcms.management.models import Component, TCMSEnvGroup
 from tcms.testcases.data import get_exported_cases_and_related_data
-from tcms.testcases.forms import SearchCaseForm, QuickSearchCaseForm
-from tcms.testcases.models import TestCaseStatus
-from tcms.testcases.models import TestCase, TestCasePlan
+from tcms.testcases.forms import QuickSearchCaseForm, SearchCaseForm
+from tcms.testcases.models import TestCase, TestCasePlan, TestCaseStatus
 from tcms.testcases.views import get_selected_testcases
-from tcms.testplans.forms import ClonePlanForm
-from tcms.testplans.forms import EditPlanForm
-from tcms.testplans.forms import ImportCasesViaXMLForm
-from tcms.testplans.forms import NewPlanForm
-from tcms.testplans.forms import PlanComponentForm
-from tcms.testplans.forms import SearchPlanForm
 from tcms.testplans import sqls
+from tcms.testplans.forms import (
+    ClonePlanForm,
+    EditPlanForm,
+    ImportCasesViaXMLForm,
+    NewPlanForm,
+    PlanComponentForm,
+    SearchPlanForm,
+)
 from tcms.testplans.models import TestPlan, TestPlanComponent
-from tcms.testruns.models import TestRun, TestCaseRun
-
+from tcms.testruns.models import TestCaseRun, TestRun
 
 MODULE_NAME = "testplans"
 

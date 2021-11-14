@@ -8,8 +8,7 @@ from django.conf import settings
 from django.db.models import Count, F
 
 from tcms.core.db import CaseRunStatusGroupByResult
-from tcms.testruns.models import TestCaseRun
-from tcms.testruns.models import TestCaseRunStatus
+from tcms.testruns.models import TestCaseRun, TestCaseRunStatus
 
 
 def stats_case_runs_status(run_ids: List[int]) -> Dict[int, CaseRunStatusGroupByResult]:

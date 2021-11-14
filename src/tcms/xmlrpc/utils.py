@@ -2,12 +2,12 @@
 
 import re
 import warnings
+from typing import Any, Dict
 
 from django.core.exceptions import FieldDoesNotExist
 from django.db.models import Count
-from tcms.management.models import Product
-from typing import Any, Dict
 
+from tcms.management.models import Product
 
 COUNT_DISTINCT = 0
 QUERY_DISTINCT = 1

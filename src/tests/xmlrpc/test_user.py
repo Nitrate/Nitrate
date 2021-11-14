@@ -6,10 +6,9 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 
 import tcms.xmlrpc.api.user as XUser
-
-from tests import factories as f, user_should_have_perm
-from tests.xmlrpc.utils import make_http_request
-from tests.xmlrpc.utils import XmlrpcAPIBaseTest
+from tests import factories as f
+from tests import user_should_have_perm
+from tests.xmlrpc.utils import XmlrpcAPIBaseTest, make_http_request
 
 
 class TestUserSerializer(TestCase):

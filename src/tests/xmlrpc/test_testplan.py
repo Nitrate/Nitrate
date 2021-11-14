@@ -4,16 +4,14 @@ import unittest
 
 from django import test
 
-from tcms.testcases.models import TestCase
-from tcms.testcases.models import TestCasePlan
+from tcms.testcases.models import TestCase, TestCasePlan
 from tcms.testplans.models import TCMSEnvPlanMap, TestPlan, TestPlanType
 from tcms.xmlrpc.api import testplan as XmlrpcTestPlan
 from tcms.xmlrpc.api.testplan import import_case_via_XML
 from tcms.xmlrpc.serializer import datetime_to_str
 from tests import factories as f
 from tests.testplans.test_importer import xml_file_without_error
-from tests.xmlrpc.utils import make_http_request
-from tests.xmlrpc.utils import XmlrpcAPIBaseTest
+from tests.xmlrpc.utils import XmlrpcAPIBaseTest, make_http_request
 
 __all__ = (
     "TestAddComponent",

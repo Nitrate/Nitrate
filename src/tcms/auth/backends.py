@@ -3,10 +3,10 @@
 import logging
 
 from django.conf import settings
-from django.core.validators import validate_email
-from django.core.exceptions import ValidationError
-from django.contrib.auth.models import User
 from django.contrib.auth.backends import ModelBackend, RemoteUserBackend
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 
 # from tcms
 from tcms.auth import initiate_user_with_default_setups

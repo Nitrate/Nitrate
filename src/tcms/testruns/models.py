@@ -1,30 +1,26 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime, timedelta
-from typing import Dict, Optional, List
+from typing import Dict, List, Optional
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
-from django.urls import reverse
 from django.db import models
-from django.db.models import Q, QuerySet
-from django.db.models.signals import post_save, post_delete, pre_save
-from django.db.models import Count
-
+from django.db.models import Count, Q, QuerySet
+from django.db.models.signals import post_delete, post_save, pre_save
+from django.urls import reverse
 from django_comments.models import Comment
 
-from tcms.core.utils import EnumLike
+from tcms.core.models import TCMSActionModel
+from tcms.core.models.fields import DurationField
+from tcms.core.tcms_router import connection
+from tcms.core.utils import EnumLike, format_timedelta
+from tcms.issuetracker.models import Issue
 from tcms.linkreference.models import LinkReference
 from tcms.management.models import TCMSEnvValue, TestBuild, TestTag
-from tcms.core.models.fields import DurationField
-from tcms.core.models import TCMSActionModel
-from tcms.core.tcms_router import connection
-from tcms.core.utils import format_timedelta
-from tcms.testcases.models import TestCase, TestCaseText, NoneText
+from tcms.testcases.models import NoneText, TestCase, TestCaseText
 from tcms.testruns import signals as run_watchers
-from tcms.issuetracker.models import Issue
-
 
 try:
     from tcms.plugins_support.signals import register_model

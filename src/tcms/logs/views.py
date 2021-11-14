@@ -2,10 +2,9 @@
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.utils.encoding import smart_str
 
 from .models import TCMSLogModel
-
-from django.utils.encoding import smart_str
 
 
 class TCMSLog:

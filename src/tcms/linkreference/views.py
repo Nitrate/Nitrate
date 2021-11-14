@@ -4,11 +4,12 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.http import JsonResponse
 from django.views import generic
 from django.views.decorators.http import require_GET
+
+from tcms.core.responses import JsonResponseBadRequest
 from tcms.core.utils import form_errors_to_list
 
 from .forms import AddLinkReferenceForm, BasicValidationForm
-from .models import create_link, LinkReference
-from tcms.core.responses import JsonResponseBadRequest
+from .models import LinkReference, create_link
 
 __all__ = (
     "AddLinkReferenceForm",

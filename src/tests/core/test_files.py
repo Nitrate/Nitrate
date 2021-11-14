@@ -3,25 +3,24 @@
 import os
 import shutil
 import tempfile
-
 from datetime import datetime
 from http import HTTPStatus
 from typing import Optional
 from unittest.mock import patch
 
+from django.conf import settings
 from django.db.models import Max
 from django.http import HttpResponse
 from django.test import RequestFactory
 from django.urls import reverse
-from django.conf import settings
 
 from tcms.core.files import able_to_delete_attachment
 from tcms.core.utils import checksum
 from tcms.management.models import TestAttachment
-from tcms.testcases.models import TestCaseAttachment, TestCase
-from tcms.testplans.models import TestPlanAttachment, TestPlan
-from tests import factories as f
+from tcms.testcases.models import TestCase, TestCaseAttachment
+from tcms.testplans.models import TestPlan, TestPlanAttachment
 from tests import BasePlanCase
+from tests import factories as f
 from tests import user_should_have_perm
 
 

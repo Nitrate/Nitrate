@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.contrib import admin
 
-from tcms.testruns.models import TestCaseRunStatus
-from tcms.testruns.models import TestRun
+from tcms.testruns.models import TestCaseRunStatus, TestRun
 
 
 class TestRunAdmin(admin.ModelAdmin):

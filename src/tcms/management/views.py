@@ -1,25 +1,23 @@
 # -*- coding: utf-8 -*-
 
 from itertools import groupby
-from operator import itemgetter, attrgetter
+from operator import attrgetter, itemgetter
 
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.contenttypes.models import ContentType
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound
-from django.shortcuts import render, get_object_or_404
-from django.views.generic import View, TemplateView
+from django.http import HttpResponseBadRequest, HttpResponseNotFound, JsonResponse
+from django.shortcuts import get_object_or_404, render
+from django.views.generic import TemplateView, View
 
-from tcms.core.responses import (
-    JsonResponseBadRequest,
-    JsonResponseNotFound,
-    JsonResponseForbidden,
-)
-from tcms.logs.models import TCMSLogModel
+from tcms.core.responses import JsonResponseBadRequest, JsonResponseForbidden, JsonResponseNotFound
 from tcms.core.utils import QuerySetIterationProxy
-from tcms.management.models import TCMSEnvGroup
-from tcms.management.models import TCMSEnvGroupPropertyMap
-from tcms.management.models import TCMSEnvProperty
-from tcms.management.models import TCMSEnvValue
+from tcms.logs.models import TCMSLogModel
+from tcms.management.models import (
+    TCMSEnvGroup,
+    TCMSEnvGroupPropertyMap,
+    TCMSEnvProperty,
+    TCMSEnvValue,
+)
 
 MODULE_NAME = "management"
 

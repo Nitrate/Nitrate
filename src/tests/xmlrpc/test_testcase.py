@@ -2,25 +2,30 @@
 
 import itertools
 import operator
-
 from datetime import timedelta
-from django_comments.models import Comment
-from django.db.models import Max, Min
+from unittest.mock import PropertyMock, patch
+
 from django import test
-from unittest.mock import patch, PropertyMock
+from django.db.models import Max, Min
+from django_comments.models import Comment
 
 from tcms.core.utils import checksum
 from tcms.issuetracker.models import Issue
-from tcms.management.models import Priority, TestTag, Component
-from tcms.testcases.models import TestCasePlan, TestCase
-from tcms.testcases.models import TestCaseStatus, TestCaseTag, TestCaseComponent
+from tcms.management.models import Component, Priority, TestTag
+from tcms.testcases.models import (
+    TestCase,
+    TestCaseComponent,
+    TestCasePlan,
+    TestCaseStatus,
+    TestCaseTag,
+)
 from tcms.testplans.models import TestPlan
-from tcms.testruns.models import TestRun, TestCaseRun
+from tcms.testruns.models import TestCaseRun, TestRun
 from tcms.xmlrpc.api import testcase as XmlrpcTestCase
 from tcms.xmlrpc.serializer import datetime_to_str
 from tcms.xmlrpc.utils import pre_process_ids
 from tests import factories as f
-from tests.xmlrpc.utils import make_http_request, XmlrpcAPIBaseTest
+from tests.xmlrpc.utils import XmlrpcAPIBaseTest, make_http_request
 
 
 class TestNotificationRemoveCC(test.TestCase):

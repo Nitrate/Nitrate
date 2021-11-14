@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from django import forms
-from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 
 from .models import UserActivateKey
@@ -38,8 +38,9 @@ class RegistrationForm(UserCreationForm):
     def send_confirm_mail(
         self, request, active_key, template_name="registration/confirm_email.html"
     ):
-        from django.urls import reverse
         from django.contrib.sites.models import Site
+        from django.urls import reverse
+
         from tcms.core.mailto import mailto
         from tcms.core.utils import request_host_link
 

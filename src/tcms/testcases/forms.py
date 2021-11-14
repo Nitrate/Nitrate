@@ -6,19 +6,18 @@ from typing import List, Optional
 from django import forms
 from django.core.validators import MaxLengthValidator
 from django.db.models import QuerySet
-
 from tinymce.widgets import TinyMCE
+
+from tcms.core.forms import DurationField, ModelChoiceField, StripURLField, UserField
+from tcms.core.utils import string_to_list
+from tcms.issuetracker.models import IssueTracker
+from tcms.management.models import Component, Priority, Product, TestTag
+from tcms.testplans.models import TestPlan
+from tcms.testruns.models import TestCaseRun
 
 from .fields import MultipleEmailField
 from .models import AUTOMATED_CHOICES as FULL_AUTOMATED_CHOICES
 from .models import TestCase, TestCaseCategory, TestCaseStatus
-from tcms.core.forms import UserField, DurationField, StripURLField, ModelChoiceField
-from tcms.core.utils import string_to_list
-from tcms.issuetracker.models import IssueTracker
-from tcms.management.models import Priority, Product, Component, TestTag
-from tcms.testplans.models import TestPlan
-from tcms.testruns.models import TestCaseRun
-
 
 AUTOMATED_CHOICES = (
     (0, "Manual"),

@@ -4,67 +4,62 @@ import datetime
 import itertools
 import json
 import logging
-
-from operator import itemgetter, attrgetter
+from operator import attrgetter, itemgetter
 from typing import Dict, List, Optional
-from django.http.request import HttpRequest
 
-from django_comments.models import Comment
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db.models import Count
-from django.http import HttpResponseBadRequest, JsonResponse
-from django.http import HttpResponseRedirect, HttpResponse, Http404
+from django.http import (
+    Http404,
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseRedirect,
+    JsonResponse,
+)
+from django.http.request import HttpRequest
 from django.shortcuts import get_object_or_404, render
-from django.template.loader import get_template
-from django.template.loader import render_to_string
+from django.template.loader import get_template, render_to_string
 from django.urls import reverse
-from django.views.decorators.http import require_GET
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 from django.views.generic.base import TemplateView, View
 from django.views.generic.edit import FormView
+from django_comments.models import Comment
 
 from tcms.core.db import SQLExecution
 from tcms.core.raw_sql import RawSQL
 from tcms.core.responses import JsonResponseBadRequest
-from tcms.core.utils import DataTableResult
-from tcms.core.utils import form_error_messages_to_list
+from tcms.core.utils import DataTableResult, form_error_messages_to_list
 from tcms.core.views import prompt
 from tcms.issuetracker.models import IssueTracker
 from tcms.logs.models import TCMSLogModel
 from tcms.management.models import Priority
 from tcms.search.order import apply_order
 from tcms.search.views import remove_from_request_path
+from tcms.testcases import actions, data, sqls
 from tcms.testcases.data import get_exported_cases_and_related_data
 from tcms.testcases.fields import CC_LIST_DEFAULT_DELIMITER
 from tcms.testcases.forms import (
     CaseAutomatedForm,
-    NewCaseForm,
-    SearchCaseForm,
-    CaseFilterForm,
-    EditCaseForm,
-    CaseNotifyForm,
-    CloneCaseForm,
-    CaseIssueForm,
-    CaseTagForm,
     CaseComponentForm,
+    CaseFilterForm,
+    CaseIssueForm,
+    CaseNotifyForm,
     CasePlansForm,
     CaseRemoveIssueForm,
+    CaseTagForm,
+    CloneCaseForm,
+    EditCaseForm,
+    NewCaseForm,
+    SearchCaseForm,
 )
-from tcms.testcases import actions
-from tcms.testcases import data
-from tcms.testcases import sqls
-from tcms.testcases.models import TestCaseComponent
-from tcms.testcases.models import TestCase, TestCaseStatus, TestCasePlan
+from tcms.testcases.models import TestCase, TestCaseComponent, TestCasePlan, TestCaseStatus
 from tcms.testplans.forms import SearchPlanForm
 from tcms.testplans.models import TestPlan
-from tcms.testruns.models import TestCaseRun
-from tcms.testruns.models import TestCaseRunStatus
-
+from tcms.testruns.models import TestCaseRun, TestCaseRunStatus
 
 logger = logging.getLogger(__name__)
 

@@ -9,17 +9,16 @@ import json
 import logging
 import operator
 import sys
-
-from functools import reduce
-from typing import Any, Dict, NewType, List, Tuple, Union
 from collections.abc import Iterable
+from functools import reduce
+from typing import Any, Dict, List, NewType, Tuple, Union
 
 from django import forms
 from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.db import models
 from django.contrib.auth.models import User
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import models
 from django.db.models import QuerySet
 from django.dispatch import Signal
 from django.http import HttpResponse, JsonResponse, QueryDict
@@ -30,11 +29,8 @@ from django.views.decorators.http import require_GET, require_http_methods
 
 from tcms.core.mailto import mailto
 from tcms.core.models import TCMSActionModel
-from tcms.core.responses import (
-    JsonResponseForbidden,
-    JsonResponseBadRequest,
-    JsonResponseNotFound,
-)
+from tcms.core.responses import JsonResponseBadRequest, JsonResponseForbidden, JsonResponseNotFound
+from tcms.core.utils import form_error_messages_to_list, get_string_combinations
 from tcms.management.models import (
     Component,
     Priority,
@@ -46,13 +42,11 @@ from tcms.management.models import (
     TestTag,
     Version,
 )
-from tcms.testcases.models import TestCase, TestCaseCategory
-from tcms.testcases.models import TestCaseStatus
+from tcms.testcases.models import TestCase, TestCaseCategory, TestCaseStatus
 from tcms.testcases.views import get_selected_testcases
-from tcms.testplans.models import TestPlan, TestCasePlan
+from tcms.testplans.models import TestCasePlan, TestPlan
 from tcms.testruns import signals as run_watchers
-from tcms.testruns.models import TestRun, TestCaseRun, TestCaseRunStatus
-from tcms.core.utils import get_string_combinations, form_error_messages_to_list
+from tcms.testruns.models import TestCaseRun, TestCaseRunStatus, TestRun
 
 # Arguments: instances, kwargs
 post_update = Signal()

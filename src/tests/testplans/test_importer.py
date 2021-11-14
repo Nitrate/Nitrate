@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import xmltodict
-
 from django import test
 from django.conf import settings
 
-from tcms.management.models import Priority
-from tcms.management.models import TestTag
+from tcms.management.models import Priority, TestTag
 from tcms.testcases.models import TestCaseStatus
-from tcms.testplans.importer import clean_xml_file
-from tcms.testplans.importer import process_case
+from tcms.testplans.importer import clean_xml_file, process_case
 from tests.factories import UserFactory
 
 xml_single_case = """

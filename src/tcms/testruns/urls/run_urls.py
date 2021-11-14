@@ -2,8 +2,7 @@
 
 from django.urls import path
 
-from tcms.testruns import views
-from tcms.testruns import ajax
+from tcms.testruns import ajax, views
 
 urlpatterns = [
     path("new/", views.new, name="run-new"),

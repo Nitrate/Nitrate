@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 
-import pytest
 import unittest
 import xmlrpc.client
-from unittest.mock import Mock
 from typing import Any, Callable, Dict
+from unittest.mock import Mock
 
-from tcms.xmlrpc.api import build
+import pytest
+
 from tcms.management.models import Classification, Product, TestBuild
-
-from tests import BaseDataContext, encode, factories as f, user_should_have_perm
-from tests.xmlrpc.utils import make_http_request
-from tests.xmlrpc.utils import XmlrpcAPIBaseTest
+from tcms.xmlrpc.api import build
+from tests import BaseDataContext, encode
+from tests import factories as f
+from tests import user_should_have_perm
+from tests.xmlrpc.utils import XmlrpcAPIBaseTest, make_http_request
 
 
 class TestBuildCreate(XmlrpcAPIBaseTest):

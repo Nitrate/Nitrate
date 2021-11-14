@@ -8,28 +8,31 @@ from operator import attrgetter, itemgetter
 from unittest.mock import patch
 
 from bs4 import BeautifulSoup
-
 from django import test
 from django.db.models import Max
-from django.http import Http404
-from django.template import Template, Context
-from django.template.loader import render_to_string
-from django.urls import reverse
 from django.forms import ValidationError
+from django.http import Http404
+from django.template import Context, Template
+from django.template.loader import render_to_string
 from django.test import RequestFactory
-from tcms.comments.models import add_comment
+from django.urls import reverse
+from django_comments.models import Comment
 from uuslug import slugify
 
-from django_comments.models import Comment
+from tcms.comments.models import add_comment
 from tcms.core.utils import timedelta2int
 from tcms.issuetracker.models import Issue, IssueTracker
 from tcms.logs.models import TCMSLogModel
-from tcms.management.models import TestTag, Component, Priority
+from tcms.management.models import Component, Priority, TestTag
 from tcms.testcases.fields import MultipleEmailField
 from tcms.testcases.forms import CaseNotifyForm
-from tcms.testcases.models import TestCase, TestCaseStatus, TestCaseCategory
-from tcms.testcases.models import TestCaseComponent
-from tcms.testcases.models import TestCasePlan
+from tcms.testcases.models import (
+    TestCase,
+    TestCaseCategory,
+    TestCaseComponent,
+    TestCasePlan,
+    TestCaseStatus,
+)
 from tcms.testcases.views import (
     calculate_for_testcases,
     plan_from_request_or_none,
@@ -37,11 +40,9 @@ from tcms.testcases.views import (
 )
 from tcms.testplans.models import TestPlan
 from tcms.testruns.models import TestCaseRun
+from tests import BaseCaseRun, BasePlanCase
 from tests import factories as f
-from tests import BaseCaseRun
-from tests import BasePlanCase
-from tests import remove_perm_from_user
-from tests import user_should_have_perm
+from tests import remove_perm_from_user, user_should_have_perm
 from tests.testcases import assert_new_case
 
 
@@ -1573,7 +1574,7 @@ class TestAddComponent(BasePlanCase):
         self.assertEqual(self.component_doc, components[1])
 
     def test_invalid_arguments(self):
-        from tcms.management.models import Product, Component
+        from tcms.management.models import Component, Product
 
         result = Product.objects.aggregate(max_pk=Max("pk"))
         nonexisting_product_id = result["max_pk"] + 1

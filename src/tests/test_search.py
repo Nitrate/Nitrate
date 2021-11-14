@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from bs4 import BeautifulSoup
-from django.urls import reverse
 from itertools import chain
 
+from bs4 import BeautifulSoup
+from django.urls import reverse
+
 from tcms.management.models import Priority
-from tests import factories as f, BaseCaseRun
+from tests import BaseCaseRun
+from tests import factories as f
 
 
 class TestAdvancedSearch(BaseCaseRun):

@@ -2,8 +2,9 @@
 
 from django.urls import path
 
-from .. import views
 from tcms.testruns import views as testruns_views
+
+from .. import views
 
 urlpatterns = [
     path("<int:case_id>/", views.get, name="case-get"),

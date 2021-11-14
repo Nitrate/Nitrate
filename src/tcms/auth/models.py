@@ -2,8 +2,8 @@
 
 import datetime
 import random
-
 from hashlib import sha1
+
 from django.db import models
 
 

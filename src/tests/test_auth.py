@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-
 from hashlib import sha1
 from unittest.mock import patch
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.urls import reverse
-from django.test import TestCase
 from django.core import mail
+from django.test import TestCase
+from django.urls import reverse
 
 from tcms.auth.models import UserActivateKey
 from tests import AuthMixin

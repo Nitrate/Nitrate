@@ -2,6 +2,7 @@
 
 from collections.abc import Iterator
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+
 from tcms.core.tcms_router import connection
 
 __all__ = (

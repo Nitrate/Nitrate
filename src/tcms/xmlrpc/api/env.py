@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from tcms.management.models import TCMSEnvGroup, TCMSEnvProperty, TCMSEnvValue
 from tcms.xmlrpc.decorators import log_call
-from tcms.management.models import TCMSEnvGroup
-from tcms.management.models import TCMSEnvProperty
-from tcms.management.models import TCMSEnvValue
 from tcms.xmlrpc.utils import parse_bool_value
 
 __all__ = (

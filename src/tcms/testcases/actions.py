@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from django.http import HttpResponse
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 
 from tcms.core import forms
 from tcms.testcases.forms import CaseCategoryForm
 from tcms.testcases.models import TestCaseCategory
-
 
 __all__ = ("CategoryActions",)
 

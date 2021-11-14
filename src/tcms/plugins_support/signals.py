@@ -4,7 +4,6 @@ from django.db.models import signals
 from tcms.core.models import signals as tcms_signals
 from tcms.plugins_support.processors import pstp
 
-
 # Intial the regiested models
 REGISTERED_MODELS = {}
 
