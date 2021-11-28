@@ -3,6 +3,7 @@
 import re
 import argparse
 import subprocess
+from pathlib import Path
 
 from datetime import datetime
 from typing import Tuple
@@ -61,29 +62,30 @@ parser.add_argument('new_version', metavar='NEW_VERSION',
 args = parser.parse_args()
 new_version = args.new_version
 
-with open('VERSION.txt', 'w+') as f:
-    f.write(new_version)
+Path('VERSION.txt').unlink()
+Path('VERSION.txt').write_text(new_version, "utf-8")
 
-with open('contrib/scripts/release-notes.tmpl.rst', 'r') as f:
-    release_notes_template = f.read()
-
-with open(f'docs/source/releases/{new_version}.rst', 'w+') as f:
-    f.write(release_notes_template.format(
+template = Path('contrib/scripts/release-notes.tmpl.rst').read_text("utf-8")
+Path(f'docs/source/releases/{new_version}.rst').write_text(
+    template.format(
         new_version=new_version,
         doc_ref=new_version,
         title_marker=len(new_version) * '=',
         change_logs=generate_changelog(args),
         release_date=datetime.now().strftime('%b %d, %Y')
-    ))
+    ),
+    "utf-8",
+)
 
-with open('docker/README.md', 'r') as f:
-    content = f.read()
-with open('docker/README.md', 'w+') as f:
-    f.write(
-        re.sub(r'quay.io/nitrate/nitrate:\d+\.\d+(\.\d+)?',
-               f'quay.io/nitrate/nitrate:{new_version}',
-               content)
-    )
+readme_md = Path('container/README.md')
+content = readme_md.read_text("utf-8")
+readme_md.unlink()
+readme_md.write_text(
+    re.sub(r'quay.io/nitrate/nitrate:\d+\.\d+(\.\d+)?',
+           f'quay.io/nitrate/nitrate:{new_version}',
+           content),
+    "utf-8",
+)
 
 subprocess.check_call([
     'rpmdev-bumpspec',
