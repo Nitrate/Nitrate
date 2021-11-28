@@ -1,0 +1,187 @@
+.. _4.12:
+
+====
+4.12
+====
+
+*Nov 28, 2021*
+
+I’m pleased to announce a new release 4.12 is available now.
+
+Highlights
+==========
+
+* The main branch switches to ``main``.
+* Drop support of Django 2.1 and 3.0
+* Work with Django 3.2
+* Work with Python 3.10
+* Add more linters to CI
+* Lots of refactor in ``tcms/core/ajax.py``
+
+Get Nitrate
+===========
+
+From PyPI
+---------
+
+.. code-block:: shell
+
+   python3 -m pip install nitrate-tcms
+
+RPM Packages
+------------
+
+Packages are available via a `Fedora Copr`_.
+
+.. code-block:: shell
+
+   sudo dnf copr enable cqi/python-nitrate-tcms
+   sudo dnf install python-nitrate-tcms
+
+   # Install extra subpackages accordingly, e.g.
+   sudo dnf install python-nitrate-tcms+pgsql python-nitrate-tcms+async
+
+.. _Fedora Copr: https://copr.fedorainfracloud.org/coprs/cqi/python-nitrate-tcms/
+
+Container Images
+----------------
+
+* ``quay.io/nitrate/nitrate:4.12``: the main image including Nitrate Web
+  application.
+
+* ``quay.io/nitrate/nitrate-worker:4.12``: an optional worker image if the
+  asynchronous tasks scheduled and run by Celery are required.
+
+Refer to :ref:`deployment` for detailed information.
+
+Database Migration
+==================
+
+Run:
+
+.. code-block::
+
+   django-admin --settings=tcms.settings.produce migrate
+
+Please note that, this time, before run the migrations, you have to update the
+app name in ``django_migrations`` directly manually:
+
+.. code-block:: sql
+
+   UPDATE django_migrations SET app = 'tcms_auth' WHERE app = 'tcms.core.contrib.auth';
+   UPDATE django_migrations SET app = 'tcms_core' WHERE app = 'core';
+
+Change Logs
+===========
+
+* Pin black version (`#1008`_)
+* Run black linter in GH workflow (`#1007`_)
+* Add isort linter
+* Add doc8 linter and fix errors (`#1005`_)
+* The main branch has moved to main branch (`#921`_)
+* py39 is the minimum required version (`#984`_)
+* Show plans in order by pk when clone
+* Add django versions badge in README
+* Add Python versions badge (`#994`_)
+* Add Python 3.10 to testenv (`#985`_)
+* Refactor two tests to remove warning (`#991`_)
+* Remove warning: The providing_args argument is deprecated (`#941`_)
+* Pass value to middleware get_response argument (`#942`_)
+* Add missing csrf token to import cases HTML form (`#953`_)
+* Show components and tags in order in case run detailed info
+* Add Django 3.2 to testenv (`#979`_)
+* Fix and rewrite TestUserUpdate
+* Drop django 2.1 and 3.0 (`#978`_)
+* Use manage_tags view to remove tags from selected cases (`#575`_)
+* manage_tags views accepts GET or POST request properly
+* Do not calculate number of plans, cases and runs for a run's tags
+* JS: remove irrelevant parameters for adding tags to test cases
+* Refactor core.ajax.tag view method
+* JS: rewrite tags management
+* Exclude unnecessary HTML elements from FORM in get_tag.html
+* Fix typo and reword for the link of tag removal
+* Do not use anchor for tag operation buttons
+* Remove unnecessary id tag from tbody element
+* Fix the container port in the compose
+* Fix httpd conf path in Containerfile
+* Cleanup install section in spec
+* Do not remove /var/cache/dnf from containers
+* Update httpd config for running in the cloud
+* Refactor objects info view to make it more readable (`#913`_)
+* Move comment_case_runs view to testruns app (`#913`_)
+* Use dummy email backend for the worker service
+* Use non-bool value for environment variables of web service
+* Fix wrong environment format for messagebus service
+* Fix mailto task argument user type
+* Upgrade Fedora image version to 34 in CI
+* Remove Fedora 32 from CI for building packages
+* Use dummy email backend for local run inside container
+* Fix User.objects.create_user call in test
+* Write tests for TestCase.get_notification_recipients
+* Test ComponentAdmin.get_queryset
+* 100% code coverage on xmlrpc/api/build.py
+* Make it easy to assert equality with expected by pk
+* Fix type annotation Iterable for old Python version
+* Write tests for info view to get tags and users
+* Fix black and flake8 issues
+* Remove unused function is_sort_key_in_range
+* Remove unused view FilterPlansForTreeView
+* Write tests for xmlrpc/testrun.py
+* Correct the way to mock the import error for celery
+* Fix SQL param marker
+* Write more tests for testplans app
+* Fix plugins_support import error
+* Write and refactor a few tests for XMLRPC
+* Fix black issues
+* Write more tests for core app
+* Remove django_extensions from devel apps list
+* Fix wrong test case status id used in test
+* Fix eslint error
+* Use PATCH to change plan parent and enable/disable a plan
+* JS: remove duplicate code of changing order sort key
+* JS: fix code change test cases sort key
+* Use forms to validate objects PATCH request
+* JS: fix js to send PATCH request correctly
+* Avoid updating duplicate property value
+* Remove unused get_plan from TestCasesPatchView
+* Fix eslint errors
+* Use HTTP PATCH for the AJAX request to update object property
+* Refactor object property AJAX update view (`#913`_)
+* Fix wrong Template.render call in 500 error handler
+* Format code with black (`#934`_)
+* Upgrade tox-docker>=2.0.0 (`#916`_)
+* Remove seldom used devtools packages
+* Fix python version for the WSGI conf (`#931`_)
+* Adjust auth plugin for MySQL to run tests in CI
+* Fix django_comments.object_pk migration
+* Revert "Do not alter comment model's object_pk data type"
+* Fix py39 testenv
+* Do not alter comment model's object_pk data type
+* Fix package name libcrypt-dev
+* Exclude .mypy_cache/ from sdist (`#927`_)
+* Use setup.cfg to configure setup.py (`#922`_)
+* Use general name container instead of docker (`#924`_)
+* Update release notes template (`#923`_)
+
+.. _#1005: https://github.com/Nitrate/Nitrate/issues/1005
+.. _#1007: https://github.com/Nitrate/Nitrate/issues/1007
+.. _#1008: https://github.com/Nitrate/Nitrate/issues/1008
+.. _#575: https://github.com/Nitrate/Nitrate/issues/575
+.. _#913: https://github.com/Nitrate/Nitrate/issues/913
+.. _#916: https://github.com/Nitrate/Nitrate/issues/916
+.. _#921: https://github.com/Nitrate/Nitrate/issues/921
+.. _#922: https://github.com/Nitrate/Nitrate/issues/922
+.. _#923: https://github.com/Nitrate/Nitrate/issues/923
+.. _#924: https://github.com/Nitrate/Nitrate/issues/924
+.. _#927: https://github.com/Nitrate/Nitrate/issues/927
+.. _#931: https://github.com/Nitrate/Nitrate/issues/931
+.. _#934: https://github.com/Nitrate/Nitrate/issues/934
+.. _#941: https://github.com/Nitrate/Nitrate/issues/941
+.. _#942: https://github.com/Nitrate/Nitrate/issues/942
+.. _#953: https://github.com/Nitrate/Nitrate/issues/953
+.. _#978: https://github.com/Nitrate/Nitrate/issues/978
+.. _#979: https://github.com/Nitrate/Nitrate/issues/979
+.. _#984: https://github.com/Nitrate/Nitrate/issues/984
+.. _#985: https://github.com/Nitrate/Nitrate/issues/985
+.. _#991: https://github.com/Nitrate/Nitrate/issues/991
+.. _#994: https://github.com/Nitrate/Nitrate/issues/994
