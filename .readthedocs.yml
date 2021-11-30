@@ -1,6 +1,6 @@
 requirements_file: docs/requirements.txt
 python:
-    version: 3
+    version: 3.9
     pip_install: true
     extra_requirements:
       - docs
