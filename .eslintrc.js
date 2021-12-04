@@ -70,6 +70,8 @@ module.exports = {
     'SHORT_STRING_LENGTH': 'readonly',
     'splitString': 'readonly',
     'updateObject': 'readonly',
+
+    'createInputElement': 'readonly',
   },
   'parserOptions': {
     'ecmaVersion': 2018

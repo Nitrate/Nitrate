@@ -697,10 +697,12 @@ function postToURL(path, params, method) {
  * @param {string} action - same as the argument action of function constructForm.
  * @param {Function} callback - a function with only one event argument will be bound to a HTMLFormElement submit event.
  * @param {string} notice - a text message displayed in the plans preview dialog.
- * @param {jQuery} [s] - same as the argument s of function constructForm.
- * @param {jQuery} [c] - same as the argument c of function constructForm.
+ * @param {HTMLElement} [submitButton=null] - directly pass to the argument submitButton of constructForm.
+ *                                            Deprecated, this argument is not used anymore.
+ * @param {HTMLElement} [cancelButton=null] - directly pass to the argument cancelButton of constructForm.
+ *                                            Deprecated, this argument is not used anymore.
  */
-function previewPlan(parameters, action, callback, notice, s, c) {
+function previewPlan(parameters, action, callback, notice, submitButton, cancelButton) {
   let dialog = getDialog();
   clearDialog();
   jQ(dialog).show();
@@ -710,7 +712,7 @@ function previewPlan(parameters, action, callback, notice, s, c) {
     data: Object.assign({}, parameters),
     success: function (data, textStatus, xhr) {
       jQ(dialog).html(
-        constructForm(xhr.responseText, action, callback, notice, s, c)
+        constructForm(xhr.responseText, action, callback, notice, submitButton, cancelButton)
       );
     },
   });
@@ -732,44 +734,63 @@ function constructAjaxLoading(id) {
 }
 
 /**
+ * Create an INPUT element.
+ *
+ * @param {string} type - the type attribute.
+ * @param {string} name - the name attribute.
+ * @param {string} value - the value attribute.
+ * @returns {HTMLInputElement} the created INPUT element.
+ */
+function createInputElement(type, name, value) {
+  const elem = document.createElement('input');
+  elem.type = type;
+  elem.name = name;
+  elem.value = value;
+  return elem;
+}
+
+/**
  * Construct an HTML form element.
  *
  * @param {string} content - the content displayed in the constructed form.
  * @param {string} action - the endpoint passed to form element's action attribute.
- * @param {Function} formObserve - an optional function bound to the generated form's submit event.
- * @param {string} [info] - a text message displayed in the form.
- * @param {jQuery} [s] - the submit button to submit the constructed form.
- * @param {jQuery} [c] - the cancel button to close the dialog containing the constructed form.
+ * @param {Function} [formObserve=null] - an optional function bound to the generated form's submit event.
+ * @param {string} [info=''] - a text message displayed in the form.
+ * @param {HTMLElement} [submitButton=null] - the submit button to submit the constructed form.
+ * @param {HTMLElement} [cancelButton=null] - the cancel button to close the dialog containing the constructed form.
  * @returns {HTMLFormElement} - the constructed form element.
  */
-function constructForm(content, action, formObserve, info, s, c) {
-  let f = jQ('<form>', {'action': action});
-  let i = jQ('<div>', {'class': 'alert'});
+function constructForm(content, action, formObserve, info, submitButton, cancelButton) {
+  const form = document.createElement('form');
+  form.action = action;
+  const infoSection = document.createElement('div');
+  infoSection.className = 'alert';
+
   if (info) {
-    i.html(info);
+    infoSection.appendChild(document.createTextNode(info));
   }
 
-  if (!s) {
-    s = jQ('<input>', {'type': 'submit', 'value': 'Submit'});
+  if (! submitButton) {
+    submitButton = createInputElement('submit', '_submit', 'Submit');
   }
 
-  if (!c) {
-    c = jQ('<input>', {'type': 'button', 'value': 'Cancel'});
-    c.on('click', function () {
+  if (! cancelButton) {
+    cancelButton = createInputElement('button', 'cancel', 'Cancel');
+    cancelButton.addEventListener('click', () => {
       clearDialog();
     });
   }
 
   if (formObserve) {
-    f.on('submit', formObserve);
+    form.addEventListener('submit', formObserve);
   }
 
-  f.html(content);
-  f.append(i);
-  f.append(s);
-  f.append(c);
+  form.insertAdjacentHTML('afterbegin', content);
+  form.appendChild(infoSection);
+  form.appendChild(submitButton);
+  form.appendChild(cancelButton);
 
-  return f[0];
+  return form;
 }
 
 // Enhanced from showAddAnotherPopup in RelatedObjectLookups.js for Admin

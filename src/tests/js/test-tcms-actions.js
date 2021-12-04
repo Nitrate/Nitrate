@@ -123,4 +123,30 @@ QUnit.module('tcms_actions.js', function () {
       assert.equal(elem.id, id);
     });
   });
+
+  QUnit.module('Test constructForm', () => {
+    QUnit.test('create form with default buttons', (assert) => {
+      const action = 'https://host.server/endpoint/accept-data/';
+      const form = constructForm('Input Data', action);
+      assert.equal(form.action, action);
+      let button = form.querySelector('input[name=_submit]');
+      assert.equal(button.type, 'submit');
+      assert.equal(button.value, 'Submit');
+      button = form.querySelector('input[name=cancel]');
+      assert.equal(button.type, 'button');
+      assert.equal(button.value, 'Cancel');
+    });
+
+    QUnit.test('create form with specified buttons', (assert) => {
+      const action = 'https://host.server/endpoint/accept-data/';
+      const submitButton = createInputElement('submit', 'submitData', 'Send Data')
+      const cancelButton = createInputElement('button', 'cancelSendData', 'Change mind.');
+
+      const form = constructForm('Input Data', action, null, '', submitButton, cancelButton);
+      let button = form.querySelector('input[name=submitData]');
+      assert.equal(button, submitButton);
+      button = form.querySelector('input[name=cancelSendData]');
+      assert.equal(button, cancelButton);
+    });
+  });
 });
