@@ -796,9 +796,10 @@ Nitrate.TestRuns.Details.on_load = function () {
   });
 
   jQ('.js-change-order').on('click', function (e) {
+    const existingSortKey = parseInt(this.dataset.sortKey);
     Nitrate.Utils.changeOrderSortKey(
       Nitrate.TestRuns.getCaseRunsOrderChangeFunc([this.dataset.caseRunId]),
-      parseInt(this.dataset.sortKey)
+      isNaN(existingSortKey) ? undefined : existingSortKey
     );
     return false;
   });
