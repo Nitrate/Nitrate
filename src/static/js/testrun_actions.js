@@ -914,9 +914,6 @@ Nitrate.TestRuns.ChooseRuns.on_load = function () {
     selectAll: '#id_check_all_button'
   });
 
-  jQ('.js-update-button').on('click', function () {
-    insertCasesIntoTestRun();
-  });
   jQ('.js-help-info').on('click', function () {
     jQ('#help_assign').show();
   });
@@ -1194,24 +1191,6 @@ function serializeRunsFromInputList(table) {
   });
   return caseIds;
 }
-
-function insertCasesIntoTestRun() {
-  confirmDialog({
-    message: 'Are you sure to add cases to the run?',
-    yesFunc: function () {
-      let caseIds = [];
-      jQ('[name="case"]').each(function () {
-        caseIds.push(this.value);
-      });
-      let params = {
-        testrun_ids: serializeRunsFromInputList('id_table_runs'),
-        case_ids: caseIds
-      };
-      postToURL('../chooseruns/', params, 'POST');
-    }
-  });
-}
-
 
 /*
  * Click event handler for A .js-add-issues

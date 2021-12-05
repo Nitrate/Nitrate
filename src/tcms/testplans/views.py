@@ -339,8 +339,8 @@ class AddCasesToRunsView(PermissionRequiredMixin, View):
         )
 
     def post(self, request, plan_id):
-        choosed_testrun_ids = request.POST.getlist("testrun_ids")
-        to_be_added_cases = TestCase.objects.filter(pk__in=request.POST.getlist("case_ids"))
+        choosed_testrun_ids = request.POST.getlist("run")
+        to_be_added_cases = TestCase.objects.filter(pk__in=request.POST.getlist("case"))
 
         plan_url = reverse("plan-get", args=[plan_id])
 

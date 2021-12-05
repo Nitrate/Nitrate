@@ -889,8 +889,8 @@ class TestChooseCasesToRun(BaseCaseRun):
         resp = self.client.post(
             self.url,
             data={
-                "testrun_ids": self.test_run_2.pk,
-                "case_ids": [self.case_1.pk, self.case_2.pk],
+                "run": self.test_run_2.pk,
+                "case": [self.case_1.pk, self.case_2.pk],
             },
         )
 
@@ -918,8 +918,8 @@ class TestChooseCasesToRun(BaseCaseRun):
         resp = self.client.post(
             self.url,
             data={
-                "testrun_ids": self.test_run_2.pk + 1,
-                "case_ids": [self.case_1.pk, self.case_2.pk],
+                "run": self.test_run_2.pk + 1,
+                "case": [self.case_1.pk, self.case_2.pk],
             },
         )
 

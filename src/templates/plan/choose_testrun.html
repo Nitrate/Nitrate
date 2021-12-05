@@ -24,7 +24,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.ChooseRuns.on_load);
 		&gt;&gt; Add test case to runs
 	</div>
 	<h2 id="display_title"><a href="{{ plan.get_absolute_url }}">Plan:{{ plan.name }}</a></h2>
-	<form action="" method="post">
+	<form method="post" onsubmit="return window.confirm('Are you sure to add cases to the run?')">{% csrf_token %}
 		<table id="id_table_runs" class="list" cellpadding="0" cellspacing="0" border="0">
 			<thead>
 				<tr>
@@ -61,7 +61,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.ChooseRuns.on_load);
 		<div class="Detailform border-1" id="testcases_selected">
 			<div class="mixbar">
 				<span class="tit" width="150px"><b>Cases to be added: {{ test_cases|length }}</b></span>
-				<input type="button" value="Update" title="Update the cases in this run" class="js-update-button" />
+				<input type="submit" value="Update" title="Update the cases in this run" />
 				<input type="reset" value="Reset" title="Reset to the original cases "/>
 				<span class="right-action">
 					<a class="helplink js-help-info" id="" title="view the help information about assigning case">How to Assign case?</a>
@@ -101,7 +101,7 @@ Nitrate.Utils.after_page_load(Nitrate.TestRuns.ChooseRuns.on_load);
 						</td>
 						<td>
 							<a href="{% url "case-get" test_case.pk %}">{{ test_case.pk }}</a>
-							<input type="hidden" name="case" value="{{ test_case.pk }}">
+							<input type="hidden" name="case" value="{{ test_case.pk }}" />
 						</td>
 						<td class="js-one-case" data-param="{{ forloop.counter }}">
 							<a id="link_{{ forloop.counter }}" class="blind_title_link" href="javascript:void(0);">
