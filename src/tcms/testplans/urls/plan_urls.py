@@ -9,7 +9,6 @@ from .. import views
 urlpatterns = [
     path("<int:plan_id>/", views.get, name="plan-get"),
     path("<int:plan_id>/<slug:slug>", views.get, name="plan-get"),
-    path("<int:plan_id>/delete/", views.delete, name="plan-delete"),
     path(
         "<int:plan_id>/chooseruns/",
         views.AddCasesToRunsView.as_view(),
