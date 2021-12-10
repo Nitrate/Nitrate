@@ -149,35 +149,6 @@ class CreateNewPlanView(PermissionRequiredMixin, View):
         return HttpResponseRedirect(reverse("plan-get", args=[tp.plan_id]))
 
 
-@require_GET
-@permission_required("testplans.delete_testplan")
-def delete(request, plan_id):
-    """Delete testplan"""
-    if request.GET.get("sure", "no") == "no":
-        # TODO: rewrite the response
-        plan_delete_url = reverse("plan-delete", args=[plan_id])
-        return HttpResponse(
-            "<script>"
-            "if (confirm('Are you sure you want to delete this plan %s?\\n\\n"
-            "Click OK to delete or cancel to come back'))"
-            "{ window.location.href='%s?sure=yes' }"
-            "else { history.go(-1) }"
-            "</script>" % (plan_id, plan_delete_url)
-        )
-    elif request.GET.get("sure") == "yes":
-        tp = get_object_or_404(TestPlan, plan_id=plan_id)
-
-        try:
-            tp.delete()
-            return HttpResponse(
-                "<script>window.location.href='%s'</script>" % reverse("tcms.testplans.views.all")
-            )
-        except Exception:
-            return prompt.info(request, "Delete failed.")
-    else:
-        return prompt.info(request, "Nothing yet.")
-
-
 class SimplePlansFilterView(TemplateView):
     """Providing base plans filter functionaity"""
 

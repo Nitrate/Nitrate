@@ -66,21 +66,6 @@ class PlanTests(HelperAssertions, test.TestCase):
         response = self.c.get(location, {"action": "search", "type": self.test_plan.type.pk})
         self.assert200(response)
 
-    def test_plan_delete(self):
-        tp_pk = self.test_plan.pk
-
-        location = reverse("plan-delete", args=[tp_pk])
-        response = self.c.get(location)
-        self.assert200(response)
-
-        response = self.c.get(location, {"sure": "no"})
-        self.assert200(response)
-
-        response = self.c.get(location, {"sure": "yes"})
-        self.assert200(response)
-        deleted = not TestPlan.objects.filter(pk=tp_pk).exists()
-        self.assertTrue(deleted, f"TestPlan {tp_pk} should be deleted. But, not.")
-
     def test_plan_edit(self):
         location = reverse("plan-edit", args=[self.plan_id])
         response = self.c.get(location)
