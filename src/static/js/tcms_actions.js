@@ -115,6 +115,18 @@ Nitrate.Utils.changeOrderSortKey = function (changeOrderRequestFunc, curSortKey)
 }
 
 /**
+ * Return the CSRF token generated for POST HTTP request.
+ *
+ * This requires the CSRF token is generated in the DOM.
+ *
+ * @return {string} the CSRF token.
+ */
+function getAjaxCsrfToken() {
+  return document.getElementById('ajaxCsrfToken')
+    .querySelector('[name=csrfmiddlewaretoken]').value;
+}
+
+/**
  * Simple wrapper of jQuery.ajax to add header for CSRF.
  *
  * @param {string} url - a url passed to url argument of jQuery $.ajax
@@ -124,7 +136,7 @@ function $ajax(url, options) {
   options = Object.assign({}, options, {
     beforeSend: function (xhr, settings) {
       if (!/^(GET|HEAD|OPTIONS|TRACE)$/.test(settings.type) && !this.crossDomain) {
-        xhr.setRequestHeader('X-CSRFToken', globalCsrfToken);
+        xhr.setRequestHeader('X-CSRFToken', getAjaxCsrfToken());
       }
     },
   });
@@ -682,7 +694,7 @@ function postToURL(path, params, method) {
     let csrfTokenHidden = document.createElement('input');
     csrfTokenHidden.setAttribute('type', 'hidden');
     csrfTokenHidden.setAttribute('name', 'csrfmiddlewaretoken');
-    csrfTokenHidden.setAttribute('value', globalCsrfToken);
+    csrfTokenHidden.setAttribute('value', getAjaxCsrfToken());
     form.appendChild(csrfTokenHidden);
   }
 
