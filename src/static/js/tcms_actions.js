@@ -70,7 +70,7 @@ Nitrate.Utils.formSerialize = function (f) {
     if (existingValue === undefined) {
       data[name] = field.value;
     } else {
-      if (!jQ.isArray(existingValue)) {
+      if (! Array.isArray(existingValue)) {
         data[name] = [existingValue];
       }
       data[name].push(field.value);
