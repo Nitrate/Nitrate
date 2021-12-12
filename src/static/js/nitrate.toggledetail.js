@@ -131,9 +131,10 @@ CaseRunDetailExpansion.prototype = Object.create(SimpleCaseRunDetailExpansion.pr
 
 CaseRunDetailExpansion.prototype.expand = function (callback) {
   if (this.showLoadingAnimation) {
-    this.detailRow.html(
-      jQ('<td colspan="14"></td>').html(constructAjaxLoading())
-    );
+    const td = document.createElement('td');
+    td.colSpan = 14;
+    td.appendChild(constructAjaxLoading());
+    this.detailRow.html(td.outerHTML);
   }
 
   let self = this;
@@ -152,9 +153,10 @@ CaseRunDetailExpansion.prototype.expand = function (callback) {
 };
 
 CaseRunDetailExpansion.prototype.showCaseRunDetailAjaxLoading = function () {
-  this.detailRow.html(
-    jQ('<td colspan="14"></td>').html(constructAjaxLoading())
-  );
+  const td = document.createElement('td');
+  td.colSpan = 14;
+  td.appendChild(constructAjaxLoading());
+  this.detailRow.html(td.outerHTML);
 };
 
 CaseRunDetailExpansion.prototype.expandCaseRunDetail = function (caseRunRow) {

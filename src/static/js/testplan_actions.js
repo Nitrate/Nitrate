@@ -874,9 +874,10 @@ function reviewCaseContentCallback(expandableEventTarget, expandedCaseDetailsPan
 
       let params = Nitrate.Utils.formSerialize(this);
       submitComment(commentContainerT, params, function () {
-        let td = jQ('<td>', {colspan: 12});
-        td.append(constructAjaxLoading('id_loading_' + params.object_pk));
-        expandedCaseDetailsPane.html(td);
+        const td = document.createElement('td');
+        td.colSpan = 12;
+        td.appendChild(constructAjaxLoading('id_loading_' + params.object_pk));
+        expandedCaseDetailsPane.html(td.outerHTML);
         // FIXME: refresh the content only once
         expandableEventTarget.trigger('click');
         expandableEventTarget.trigger('click');
@@ -894,9 +895,10 @@ function reviewCaseContentCallback(expandableEventTarget, expandedCaseDetailsPan
       // Every comment form has a hidden input with name object_pk to associate with the case.
       let caseId = Nitrate.Utils.formSerialize(this).object_pk;
       removeComment(this, function () {
-        let td = jQ('<td>', {colspan: 12});
-        td.append(constructAjaxLoading('id_loading_' + caseId));
-        expandedCaseDetailsPane.html(td);
+        const td = document.createElement('td');
+        td.colSpan = 12;
+        td.appendChild(constructAjaxLoading('id_loading_' + caseId));
+        expandedCaseDetailsPane.html(td.outerHTML);
         // FIXME: refresh the content only once.
         expandableEventTarget.trigger('click');
         expandableEventTarget.trigger('click');
@@ -1294,12 +1296,14 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
           return;
         }
 
-        let d = jQ('<div>', {'class': 'automated_form'})[0];
+        // This is just a placeholder, nothing is filled in.
+        const div = document.createElement('div');
+        div.className = 'automated_form';
 
         sendHTMLRequest({
           url: Nitrate.http.URLConf.reverse({name: 'get_form'}),
           data: {app_form: 'testcases.CaseAutomatedForm'},
-          container: d,
+          container: div,
           callbackAfterFillIn: function (xhr) {
             let returntext = xhr.responseText;
 
@@ -1633,13 +1637,14 @@ function constructPlanComponentModificationDialog(container) {
   jQ(container).show();
 
   let planId = Nitrate.TestPlans.Instance.pk;
-  let d = jQ('<div>');
+  const d = document.createElement('div');
 
   // Get the form and insert into the dialog.
-  constructPlanComponentsZone(d[0], {a: 'get_form', plan: planId}, function () {
+  constructPlanComponentsZone(d, {a: 'get_form', plan: planId}, function () {
+    const submitButton = createInputElement('submit', 'a', 'Update');
     jQ(container).html(
       constructForm(
-        d.html(),
+        d.outerHTML,
         Nitrate.http.URLConf.reverse({name: 'plan_components'}),
         function (e) {
           e.stopPropagation();
@@ -1652,14 +1657,14 @@ function constructPlanComponentModificationDialog(container) {
           clearDialog();
         },
         'Press "Ctrl" to select multiple default component',
-        jQ('<input>', {'type': 'submit', 'name': 'a', 'value': 'Update'})[0]
+        submitButton
       )
     );
   });
 }
 
 function renderTagForm(container, parameters, formObserve) {
-  let d = jQ('<div>');
+  const d = document.createElement('div');
   if (!container) {
     container = getDialog();
   }
@@ -1671,15 +1676,17 @@ function renderTagForm(container, parameters, formObserve) {
     traditional: true,
     container: d,
     callbackAfterFillIn: function () {
-      let h = jQ('<input>', {'type': 'hidden', 'name': 'a', 'value': 'remove'});
-      let a = jQ('<input>', {'type': 'submit', 'value': 'Remove'});
-      let c = jQ('<label>');
-      c.append(h);
-      c.append(a);
-      a.on('click', function () { h.val('remove'); });
+      const h = createInputElement('hidden', 'a', 'remove');
+      const a = createInputElement('submit', 'removeButton', 'Remove');
+      a.addEventListener('click', () => {
+        h.value = 'remove';
+      })
+      const c = document.createElement('label');
+      c.appendChild(h);
+      c.appendChild(a);
       jQ(container).html(
         constructForm(
-          d.html(), '', formObserve, 'Press "Ctrl" to select multiple default component', c[0]
+          d.outerHTML, '', formObserve, 'Press "Ctrl" to select multiple default component', c
         )
       );
     }
@@ -1687,7 +1694,7 @@ function renderTagForm(container, parameters, formObserve) {
 }
 
 function renderCategoryForm(container, parameters, formObserve) {
-  let d = jQ('<div>');
+  const d = document.createElement('div');
   if (!container) {
     container = getDialog();
   }
@@ -1698,15 +1705,17 @@ function renderCategoryForm(container, parameters, formObserve) {
     data: parameters,
     container: d,
     callbackAfterFillIn: function () {
-      let h = jQ('<input>', {'type': 'hidden', 'name': 'a', 'value': 'add'});
-      let a = jQ('<input>', {'type': 'submit', 'value': 'Select'});
-      let c = jQ('<label>');
-      c.append(h);
-      c.append(a);
-      a.on('click', function () { h.val('update'); });
+      const h = createInputElement('hidden', 'a', 'add');
+      const a = createInputElement('submit', 'submitButton', 'Select')
+      a.addEventListener('click', () => {
+        h.value = 'update';
+      })
+      const c = document.createElement('label');
+      c.appendChild(h);
+      c.appendChild(a);
       jQ(container).html(
         constructForm(
-          d.html(), '/cases/category/', formObserve, 'Select Category', c[0]
+          d.outerHTML, '/cases/category/', formObserve, 'Select Category', c
         )
       );
       registerProductAssociatedObjectUpdaters(
@@ -1749,7 +1758,9 @@ function resortCasesDragAndDrop(container, button, form, table, parameters, call
     // Use the selector content to replace the selector
     jQ(form).parent().find('.change_status_selector').each(function () {
       let w = this.selectedIndex;
-      jQ(this).replaceWith((jQ('<span>')).html(this.options[w].text));
+      const replaceWith = document.createElement('span');
+      replaceWith.append(this.options[w].text);
+      jQ(this).replaceWith(replaceWith);
     });
 
     button.innerHTML = 'Done Sorting';
@@ -1757,7 +1768,9 @@ function resortCasesDragAndDrop(container, button, form, table, parameters, call
 
     jQ(table).tableDnD();
   } else {
-    jQ(button).replaceWith((jQ('<span>')).html('...Submitting changes'));
+    const replaceWith = document.createElement('span');
+    replaceWith.append('...Submitting changes');
+    jQ(button).replaceWith(replaceWith);
 
     jQ(table).parent().find('input[type=checkbox]').each(function () {
       this.checked = true;

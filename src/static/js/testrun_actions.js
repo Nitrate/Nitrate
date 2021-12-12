@@ -1034,7 +1034,9 @@ function taggleSortCaseRun(event) {
 
     // Use the title to replace the blind down title link
     jQ('#id_table_cases .blind_title_link').each(function () {
-      jQ(this).replaceWith((jQ('<span>')).html(this.innerHTML));
+      const replaceWith = document.createElement('span');
+      replaceWith.insertAdjacentHTML('afterbegin', this.innerHTML );
+      jQ(this).replaceWith(replaceWith);
     });
 
     // Use the sortkey content to replace change sort key link
