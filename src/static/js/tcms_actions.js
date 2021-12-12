@@ -851,24 +851,26 @@ function blindupAllCases(element) {
 }
 
 function renderComponentForm(container, parameters, formObserve) {
-  let d = jQ('<div>');
   if (!container) {
     container = getDialog();
   }
   jQ(container).show();
 
+  const div = document.createElement('div');
+
   postHTMLRequest({
     url: '/cases/get-component-form/',
     data: parameters,
-    container: d,
+    container: div,
     callbackAfterFillIn: function () {
-      let a = jQ('<input>', {'type': 'submit', 'value': 'Add'});
-      let c = jQ('<label>');
-      c.append(a);
+      const label = document.createElement('label');
+      const submitButton = createInputElement('submit', 'addComponents', 'Add');
+      label.appendChild(submitButton);
+
       jQ(container).html(
         constructForm(
-          d.html(), '/cases/add-component/', formObserve,
-          'Press "Ctrl" to select multiple default component', c[0]
+          div.innerHTML, '/cases/add-component/', formObserve,
+          'Press "Ctrl" to select multiple default component', label
         )
       );
       registerProductAssociatedObjectUpdaters(

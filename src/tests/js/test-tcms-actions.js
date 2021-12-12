@@ -7,7 +7,8 @@ QUnit.module('tcms_actions.js', function () {
   QUnit.module('Test setUpChoices', function () {
     QUnit.test('simple basic setup', function (assert) {
       let options = [['1', 'case 1'], ['2', 'case 2'], ['3', 'case 3']];
-      let select = jQ('<select name="test_setup_choices"></select>')[0];
+      const select = document.createElement('select');
+      select.name = 'test_setup_choices';
 
       setUpChoices(select, options, false);
 
@@ -21,7 +22,8 @@ QUnit.module('tcms_actions.js', function () {
 
     QUnit.test('add a blank option', function (assert) {
       let options = [['1', 'case 1']];
-      let select = jQ('<select name="test_setup_choices"></select>')[0];
+      const select = document.createElement('select');
+      select.name = 'test_setup_choices';
 
       setUpChoices(select, options, true);
 
@@ -35,17 +37,21 @@ QUnit.module('tcms_actions.js', function () {
     });
 
     QUnit.test('empty options', function (assert) {
-      let select = jQ('<select name="test_setup_choices"></select>')[0];
+      const select = document.createElement('select');
+      select.name = 'test_setup_choices';
       setUpChoices(select, [], false);
       assert.equal(0, select.options.length);
     });
 
     QUnit.test('preserve selected option', function (assert) {
-      let select =
-        jQ('<select name="test_setup_choices">' +
-          '<option value="1">case 1</option>'  +
-          '<option value="2" selected>case 2</option>'  +
-          '</select>')[0];
+      const selectDef =
+        '<select name="test_setup_choices">' +
+        '<option value="1">case 1</option>'  +
+        '<option value="2" selected>case 2</option>'  +
+        '</select>';
+      const parser = new DOMParser();
+      const htmlDoc = parser.parseFromString(selectDef, 'text/html');
+      const select = htmlDoc.body.firstChild;
 
       setUpChoices(select, [['1', 'preserve option'], ['2', 'case 2']], false);
 
@@ -63,7 +69,8 @@ QUnit.module('tcms_actions.js', function () {
     });
 
     QUnit.test('shorten long option text', function (assert) {
-      let select = jQ('<select name="test_setup_choices"></select>')[0];
+      const select = document.createElement('select');
+      select.name = 'test_setup_choices';
       let longText = 'abc'.repeat(SHORT_STRING_LENGTH);
       setUpChoices(select, [['1', longText]], false);
 
