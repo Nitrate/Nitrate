@@ -94,7 +94,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: |
-          docker run --rm -v $PWD:/code:Z registry.fedoraproject.org/fedora:34 /bin/bash -c "
+          docker run --rm -v $PWD:/code:Z registry.fedoraproject.org/fedora:35 /bin/bash -c "
             set -ex
             dnf \
               --disablerepo=fedora-modular --disablerepo=updates-modular --disablerepo=fedora-cisco-openh264 \
