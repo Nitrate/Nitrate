@@ -18,7 +18,7 @@ jobs:
     container: registry.fedoraproject.org/fedora:${{ matrix.dist }}
     strategy:
       matrix:
-        dist: [33, 34]
+        dist: [34, 35]
 
     steps:
       - name: Checkout code
