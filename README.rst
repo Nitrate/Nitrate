@@ -202,8 +202,8 @@ Contact
 There are various ways to get in touch. Choose one you like.
 
 * Mailing List: `nitrate-devel at lists.fedorahosted.org`_
-* IRC: `nitrate`_ on irc.freenode.org
+* IRC: nitrate-tcms on `irc.libera.chat`_
 * Gitter: https://gitter.im/Nitrate/Nitrate
 
 .. _nitrate-devel at lists.fedorahosted.org: mailto:nitrate-devel@lists.fedorahosted.org
-.. _nitrate: irc://irc.freenode.org/nitrate
+.. _irc.libera.chat: https://web.libera.chat/
