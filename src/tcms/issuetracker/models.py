@@ -6,7 +6,7 @@ import logging
 import os
 import re
 from datetime import datetime
-from typing import Dict
+from typing import Dict, List, Optional
 
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxLengthValidator, RegexValidator
@@ -38,7 +38,7 @@ def parse_token_expiration_date(value):
 class CredentialTypes(enum.Enum):
     NoNeed = "No need to login"
     UserPwd = "Username/Password authentication"
-    Token = "Token based"
+    Token = "Token based"  # nosec
 
 
 class IssueTrackerProduct(TCMSActionModel):
@@ -684,7 +684,7 @@ class Issue(TCMSActionModel):
             raise ValidationError({"issue_key": f"Issue key {self.issue_key} is in wrong format."})
 
     @staticmethod
-    def count_by_case_run(case_run_ids=None):
+    def count_by_case_run(case_run_ids: Optional[List[int]] = None):
         """Subtotal issues and optionally by specified case runs
 
         :param case_run_ids: list of test case run IDs to just return subtotal
@@ -695,16 +695,10 @@ class Issue(TCMSActionModel):
         :rtype: dict
         """
         if case_run_ids is not None:
-            assert isinstance(case_run_ids, list)
-            assert all(isinstance(item, int) for item in case_run_ids)
             criteria = {"case_run__in": case_run_ids}
         else:
             criteria = {"case_run__isnull": False}
-        return {
-            item["case_run"]: item["issues_count"]
-            for item in (
-                Issue.objects.filter(**criteria)
-                .values("case_run")
-                .annotate(issues_count=Count("pk"))
-            )
-        }
+        issues = (
+            Issue.objects.filter(**criteria).values("case_run").annotate(issues_count=Count("pk"))
+        )
+        return {item["case_run"]: item["issues_count"] for item in issues}
