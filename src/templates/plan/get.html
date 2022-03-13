@@ -251,4 +251,9 @@ Nitrate.TestPlans.Instance = {
 		</div>
 	</form>
 </div>
+<div id="dlgSetAutomatedState" style="display: none">
+	<form action="{% url "cases-automated" %}">
+		{{ set_automated_form.as_p }}
+	</form>
+</div>
 {% endblock %}

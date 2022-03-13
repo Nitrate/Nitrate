@@ -8,7 +8,6 @@ import datetime
 import json
 import logging
 import operator
-import sys
 from collections.abc import Iterable
 from functools import reduce
 from typing import Any, Dict, List, NewType, Tuple, Union
@@ -171,37 +170,6 @@ def info(request):
         ),
         safe=False,
     )
-
-
-@require_GET
-def form(request):
-    """Response get form ajax call, most using in dialog"""
-
-    # The parameters in internal_parameters will delete from parameters
-    internal_parameters = ["app_form", "format"]
-    parameters = strip_parameters(request.GET, internal_parameters)
-    q_app_form = request.GET.get("app_form")
-    q_format = request.GET.get("format")
-    if not q_format:
-        q_format = "p"
-
-    if not q_app_form:
-        return HttpResponse("Unrecognizable app_form")
-
-    # Get the form
-    q_app, q_form = q_app_form.split(".")[0], q_app_form.split(".")[1]
-    exec(f"from tcms.{q_app}.forms import {q_form} as form")
-    try:
-        __import__("tcms.%s.forms" % q_app)
-    except ImportError:
-        raise
-    q_app_module = sys.modules["tcms.%s.forms" % q_app]
-    form_class = getattr(q_app_module, q_form)
-    form = form_class(initial=parameters)
-
-    # Generate the HTML and reponse
-    html = getattr(form, "as_" + q_format)
-    return HttpResponse(html())
 
 
 def _get_tagging_objects(request: HttpRequest, template_name: str) -> Tuple[str, QuerySet]:

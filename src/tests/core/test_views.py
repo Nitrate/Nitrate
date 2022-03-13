@@ -16,7 +16,6 @@ from pytest_django import asserts
 from tcms.core.forms import DurationField, ModelChoiceField, MultipleEmailField, UserField
 from tcms.core.templatetags.report_tags import percentage
 from tcms.management.models import TCMSEnvGroup, TCMSEnvProperty
-from tcms.testcases.forms import CaseAutomatedForm
 from tests import BaseCaseRun, BasePlanCase
 from tests import factories as f
 
@@ -93,19 +92,6 @@ class TestQuickSearch(BaseCaseRun):
     def test_404_when_missing_search_type(self):
         response = self.client.get(self.search_url, {"search_content": "python"})
         self.assert404(response)
-
-
-class TestGetForm(test.TestCase):
-    """Test case for form"""
-
-    def test_get_form(self):
-        response = self.client.get(
-            reverse("ajax-form"), {"app_form": "testcases.CaseAutomatedForm"}
-        )
-        form = CaseAutomatedForm()
-
-        resp_content = response.content.decode("utf-8")
-        self.assertHTMLEqual(resp_content, form.as_p())
 
 
 class TestGetObjectInfo(BasePlanCase):
