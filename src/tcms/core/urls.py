@@ -10,7 +10,6 @@ urlpatterns = [
     path("search/", views.search, name="nitrate-search"),
     path("ajax/case-runs/", ajax.PatchTestCaseRunsView.as_view(), name="patch-case-runs"),
     path("ajax/cases/", ajax.PatchTestCasesView.as_view(), name="patch-cases"),
-    path("ajax/form/", ajax.form, name="ajax-form"),
     path("management/getinfo/", ajax.info, name="ajax-getinfo"),
     path("management/tags/", ajax.manage_tags),
     # Attached file zone

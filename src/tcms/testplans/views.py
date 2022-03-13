@@ -38,7 +38,7 @@ from tcms.core.utils import DataTableResult, checksum
 from tcms.core.views import prompt
 from tcms.management.models import Component, TCMSEnvGroup
 from tcms.testcases.data import get_exported_cases_and_related_data
-from tcms.testcases.forms import QuickSearchCaseForm, SearchCaseForm
+from tcms.testcases.forms import CaseAutomatedForm, QuickSearchCaseForm, SearchCaseForm
 from tcms.testcases.models import TestCase, TestCasePlan, TestCaseStatus
 from tcms.testcases.views import get_selected_testcases
 from tcms.testplans import sqls
@@ -266,6 +266,7 @@ def get(request, plan_id, slug=None, template_name="plan/get.html"):
         "sub_module": SUB_MODULE_NAME,
         "test_plan": tp,
         "xml_form": ImportCasesViaXMLForm(),
+        "set_automated_form": CaseAutomatedForm(),
     }
     return render(request, template_name, context=context_data)
 

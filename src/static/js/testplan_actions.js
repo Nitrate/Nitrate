@@ -1034,6 +1034,138 @@ function serializeFormData(options) {
   return formData;
 }
 
+class SetCasesAutomatedDialog {
+  constructor() {
+    this._dialog = jQ('#dlgSetAutomatedState').dialog({
+      title: 'Set Automated State',
+      autoOpen: false,
+      resizable: false,
+      modal: true,
+      width: 400,
+      beforeClose: function () {
+        const wrapperDialog = jQ(this).dialog('option', 'wrapperDialog');
+        jQ(this).find('input[type=checkbox]').each(function (index, input) {
+          // Clear checked boxes for the next operation.
+          input.checked = false;
+          input.removeEventListener(
+            'change', wrapperDialog._getStateChangeHandler(wrapperDialog)
+          );
+        });
+      },
+      buttons: {
+        Ok: function () {
+          const form = jQ(this).find('form')[0];
+          const data = Nitrate.Utils.formSerialize(form);
+
+          data.a = 'change';
+          data.case = jQ(this).dialog('option', 'caseIds');
+
+          const handler = jQ(this).dialog('option', 'handler');
+          handler(form.action, data);
+          jQ(this).dialog('close');
+        },
+        Cancel: function () {
+          jQ(this).dialog('close');
+        },
+      },
+    });
+  }
+
+  /**
+   * Private function comparing the checkbox states.
+   *
+   * @param {boolean[]} left - an array of left states.
+   * @param {boolean[]} right - an array of another states.
+   * @returns {boolean} true if the two arrays are same, otherwise false is returned.
+   * @private
+   */
+  _compareCheckStates(left, right) {
+    if (left.length !== right.length) {
+      return false;
+    }
+    for (let i = 0; i < left.length; i++) {
+      if (left[i] !== right[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Get the event handler that enables/disables Ok button according to the
+   * automated state check states.
+   *
+   * @param {SetCasesAutomatedDialog} wrapperDialog - the instance of SetCasesAutomatedDialog.
+   * @returns {(function(*): void)|*} a function as event handler that will be registered to
+   *                                  checkbox input change event.
+   * @private
+   */
+  _getStateChangeHandler(wrapperDialog) {
+    const that = wrapperDialog;
+    return function (event) {
+      const initialCheckStates = that._dialog.dialog('option', 'initialCheckStates');
+      const currentCheckStates = that._collectCheckStates();
+      const button = wrapperDialog._dialog.next().find('button:first');
+      const disabled = that._compareCheckStates(currentCheckStates, initialCheckStates);
+      button.prop('disabled', disabled);
+      if (!disabled) {
+        button.removeClass('ui-state-disabled');
+      } else {
+        button.addClass('ui-state-disabled');
+      }
+    }
+  }
+
+  /**
+   * Open this dialog.
+   *
+   * @param {Function} handler - a function that will be called to update the
+   *                             test cases' automated state when Ok button is
+   *                             clicked.
+   * @param {string[]} caseIds - case ids. The automated state will be updated
+   *                             on these cases.
+   */
+  open(handler, caseIds) {
+    const that = this;
+    const dialog = that._dialog;
+    // Make it easier to call this wrapper dialog function from inside the
+    // underlying jQuery dialog object.
+    dialog.dialog('option', 'wrapperDialog', that);
+    dialog.dialog('option', 'handler', handler);
+    dialog.dialog('option', 'caseIds', caseIds);
+    // Remember the initial automated checkbox states in order to help to
+    // determine if the Ok button is enabled or disabled.
+    dialog.dialog('option', 'initialCheckStates', this._collectCheckStates());
+    dialog.dialog('open');
+
+    dialog.next().find('button:first')
+      .prop('disabled', true)
+      .addClass('ui-state-disabled');
+
+    // Register handler to enable or disable the Ok button.
+    // This event handler will be removed when the dialog is closed.
+    dialog.find('input[type=checkbox]').each(function (index, input) {
+      input.addEventListener('change', that._getStateChangeHandler(that));
+    });
+  }
+
+  /**
+   * Collect automated checkbox states.
+   *
+   * @returns {boolean[]} an array of boolean values indicating the automated
+   *                      checkbox states. The values have same order of the
+   *                      INPUT elements inserted into the DOM tree.
+   * @private
+   */
+  _collectCheckStates() {
+    const checkStates = [];
+    this._dialog.find('input[type=checkbox]').each(function (index, input) {
+      checkStates.push(input.checked);
+    });
+    return checkStates;
+  }
+}
+
 /**
  * Load/reload the cases area which contains dropdown menus and controls.
  *
@@ -1058,6 +1190,9 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
       jQ('.show_change_status_link').on('click', function () {
         jQ(this).hide().next().show();
       });
+
+      // Used later to set case automated state
+      const dlgSetCasesAutomated = new SetCasesAutomatedDialog();
 
       let casesTable = jQ(container).find('.js-cases-list')[0]
         , navForm = jQ(container).find('form.js-cases-actions')
@@ -1295,48 +1430,7 @@ function constructPlanDetailsCasesZone(container, planId, parameters) {
           showModal(defaultMessages.alert.no_case_selected, 'Missing something?');
           return;
         }
-
-        // This is just a placeholder, nothing is filled in.
-        const div = document.createElement('div');
-        div.className = 'automated_form';
-
-        sendHTMLRequest({
-          url: Nitrate.http.URLConf.reverse({name: 'get_form'}),
-          data: {app_form: 'testcases.CaseAutomatedForm'},
-          container: div,
-          callbackAfterFillIn: function (xhr) {
-            let returntext = xhr.responseText;
-
-            let dialogContainer = getDialog();
-            jQ(dialogContainer).html(constructAjaxLoading());
-            jQ(dialogContainer).show();
-
-            jQ(dialogContainer).html(
-              constructForm(returntext, '/cases/automated/', function (e) {
-                e.stopPropagation();
-                e.preventDefault();
-
-                let data = Nitrate.Utils.formSerialize(this);
-                clearDialog(dialogContainer);
-
-                if (
-                  data.o_is_automated === undefined &&
-                  data.o_is_manual === undefined &&
-                  data.o_is_automated_proposed === undefined
-                ) {
-                  return true;
-                }
-
-                data.a = 'change';
-                data.case = selectedCaseIDs;
-
-                postRequestAndReloadCases(
-                  Nitrate.http.URLConf.reverse({name: 'cases_automated'}), data
-                );
-              })
-            );
-          }
-        });
+        dlgSetCasesAutomated.open(postRequestAndReloadCases, selectedCaseIDs);
       });
 
       let updateCasesPeople = function (url, targetField) {
