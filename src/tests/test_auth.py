@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-from hashlib import sha1
+import re
+import string
 from unittest.mock import patch
 
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AbstractUser
 from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
@@ -14,6 +15,10 @@ from tcms.auth.models import UserActivateKey
 from tests import AuthMixin
 
 # ### Test cases for models ###
+
+
+def is_hex(s: str):
+    return re.match(rf"^[{string.hexdigits}]+$", s)
 
 
 class TestSetRandomKey(TestCase):
@@ -26,24 +31,16 @@ class TestSetRandomKey(TestCase):
         )
 
     @patch("tcms.auth.models.datetime")
-    @patch("tcms.auth.models.random")
-    def test_set_random_key(self, random, mock_datetime):
+    def test_set_random_key(self, mock_datetime):
         mock_datetime.datetime.today.return_value = datetime.datetime(2017, 5, 10)
         mock_datetime.timedelta.return_value = datetime.timedelta(7)
-        fake_random = 0.12345678
-        random.random.return_value = fake_random
 
-        activation_key = UserActivateKey.set_random_key_for_user(self.new_user)
+        uak = UserActivateKey.set_random_key_for_user(self.new_user)
 
-        self.assertEqual(self.new_user, activation_key.user)
+        self.assertEqual(self.new_user, uak.user)
 
-        s_random = sha1(str(fake_random).encode("utf-8")).hexdigest()[:5]
-        expected_key = sha1(
-            "{}{}".format(s_random, self.new_user.username).encode("utf-8")
-        ).hexdigest()
-
-        self.assertEqual(expected_key, activation_key.activation_key)
-        self.assertEqual(datetime.datetime(2017, 5, 17), activation_key.key_expires)
+        self.assertTrue(is_hex(uak.activation_key), msg="Not a HEX string.")
+        self.assertEqual(datetime.datetime(2017, 5, 17), uak.key_expires)
 
 
 class TestForceToSetRandomKey(TestCase):
@@ -85,7 +82,6 @@ class TestLogout(AuthMixin, TestCase):
 class TestRegistration(TestCase):
     def setUp(self):
         self.register_url = reverse("nitrate-register")
-        self.fake_activate_key = "secret-activate-key"
 
     def test_open_registration_page(self):
         response = self.client.get(self.register_url)
@@ -95,10 +91,7 @@ class TestRegistration(TestCase):
             html=True,
         )
 
-    @patch("tcms.auth.models.sha1")
-    def assert_user_registration(self, username, sha1):
-        sha1.return_value.hexdigest.return_value = self.fake_activate_key
-
+    def assert_user_registration(self, username):
         response = self.client.post(
             self.register_url,
             {
@@ -123,24 +116,28 @@ class TestRegistration(TestCase):
 
         keys = UserActivateKey.objects.filter(user=user)
         self.assertTrue(keys.exists())
-        self.assertEqual(self.fake_activate_key, keys[0].activation_key)
+        self.assertTrue(is_hex(keys[0].activation_key))
 
         return response
 
     @patch("tcms.auth.views.settings.EMAIL_HOST", new="smtp.example.com")
     def test_register_user_by_email_confirmation(self):
-        response = self.assert_user_registration("new-tester")
+        username = "new-tester"
+        response = self.assert_user_registration(username)
 
         self.assertContains(
             response,
             "Your account has been created, please check your mailbox for confirmation",
         )
 
+        registered_user = User.objects.get(username=username)
+        uak = UserActivateKey.objects.get(user=registered_user)
+
         # Verify notification mail
         self.assertEqual(1, len(mail.outbox))
         self.assertEqual(settings.EMAIL_FROM, mail.outbox[0].from_email)
         self.assertIn(
-            reverse("nitrate-activation-confirm", args=[self.fake_activate_key]),
+            reverse("nitrate-activation-confirm", args=[uak.activation_key]),
             mail.outbox[0].body,
         )
 
@@ -190,13 +187,9 @@ class TestConfirm(TestCase):
         )
 
     def test_confirm(self):
-        fake_activate_key = "secret-activate-key"
+        ak = UserActivateKey.set_random_key_for_user(self.new_user)
 
-        with patch("tcms.auth.models.sha1") as sha1:
-            sha1.return_value.hexdigest.return_value = fake_activate_key
-            UserActivateKey.set_random_key_for_user(self.new_user)
-
-        confirm_url = reverse("nitrate-activation-confirm", args=[fake_activate_key])
+        confirm_url = reverse("nitrate-activation-confirm", args=[ak.activation_key])
         response = self.client.get(confirm_url)
 
         self.assertContains(response, "Your account has been activated successfully")
