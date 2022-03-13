@@ -31,7 +31,7 @@ elif DB_ENGINE == "pgsql":
     DATABASES["default"]["TEST"] = {"CHARSET": "utf8"}
 
 
-SECRET_KEY = "key-for-test"
+SECRET_KEY = "key-for-test"  # nosec
 
 ASYNC_TASK = "DISABLED"
 LISTENING_MODEL_SIGNAL = False

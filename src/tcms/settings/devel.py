@@ -16,7 +16,7 @@ DATABASES = {
     },
 }
 
-SECRET_KEY = "secret-key-for-dev-only"
+SECRET_KEY = "secret-key-for-dev-only"  # nosec
 
 # django-debug-toolbar settings
 MIDDLEWARE += ("debug_toolbar.middleware.DebugToolbarMiddleware",)
