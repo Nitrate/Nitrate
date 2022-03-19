@@ -252,7 +252,7 @@ class EnumLike:
 def checksum(value: Union[str, bytes]) -> str:
     if not value:
         return ""
-    md5 = hashlib.md5()
+    md5 = hashlib.md5()  # nosec
     if type(value) == bytes:
         md5.update(value)
     else:
