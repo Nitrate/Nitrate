@@ -267,7 +267,6 @@ class TestBuild(TCMSActionModel):
 
         product_ids = query.get("product_ids")
         if product_ids is not None:
-            assert isinstance(product_ids, list)
             q = q.filter(product__in=product_ids)
 
         return q.all()
