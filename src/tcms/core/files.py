@@ -27,7 +27,7 @@ log = logging.getLogger(__name__)
 
 
 def calculate_checksum(uploaded_file: UploadedFile) -> str:
-    md5 = hashlib.md5()
+    md5 = hashlib.md5()  # nosec
     for chunk in uploaded_file.chunks():
         md5.update(chunk)
     return md5.hexdigest()

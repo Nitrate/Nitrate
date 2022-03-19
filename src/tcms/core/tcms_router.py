@@ -13,7 +13,7 @@ class RWRouter:
     def db_for_read(self, model, **hints):
         if not self.db_read:
             return self.db_for_write(model, **hints)
-        return random.choice(self.db_read)
+        return random.choice(self.db_read)  # nosec
 
     def db_for_write(self, model, **hints):
         return "default"
