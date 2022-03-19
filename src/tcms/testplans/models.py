@@ -486,9 +486,9 @@ class TestPlan(TCMSActionModel):
     def get_descendant_ids(self, direct: bool = False) -> List[int]:
         if direct:
             sql = dedent(
-                f"""
+                """
                 WITH RECURSIVE sub_tree AS (
-                    SELECT plan_id, 0 as depth FROM test_plans WHERE plan_id = {self.pk}
+                    SELECT plan_id, 0 as depth FROM test_plans WHERE plan_id = %s
                     UNION ALL
                     SELECT tp.plan_id, depth + 1 FROM test_plans AS tp, sub_tree AS st
                     WHERE tp.parent_id = st.plan_id
@@ -498,9 +498,9 @@ class TestPlan(TCMSActionModel):
             )
         else:
             sql = dedent(
-                f"""
+                """
                 WITH RECURSIVE sub_tree AS (
-                    SELECT plan_id, 0 as depth FROM test_plans WHERE plan_id = {self.pk}
+                    SELECT plan_id, 0 as depth FROM test_plans WHERE plan_id = %s
                     UNION ALL
                     SELECT tp.plan_id, depth + 1 FROM test_plans AS tp, sub_tree AS st
                     WHERE tp.parent_id = st.plan_id
@@ -509,7 +509,7 @@ class TestPlan(TCMSActionModel):
             """
             )
         with connection.reader_cursor as cursor:
-            cursor.execute(sql)
+            cursor.execute(sql, [self.pk])
             return [row[0] for row in cursor.fetchall()]
 
     def get_descendants(self):
@@ -518,10 +518,10 @@ class TestPlan(TCMSActionModel):
 
     def get_ancestor_ids(self) -> List[int]:
         sql_ancestors = dedent(
-            f"""
+            """
             WITH RECURSIVE sub_tree AS (
                 SELECT plan_id, parent_id FROM test_plans
-                WHERE plan_id = {self.pk}
+                WHERE plan_id = %s
                 UNION ALL
                 SELECT tp.plan_id, tp.parent_id
                 FROM test_plans AS tp, sub_tree AS st
@@ -531,7 +531,7 @@ class TestPlan(TCMSActionModel):
         """
         )
         with connection.reader_cursor as cursor:
-            cursor.execute(sql_ancestors)
+            cursor.execute(sql_ancestors, [self.pk])
             result = [row[0] for row in cursor.fetchall()]
             result.remove(self.pk)
             return result
