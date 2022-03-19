@@ -138,7 +138,7 @@ class TestPlan(TCMSActionModel):
         if children_count:
             select["children_count"] = RawSQL.num_child_plans
         if select:
-            queryset = queryset.extra(select=select)
+            queryset = queryset.extra(select=select)  # nosec
         return queryset
 
     def latest_text(self):

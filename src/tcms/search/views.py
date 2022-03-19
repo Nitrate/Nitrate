@@ -202,7 +202,7 @@ def sum_orm_queries(
             runs = runs.filter(case_run__case__in=cases).distinct()
         if plans is not None:
             runs = runs.filter(plan__in=plans).distinct()
-        runs = runs.extra(select={"cases_count": RawSQL.total_num_caseruns})
+        runs = runs.extra(select={"cases_count": RawSQL.total_num_caseruns})  # nosec
         return runs.select_related(
             "manager", "default_tester", "build__product", "product_version"
         ).only(

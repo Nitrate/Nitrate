@@ -839,7 +839,7 @@ def get(request, case_id, template_name="case/get.html"):
         "case__priority",
         "case_run_status",
     ).all()
-    tcrs = tcrs.extra(
+    tcrs = tcrs.extra(  # nosec
         select={
             "num_issue": RawSQL.num_case_run_issues,
         }
