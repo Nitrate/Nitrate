@@ -1728,8 +1728,8 @@ function constructPlanComponentsZone(container, parameters, callback) {
   });
 }
 
-function constructPlanComponentModificationDialog(container) {
-  container = container || getDialog();
+function constructPlanComponentModificationDialog() {
+  const container = getDialog();
   jQ(container).show();
 
   let planId = Nitrate.TestPlans.Instance.pk;
