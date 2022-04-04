@@ -169,8 +169,11 @@ Nitrate.TestPlans.TreeView = {
    * @param {number} currentPlanId - the parent plan of the children.
    */
   addChildPlan: function (currentPlanId) {
-    let inputChildPlanIds = window
-      .prompt('Enter a comma separated list of plan IDs')
+    let inputChildPlanIds = window.prompt('Enter a comma separated list of plan IDs');
+    if (! inputChildPlanIds) {
+      return;
+    }
+    inputChildPlanIds = inputChildPlanIds
       .replace(/^[,\s]+|[,\s]+$/g, '')
       .split(/[,\s]+/)
       .filter(function (elem) { return elem.length > 0 });
