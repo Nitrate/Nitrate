@@ -1458,7 +1458,7 @@ class ListCaseAttachmentsView(PermissionRequiredMixin, View):
 
     def get(self, request, case_id):
         file_size_limit = settings.MAX_UPLOAD_SIZE
-        limit_readable = int(file_size_limit) / 2 ** 20  # Mb
+        limit_readable = int(file_size_limit) / 2**20  # Mb
 
         case = get_object_or_404(TestCase, case_id=case_id)
         plan = plan_from_request_or_none(request)
