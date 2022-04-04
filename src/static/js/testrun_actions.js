@@ -955,8 +955,12 @@ function updateCaseRunStatus(expansion, form) {
   let caseRunStatusId = formData.value;
 
   if (formData.comment !== '') {
-    submitComment(jQ('<div>')[0], formData, function () {
-      updateCommentsCount(expansion.caseRunRow.find(':hidden[name=case]').val(), true);
+    postRequest({
+      url: '/comments/post/',
+      data: formData,
+      success: function () {
+        updateCommentsCount(expansion.caseRunRow.find(':hidden[name=case]').val(), true);
+      }
     });
   }
 

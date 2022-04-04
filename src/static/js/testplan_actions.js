@@ -865,22 +865,24 @@ function changeTestCaseStatus(planId, selector, caseId, beConfirmed, wasConfirme
  */
 function reviewCaseContentCallback(expandableEventTarget, expandedCaseDetailsPane) {
   return function () {
-    let commentContainerT = jQ('<div>')[0];
-
     // Change status/comment callback
     expandedCaseDetailsPane.find('.update_form').unbind('submit').on('submit', function (e) {
       e.stopPropagation();
       e.preventDefault();
 
-      let params = Nitrate.Utils.formSerialize(this);
-      submitComment(commentContainerT, params, function () {
-        const td = document.createElement('td');
-        td.colSpan = 12;
-        td.appendChild(constructAjaxLoading('id_loading_' + params.object_pk));
-        expandedCaseDetailsPane.html(td.outerHTML);
-        // FIXME: refresh the content only once
-        expandableEventTarget.trigger('click');
-        expandableEventTarget.trigger('click');
+      const params = Nitrate.Utils.formSerialize(this);
+      postRequest({
+        url: '/comments/post/',
+        data: params,
+        success: function () {
+          const td = document.createElement('td');
+          td.colSpan = 12;
+          td.appendChild(constructAjaxLoading('id_loading_' + params.object_pk));
+          expandedCaseDetailsPane.html(td.outerHTML);
+          // FIXME: refresh the content only once
+          expandableEventTarget.trigger('click');
+          expandableEventTarget.trigger('click');
+        }
       });
     });
 
