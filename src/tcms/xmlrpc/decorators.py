@@ -19,7 +19,6 @@ if settings.DEBUG:
         )
         logger.debug(log_msg)
 
-
 else:
     create_log = XmlRpcLog.objects.create
 

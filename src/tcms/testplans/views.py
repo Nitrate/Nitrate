@@ -588,7 +588,7 @@ def attachment(request, plan_id, template_name="plan/attachment.html"):
     SUB_MODULE_NAME = "plans"
 
     file_size_limit = settings.MAX_UPLOAD_SIZE
-    limit_readable = int(file_size_limit) / 2 ** 20  # Mb
+    limit_readable = int(file_size_limit) / 2**20  # Mb
 
     tp = get_object_or_404(TestPlan, plan_id=plan_id)
     context_data = {
