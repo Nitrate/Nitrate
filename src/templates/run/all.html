@@ -10,8 +10,8 @@
 
 {% block custom_javascript %}
 <script type="text/javascript" src="{% static "js/lib/jquery.dataTables.js" %}"></script>
-<script type="text/javascript" src="{% static "js/testrun_actions.js" %}"></script>
-<script type="text/javascript" src="{% static "js/management_actions.js" %}"></script>
+<script type="text/javascript" src="{% static "js/nitrate.testruns.js" %}"></script>
+<script type="text/javascript" src="{% static "js/nitrate.management.js" %}"></script>
 <script type="text/javascript">
 Nitrate.TestRuns.Search.numberOfRuns = {{ total_count }};
 Nitrate.Utils.after_page_load(Nitrate.TestRuns.List.on_load);

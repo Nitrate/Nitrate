@@ -7,8 +7,8 @@
 {% endblock %}
 
 {% block custom_javascript %}
-<script type="text/javascript" src="{% static "js/testrun_actions.js" %}"></script>
-<script type="text/javascript" src="{% static "js/testcase_actions.js" %}"></script>
+<script type="text/javascript" src="{% static "js/nitrate.testruns.js" %}"></script>
+<script type="text/javascript" src="{% static "js/nitrate.testcases.js" %}"></script>
 <script type="text/javascript">
 Nitrate.Utils.after_page_load(Nitrate.TestRuns.Clone.on_load);
 </script>
