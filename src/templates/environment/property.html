@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block custom_javascript %}
-<script type="text/javascript" src="{% static "js/management_actions.js" %}"></script>
+<script type="text/javascript" src="{% static "js/nitrate.management.js" %}"></script>
 <script type="text/javascript">
 Nitrate.Management.Environment.Property.URLs = {
 	add_property: '{% url "management-add-env-property" %}',

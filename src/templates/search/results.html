@@ -7,7 +7,7 @@
 {% endblock %}
 {% block custom_javascript %}
 <script type="text/javascript" src="{% static "js/lib/jquery.dataTables.js" %}"></script>
-<script type="text/javascript" src="{% static "js/advance_search.js" %}"></script>
+<script type="text/javascript" src="{% static "js/nitrate.advanced-search.js" %}"></script>
 {% endblock %}
 
 {% block contents %}
@@ -31,7 +31,7 @@
 
 	{% if search_target == "plan" %}
 
-	<script type="text/javascript" src="{% static "js/testplan_actions.js" %}"></script>
+	<script type="text/javascript" src="{% static "js/nitrate.testplans.js" %}"></script>
 	<script type="text/javascript">
 	  Nitrate.TestPlans.AdvancedSearch.numberOfPlans = {{ total_count }};
 	  Nitrate.Utils.after_page_load(Nitrate.TestPlans.AdvancedSearch.on_load);
@@ -41,7 +41,7 @@
 
 	{% elif search_target == "case" %}
 
-	<script type="text/javascript" src="{% static "js/testcase_actions.js" %}"></script>
+	<script type="text/javascript" src="{% static "js/nitrate.testcases.js" %}"></script>
 	<script type="text/javascript" src="{% static "js/nitrate.toggledetail.js" %}"></script>
 	<script type="text/javascript">
 	  Nitrate.TestCases.Search.ActionUrls = {
@@ -56,7 +56,7 @@
 
 	{% elif search_target == "run" %}
 
-	<script type="text/javascript" src="{% static "js/testrun_actions.js" %}"></script>
+	<script type="text/javascript" src="{% static "js/nitrate.testruns.js" %}"></script>
 	<script type="text/javascript">
 	  Nitrate.TestRuns.Search.numberOfRuns = {{ total_count }};
 	  Nitrate.Utils.after_page_load(Nitrate.TestRuns.AdvancedSearch.on_load);
