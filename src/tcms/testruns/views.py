@@ -695,7 +695,7 @@ def edit(request, run_id, template_name="run/edit.html"):
     SUB_MODULE_NAME = "runs"
 
     try:
-        tr = TestRun.objects.select_related().get(run_id=run_id)
+        tr: TestRun = TestRun.objects.select_related().get(run_id=run_id)
     except ObjectDoesNotExist:
         raise Http404
 
