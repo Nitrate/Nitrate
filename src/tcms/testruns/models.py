@@ -250,13 +250,21 @@ class TestRun(TCMSActionModel):
         # behind the scenes !!!
         return Issue.objects.filter(case_run__run=self).values("issue_key").distinct().count()
 
-    def get_percentage(self, count):
+    def get_percentage(self, count: int) -> float:
         case_run_count = self.total_num_caseruns
         if case_run_count == 0:
             return 0
         percent = float(count) / case_run_count * 100
         percent = round(percent, 2)
         return percent
+
+    def _get_completed_case_run_percentage(self):
+        ids = TestCaseRunStatus.completed_status_ids()
+        completed_caserun = self.case_run.filter(case_run_status__in=ids)
+        percentage = self.get_percentage(completed_caserun.count())
+        return percentage
+
+    completed_case_run_percent = property(_get_completed_case_run_percentage)
 
     def _get_passed_case_run_num(self):
         passed_status_id = TestCaseRunStatus.name_to_id("PASSED")
@@ -345,7 +353,7 @@ class TestCaseRunStatus(EnumLike, TCMSActionModel):
         return self.name in self.complete_status_names
 
     @classmethod
-    def completed_status_ids(cls):
+    def completed_status_ids(cls) -> QuerySet:
         """
         There are some status indicate that
         the testcaserun is completed.

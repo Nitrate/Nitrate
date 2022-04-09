@@ -1304,6 +1304,52 @@ class TestEditRun(BaseCaseRun):
 
         self.assertRedirects(response, reverse("run-get", args=[run.pk]))
 
+    def test_auto_update_run_status_when_all_case_runs_complete(self):
+        case_run: QuerySet = self.test_run.case_run
+        case_run.update(case_run_status=TestCaseRunStatus.objects.get(name="PASSED"))
+
+        post_data = {
+            "summary": "New run summary",
+            "product": self.new_product.pk,
+            "product_version": self.new_version.pk,
+            "build": self.new_build.pk,
+            "manager": self.test_run.manager.email,
+            "default_tester": self.intern.email,
+            "estimated_time": "3m",
+            "notes": "easytest",
+            "auto_update_run_status": "on",
+        }
+
+        response = self.client.post(self.edit_url, post_data)
+        self.assert302(response)
+
+        test_run = TestRun.objects.get(pk=self.test_run.pk)
+        assert test_run.stop_date is not None
+
+    def test_auto_update_run_status_when_partial_case_runs_complete(self):
+        case_runs: QuerySet[TestCaseRun] = self.test_run.case_run.all()
+        case_runs[0].case_run_status = TestCaseRunStatus.objects.get(name="PASSED")
+        case_runs[1].case_run_status = TestCaseRunStatus.objects.get(name="ERROR")
+        case_runs[2].case_run_status = TestCaseRunStatus.objects.get(name="IDLE")
+
+        post_data = {
+            "summary": "New run summary",
+            "product": self.new_product.pk,
+            "product_version": self.new_version.pk,
+            "build": self.new_build.pk,
+            "manager": self.test_run.manager.email,
+            "default_tester": self.intern.email,
+            "estimated_time": "3m",
+            "notes": "easytest",
+            "auto_update_run_status": "on",
+        }
+
+        response = self.client.post(self.edit_url, post_data)
+        self.assert302(response)
+
+        test_run = TestRun.objects.get(pk=self.test_run.pk)
+        assert test_run.stop_date is None
+
 
 class TestAddCasesToRun(BaseCaseRun):
     """Test AddCasesToRunView"""
