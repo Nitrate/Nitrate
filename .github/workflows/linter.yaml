@@ -113,3 +113,23 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: bash ./contrib/scripts/templatelint.sh src/templates
+
+  mypy:
+    name: Run mypy-${{ matrix.django-version }} checks
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        django-version: [django310, django320]
+    steps:
+      - run: |
+          sudo apt update
+          sudo apt-get install gcc python3-dev libkrb5-dev libmariadb-dev libcrypt-dev
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install tox
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install tox
+      - run: tox -e mypy-${{ matrix.django-version }}
