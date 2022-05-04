@@ -7,7 +7,7 @@ from tcms.testcases.models import TestCaseCategory
 
 
 class CustomSearchForm(forms.Form):
-    pk__in = forms.ModelMultipleChoiceField(
+    pk__in: forms.ModelChoiceField = forms.ModelMultipleChoiceField(
         label="Build",
         queryset=TestBuild.objects.none(),
         required=False,

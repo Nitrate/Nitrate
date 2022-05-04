@@ -3,6 +3,7 @@
 from collections import namedtuple
 from itertools import chain
 from operator import attrgetter, itemgetter
+from typing import Any, Dict, Optional
 
 from django.contrib.auth.models import User
 from django.db.models import Count
@@ -44,7 +45,7 @@ def do_nothing(value):
     return value
 
 
-def overview_view_get_running_runs_count(product_id):
+def overview_view_get_running_runs_count(product_id) -> GroupByResult:
     stats = (
         TestRun.objects.extra(
             select={"stop_status": "CASE WHEN stop_date is NULL THEN 'running' ELSE 'finished' END"}
@@ -52,71 +53,86 @@ def overview_view_get_running_runs_count(product_id):
         .values("stop_status")
         .annotate(subtotal=Count("pk"))
     )
-    return GroupByResult({item["stop_status"]: item["subtotal"] for item in stats})
+    return GroupByResult((item["stop_status"], item["subtotal"]) for item in stats)
 
 
-def subtotal_test_runs(filter_=None, by=None):
+def subtotal_test_runs(
+    filter_: Optional[Dict[str, Any]] = None, by: Optional[str] = None
+) -> GroupByResult:
     group_by = by or "pk"
-    stats = TestRun.objects
     if filter_:
-        stats = stats.filter(**filter_)
+        qs = TestRun.objects.filter(**filter_)
+    else:
+        qs = TestRun.objects.all()
     return GroupByResult(
-        {
-            item[group_by]: item["subtotal"]
-            for item in stats.values(group_by).annotate(subtotal=Count("pk"))
-        }
+        (
+            (item[group_by], item["subtotal"])
+            for item in qs.values(group_by).annotate(subtotal=Count("pk"))
+        )
     )
 
 
-def subtotal_case_runs(filter_=None, by=None):
+def subtotal_case_runs(
+    filter_: Optional[Dict[str, Any]] = None, by: Optional[str] = None
+) -> GroupByResult:
     group_by = by or "case_run_status"
-    stats = TestCaseRun.objects
     if filter_:
-        stats = stats.filter(**filter_)
+        qs = TestCaseRun.objects.filter(**filter_)
+    else:
+        qs = TestCaseRun.objects.all()
     return GroupByResult(
-        {
-            item[group_by]: item["subtotal"]
-            for item in stats.values(group_by).annotate(subtotal=Count("pk"))
-        }
+        (
+            (item[group_by], item["subtotal"])
+            for item in qs.values(group_by).annotate(subtotal=Count("pk"))
+        )
     )
 
 
-def subtotal_case_run_status(filter_=None, by=None):
+def subtotal_case_run_status(
+    filter_: Optional[Dict[str, Any]] = None, by: Optional[str] = None
+) -> GroupByResult:
     group_by = by or "name"
-    stats = TestCaseRunStatus.objects
     if filter_:
-        stats = stats.filter(**filter_)
+        qs = TestCaseRunStatus.objects.filter(**filter_)
+    else:
+        qs = TestCaseRunStatus.objects.all()
     return GroupByResult(
-        {
-            item[group_by]: item["subtotal"]
-            for item in stats.values(group_by).annotate(subtotal=Count("pk"))
-        }
+        (
+            (item[group_by], item["subtotal"])
+            for item in qs.values(group_by).annotate(subtotal=Count("pk"))
+        )
     )
 
 
-def subtotal_plans(filter_=None, by=None) -> GroupByResult:
+def subtotal_plans(
+    filter_: Optional[Dict[str, Any]] = None, by: Optional[str] = None
+) -> GroupByResult:
     group_by = by or "product"
-    stats = TestPlan.objects
     if filter_:
-        stats = stats.filter(**filter_)
+        qs = TestPlan.objects.filter(**filter_)
+    else:
+        qs = TestPlan.objects.all()
     return GroupByResult(
-        {
-            item[group_by]: item["subtotal"]
-            for item in stats.values(group_by).annotate(subtotal=Count("pk"))
-        }
+        (
+            (item[group_by], item["subtotal"])
+            for item in qs.values(group_by).annotate(subtotal=Count("pk"))
+        )
     )
 
 
-def subtotal_cases(filter_=None, by=None):
+def subtotal_cases(
+    filter_: Optional[Dict[str, Any]] = None, by: Optional[str] = None
+) -> GroupByResult:
     group_by = by or "plan"
-    stats = TestCase.objects
     if filter_:
-        stats = stats.filter(**filter_)
+        qs = TestCase.objects.filter(**filter_)
+    else:
+        qs = TestCase.objects.all()
     return GroupByResult(
-        {
-            item[group_by]: item["subtotal"]
-            for item in stats.values(group_by).annotate(subtotal=Count("pk"))
-        }
+        (
+            (item[group_by], item["subtotal"])
+            for item in qs.values(group_by).annotate(subtotal=Count("pk"))
+        )
     )
 
 
