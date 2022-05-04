@@ -62,7 +62,7 @@ class BaseCaseForm(forms.Form):
     )
     default_tester = UserField(label="Default tester", required=False)
     requirement = forms.CharField(label="Requirement", required=False)
-    is_automated = forms.MultipleChoiceField(
+    is_automated: forms.ChoiceField = forms.MultipleChoiceField(
         choices=AUTOMATED_CHOICES,
         widget=forms.CheckboxSelectMultiple(),
     )
