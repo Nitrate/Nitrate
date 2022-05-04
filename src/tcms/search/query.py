@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from typing import Dict
+from typing import Optional
 
 from django.db.models import QuerySet
 
@@ -133,7 +133,7 @@ class SmartDjangoQuery:
         },
     }
 
-    def __init__(self, queries: Dict, result_kls: str):
+    def __init__(self, queries: dict, result_kls: str):
         self.queryset = self.CONTENT_TYPES[result_kls]._default_manager.all()
         self.queries = queries
         self.result_kls = result_kls
@@ -160,6 +160,6 @@ class SmartDjangoQuery:
 
         self.queryset = queryset
 
-    def evaluate(self) -> QuerySet:
+    def evaluate(self) -> Optional[QuerySet]:
         self.filter()
         return self.queryset

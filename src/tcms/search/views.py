@@ -6,7 +6,7 @@ Advance search implementations
 import json
 import time
 from collections import namedtuple
-from typing import Dict, List, Union
+from typing import Any, List, Union
 from urllib.parse import parse_qsl, urlencode, urlparse
 
 from django.db.models.query import QuerySet
@@ -149,11 +149,10 @@ def advance_search(request, tmpl="search/advanced_search.html"):
 
 def search_objects(
     request: HttpRequest,
-    plan_query: Dict,
-    run_query: Dict,
-    case_query: Dict,
+    plan_query: dict[str, Any],
+    run_query: dict[str, Any],
+    case_query: dict[str, Any],
     target: str,
-    using: str = "orm",
 ) -> QuerySet:
     """Query plans, cases or runs according to the target
 
@@ -163,24 +162,20 @@ def search_objects(
     :param dict case_query: a mapping containing cleaned criteria used to query cases.
     :param dict run_query: a mapping containing cleaned criteria used to query runs.
     :param str target: query target, plan, case or run.
-    :param bool using: the name of query method. Default is ``orm``.
     :return: a Django queryset object containing the query result.
     :rtype: QuerySet
     """
-    USING = {"orm": {"query": SmartDjangoQuery, "sum": sum_orm_queries}}
-    Query = USING[using]["query"]
-    Sum = USING[using]["sum"]
-    plans = Query(plan_query, TestPlan.__name__)
-    runs = Query(run_query, TestRun.__name__)
-    cases = Query(case_query, TestCase.__name__)
-    results = Sum(plans, cases, runs, target)
+    plans = SmartDjangoQuery(plan_query, TestPlan.__name__)
+    runs = SmartDjangoQuery(run_query, TestRun.__name__)
+    cases = SmartDjangoQuery(case_query, TestCase.__name__)
+    results = sum_orm_queries(plans, cases, runs, target)
     return results
 
 
 def sum_orm_queries(
-    plans: SmartDjangoQuery,
-    cases: SmartDjangoQuery,
-    runs: SmartDjangoQuery,
+    plans_query: SmartDjangoQuery,
+    cases_query: SmartDjangoQuery,
+    runs_query: SmartDjangoQuery,
     target: str,
 ) -> QuerySet:
     """Search target objects together with selected relatives
@@ -188,9 +183,9 @@ def sum_orm_queries(
     :return: a QuerySet object representing queried target objects.
     :rtype: QuerySet
     """
-    plans = plans.evaluate()
-    cases = cases.evaluate()
-    runs = runs.evaluate()
+    plans = plans_query.evaluate()
+    cases = cases_query.evaluate()
+    runs = runs_query.evaluate()
 
     if target == "run":
         if plans is None and cases is None:
@@ -264,6 +259,10 @@ def sum_orm_queries(
             "priority__value",
         )
 
+    # This should not happen, but added to make mypy happy.
+    # This functionality should be reworked to avoid such check.
+    raise ValueError(f"Unknown search target: {target}")
+
 
 def remove_from_request_path(request: Union[HttpRequest, str], names: List[str]) -> str:
     """
@@ -300,21 +299,29 @@ def fmt_errors(form_errors):
     return errors
 
 
-def fmt_queries(*queries):
-    """Format the queries string."""
-    results = {}
+def fmt_queries(*queries: dict[str, Any]) -> dict[str, Any]:
+    """Cleanup query criteria."""
+    results: dict[str, Any] = {}
     for query in queries:
         for k, v in query.items():
-            if isinstance(v, bool) or v:
-                if isinstance(v, QuerySet):
+            cleaned_key = make_name_prefix_meaningful(k)
+            if isinstance(v, bool):
+                results[cleaned_key] = v
+            elif not v:
+                # Ignore any false value, like [], '', None or empty QuerySet
+                continue
+            elif hasattr(v, "query"):
+                # Check if value is a QuerySet object.
+                # isinstance is not used because mypy reports:
+                # Parameterized generics cannot be used with class or instance checks
+                try:
+                    val = ", ".join(o.name for o in v)
+                except AttributeError:
                     try:
-                        v = ", ".join(o.name for o in v)
+                        val = ", ".join(o.value for o in v)
                     except AttributeError:
-                        try:
-                            v = ", ".join(o.value for o in v)
-                        except AttributeError:
-                            v = ", ".join(v)
-                if isinstance(v, list):
-                    v = ", ".join(map(str, v))
-                results[make_name_prefix_meaningful(k)] = v
+                        val = ", ".join(v)
+                results[cleaned_key] = val
+            elif isinstance(v, list):
+                results[cleaned_key] = ", ".join(map(str, v))
     return results
