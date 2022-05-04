@@ -10,7 +10,7 @@ import logging
 import operator
 from collections.abc import Iterable
 from functools import reduce
-from typing import Any, Dict, List, NewType, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from django import forms
 from django.contrib.auth.mixins import PermissionRequiredMixin
@@ -278,16 +278,15 @@ def manage_tags(request: HttpRequest, template_name="management/get_tag.html"):
     return _generate_tags_response(request, objs, template_name)
 
 
-LogActionParams = NewType("LogActionParams", Dict[str, Any])
-
+LogActionParams = Dict[str, Any]
 # Construct data used to prepare log_action calls for a test case run.
-LogActionInfo = NewType("LogActionInfo", Tuple[TCMSActionModel, List[LogActionParams]])
+LogActionInfo = tuple[TCMSActionModel, list[LogActionParams]]
 
 
 class ModelPatchBaseView(PermissionRequiredMixin, View):
     """Abstract class defining interfaces to update a model properties"""
 
-    simple_patches: Dict[str, Tuple[forms.Form, bool]] = {
+    simple_patches: dict[str, tuple] = {
         # Validation form, whether to send mail
         # "field_name": (FormClass, True or False)
     }
@@ -302,7 +301,7 @@ class ModelPatchBaseView(PermissionRequiredMixin, View):
         self._update_targets = None
         self._request_data = None
 
-    def handle_no_permission(self) -> JsonResponseForbidden:
+    def handle_no_permission(self):
         return JsonResponseForbidden({"message": "You do not have permission to update."})
 
     def _sendmail(self, objects):
@@ -340,7 +339,7 @@ class ModelPatchBaseView(PermissionRequiredMixin, View):
         cases that update a property in a more complicated way, you have to implement the
         _update_[property name] method separately.
         """
-        log_actions_info = []
+        log_actions_info: list[LogActionInfo] = []
         changed = []
 
         for model in models:
@@ -392,6 +391,8 @@ class ModelPatchBaseView(PermissionRequiredMixin, View):
         self.target_field = self._request_data.get("target_field")
         if not self.target_field:
             return JsonResponseBadRequest({"message": "Missing argument target_field."})
+
+        action: Optional[Callable[[], Optional[JsonResponseBadRequest]]]
 
         if self.target_field in self.simple_patches:
             action = self._simple_patch
@@ -687,7 +688,7 @@ class PatchTestCasesView(ModelPatchBaseView):
     """Actions to update each possible property of TestCases"""
 
     permission_required = "testcases.change_testcase"
-    simple_patches = {
+    simple_patches: dict[str, tuple] = {
         "priority": (PatchTestCasePriorityForm, False),
         "default_tester": (PatchTestCaseDefaultTesterForm, False),
         "case_status": (PatchTestCaseStatusForm, False),
