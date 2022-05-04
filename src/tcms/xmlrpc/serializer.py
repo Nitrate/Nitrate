@@ -4,9 +4,9 @@ import operator
 from collections import OrderedDict
 from datetime import datetime, timedelta
 from itertools import groupby
-from typing import Optional
+from typing import Callable, Optional
 
-from django.db.models import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.fields.related import ForeignKey
 
 # TODO: to encode all strings in UTF-8 instead of mixing unicode and byte
@@ -146,11 +146,11 @@ class QuerySetBasedXMLRPCSerializer(XMLRPCSerializer):
     # side.
     # Key is the name from ORM side.
     # Value is the name from the the XMLRPC output side
-    values_fields_mapping = {}
+    values_fields_mapping: dict[str, tuple[str, Callable]] = {}
 
     # Define extra fields to allow provide extra fields in the serialization
     # result beside valid fields in database.
-    extra_fields = {}
+    extra_fields: dict[str, dict[str, str]] = {}
 
     def __init__(self, model_class, queryset):
         if model_class is None:
