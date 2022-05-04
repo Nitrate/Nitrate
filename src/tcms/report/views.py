@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from typing import ClassVar, Type
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Prefetch
@@ -26,7 +27,12 @@ from tcms.report.data import (
     TestingReportCaseRunsData,
     overview_view_get_running_runs_count,
 )
-from tcms.report.forms import CustomSearchForm, TestingReportCaseRunsListForm, TestingReportForm
+from tcms.report.forms import (
+    BasicTestingReportFormFields,
+    CustomSearchForm,
+    TestingReportCaseRunsListForm,
+    TestingReportForm,
+)
 from tcms.search.views import fmt_queries, remove_from_request_path
 from tcms.testruns.models import TestCaseRun, TestCaseRunStatus
 
@@ -582,7 +588,7 @@ class CustomDetailReport(CustomReport):
 class TestingReportBase(TemplateView):
     """Base class for each type of report"""
 
-    form_class = TestingReportForm
+    form_class: ClassVar[Type[BasicTestingReportFormFields]] = TestingReportForm
 
     @method_decorator(cache_page(REPORT_VIEW_CACHE_DURATION))
     def get(self, *args, **kwargs):
