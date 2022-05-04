@@ -3,7 +3,7 @@ import datetime
 import functools
 import hashlib
 import operator
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, AnyStr, Dict, Iterable, List, Optional, Union
 
 from django.apps import apps
 from django.db.models import QuerySet
@@ -62,7 +62,9 @@ def request_host_link(request: HttpRequest, domain_name: Optional[str] = None) -
     return f"{request.scheme}://{domain_name or request.get_host()}"
 
 
-def clean_request(request: HttpRequest, keys: Optional[List[str]] = None) -> Dict[str, str]:
+def clean_request(
+    request: HttpRequest, keys: Optional[Iterable[str]] = None
+) -> Dict[str, Union[str, List[str]]]:
     """
     Clean the request strings
     """
@@ -249,11 +251,11 @@ class EnumLike:
         return obj.name
 
 
-def checksum(value: Union[str, bytes]) -> str:
+def checksum(value: AnyStr) -> str:
     if not value:
         return ""
     md5 = hashlib.md5()  # nosec
-    if type(value) == bytes:
+    if isinstance(value, bytes):
         md5.update(value)
     else:
         md5.update(value.encode())

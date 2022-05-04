@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from typing import Dict
+
 from django.contrib import admin
 from kobo.django.xmlrpc.models import XmlRpcLog
 
@@ -8,7 +10,7 @@ class NitrateXmlRpcLogAdmin(admin.ModelAdmin):
     list_per_page = 50
     list_filter = ("dt_inserted",)
 
-    user_cache = {}
+    user_cache: Dict[int, str] = {}
 
     def __init__(self, *args, **kwargs):
         NitrateXmlRpcLogAdmin.user_cache.clear()
@@ -16,19 +18,17 @@ class NitrateXmlRpcLogAdmin(admin.ModelAdmin):
 
         super().__init__(*args, **kwargs)
 
-    def user_username(self, obj):
+    @admin.display(description="username")
+    def user_username(self, obj) -> str:
         username = NitrateXmlRpcLogAdmin.user_cache.get(obj.user_id)
         if username is None:
             username = obj.user.username
             NitrateXmlRpcLogAdmin.user_cache[obj.user_id] = username
         return username
 
-    user_username.short_description = "username"
-
+    @admin.display(description="Happened On")
     def happened_on(self, obj):
         return obj.dt_inserted
-
-    happened_on.short_description = "Happened On"
 
 
 admin.site.unregister(XmlRpcLog)

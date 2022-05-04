@@ -128,12 +128,14 @@ class GroupByResult:
     :type data: dict or iterable
     """
 
-    def __init__(self, data: Optional[Dict[Any, Any]] = None, total_name: Optional[str] = None):
+    def __init__(
+        self, data: Optional[Iterator[tuple[Any, Any]]] = None, total_name: Optional[str] = None
+    ):
         self._total_name = total_name
         self._data: Dict[Any, Any] = {} if data is None else dict(data)
         self._total_result = self._get_total()
 
-        self._meta = {}
+        self._meta: dict[str, int] = {}
 
     # ## proxy method ###
 
@@ -241,7 +243,7 @@ class GroupByResult:
                 return self._get_percent(key)
         return 0
 
-    def leaf_values_count(self, value_in_row=False, refresh=False):
+    def leaf_values_count(self, value_in_row: bool = False, refresh: bool = False) -> int:
         """Calculate the total number of leaf values under this level
 
         After the first time this method gets call, the result will be cached
