@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from textwrap import dedent
-from typing import List, Optional, Union
+from typing import List, Optional, Set, Union
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -26,7 +26,7 @@ from tcms.testplans import signals as plan_watchers
 try:
     from tcms.plugins_support.signals import register_model
 except ImportError:
-    register_model = None
+    register_model = None  # type: ignore
 
 
 class TestPlanType(TCMSActionModel):
@@ -541,18 +541,20 @@ class TestPlan(TCMSActionModel):
         return TestPlan.objects.filter(pk__in=ancestor_ids)
 
     def get_notification_recipients(self) -> List[str]:
-        recipients = set()
+        recipients: Set[str] = set()
         emailing = self.email_settings
         if emailing.auto_to_plan_owner and self.owner:
             recipients.add(self.owner.email)
         if emailing.auto_to_plan_author:
             recipients.add(self.author.email)
         if emailing.auto_to_case_owner:
-            case_authors = self.case.values_list("author__email", flat=True)
-            recipients.update(case_authors)
+            for email_addr in self.case.values_list("author__email", flat=True):
+                if email_addr:
+                    recipients.add(email_addr)
         if emailing.auto_to_case_default_tester:
-            case_testers = self.case.values_list("default_tester__email", flat=True)
-            recipients.update(case_testers)
+            for email_addr in self.case.values_list("default_tester__email", flat=True):
+                if email_addr:
+                    recipients.add(email_addr)
         return [r for r in recipients if r]
 
 

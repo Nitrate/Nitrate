@@ -154,7 +154,7 @@ class SimplePlansFilterView(TemplateView):
 
     # Subclass should provide a concrete template to render the final content.
     # Or, pass the template path to argument template_name of View.as_view()
-    template_name = None
+    template_name = ""
 
     def filter_plans(self):
         search_form = SearchPlanForm(self.request.GET)
@@ -933,7 +933,9 @@ def treeview_add_child_plans(request: HttpRequest, plan_id: int):
             return JsonResponseBadRequest(
                 {"message": f"Child plan id {child_plan_id} is not a number."}
             )
-        child_plan: TestPlan = TestPlan.objects.filter(pk=int(child_plan_id)).only("pk").first()
+        child_plan: Optional[TestPlan] = (
+            TestPlan.objects.filter(pk=int(child_plan_id)).only("pk").first()
+        )
         if child_plan is None:
             return JsonResponseBadRequest(
                 {"message": f"Child plan {child_plan_id} does not exist."}
@@ -961,7 +963,7 @@ def treeview_add_child_plans(request: HttpRequest, plan_id: int):
 @login_required
 @require_POST
 def treeview_remove_child_plans(request, plan_id: int):
-    plan: TestPlan = TestPlan.objects.filter(pk=plan_id).only("pk").first()
+    plan: Optional[TestPlan] = TestPlan.objects.filter(pk=plan_id).only("pk").first()
     if plan is None:
         return JsonResponseNotFound({"message": f"Plan {plan_id} does not exist."})
 
