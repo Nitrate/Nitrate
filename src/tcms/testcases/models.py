@@ -6,8 +6,9 @@ from typing import Any, Dict, List, Optional, Union
 
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from django.db.models import Max, ObjectDoesNotExist, QuerySet
+from django.db.models import Max, QuerySet
 from django.db.models.aggregates import Count
 from django.db.models.signals import post_delete, post_save, pre_save
 from django.urls import reverse
@@ -25,7 +26,7 @@ from tcms.testcases import signals as case_watchers
 try:
     from tcms.plugins_support.signals import register_model
 except ImportError:
-    register_model = None
+    register_model = None  # type: ignore
 
 AUTOMATED_CHOICES = (
     (0, "Manual"),
@@ -324,7 +325,7 @@ class TestCase(TCMSActionModel):
         value=None,
         ctype=None,
         object_pk=None,
-    ):
+    ) -> Optional[dict[str, Any]]:
         tcs = objects.select_related("reviewer").only("summary", "reviewer__email").order_by("pk")
         tc: TestCase
         scence_templates = {
@@ -345,7 +346,10 @@ class TestCase(TCMSActionModel):
             }
         }
 
-        return scence_templates.get(field)
+        if field:
+            return scence_templates.get(field)
+
+        return None
 
     def add_issue(
         self,
@@ -823,7 +827,7 @@ class TestCase(TCMSActionModel):
     def subtotal_by_status(
         cls, plans: Optional[Union[List[int], QuerySet]] = None
     ) -> Dict[str, Any]:
-        cases = TestCase.objects
+        cases = TestCase.objects.all()
         if plans is not None:
             cases = cases.filter(plan__in=plans)
         stats = cases.values("case_status").annotate(count=Count("pk"))

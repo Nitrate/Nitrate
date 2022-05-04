@@ -5,14 +5,14 @@ import itertools
 import json
 import logging
 from operator import attrgetter, itemgetter
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from django.db.models import Count
+from django.db.models import Count, QuerySet
 from django.http import (
     Http404,
     HttpResponse,
@@ -238,10 +238,10 @@ def new(request, template_name="case/new.html"):
 
 
 def get_testcaseplan_sortkey_pk_for_testcases(
-    plan: TestPlan, tc_ids: List[int]
-) -> Dict[int, Dict[int, int]]:
+    plan: Optional[TestPlan], tc_ids: List[int]
+) -> dict[int, dict[str, int]]:
     """Get each TestCase' sortkey and related TestCasePlan's pk"""
-    qs = TestCasePlan.objects.filter(case__in=tc_ids)
+    qs: QuerySet = TestCasePlan.objects.filter(case__in=tc_ids)
     if plan is not None:
         qs = qs.filter(plan__pk=plan.pk)
     qs = qs.values("pk", "sortkey", "case")
