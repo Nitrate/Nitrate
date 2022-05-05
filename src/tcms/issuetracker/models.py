@@ -6,7 +6,7 @@ import logging
 import os
 import re
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Any, List, Optional
 
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxLengthValidator, RegexValidator
@@ -323,7 +323,7 @@ class IssueTracker(TCMSActionModel):
         return cls.objects.filter(**criteria)
 
     @property
-    def credential(self) -> Dict[str, str]:
+    def credential(self) -> dict[str, Optional[str]]:
         """Get login credential
 
         The returned credential could contain different login credential data
@@ -333,33 +333,35 @@ class IssueTracker(TCMSActionModel):
         if self.credential_type == CredentialTypes.NoNeed.name:
             return {}
         elif self.credential_type == CredentialTypes.UserPwd.name:
-            cred = UserPwdCredential.objects.filter(issue_tracker=self).first()
-            if cred is None:
+            user_pwd_cred = UserPwdCredential.objects.filter(issue_tracker=self).first()
+            if user_pwd_cred is None:
                 raise ValueError(
                     f"Username/password credential is not set for issue tracker {self.name}."
                 )
             else:
-                if cred.secret_file:
-                    content = cred.read_secret_file(cred.secret_file)
+                if user_pwd_cred.secret_file:
+                    content = user_pwd_cred.read_secret_file(user_pwd_cred.secret_file)
                     return {
                         "username": content.get("issuetracker", "username"),
                         "password": content.get("issuetracker", "password"),
                     }
                 else:
                     return {
-                        "username": cred.username,
-                        "password": cred.password,
+                        "username": user_pwd_cred.username,
+                        "password": user_pwd_cred.password,
                     }
         elif self.credential_type == CredentialTypes.Token.name:
-            cred = TokenCredential.objects.filter(issue_tracker=self).first()
-            if cred is None:
+            token_cred = TokenCredential.objects.filter(issue_tracker=self).first()
+            if token_cred is None:
                 raise ValueError(f"Token credential is not set for issue tracker {self.name}.")
             else:
-                if cred.secret_file:
-                    content = cred.read_secret_file(cred.secret_file)
+                if token_cred.secret_file:
+                    content = token_cred.read_secret_file(token_cred.secret_file)
                     return {"token": content.get("issuetracker", "token")}
                 else:
-                    return {"token": cred.token}
+                    return {"token": token_cred.token}
+        else:
+            raise ValueError(f"Unknown credential type: {self.credential_type}")
 
 
 class Credential(TCMSActionModel):
@@ -694,6 +696,7 @@ class Issue(TCMSActionModel):
             that case run.
         :rtype: dict
         """
+        criteria: dict[str, Any]
         if case_run_ids is not None:
             criteria = {"case_run__in": case_run_ids}
         else:
