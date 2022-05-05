@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
-from django.db.models import signals
+from typing import Optional, Type
+
+from django.db.models import Model, signals
 
 from tcms.core.models import signals as tcms_signals
 from tcms.plugins_support.processors import pstp
 
-# Intial the regiested models
-REGISTERED_MODELS = {}
+# Initial the registered models
+REGISTERED_MODELS: dict[Type[Model], "GlobalSignalProcessor"] = {}
 
 
 # The global signal processor
@@ -55,11 +57,11 @@ def delete_signal_handler(instance, **kwargs):
 
 
 # Bind the signals and the models
-def register_model(model, sp=None):
+def register_model(model: Type[Model], sp: Optional[Type[GlobalSignalProcessor]] = None):
     if model in REGISTERED_MODELS:
         return
     for parent in model._meta.parents.keys():
-        register_model(parent, cls)  # noqa
+        register_model(parent, sp)
     if sp is None:
         sp = GlobalSignalProcessor
     signals.post_init.connect(initial_signal_handler, sender=model)
