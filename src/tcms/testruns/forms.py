@@ -25,8 +25,8 @@ PEOPLE_TYPE_CHOICES = (
 
 class BaseRunForm(forms.Form):
     summary = forms.CharField(label="Summary", max_length=255)
-    manager = UserField(label="Manager")
-    default_tester = UserField(label="Default Tester", required=False)
+    manager: forms.Field = UserField(label="Manager")
+    default_tester: forms.Field = UserField(label="Default Tester", required=False)
     product = forms.ModelChoiceField(
         label="Product",
         queryset=Product.objects.all(),
@@ -327,7 +327,7 @@ class BaseCaseRunForm(forms.Form):
         queryset=TestCaseRunStatus.objects.all(),
         required=False,
     )
-    assignee = UserField(label="Assignee", required=False)
+    assignee: forms.Field = UserField(label="Assignee", required=False)
     case_text_version = forms.IntegerField(label="Case text version", required=False)
     notes = forms.CharField(label="Notes", required=False)
     sortkey = forms.IntegerField(label="Sortkey", required=False)
