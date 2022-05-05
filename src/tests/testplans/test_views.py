@@ -24,7 +24,7 @@ from tcms.testcases.models import TestCase, TestCasePlan
 from tcms.testplans.models import TCMSEnvPlanMap, TestPlan, TestPlanAttachment
 from tcms.testplans.views import update_plan_email_settings
 from tcms.testruns.models import TestCaseRun
-from tests import AuthMixin, BaseCaseRun, BaseDataContext, BasePlanCase, HelperAssertions
+from tests import AuthMixin, BaseCaseRun, BasePlanCase, HelperAssertions
 from tests import factories as f
 from tests import remove_perm_from_user, user_should_have_perm
 from tests.testcases.test_views import PlanCaseExportTestHelper
@@ -1216,8 +1216,8 @@ class TestEnableDisablePlanViews(AuthMixin, HelperAssertions, test.TestCase):
 
 @pytest.mark.parametrize("plan_id", [1, 2])
 @pytest.mark.parametrize("slug", [None, "plan---1", slugify("plan 1")])
-def test_plan_get(plan_id: int, slug: Optional[str], base_data: BaseDataContext, client):
-    plan = base_data.plan_creator(pk=1, name="plan 1")
+def test_plan_get(plan_id: int, slug: Optional[str], base_data, client):
+    plan = base_data.create_plan(pk=1, name="plan 1")
 
     urlconf_args = [plan_id]
     if slug is not None:
@@ -1252,9 +1252,9 @@ def test_update_plan_email_settings(
     auto_to_plan_author: bool,
     auto_to_case_owner: bool,
     auto_to_case_default_tester: bool,
-    base_data: BaseDataContext,
+    base_data,
 ):
-    plan = base_data.plan_creator(pk=1, name="plan 1")
+    plan = base_data.create_plan(pk=1, name="plan 1")
 
     form = Mock(
         cleaned_data={
@@ -1277,23 +1277,25 @@ def test_update_plan_email_settings(
 
 
 @pytest.mark.parametrize("query_args", [None, {"plan": [1]}, {"plan": [1, 2]}])
-def test_plan_printable_page(
-    query_args: Optional[Dict[str, List[int]]], client, tester, base_data: BaseDataContext
-):
-    plan: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
-    case_1: TestCase = base_data.case_creator(pk=1, summary="case 1")
+def test_plan_printable_page(query_args: Optional[Dict[str, List[int]]], client, base_data):
+    plan = base_data.create_plan(pk=1, name="plan 1")
+    case_1 = base_data.create_case(pk=1, summary="case 1")
     plan.add_case(case_1)
-    case_2: TestCase = base_data.case_creator(pk=2, summary="case 2")
+    case_2 = base_data.create_case(pk=2, summary="case 2")
     plan.add_case(case_2)
     case_2.add_text(
-        "case 2 action", "case 2 effect", "case 2 setup", "case 2 breakdown", author=tester
+        "case 2 action",
+        "case 2 effect",
+        "case 2 setup",
+        "case 2 breakdown",
+        author=base_data.tester,
     )
 
-    plan_2: TestPlan = base_data.plan_creator(pk=2, name="plan 2")
-    case_3: TestCase = base_data.case_creator(pk=3, summary="case 3")
+    plan_2 = base_data.create_plan(pk=2, name="plan 2")
+    case_3 = base_data.create_case(pk=3, summary="case 3")
     plan_2.add_case(case_3)
-    case_3.add_text("action", "effect", "setup", "breakdown", author=tester)
-    case_3.add_text("action 3", "effect 3", "setup 3", "breakdown 3", author=tester)
+    case_3.add_text("action", "effect", "setup", "breakdown", author=base_data.tester)
+    case_3.add_text("action 3", "effect 3", "setup 3", "breakdown 3", author=base_data.tester)
 
     response = client.get(reverse("plans-printable"), data=query_args)
 
@@ -1336,7 +1338,7 @@ def test_creat_a_new_plan(
     extra_link: Optional[str],
     env_group: Optional[int],
     logged_in_tester,
-    base_data: BaseDataContext,
+    base_data,
     client,
 ):
     user_should_have_perm(logged_in_tester, "testplans.add_testplan")
@@ -1392,7 +1394,7 @@ PLAN_DOCUMENT_HTML: str = os.path.join(DATA_DIR, "plan-document.html")
 
 @pytest.mark.parametrize("upload_file", [PLAN_DOCUMENT_ODT, PLAN_DOCUMENT_TXT, PLAN_DOCUMENT_HTML])
 def test_upload_a_plan_document_to_create_new_plan(
-    upload_file: str, logged_in_tester, base_data: BaseDataContext, client
+    upload_file: str, logged_in_tester, base_data, client
 ):
     user_should_have_perm(logged_in_tester, "testplans.add_testplan")
     user_should_have_perm(logged_in_tester, "testplans.add_testplantext")
@@ -1412,7 +1414,7 @@ def test_upload_a_plan_document_to_create_new_plan(
         assert "This is a cool Web application" in response.content.decode()
 
 
-def test_create_new_plan_with_invalid_args(logged_in_tester, base_data: BaseDataContext, client):
+def test_create_new_plan_with_invalid_args(logged_in_tester, base_data, client):
     user_should_have_perm(logged_in_tester, "testplans.add_testplan")
     user_should_have_perm(logged_in_tester, "testplans.add_testplantext")
     user_should_have_perm(logged_in_tester, "testplans.add_tcmsenvplanmap")

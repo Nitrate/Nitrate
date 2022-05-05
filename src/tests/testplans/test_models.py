@@ -23,8 +23,7 @@ from tcms.testplans.models import (
     _disconnect_signals,
     _listen,
 )
-from tcms.testruns.models import TestRun
-from tests import BaseDataContext, BasePlanCase
+from tests import BasePlanCase
 from tests import factories as f
 from tests import no_raised_error
 
@@ -405,7 +404,7 @@ def test_plan_apply_subtotal(
     include_cases_count: bool,
     include_runs_count: bool,
     include_children_count: bool,
-    base_data: BaseDataContext,
+    base_data,
     # tester,
 ):
     """Test TestPlan.apply_subtotal
@@ -415,25 +414,25 @@ def test_plan_apply_subtotal(
     plan 3: child of 1
     plan 4: 2 runs
     """
-    plan_1: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
-    base_data.plan_creator(pk=2, name="plan 2", parent=plan_1)
-    base_data.plan_creator(pk=3, name="plan 3", parent=plan_1)
+    plan_1 = base_data.create_plan(pk=1, name="plan 1")
+    base_data.create_plan(pk=2, name="plan 2", parent=plan_1)
+    base_data.create_plan(pk=3, name="plan 3", parent=plan_1)
 
     for i in range(6):
-        plan_1.add_case(base_data.case_creator(pk=i + 1, summary=f"case summary {i + 1}"))
+        plan_1.add_case(base_data.create_case(pk=i + 1, summary=f"case summary {i + 1}"))
 
-    plan_4: TestPlan = base_data.plan_creator(pk=4, name="plan 4")
+    plan_4 = base_data.create_plan(pk=4, name="plan 4")
 
-    case_7 = base_data.case_creator(pk=7, summary="case summary 7")
-    case_8 = base_data.case_creator(pk=8, summary="case summary 8")
+    case_7 = base_data.create_case(pk=7, summary="case summary 7")
+    case_8 = base_data.create_case(pk=8, summary="case summary 8")
 
     plan_4.add_case(case_7)
     plan_4.add_case(case_8)
 
-    run_1: TestRun = base_data.run_creator(pk=1, summary="run 1", plan=plan_4)
+    run_1 = base_data.create_test_run(pk=1, summary="run 1", plan=plan_4)
     run_1.add_case_run(case_7)
 
-    run_2: TestRun = base_data.run_creator(pk=2, summary="run 2", plan=plan_4)
+    run_2 = base_data.create_test_run(pk=2, summary="run 2", plan=plan_4)
     run_2.add_case_run(case_8)
 
     if test_empty_queryset:
@@ -499,9 +498,9 @@ def test_plan_add_text(
     text_version: Union[int, None],
     has_text_already: bool,
     tester,
-    base_data: BaseDataContext,
+    base_data,
 ):
-    plan: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
+    plan = base_data.create_plan(pk=1, name="plan 1")
 
     existing_plan_text: Union[TestPlanText, None] = None
     if has_text_already:
@@ -550,15 +549,15 @@ def test_plan_add_case(
     case_id_to_add: int,
     sort_key: Union[int, None],
     expected: List[Tuple[int, int]],
-    base_data: BaseDataContext,
+    base_data,
 ):
     """Test TestPlan.add_case"""
-    plan_1: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
+    plan_1 = base_data.create_plan(pk=1, name="plan 1")
     for i in range(3):
-        base_data.case_creator(pk=i + 1, summary=f"case summary {i + 1}")
+        base_data.create_case(pk=i + 1, summary=f"case summary {i + 1}")
     plan_1.add_case(TestCase.objects.get(pk=1))
 
-    base_data.plan_creator(pk=2, name="plan 2")
+    base_data.create_plan(pk=2, name="plan 2")
 
     TestPlan.objects.get(pk=plan_id).add_case(
         TestCase.objects.get(pk=case_id_to_add),
@@ -588,12 +587,12 @@ def test_plan_add_case(
 def test_plan_get_case_sortkey(
     sort_keys: List[int],
     expected: Optional[int],
-    base_data: BaseDataContext,
+    base_data,
 ):
-    plan: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
+    plan = base_data.create_plan(pk=1, name="plan 1")
 
     for sort_key in sort_keys:
-        plan.add_case(base_data.case_creator(summary=f"case {sort_key}"), sort_key)
+        plan.add_case(base_data.create_case(summary=f"case {sort_key}"), sort_key)
 
     assert expected == plan.get_case_sortkey()
 
@@ -611,9 +610,9 @@ def test_plan_get_case_sortkey(
 def test_plan_add_component(
     component_name_to_add: Union[str, None],
     expected: Union[bool, TestPlanComponent],
-    base_data: BaseDataContext,
+    base_data,
 ):
-    plan: TestPlan = base_data.plan_creator(name="plan 1")
+    plan = base_data.create_plan(name="plan 1")
     TestPlanComponent.objects.create(
         plan=plan,
         component=Component.objects.create(name="web", product=base_data.product),
@@ -635,8 +634,8 @@ def test_plan_add_component(
 
 
 @pytest.mark.parametrize("group_name", ["os", "lang", None])
-def test_plan_add_env_group(group_name, tester, base_data: BaseDataContext):
-    plan: TestPlan = base_data.plan_creator(name="plan 1")
+def test_plan_add_env_group(group_name, tester, base_data):
+    plan = base_data.create_plan(name="plan 1")
     if group_name == "lang":
         plan.add_env_group(TCMSEnvGroup.objects.create(name="lang", manager=tester))
 
@@ -656,11 +655,11 @@ def test_plan_add_env_group(group_name, tester, base_data: BaseDataContext):
 
 
 @pytest.mark.parametrize("plan_id", [1, 2])
-def test_plan_clear_env_groups(plan_id: int, tester, base_data: BaseDataContext):
-    plan_1: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
+def test_plan_clear_env_groups(plan_id: int, tester, base_data):
+    plan_1 = base_data.create_plan(pk=1, name="plan 1")
     plan_1.add_env_group(TCMSEnvGroup.objects.create(name="os", manager=tester))
     plan_1.add_env_group(TCMSEnvGroup.objects.create(name="lang", manager=tester))
-    base_data.plan_creator(pk=2, name="plan 2")
+    base_data.create_plan(pk=2, name="plan 2")
 
     plan: TestPlan = TestPlan.objects.get(pk=plan_id)
     plan.clear_env_groups()
@@ -669,8 +668,8 @@ def test_plan_clear_env_groups(plan_id: int, tester, base_data: BaseDataContext)
 
 
 @pytest.mark.parametrize("component_name", ["docs", "db"])
-def test_plan_remove_component(component_name, base_data: BaseDataContext):
-    plan: TestPlan = base_data.plan_creator(name="plan 1")
+def test_plan_remove_component(component_name, base_data):
+    plan = base_data.create_plan(name="plan 1")
     plan.add_component(Component.objects.create(name="webapp", product=base_data.product))
     plan.add_component(Component.objects.create(name="db", product=base_data.product))
 
@@ -681,8 +680,8 @@ def test_plan_remove_component(component_name, base_data: BaseDataContext):
 
 
 @pytest.mark.parametrize("description", ["sample attachment", None])
-def test_plan_add_attachment(description, base_data: BaseDataContext):
-    plan: TestPlan = base_data.plan_creator(name="plan 1")
+def test_plan_add_attachment(description, base_data):
+    plan = base_data.create_plan(name="plan 1")
 
     if description:
         attachment = TestAttachment.objects.create(
@@ -699,8 +698,8 @@ def test_plan_add_attachment(description, base_data: BaseDataContext):
 
 
 @pytest.mark.parametrize("tag_name", ["future-tag", None])
-def test_plan_remove_non_existing_tag(tag_name, base_data: BaseDataContext):
-    plan: TestPlan = base_data.plan_creator(name="plan 1")
+def test_plan_remove_non_existing_tag(tag_name, base_data):
+    plan = base_data.create_plan(name="plan 1")
     plan.add_tag(TestTag.objects.create(name="upstream"))
     plan.add_tag(TestTag.objects.create(name="local-tests"))
     TestTag.objects.create(name="future-tag")
@@ -714,8 +713,8 @@ def test_plan_remove_non_existing_tag(tag_name, base_data: BaseDataContext):
     assert ["local-tests", "upstream"] == list(existing_tags)
 
 
-def test_plan_remove_existing_tag(base_data: BaseDataContext):
-    plan: TestPlan = base_data.plan_creator(name="plan 1")
+def test_plan_remove_existing_tag(base_data):
+    plan = base_data.create_plan(name="plan 1")
     plan.add_tag(TestTag.objects.create(name="upstream"))
     plan.add_tag(TestTag.objects.create(name="local-tests"))
 
@@ -749,9 +748,9 @@ def test_plan_clone(
     copy_cases: bool,
     component_initial_owner: Optional[str],
     tester,
-    base_data: BaseDataContext,
+    base_data,
 ):
-    plan: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
+    plan = base_data.create_plan(pk=1, name="plan 1")
     plan.add_text(tester, "first text")
     plan.add_text(tester, "second text")
     plan.add_tag(TestTag.objects.create(name="upstream"))
@@ -767,13 +766,13 @@ def test_plan_clone(
     plan.add_env_group(TCMSEnvGroup.objects.create(name="os", manager=tester))
 
     if has_cases:
-        case_1: TestCase = base_data.case_creator(pk=1, summary="case 1")
+        case_1 = base_data.create_case(pk=1, summary="case 1")
         plan.add_case(case_1)
         case_1.add_text("action1", "effect1", "setup1", "breakdown1", author=tester)
         # Add another one in order to test this latest text will be copied to the copied case.
         case_1.add_text("action2", "effect2", "setup2", "breakdown2", author=tester)
 
-        case_2: TestCase = base_data.case_creator(pk=2, summary="case 2")
+        case_2 = base_data.create_case(pk=2, summary="case 2")
         plan.add_case(case_2)
         case_2.add_tag(TestTag.objects.create(name="upstream"))
         case_2.add_component(Component.objects.create(name="db", product=base_data.product))

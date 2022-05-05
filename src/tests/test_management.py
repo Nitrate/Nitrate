@@ -22,7 +22,7 @@ from tcms.management.models import (
     Version,
 )
 from tcms.testplans.models import TestPlan, _disconnect_signals, _listen
-from tests import AuthMixin, BaseDataContext, HelperAssertions
+from tests import AuthMixin, HelperAssertions
 from tests import factories as f
 from tests import remove_perm_from_user, user_should_have_perm
 
@@ -1003,7 +1003,7 @@ class TestDeleteProduct(HelperAssertions, test.TestCase):
         self.assertFalse(TestPlanEmailSettings.objects.filter(plan=the_new_plan).exists())
 
 
-def test_component_admin_changelist(tester, base_data: BaseDataContext, client):
+def test_component_admin_changelist(tester, base_data, client):
     """Test custom ComponentAdmin.get_queryset works well"""
     admin = User.objects.create_superuser(
         username="admin", email="admin@example.com", password="pass"

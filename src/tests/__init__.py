@@ -13,9 +13,8 @@ from django.core.exceptions import ValidationError
 from django.db.models import Max
 from django.test import SimpleTestCase
 
-from tcms.management.models import Classification, Product, Version
 from tcms.testcases.models import TestCaseStatus
-from tcms.testplans.models import TestPlan, TestPlanType
+from tcms.testplans.models import TestPlan
 from tcms.testruns.models import TestCaseRunStatus
 from tests import factories as f
 
@@ -27,7 +26,6 @@ __all__ = (
     "BaseCaseRun",
     "encode",
     "HelperAssertions",
-    "BaseDataContext",
 )
 
 
@@ -345,38 +343,3 @@ class BaseCaseRun(BasePlanCase):
         cls.case_run_5 = case_run_creator(run=cls.test_run_1, case=cls.case_5, sortkey=20)
 
         cls.case_run_6 = case_run_creator(run=cls.test_run_1, case=cls.case_6, sortkey=30)
-
-
-class BaseDataContext:
-    classification: Classification = None
-    product: Product = None
-    product_version: Version = None
-    p1 = None
-    p2 = None
-    p3 = None
-    dev_build = None
-    alpha_build = None
-    candidate_build = None
-
-    # for case
-    case_status_proposed = None
-    case_status_confirmed = None
-    case_status_disabled = None
-    case_status_need_update = None
-    case_category_smoke = None
-    case_category_regression = None
-
-    # for plan
-    plan_type_function: TestPlanType = None
-    plan_type_smoke: TestPlanType = None
-    plan_type_regression: TestPlanType = None
-
-    # for run and case run
-    case_run_status_idle = None
-    case_run_status_running = None
-    case_run_status_failed = None
-
-    # helper actions
-    plan_creator = None
-    case_creator = None
-    run_creator = None
