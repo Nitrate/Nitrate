@@ -24,9 +24,7 @@ from tcms.testcases.models import (
     TestCaseText,
     _listen,
 )
-from tcms.testplans.models import TestPlan
-from tcms.testruns.models import TestRun
-from tests import BaseCaseRun, BaseDataContext, BasePlanCase
+from tests import BaseCaseRun, BasePlanCase
 from tests import factories as f
 
 
@@ -771,18 +769,18 @@ def test_case_get_notification_recipients(
     auto_to_run_manager: bool,
     auto_to_run_tester: bool,
     auto_to_case_run_assignee: bool,
-    base_data: BaseDataContext,
+    base_data,
 ):
     user_1: User = User.objects.create_user(username="user1", email="user1@example.com")
-    plan: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
-    case_1: TestCase = base_data.case_creator(pk=1, summary="case 1", default_tester=user_1)
+    plan = base_data.create_plan(pk=1, name="plan 1")
+    case_1 = base_data.create_case(pk=1, summary="case 1", default_tester=user_1)
     plan.add_case(case_1)
 
     manager: User = User.objects.create_user(username="manager1", email="manager1@example.com")
     run_tester: User = User.objects.create_user(
         username="run_tester", email="run_tester@example.com"
     )
-    run_1: TestRun = base_data.run_creator(
+    run_1 = base_data.create_test_run(
         pk=1, summary="run 1", plan=plan, manager=manager, default_tester=run_tester
     )
     run_1.add_case_run(case_1, assignee=run_tester)

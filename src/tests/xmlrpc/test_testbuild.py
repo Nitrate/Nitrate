@@ -9,7 +9,7 @@ import pytest
 
 from tcms.management.models import Classification, Product, TestBuild
 from tcms.xmlrpc.api import build
-from tests import BaseDataContext, encode
+from tests import encode
 from tests import factories as f
 from tests import user_should_have_perm
 from tests.xmlrpc.utils import XmlrpcAPIBaseTest, make_http_request
@@ -175,7 +175,7 @@ class TestBuildUpdate(XmlrpcAPIBaseTest):
         [None, pytest.raises(xmlrpc.client.Fault)],
     ],
 )
-def test_get(test_api: Callable, build_id: int, expected, tester, base_data: BaseDataContext):
+def test_get(test_api: Callable, build_id: int, expected, tester, base_data):
     request = make_http_request(tester)
 
     if isinstance(expected, int):
@@ -267,10 +267,8 @@ class TestBuildGetRuns(XmlrpcAPIBaseTest):
         ["dev_build", "nitrate", "dev_build"],
     ],
 )
-def test_check_build(
-    test_api: Callable, name, product, expected, tester, base_data: BaseDataContext
-):
-    request = make_http_request(tester)
+def test_check_build(test_api: Callable, name, product, expected, base_data):
+    request = make_http_request(base_data.tester)
 
     if isinstance(expected, str):
         result: Dict[str, Any] = test_api(request, name, product)

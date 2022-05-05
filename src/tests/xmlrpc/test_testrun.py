@@ -12,13 +12,10 @@ from django.contrib.auth.models import User
 
 from tcms.core.utils import string_to_list
 from tcms.management.models import TCMSEnvProperty, TCMSEnvValue, TestTag, Version
-from tcms.testcases.models import TestCase
-from tcms.testplans.models import TestPlan
 from tcms.testruns.models import TCMSEnvRunValueMap, TestCaseRun, TestRun, TestRunTag
 from tcms.xmlrpc.api import testrun as testrun_api
 from tcms.xmlrpc.serializer import datetime_to_str
 from tcms.xmlrpc.utils import pre_process_ids
-from tests import BaseDataContext
 from tests import factories as f
 from tests import user_should_have_perm
 from tests.xmlrpc.utils import XmlrpcAPIBaseTest, make_http_request
@@ -139,18 +136,18 @@ class TestGetIssues(XmlrpcAPIBaseTest):
 
 @pytest.mark.parametrize("run_ids", ["", 1, [1, 2]])
 @pytest.mark.parametrize("case_ids", ["", 1, [2, 3]])
-def test_add_cases(run_ids, case_ids, tester, base_data: BaseDataContext):
-    plan: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
-    case_1: TestCase = base_data.case_creator(pk=1, summary="case 1")
-    case_2: TestCase = base_data.case_creator(pk=2, summary="case 2")
-    case_3: TestCase = base_data.case_creator(pk=3, summary="case 3")
+def test_add_cases(run_ids, case_ids, tester, base_data):
+    plan = base_data.create_plan(pk=1, name="plan 1")
+    case_1 = base_data.create_case(pk=1, summary="case 1")
+    case_2 = base_data.create_case(pk=2, summary="case 2")
+    case_3 = base_data.create_case(pk=3, summary="case 3")
 
     plan.add_case(case_1)
     plan.add_case(case_2)
     plan.add_case(case_3)
 
-    run_1: TestRun = base_data.run_creator(pk=1, plan=plan)
-    run_2: TestRun = base_data.run_creator(pk=2, plan=plan)
+    run_1 = base_data.create_test_run(pk=1, plan=plan)
+    run_2 = base_data.create_test_run(pk=2, plan=plan)
 
     request = make_http_request(tester, "testruns.add_testcaserun")
     testrun_api.add_cases(request, run_ids, case_ids)
@@ -166,19 +163,19 @@ def test_add_cases(run_ids, case_ids, tester, base_data: BaseDataContext):
 
 @pytest.mark.parametrize("run_ids", ["", 1, [1, 2]])
 @pytest.mark.parametrize("case_ids", ["", 1, [2, 3]])
-def test_remove_cases(run_ids, case_ids, tester, base_data: BaseDataContext):
-    plan: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
-    case_1: TestCase = base_data.case_creator(pk=1, summary="case 1")
-    case_2: TestCase = base_data.case_creator(pk=2, summary="case 2")
-    case_3: TestCase = base_data.case_creator(pk=3, summary="case 3")
+def test_remove_cases(run_ids, case_ids, tester, base_data):
+    plan = base_data.create_plan(pk=1, name="plan 1")
+    case_1 = base_data.create_case(pk=1, summary="case 1")
+    case_2 = base_data.create_case(pk=2, summary="case 2")
+    case_3 = base_data.create_case(pk=3, summary="case 3")
 
     plan.add_case(case_1)
     plan.add_case(case_2)
     plan.add_case(case_3)
 
-    run_1: TestRun = base_data.run_creator(pk=1, plan=plan)
+    run_1 = base_data.create_test_run(pk=1, plan=plan)
     run_1.add_case_run(case_1)
-    run_2: TestRun = base_data.run_creator(pk=2, plan=plan)
+    run_2 = base_data.create_test_run(pk=2, plan=plan)
     run_2.add_case_run(case_2)
     run_2.add_case_run(case_3)
 
@@ -201,11 +198,11 @@ def test_add_tag(
     run_ids: Union[int, List[int]],
     tags: Union[str, List[str]],
     tester,
-    base_data: BaseDataContext,
+    base_data,
 ):
-    plan: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
-    run_1: TestRun = base_data.run_creator(pk=1, plan=plan)
-    run_2: TestRun = base_data.run_creator(pk=2, plan=plan)
+    plan = base_data.create_plan(pk=1, name="plan 1")
+    run_1 = base_data.create_test_run(pk=1, plan=plan)
+    run_2 = base_data.create_test_run(pk=2, plan=plan)
 
     TestTag.objects.create(name="tag1")
     TestTag.objects.create(name="tag2")
@@ -229,11 +226,11 @@ def test_remove_tag(
     run_ids: Union[int, List[int]],
     tags: Union[str, List[str]],
     tester,
-    base_data: BaseDataContext,
+    base_data,
 ):
-    plan: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
-    base_data.run_creator(pk=1, plan=plan)
-    run_2: TestRun = base_data.run_creator(pk=2, plan=plan)
+    plan = base_data.create_plan(pk=1, name="plan 1")
+    base_data.create_test_run(pk=1, plan=plan)
+    run_2 = base_data.create_test_run(pk=2, plan=plan)
 
     run_2.add_tag(TestTag.objects.create(name="tag1"))
     run_2.add_tag(TestTag.objects.create(name="tag2"))
@@ -259,11 +256,11 @@ def test_add_env_value(
     run_ids: Union[str, int, List[int]],
     env_value_ids: Union[str, int, List[int]],
     tester,
-    base_data: BaseDataContext,
+    base_data,
 ):
-    plan: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
-    run_1: TestRun = base_data.run_creator(pk=1, plan=plan)
-    run_2: TestRun = base_data.run_creator(pk=2, plan=plan)
+    plan = base_data.create_plan(pk=1, name="plan 1")
+    run_1 = base_data.create_test_run(pk=1, plan=plan)
+    run_2 = base_data.create_test_run(pk=2, plan=plan)
 
     property_py = TCMSEnvProperty.objects.create(name="py")
     TCMSEnvValue.objects.create(pk=1, value="3.9", property=property_py)
@@ -304,11 +301,11 @@ def test_remove_env_value(
     run_ids: Union[str, int, List[int]],
     env_value_ids: Union[str, int, List[int]],
     tester,
-    base_data: BaseDataContext,
+    base_data,
 ):
-    plan: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
-    run_1: TestRun = base_data.run_creator(pk=1, plan=plan)
-    run_2: TestRun = base_data.run_creator(pk=2, plan=plan)
+    plan = base_data.create_plan(pk=1, name="plan 1")
+    run_1 = base_data.create_test_run(pk=1, plan=plan)
+    run_2 = base_data.create_test_run(pk=2, plan=plan)
 
     property_py = TCMSEnvProperty.objects.create(name="py")
     value_1 = TCMSEnvValue.objects.create(pk=1, value="3.9", property=property_py)
@@ -345,15 +342,15 @@ def test_remove_env_value(
     ],
 )
 def test_filter_and_get_count(
-    criteria: Dict[str, Any], expected_run_ids: List[int], tester, base_data: BaseDataContext
+    criteria: Dict[str, Any], expected_run_ids: List[int], tester, base_data
 ):
-    plan: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
+    plan = base_data.create_plan(pk=1, name="plan 1")
     new_version = Version.objects.create(value="4.10", product=base_data.product)
-    base_data.run_creator(pk=1, plan=plan)
-    base_data.run_creator(pk=2, plan=plan, product_version=new_version)
+    base_data.create_test_run(pk=1, plan=plan)
+    base_data.create_test_run(pk=2, plan=plan, product_version=new_version)
 
-    plan_2: TestPlan = base_data.plan_creator(pk=2, name="plan 2")
-    base_data.run_creator(pk=3, plan=plan_2)
+    plan_2 = base_data.create_plan(pk=2, name="plan 2")
+    base_data.create_test_run(pk=3, plan=plan_2)
 
     request = make_http_request(tester)
     runs = testrun_api.filter(request, criteria)
@@ -387,10 +384,10 @@ def test_filter_and_get_count(
         ],
     ],
 )
-def test_get_env_values(run_id, expected, tester, base_data: BaseDataContext):
-    plan: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
-    base_data.run_creator(pk=1, plan=plan)
-    run_2: TestRun = base_data.run_creator(pk=2, plan=plan)
+def test_get_env_values(run_id, expected, tester, base_data):
+    plan = base_data.create_plan(pk=1, name="plan 1")
+    base_data.create_test_run(pk=1, plan=plan)
+    run_2 = base_data.create_test_run(pk=2, plan=plan)
 
     property_py = TCMSEnvProperty.objects.create(pk=1, name="py")
     run_2.add_env_value(TCMSEnvValue.objects.create(pk=1, value="3.9", property=property_py))
@@ -410,14 +407,14 @@ def test_get_env_values(run_id, expected, tester, base_data: BaseDataContext):
         [1, ["tag1", "tag2"]],
     ],
 )
-def test_get_tags(run_id: int, expected, tester, base_data: BaseDataContext):
-    plan: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
-    run_1: TestRun = base_data.run_creator(pk=1, plan=plan)
+def test_get_tags(run_id: int, expected, tester, base_data):
+    plan = base_data.create_plan(pk=1, name="plan 1")
+    run_1 = base_data.create_test_run(pk=1, plan=plan)
 
     run_1.add_tag(TestTag.objects.create(name="tag1"))
     run_1.add_tag(TestTag.objects.create(name="tag2"))
 
-    base_data.run_creator(pk=2, plan=plan)
+    base_data.create_test_run(pk=2, plan=plan)
 
     request = make_http_request(tester)
 
@@ -444,16 +441,16 @@ def test_get_tags(run_id: int, expected, tester, base_data: BaseDataContext):
         [2, [1, 2]],
     ],
 )
-def test_get_test_case_runs(run_id, expected, tester, base_data: BaseDataContext):
-    plan: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
-    case_1: TestCase = base_data.case_creator(pk=1, summary="case 1")
-    case_2: TestCase = base_data.case_creator(pk=2, summary="case 2")
+def test_get_test_case_runs(run_id, expected, tester, base_data):
+    plan = base_data.create_plan(pk=1, name="plan 1")
+    case_1 = base_data.create_case(pk=1, summary="case 1")
+    case_2 = base_data.create_case(pk=2, summary="case 2")
 
     plan.add_case(case_1)
     plan.add_case(case_2)
 
-    base_data.run_creator(pk=1, plan=plan)
-    run_2: TestRun = base_data.run_creator(pk=2, plan=plan)
+    base_data.create_test_run(pk=1, plan=plan)
+    run_2: TestRun = base_data.create_test_run(pk=2, plan=plan)
     TestCaseRun.objects.create(
         pk=1,
         run=run_2,
@@ -491,15 +488,15 @@ def test_get_test_case_runs(run_id, expected, tester, base_data: BaseDataContext
         ],
     ],
 )
-def test_get_test_cases(run_id, expected, tester, base_data: BaseDataContext):
-    plan: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
-    case_1: TestCase = base_data.case_creator(pk=1, summary="case 1")
-    case_2: TestCase = base_data.case_creator(pk=2, summary="case 2")
+def test_get_test_cases(run_id, expected, tester, base_data):
+    plan = base_data.create_plan(pk=1, name="plan 1")
+    case_1 = base_data.create_case(pk=1, summary="case 1")
+    case_2 = base_data.create_case(pk=2, summary="case 2")
 
     plan.add_case(case_1)
     plan.add_case(case_2)
 
-    run_1: TestRun = base_data.run_creator(pk=1, plan=plan)
+    run_1 = base_data.create_test_run(pk=1, plan=plan)
     TestCaseRun.objects.create(
         pk=1,
         run=run_1,
@@ -517,7 +514,7 @@ def test_get_test_cases(run_id, expected, tester, base_data: BaseDataContext):
         build=base_data.dev_build,
     )
 
-    base_data.run_creator(pk=2, plan=plan)
+    base_data.create_test_run(pk=2, plan=plan)
 
     request = make_http_request(tester)
     result = sorted(testrun_api.get_test_cases(request, run_id), key=operator.itemgetter("case_id"))
@@ -528,10 +525,10 @@ def test_get_test_cases(run_id, expected, tester, base_data: BaseDataContext):
 
 
 @pytest.mark.parametrize("run_id,expected", [[100, None], [1, 1]])
-def test_get_plan(run_id, expected, tester, base_data: BaseDataContext):
-    plan: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
-    case_1: TestCase = base_data.case_creator(pk=1, summary="case 1")
-    run_1: TestRun = base_data.run_creator(pk=1, plan=plan)
+def test_get_plan(run_id, expected, tester, base_data):
+    plan = base_data.create_plan(pk=1, name="plan 1")
+    case_1 = base_data.create_case(pk=1, summary="case 1")
+    run_1 = base_data.create_test_run(pk=1, plan=plan)
     run_1.add_case_run(case_1)
 
     request = make_http_request(tester)
@@ -586,19 +583,19 @@ def test_update(
     values: Dict[str, Any],
     expected: Union[Dict[str, Any], ContextManager],
     tester,
-    base_data: BaseDataContext,
+    base_data,
 ):
-    plan: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
-    case_1: TestCase = base_data.case_creator(pk=1, summary="case 1")
-    run_1: TestRun = base_data.run_creator(
+    plan = base_data.create_plan(pk=1, name="plan 1")
+    case_1 = base_data.create_case(pk=1, summary="case 1")
+    run_1 = base_data.create_test_run(
         pk=1, plan=plan, build=base_data.alpha_build, default_tester=tester
     )
     run_1.add_case_run(case_1)
 
-    run_2: TestRun = base_data.run_creator(pk=2, plan=plan, build=base_data.alpha_build)
+    run_2 = base_data.create_test_run(pk=2, plan=plan, build=base_data.alpha_build)
     run_2.add_case_run(case_1)
 
-    plan_2: TestPlan = base_data.plan_creator(pk=2, name="plan 1")
+    plan_2 = base_data.create_plan(pk=2, name="plan 1")
     plan_2.add_text(tester, "document content")
 
     User.objects.create(pk=2, username="user1", email="user1@example.com")
@@ -635,12 +632,10 @@ def test_update(
         [{"product": 1, "product_version": 1000}, pytest.raises(xmlrpc.client.Fault)],
     ],
 )
-def test_create(
-    extra_optional_fields, expected: Dict[str, Any], tester, base_data: BaseDataContext
-):
-    plan: TestPlan = base_data.plan_creator(pk=1, name="plan 1")
-    base_data.case_creator(pk=1, summary="case 1")
-    base_data.case_creator(pk=2, summary="case 2")
+def test_create(extra_optional_fields, expected: Dict[str, Any], tester, base_data):
+    plan = base_data.create_plan(pk=1, name="plan 1")
+    base_data.create_case(pk=1, summary="case 1")
+    base_data.create_case(pk=2, summary="case 2")
 
     summary = "new test run"
     values: Dict[str, Any] = {

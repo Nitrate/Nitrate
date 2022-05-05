@@ -32,7 +32,7 @@ from tcms.management.models import (
 )
 from tcms.testcases.models import TestCase, TestCaseCategory, TestCasePlan, TestCaseStatus
 from tcms.testruns.models import TestCaseRun, TestCaseRunStatus
-from tests import AuthMixin, BaseCaseRun, BaseDataContext, BasePlanCase, HelperAssertions
+from tests import AuthMixin, BaseCaseRun, BasePlanCase, HelperAssertions
 from tests import factories as f
 from tests import remove_perm_from_user, user_should_have_perm
 
@@ -978,7 +978,7 @@ class TestAjaxGetInfo(HelperAssertions, test.TestCase):
         [{"email__contains": "myhome.io"}, "user2"],
     ],
 )
-def test_get_users_info(criteria, expected_username, base_data: BaseDataContext, client):
+def test_get_users_info(criteria, expected_username, base_data, client):
     User.objects.create(username="user1", email="user1@localhost")
     User.objects.create(username="user2", email="user2@myhome.io")
     data = {"info_type": "users"}
