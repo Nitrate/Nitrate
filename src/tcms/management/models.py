@@ -15,7 +15,7 @@ from tcms.core.utils import calc_percent
 try:
     from tcms.plugins_support.signals import register_model
 except ImportError:
-    register_model = None
+    register_model = None  # type: ignore
 
 # Products zone
 
@@ -442,6 +442,8 @@ class TestAttachment(models.Model):
 
     @property
     def stored_filename(self) -> str:
+        if not self.stored_name:
+            raise ValueError("Attachment server-side name is not set yet.")
         return attachment_stored_filename(self.stored_name)
 
 
