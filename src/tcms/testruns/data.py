@@ -2,16 +2,15 @@
 
 from itertools import groupby
 from operator import itemgetter
-from typing import Dict, List
 
 from django.conf import settings
-from django.db.models import Count, F
+from django.db.models import Count, F, QuerySet
 
 from tcms.core.db import CaseRunStatusGroupByResult
 from tcms.testruns.models import TestCaseRun, TestCaseRunStatus
 
 
-def stats_case_runs_status(run_ids: List[int]) -> Dict[int, CaseRunStatusGroupByResult]:
+def stats_case_runs_status(run_ids: list[int]) -> dict[int, CaseRunStatusGroupByResult]:
     """Get statistics based on case runs' status
 
     :param list[int] run_ids: id of test run from where to get statistics
@@ -33,16 +32,18 @@ def stats_case_runs_status(run_ids: List[int]) -> Dict[int, CaseRunStatusGroupBy
     #     3: {'PASSED': 1, 'FAILED': 2, 'IDLE': 3, 'WAIVED': 4, ...},
     # }
 
+    subtotal: dict[int, CaseRunStatusGroupByResult]
+
     if result:
         subtotal = {}
-        for item in result:
-            run_id = item["run_id"]
+        for groupby_result in result:
+            run_id = groupby_result["run_id"]
             status_subtotal = subtotal.setdefault(run_id, CaseRunStatusGroupByResult())
-            status_subtotal[item["status_name"]] = item["count"]
+            status_subtotal[groupby_result["status_name"]] = groupby_result["count"]
     else:
         subtotal = {run_id: CaseRunStatusGroupByResult() for run_id in run_ids}
 
-    stock_status_names = TestCaseRunStatus.objects.values_list("name", flat=True)
+    stock_status_names: QuerySet = TestCaseRunStatus.objects.values_list("name", flat=True)
 
     # Not all case runs of a test run are not in all the status, hence some
     # status could be missed in the subtotal result.

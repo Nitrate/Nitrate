@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -25,7 +25,7 @@ from tcms.testruns import signals as run_watchers
 try:
     from tcms.plugins_support.signals import register_model
 except ImportError:
-    register_model = None
+    register_model = None  # type: ignore
 
 
 class TestRun(TCMSActionModel):
@@ -161,15 +161,21 @@ class TestRun(TCMSActionModel):
         """
         Get the all related mails from the run
         """
-        to = [self.manager.email]
-        to.extend(self.cc.values_list("email", flat=True))
-        if self.default_tester_id:
-            to.append(self.default_tester.email)
+        to: list[str] = []
+        if self.manager.email:
+            to.append(self.manager.email)
+
+        cc_emails = self.cc.values_list("email", flat=True)
+        to.extend(mail_addr for mail_addr in cc_emails if mail_addr)
+
+        if self.default_tester and self.default_tester.email:
+            to.append(str(self.default_tester.email))
 
         for tcr in self.case_run.select_related("assignee").all():
-            if tcr.assignee_id:
-                to.append(tcr.assignee.email)
-        return list(set(to))
+            if tcr.assignee and tcr.assignee.email:
+                to.append(str(tcr.assignee.email))
+
+        return sorted(set(to))
 
     # FIXME: rewrite to use multiple values INSERT statement
     def add_case_run(
@@ -434,7 +440,7 @@ class TestCaseRun(TCMSActionModel):
         value=None,
         ctype=None,
         object_pk=None,
-    ):
+    ) -> Optional[dict[str, Any]]:
         tr: TestRun = objects[0].run
         # scence_templates format:
         # template, subject, context
@@ -466,7 +472,9 @@ class TestCaseRun(TCMSActionModel):
             }
         }
 
-        return scence_templates.get(field)
+        if field:
+            return scence_templates.get(field)
+        return None
 
     def add_issue(
         self,

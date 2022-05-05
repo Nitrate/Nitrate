@@ -515,12 +515,12 @@ def calculate_associated_data(runs: QuerySet) -> None:
         for run_id, stats_rows in itertools.groupby(qs.iterator(), key=itemgetter("run"))
     }
 
-    qs = (
+    qs2 = (
         TestCaseRun.objects.filter(run__in=run_ids)
         .values("run")
         .annotate(cases_count=Count("case"))
     )
-    cases_subtotal = magic_convert(qs, key_name="run", value_name="cases_count")
+    cases_subtotal = magic_convert(qs2, key_name="run", value_name="cases_count")
 
     # Relative env groups to runs
     result = TCMSEnvGroup.objects.filter(plans__run__in=run_ids).values("plans__run", "name")

@@ -5,9 +5,9 @@ from operator import attrgetter
 
 from django import forms
 from django.contrib.auth.decorators import permission_required
-from django.core.validators import ValidationError
-from django.http import JsonResponse
-from django.shortcuts import Http404, get_object_or_404
+from django.core.exceptions import ValidationError
+from django.http import Http404, JsonResponse
+from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_GET
 
 from tcms.core.responses import JsonResponseBadRequest, JsonResponseForbidden, JsonResponseNotFound
