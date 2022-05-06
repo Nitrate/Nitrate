@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from http import HTTPStatus
-from typing import Optional
+from typing import ClassVar, Optional
 from xmlrpc.client import Fault
 
 from django import test
@@ -15,7 +15,7 @@ class XmlrpcAPIBaseTest(test.TestCase):
     """Base class for writing test case for XMLRPC functions"""
 
     # A string set to user in order to call function to test.
-    permission = None
+    permission: ClassVar[Optional[str]] = None
 
     @classmethod
     def setUpTestData(cls):

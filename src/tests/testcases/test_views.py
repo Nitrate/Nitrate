@@ -5,6 +5,7 @@ import unittest
 import xml.etree.ElementTree
 from datetime import datetime, timedelta
 from operator import attrgetter, itemgetter
+from typing import Any, ClassVar, Optional
 from unittest.mock import patch
 
 from bs4 import BeautifulSoup
@@ -40,9 +41,10 @@ from tcms.testcases.views import (
 )
 from tcms.testplans.models import TestPlan
 from tcms.testruns.models import TestCaseRun
-from tests import BaseCaseRun, BasePlanCase
+from tests import AuthMixin, BaseCaseRun, BasePlanCase, HelperAssertions, NitrateTestCase
 from tests import factories as f
 from tests import remove_perm_from_user, user_should_have_perm
+from tests.conftest import BaseDataContext
 from tests.testcases import assert_new_case
 
 
@@ -1889,19 +1891,27 @@ class TestIssueManagement(BaseCaseRun):
         )
 
 
-class TestNewCase(BasePlanCase):
+class TestNewCase(AuthMixin, HelperAssertions, NitrateTestCase):
     """Test create a new case"""
 
     auto_login = True
+    dc: ClassVar[BaseDataContext]
+    tag_fedora: ClassVar[TestTag]
+    tag_python: ClassVar[TestTag]
+    component_db: ClassVar[Component]
+    component_web: ClassVar[Component]
 
     @classmethod
     def setUpTestData(cls):
         super(TestNewCase, cls).setUpTestData()
-        cls.tag_fedora = f.TestTagFactory(name="fedora")
-        cls.tag_python = f.TestTagFactory(name="python")
 
-        cls.component_db = f.ComponentFactory(name="db", product=cls.product)
-        cls.component_web = f.ComponentFactory(name="web", product=cls.product)
+        cls.dc = BaseDataContext(cls.tester)
+        cls.plan = cls.dc.create_plan()
+        cls.tag_fedora = TestTag.objects.create(name="fedora")
+        cls.tag_python = TestTag.objects.create(name="python")
+
+        cls.component_db = Component.objects.create(name="db", product=cls.dc.product)
+        cls.component_web = Component.objects.create(name="web", product=cls.dc.product)
 
         user_should_have_perm(cls.tester, "testcases.add_testcase")
 
@@ -1917,13 +1927,16 @@ class TestNewCase(BasePlanCase):
         # More assertions on the content to ensure the rendered page is correct.
 
     def assert_new_case_creation(
-        self, estimated_time: str = "0m", from_plan: int = None, next_action: str = None
+        self,
+        estimated_time: str = "0m",
+        from_plan: Optional[int] = None,
+        next_action: Optional[str] = None,
     ) -> None:
         category = TestCaseCategory.objects.all()[0]
         priority = Priority.objects.all()[0]
 
-        post_data = {
-            "product": str(self.product.pk),
+        post_data: dict[str, Any] = {
+            "product": str(self.dc.product.pk),
             "summary": "Test case: create a new test case",
             "is_automated": "0",
             "script": "",
@@ -1950,8 +1963,7 @@ class TestNewCase(BasePlanCase):
 
         resp = self.client.post(self.new_case_url, data=post_data)
 
-        new_case = TestCase.objects.filter(summary=post_data["summary"]).first()
-        self.assertIsNotNone(new_case)
+        new_case = TestCase.objects.get(summary=post_data["summary"])
 
         if next_action == "continue":
             url = reverse("case-edit", args=[new_case.pk])
@@ -1982,7 +1994,7 @@ class TestNewCase(BasePlanCase):
         expected = post_data.copy()
         expected["is_automated"] = False
         expected["is_automated_proposed"] = False
-        expected["product"] = self.product
+        expected["product"] = self.dc.product
         expected["category"] = category
         expected["priority"] = priority
         expected["default_tester"] = None

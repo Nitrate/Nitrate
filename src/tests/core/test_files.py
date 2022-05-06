@@ -5,7 +5,7 @@ import shutil
 import tempfile
 from datetime import datetime
 from http import HTTPStatus
-from typing import Optional
+from typing import BinaryIO, Optional, Union
 from unittest.mock import patch
 
 from django.conf import settings
@@ -84,8 +84,8 @@ class TestUploadFile(BasePlanCase):
         to_plan: Optional[TestPlan] = None,
     ):
         with patch("tcms.core.files.settings.FILE_UPLOAD_DIR", new=self.working_dir):
-            with open(filename, "r") as upload_file:
-                post_data = {"upload_file": upload_file}
+            with open(filename, "rb") as upload_file:
+                post_data: dict[str, Union[BinaryIO, int]] = {"upload_file": upload_file}
                 if to_plan:
                     post_data["to_plan_id"] = to_plan.pk
                 elif to_case:

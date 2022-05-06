@@ -4,7 +4,7 @@ from collections.abc import Iterable
 from http import HTTPStatus
 from operator import itemgetter
 from textwrap import dedent
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, ClassVar, Dict, List, Optional, Union
 from unittest.mock import patch
 
 import pytest
@@ -35,6 +35,7 @@ from tcms.testruns.models import TestCaseRun, TestCaseRunStatus
 from tests import AuthMixin, BaseCaseRun, BasePlanCase, HelperAssertions
 from tests import factories as f
 from tests import remove_perm_from_user, user_should_have_perm
+from tests.conftest import BaseDataContext
 
 
 @pytest.mark.parametrize(
@@ -719,11 +720,13 @@ class TestModuleUpdateActions(AuthMixin, HelperAssertions, test.TestCase):
     """Test the core behavior of ModuleUpdateActions class"""
 
     auto_login = True
+    case: ClassVar[TestCase]
 
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.case = f.TestCaseFactory()
+        cls.dc = BaseDataContext()
+        cls.case = cls.dc.create_case()
         cls.perm = "testcases.change_testcase"
 
     def setUp(self):
