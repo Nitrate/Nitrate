@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from textwrap import dedent
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -100,27 +100,25 @@ class TestPlan(TCMSActionModel):
         return s.serialize_queryset()
 
     @classmethod
-    def search(cls, query=None):
+    def search(cls, query: Optional[dict[str, Any]] = None) -> QuerySet:
         """Search test plans"""
         from django.db.models import Q
 
-        new_query = {}
+        new_query: dict[str, Any] = {}
 
-        for k, v in query.items():
+        query_criteria = query or {}
+        for k, v in query_criteria.items():
             if v and k not in ["action", "t", "f", "a"]:
                 new_query[k] = hasattr(v, "strip") and v.strip() or v
 
-        # build a QuerySet:
-        q = cls.objects
-        # add any necessary filters to the query:
-
-        if new_query.get("search"):
-            q = q.filter(
-                Q(plan_id__icontains=new_query["search"]) | Q(name__icontains=new_query["search"])
+        filter_args: list[Q] = []
+        if search_keyword := new_query.get("search"):
+            filter_args.append(
+                Q(plan_id__icontains=search_keyword) | Q(name__icontains=search_keyword)
             )
             del new_query["search"]
 
-        return q.filter(**new_query).distinct()
+        return cls.objects.filter(*filter_args, **new_query).distinct()
 
     @classmethod
     def apply_subtotal(

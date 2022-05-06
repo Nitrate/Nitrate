@@ -239,80 +239,80 @@ class TestCase(TCMSActionModel):
         """List the cases with request"""
         from django.db.models import Q
 
-        if not plan:
-            q = cls.objects
-        else:
-            q = cls.objects.filter(plan=plan)
+        val: Any
+        filter_args: list[Q] = []
+        filter_kwargs: dict[str, Any] = {}
 
-        if query.get("case_id_set"):
-            q = q.filter(pk__in=query["case_id_set"])
+        if val := query.get("case_id_set"):
+            # q = q.filter(pk__in=val)
+            filter_kwargs["pk__in"] = val
 
-        if query.get("search"):
-            q = q.filter(
-                Q(pk__icontains=query["search"])
-                | Q(summary__icontains=query["search"])
-                | Q(author__email__startswith=query["search"])
+        if val := query.get("search"):
+            filter_args.append(
+                Q(pk__icontains=val) | Q(summary__icontains=val) | Q(author__email__startswith=val)
             )
 
-        if query.get("summary"):
-            q = q.filter(Q(summary__icontains=query["summary"]))
+        if val := query.get("summary"):
+            filter_args.append(Q(summary__icontains=val))
 
-        if query.get("author"):
-            q = q.filter(
-                Q(author__first_name__startswith=query["author"])
-                | Q(author__last_name__startswith=query["author"])
-                | Q(author__username__icontains=query["author"])
-                | Q(author__email__startswith=query["author"])
+        if val := query.get("author"):
+            filter_args.append(
+                Q(author__first_name__startswith=val)
+                | Q(author__last_name__startswith=val)
+                | Q(author__username__icontains=val)
+                | Q(author__email__startswith=val)
             )
 
-        if query.get("default_tester"):
-            q = q.filter(
-                Q(default_tester__first_name__startswith=query["default_tester"])
-                | Q(default_tester__last_name__startswith=query["default_tester"])
-                | Q(default_tester__username__icontains=query["default_tester"])
-                | Q(default_tester__email__startswith=query["default_tester"])
+        if val := query.get("default_tester"):
+            filter_args.append(
+                Q(default_tester__first_name__startswith=val)
+                | Q(default_tester__last_name__startswith=val)
+                | Q(default_tester__username__icontains=val)
+                | Q(default_tester__email__startswith=val)
             )
 
-        if query.get("tag__name__in"):
-            q = q.filter(tag__name__in=query["tag__name__in"])
+        if val := query.get("tag__name__in"):
+            filter_kwargs["tag__name__in"] = val
 
-        if query.get("category"):
-            q = q.filter(category__name=query["category"].name)
+        if val := query.get("category"):
+            filter_kwargs["category__name"] = val.name
 
-        if query.get("priority"):
-            q = q.filter(priority__in=query["priority"])
+        if val := query.get("priority"):
+            filter_kwargs["priority__in"] = val
 
-        if query.get("case_status"):
-            q = q.filter(case_status__in=query["case_status"])
+        if val := query.get("case_status"):
+            filter_kwargs["case_status__in"] = val
 
         # If plan exists, remove leading and trailing whitespace from it.
-        plan_str = query.get("plan", "").strip()
-        if plan_str:
+
+        if plan_str := query.get("plan", "").strip():
             try:
                 # Is it an integer?  If so treat as a plan_id:
-                plan_id = int(plan_str)
-                q = q.filter(plan__plan_id=plan_id)
+                filter_kwargs["plan__plan_id"] = int(plan_str)
             except ValueError:
                 # Not an integer - treat plan_str as a plan name:
-                q = q.filter(plan__name__icontains=plan_str)
+                filter_kwargs["plan__name__icontains"] = plan_str
         del plan_str
 
-        if query.get("product"):
-            q = q.filter(category__product=query["product"])
+        if val := query.get("product"):
+            filter_kwargs["category__product"] = val
 
-        if query.get("component"):
-            q = q.filter(component=query["component"])
+        if val := query.get("component"):
+            filter_kwargs["component"] = val
 
-        if query.get("issue_key"):
-            q = q.filter(issues__issue_key__in=query["issue_key"])
+        if val := query.get("issue_key"):
+            filter_kwargs["issues__issue_key__in"] = val
 
-        if query.get("is_automated"):
-            q = q.filter(is_automated=query["is_automated"])
+        if val := query.get("is_automated"):
+            filter_kwargs["is_automated"] = val
 
-        if query.get("is_automated_proposed"):
-            q = q.filter(is_automated_proposed=query["is_automated_proposed"])
+        if val := query.get("is_automated_proposed"):
+            filter_kwargs["is_automated_proposed"] = val
 
-        return q.distinct()
+        if plan is not None:
+            filter_kwargs["plan"] = plan
+
+        return cls.objects.filter(*filter_args, **filter_kwargs).distinct()
 
     @classmethod
     def list_confirmed(cls):

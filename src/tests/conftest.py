@@ -81,10 +81,14 @@ class BaseDataContext:
         )
         self.product_version = Version.objects.create(pk=2, value="4.5", product=self.product)
 
-        self.dev_build = TestBuild.objects.create(pk=2, name="dev_build", product=self.product)
-        self.alpha_build = TestBuild.objects.create(pk=3, name="alpha_build", product=self.product)
+        self.dev_build = TestBuild.objects.create(
+            pk=2, name="dev_build", milestone="dev", product=self.product
+        )
+        self.alpha_build = TestBuild.objects.create(
+            pk=3, name="alpha_build", milestone="alpha", product=self.product
+        )
         self.candidate_build = TestBuild.objects.create(
-            pk=4, name="candidate_build", product=self.product
+            pk=4, name="candidate_build", milestone="CR", product=self.product
         )
 
         self.p1, _ = Priority.objects.get_or_create(value="P1")

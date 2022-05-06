@@ -3,9 +3,11 @@
 from http import HTTPStatus
 from unittest.mock import patch
 
+import pytest
 from django import test
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
+from django.db.models import Max
 from django.test import TestCase
 from django.test.client import Client
 from django.urls import reverse
@@ -13,12 +15,14 @@ from pytest_django.asserts import assertContains
 
 from tcms.logs.models import TCMSLogModel
 from tcms.management.models import (
+    Classification,
     Component,
     Product,
     TCMSEnvGroup,
     TCMSEnvGroupPropertyMap,
     TCMSEnvProperty,
     TCMSEnvValue,
+    TestBuild,
     Version,
 )
 from tcms.testplans.models import TestPlan, _disconnect_signals, _listen
@@ -1018,3 +1022,61 @@ def test_component_admin_changelist(tester, base_data, client):
     assertContains(response, "db")
     assertContains(response, "web")
     assertContains(response, "docs")
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "criteria,expected",
+    [
+        [{"build_id": "nonexisting"}, []],
+        # by name
+        [{"name": "build_3"}, ["build_3"]],
+        [{"name": "xxx"}, []],
+        [
+            {"name": ""},
+            ["build_1", "build_2", "build_3", "unspecified", "unspecified"],
+        ],
+        # by milestone
+        [{"milestone": "milestone2"}, ["build_2"]],
+        [{"milestone": "xxx"}, []],
+        [
+            {"milestone": ""},
+            ["build_1", "build_2", "build_3", "unspecified", "unspecified"],
+        ],
+        # by is_active
+        [{"is_active": True}, ["build_1", "build_3", "unspecified", "unspecified"]],
+        [
+            # Is this behavior a bug?
+            {"is_active": False},
+            ["build_1", "build_2", "build_3", "unspecified", "unspecified"],
+        ],
+        # by product
+        [{"product": 1}, ["build_1", "build_2", "unspecified"]],
+        [
+            {"product_ids": [1, 2]},
+            ["build_1", "build_2", "build_3", "unspecified", "unspecified"],
+        ],
+        # combined criteria
+        [{"product": 1, "name": "build_2"}, ["build_2"]],
+    ],
+)
+def test_search_test_builds(criteria, expected):
+    classification = Classification.objects.create(name="webapp")
+    product_1 = Product.objects.create(pk=1, name="prod 1", classification=classification)
+    product_2 = Product.objects.create(pk=2, name="prod 2", classification=classification)
+
+    builds_data = [
+        ("build_1", "milestone1", True, product_1),
+        ("build_2", "milestone2", False, product_1),
+        ("build_3", "", True, product_2),
+    ]
+
+    for name, milestone, status, product in builds_data:
+        TestBuild.objects.create(name=name, is_active=status, milestone=milestone, product=product)
+
+    if criteria == {"build_id": "nonexisting"}:
+        result = TestBuild.objects.aggregate(max_pk=Max("pk"))
+        criteria = {"build_id": result["max_pk"] + 1}
+
+    found = TestBuild.search(criteria)
+    assert sorted(expected) == sorted(tb.name for tb in found)

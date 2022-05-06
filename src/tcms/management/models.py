@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os.path
+from typing import Any
 
 from django.conf import settings
 from django.core.cache import cache
@@ -251,24 +252,24 @@ class TestBuild(TCMSActionModel):
 
     @classmethod
     def search(cls, query):
-        q = cls.objects
+        val: Any
+        criteria: dict[str, Any] = {}
 
-        if query.get("build_id"):
-            q = q.filter(build_id=query["build_id"])
-        if query.get("name"):
-            q = q.filter(name=query["name"])
-        if query.get("product"):
-            q = q.filter(product=query["product"])
-        if query.get("milestone"):
-            q = q.filter(milestone=query["milestone"])
-        if query.get("is_active"):
-            q = q.filter(is_active=query["is_active"])
+        if val := query.get("build_id"):
+            criteria["build_id"] = val
+        if val := query.get("name"):
+            criteria["name"] = val
+        if val := query.get("product"):
+            criteria["product"] = val
+        if val := query.get("milestone"):
+            criteria["milestone"] = val
+        if val := query.get("is_active"):
+            criteria["is_active"] = val
 
-        product_ids = query.get("product_ids")
-        if product_ids is not None:
-            q = q.filter(product__in=product_ids)
+        if (val := query.get("product_ids")) is not None:
+            criteria["product__in"] = val
 
-        return q.all()
+        return cls.objects.filter(**criteria)
 
     @classmethod
     def list_active(cls, query={}):
