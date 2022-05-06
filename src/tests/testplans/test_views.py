@@ -7,7 +7,7 @@ import urllib
 import xml.etree.ElementTree as et
 from http import HTTPStatus
 from textwrap import dedent
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 from unittest.mock import Mock
 
 import pytest
@@ -1219,7 +1219,7 @@ class TestEnableDisablePlanViews(AuthMixin, HelperAssertions, test.TestCase):
 def test_plan_get(plan_id: int, slug: Optional[str], base_data, client):
     plan = base_data.create_plan(pk=1, name="plan 1")
 
-    urlconf_args = [plan_id]
+    urlconf_args: list[Union[int, str]] = [plan_id]
     if slug is not None:
         urlconf_args.append(slug)
 
@@ -1269,7 +1269,7 @@ def test_update_plan_email_settings(
     )
     update_plan_email_settings(plan, form)
 
-    plan: TestPlan = TestPlan.objects.get(pk=1)
+    plan = TestPlan.objects.get(pk=1)
 
     for var_name, var_value in locals().items():
         if var_name.startswith("notify_on_") or var_name.startswith("auto_to_"):
@@ -1333,10 +1333,10 @@ def test_get_create_new_plan_page(logged_in_tester, client):
 
 
 @pytest.mark.parametrize("extra_link", [None, "https://srv1.example.com/"])
-@pytest.mark.parametrize("env_group", [None, 1])
+@pytest.mark.parametrize("with_env_group", [None, 1])
 def test_creat_a_new_plan(
     extra_link: Optional[str],
-    env_group: Optional[int],
+    with_env_group: Optional[int],
     logged_in_tester,
     base_data,
     client,
@@ -1355,13 +1355,14 @@ def test_creat_a_new_plan(
     }
     if extra_link is not None:
         data["extra_link"] = extra_link
-    if env_group is not None:
+    if with_env_group is not None:
         data["env_group"] = env_group.pk
     response = client.post(reverse("plans-new"), data=data)
 
     assert HTTPStatus.FOUND == response.status_code
 
     new_plan: Optional[TestPlan] = TestPlan.objects.order_by("-pk").first()
+    assert new_plan is not None
     assert reverse("plan-get", args=[new_plan.pk]) == response.url
 
     assert "A new plan" == new_plan.name
@@ -1369,10 +1370,13 @@ def test_creat_a_new_plan(
     assert base_data.product_version == new_plan.product_version
     assert base_data.plan_type_smoke == new_plan.type
     assert new_plan.text_exist()
-    assert "" == new_plan.text.first().plan_text
     assert logged_in_tester == new_plan.author
     assert logged_in_tester == new_plan.owner
     assert new_plan.parent is None
+
+    plan_text = new_plan.text.first()
+    assert plan_text is not None
+    assert "" == plan_text.plan_text
 
     if extra_link is None:
         assert "" == new_plan.extra_link
@@ -1380,7 +1384,7 @@ def test_creat_a_new_plan(
         assert extra_link == new_plan.extra_link
 
     has = TCMSEnvPlanMap.objects.filter(plan=new_plan, group=env_group).exists()
-    if env_group is None:
+    if with_env_group is None:
         assert not has
     else:
         assert has

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from typing import ClassVar
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
@@ -16,7 +17,7 @@ class TestUserSerializer(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.user = f.UserFactory()
+        cls.user = User.objects.create(username="user1", email="user1@example.com")
         cls.http_req = make_http_request(user=cls.user)
 
     def test_ensure_password_not_returned(self):
@@ -81,7 +82,7 @@ class TestUserGet(XmlrpcAPIBaseTest):
 
     @classmethod
     def setUpTestData(cls):
-        cls.user = f.UserFactory()
+        cls.user = User.objects.create(username="user", email="user@example.com")
         cls.http_req = make_http_request(user=cls.user)
 
     def test_get(self):
@@ -145,6 +146,9 @@ class TestUserJoin(XmlrpcAPIBaseTest):
 class TestUserUpdate(XmlrpcAPIBaseTest):
     """Test User.update"""
 
+    user: ClassVar[User]
+    user_with_perm: ClassVar[User]
+
     @classmethod
     def setUpTestData(cls):
         cls.user = User.objects.create(username="bob", email="bob@example.com")
@@ -158,7 +162,8 @@ class TestUserUpdate(XmlrpcAPIBaseTest):
 
         cls.another_user = f.UserFactory()
 
-        cls.user_new_attrs = {
+    def setUp(self) -> None:
+        self.user_new_attrs = {
             "first_name": "new first name",
             "last_name": "new last name",
             "email": "new email",
@@ -194,24 +199,22 @@ class TestUserUpdate(XmlrpcAPIBaseTest):
         self.assertEqual(data["email"], user.email)
 
     def test_update_user_own_password_with_perm_set(self) -> None:
-        user_new_attrs = self.user_new_attrs.copy()
         new_password = "new password"
-        user_new_attrs["password"] = new_password
+        self.user_new_attrs["password"] = new_password
 
         request = make_http_request(user=self.user_with_perm)
-        XUser.update(request, user_new_attrs)
+        XUser.update(request, self.user_new_attrs)
 
         user: User = User.objects.get(pk=request.user.pk)
         self.assertTrue(user.check_password(new_password))
 
     def test_update_user_own_password_without_perm_set(self) -> None:
-        user_new_attrs = self.user_new_attrs.copy()
         new_password = "new password"
-        user_new_attrs["password"] = new_password
-        user_new_attrs["old_password"] = self.user.username
+        self.user_new_attrs["password"] = new_password
+        self.user_new_attrs["old_password"] = self.user.username
 
         request = make_http_request(user=self.user)
-        XUser.update(request, user_new_attrs)
+        XUser.update(request, self.user_new_attrs)
 
         user: User = User.objects.get(pk=request.user.pk)
         self.assertTrue(user.check_password(new_password))
@@ -232,7 +235,7 @@ class TestGetUserDict(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.tester = f.UserFactory(username="tester")
+        cls.tester = User.objects.create(username="tester", email="tester@example.com")
         cls.tester.set_password("security password")
         cls.tester.save()
 

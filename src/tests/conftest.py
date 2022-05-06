@@ -1,6 +1,6 @@
 import itertools
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Optional
 
 import pytest
 from django.contrib.auth.models import User
@@ -35,7 +35,7 @@ def base_data(tester):
 
 @dataclass
 class BaseDataContext:
-    tester: User = field(repr=False, compare=False)
+    tester: Optional[User] = field(repr=False, compare=False, default=None)
 
     classification: Classification = field(init=False, repr=False, compare=False)
     product: Product = field(init=False, repr=False, compare=False)
@@ -71,6 +71,9 @@ class BaseDataContext:
         self._plan_counter = itertools.count(1)
         self._case_counter = itertools.count(1)
         self._run_counter = itertools.count(1)
+
+        if self.tester is None:
+            self.tester = User.objects.create(username="tester", email="tester@example.com")
 
         self.classification = Classification.objects.create(name="webapp")
         self.product = Product.objects.create(

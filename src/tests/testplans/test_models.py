@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+from contextlib import AbstractContextManager
 from textwrap import dedent
-from typing import Dict, List, Optional, Tuple, Union
+from typing import List, Optional, Type, Union
 
 import pytest
 from _pytest.python_api import RaisesContext
@@ -435,12 +436,14 @@ def test_plan_apply_subtotal(
     run_2 = base_data.create_test_run(pk=2, summary="run 2", plan=plan_4)
     run_2.add_case_run(case_8)
 
+    plans: QuerySet
+
     if test_empty_queryset:
-        plans: QuerySet[TestPlan] = TestPlan.apply_subtotal(TestPlan.objects.none())
+        plans = TestPlan.apply_subtotal(TestPlan.objects.none())
         assert [] == list(plans)
         return
 
-    plans: QuerySet[TestPlan] = TestPlan.apply_subtotal(
+    plans = TestPlan.apply_subtotal(
         TestPlan.objects.filter(pk__in=[1, 4]),
         cases_count=include_cases_count,
         runs_count=include_runs_count,
@@ -502,9 +505,11 @@ def test_plan_add_text(
 ):
     plan = base_data.create_plan(pk=1, name="plan 1")
 
-    existing_plan_text: Union[TestPlanText, None] = None
     if has_text_already:
         existing_plan_text = plan.add_text(tester, "old text")
+    else:
+        # No use, just a placeholder to make mypy happy.
+        existing_plan_text = TestPlanText(plan=plan)
 
     added_text = plan.add_text(
         tester, text, text_checksum=text_checksum, plan_text_version=text_version
@@ -547,8 +552,8 @@ def test_plan_add_text(
 def test_plan_add_case(
     plan_id: int,
     case_id_to_add: int,
-    sort_key: Union[int, None],
-    expected: List[Tuple[int, int]],
+    sort_key: Optional[int],
+    expected: list[tuple[int, Optional[int]]],
     base_data,
 ):
     """Test TestPlan.add_case"""
@@ -564,13 +569,10 @@ def test_plan_add_case(
         sortkey=sort_key,
     )
 
-    rel: Dict[str, int]
-    result: List[Tuple[int, int]] = [
-        (rel["case"], rel["sortkey"])
-        for rel in TestCasePlan.objects.filter(plan_id=plan_id)
-        .values("case", "sortkey")
-        .order_by("case")
-    ]
+    plan_case_rels = (
+        TestCasePlan.objects.filter(plan_id=plan_id).values("case", "sortkey").order_by("case")
+    )
+    result = [(rel["case"], rel["sortkey"]) for rel in plan_case_rels]
     assert expected == result
 
 
@@ -609,7 +611,7 @@ def test_plan_get_case_sortkey(
 )
 def test_plan_add_component(
     component_name_to_add: Union[str, None],
-    expected: Union[bool, TestPlanComponent],
+    expected: Union[bool, Type[TestPlanComponent]],
     base_data,
 ):
     plan = base_data.create_plan(name="plan 1")
@@ -625,7 +627,7 @@ def test_plan_add_component(
 
     rel: Union[TestPlanComponent, bool] = plan.add_component(component_to_add)
 
-    if type(expected) == bool:
+    if isinstance(expected, bool):
         assert expected == rel
     else:
         assert isinstance(rel, expected)
@@ -778,6 +780,8 @@ def test_plan_clone(
         case_2.add_component(Component.objects.create(name="db", product=base_data.product))
         case_2.add_component(Component.objects.create(name="docs", product=base_data.product))
 
+    expected_error: AbstractContextManager
+
     if not copy_texts and not text_author:
         expected_error = pytest.raises(ValueError, match="Missing default text author")
     elif copy_cases and not component_initial_owner:
@@ -858,14 +862,12 @@ def test_plan_clone(
             copied_case: TestCase
             orig_case, copied_case = list(qs)
 
-            new_rel: TestCasePlan = TestCasePlan.objects.filter(
-                plan=cloned_plan, case=copied_case
-            ).first()
+            new_rel: TestCasePlan = TestCasePlan.objects.get(plan=cloned_plan, case=copied_case)
             assert (
                 new_rel is not None
             ), f"Copied case {copied_case.pk} is not associated with plan {plan.pk}"
 
-            orig_rel: TestCasePlan = TestCasePlan.objects.filter(plan=plan, case=orig_case).first()
+            orig_rel: TestCasePlan = TestCasePlan.objects.get(plan=plan, case=orig_case)
             assert new_rel.sortkey == orig_rel.sortkey
 
             tag: TestTag

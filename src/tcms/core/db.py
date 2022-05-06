@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from collections.abc import Iterator
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union
 
 from tcms.core.tcms_router import connection
 
@@ -129,7 +129,9 @@ class GroupByResult:
     """
 
     def __init__(
-        self, data: Optional[Iterator[tuple[Any, Any]]] = None, total_name: Optional[str] = None
+        self,
+        data: Optional[Iterable[tuple[Union[int, str], Union[int, "GroupByResult"]]]] = None,
+        total_name: Optional[str] = None,
     ):
         self._total_name = total_name
         self._data: Dict[Any, Any] = {} if data is None else dict(data)

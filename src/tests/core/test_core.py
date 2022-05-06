@@ -4,7 +4,7 @@ import smtplib
 import sys
 import unittest
 from datetime import timedelta
-from typing import Dict, Union
+from typing import Optional, Type, Union
 from unittest.mock import Mock, patch
 
 import pytest
@@ -156,7 +156,7 @@ def test_clean_request(query_args, keys, expected):
         ["-20h30m", ValueError],
     ],
 )
-def test_timedelta2int(timedelta, expected: Union[int, Exception]):
+def test_timedelta2int(timedelta, expected: Union[int, Type[Exception]]):
     if isinstance(expected, int):
         assert expected == timedelta2int(timedelta)
     else:
@@ -231,11 +231,11 @@ class GroupByResultDictLikeTest(unittest.TestCase):
             self.groupby_result["unknown_key"]
 
     def test___str__(self):
-        gbr = GroupByResult({"idle": 100})
+        gbr = GroupByResult([("idle", 100)])
         self.assertEqual(str(gbr._data), str(gbr))
 
     def test___repr__(self):
-        gbr = GroupByResult({"idle": 100})
+        gbr = GroupByResult([("idle", 100)])
         self.assertEqual(repr(gbr._data), repr(gbr))
 
 
@@ -249,24 +249,24 @@ class GroupByResultCalculationTest(unittest.TestCase):
         self.assertEqual(200, result.total)
 
     def test_get_total_after_add_data_based_on_initial_data(self):
-        result = GroupByResult({"FAILED": 20})
+        result = GroupByResult([("FAILED", 20)])
         result["RUNNING"] = 100
         result["PASSED"] = 100
         self.assertEqual(220, result.total)
 
     def test_total_is_updated_after_del_item(self):
-        result = GroupByResult({"FAILED": 20, "RUNNING": 20, "PASSED": 10})
+        result = GroupByResult([("FAILED", 20), ("RUNNING", 20), ("PASSED", 10)])
         del result["RUNNING"]
         self.assertEqual(30, result.total)
 
     def test_total_is_updated_after_del_item_several_times(self):
-        result = GroupByResult({"FAILED": 20, "RUNNING": 20, "PASSED": 10})
+        result = GroupByResult([("FAILED", 20), ("RUNNING", 20), ("PASSED", 10)])
         del result["RUNNING"]
         del result["FAILED"]
         self.assertEqual(10, result.total)
 
     def test_arithmetic_operation(self):
-        result = GroupByResult({"IDLE": 1, "RUNNING": 1, "FAILED": 2})
+        result = GroupByResult([("IDLE", 1), ("RUNNING", 1), ("FAILED", 2)])
         result["IDLE"] += 1
         result["RUNNING"] += 100
         result["FAILED"] -= 2
@@ -279,47 +279,49 @@ class GroupByResultCalculationTest(unittest.TestCase):
     "initial_data,total_name,expected",
     [
         [None, None, 0],
-        [{}, None, 0],
-        [{"python": 10}, None, 10],
-        [{"python": 10, "rust": 20}, None, 30],
-        [{"python": 10, "rust": 20, "total_count": 30}, "total_count", 30],
+        [[], None, 0],
+        [[("python", 10)], None, 10],
+        [[("python", 10), ("rust", 20)], None, 30],
+        [[("python", 10), ("rust", 20), ("total_count", 30)], "total_count", 30],
         # side-effect: the given total count is not same as the actual total
-        [{"python": 10, "rust": 20, "total_count": 50}, "total_count", 50],
+        [[("python", 10), ("rust", 20), ("total_count", 50)], "total_count", 50],
         # Nested groupby results
         [
-            {
-                1: GroupByResult({"python": 10, "rust": 20}),
-                2: GroupByResult({"go": 6, "perl": 9, "julia": 100}),
-                3: GroupByResult({"fedora": 34}),
-            },
+            [
+                (1, GroupByResult([("python", 10), ("rust", 20)])),
+                (2, GroupByResult([("go", 6), ("perl", 9), ("julia", 100)])),
+                (3, GroupByResult([("fedora", 34)])),
+            ],
             None,
             179,
         ],
         # side-effect: no information about if mixed int and GroupByResult
         # values are by design or not.
         [
-            {
-                "lang": GroupByResult({"python": 10, "rust": 20}),
-                "os": GroupByResult({"fedora": 34}),
-                "linux": 3,
-            },
+            [
+                ("lang", GroupByResult([("python", 10), ("rust", 20)])),
+                ("os", GroupByResult([("fedora", 34)])),
+                ("linux", 3),
+            ],
             None,
             67,
         ],
         # Incorrect value type
         [
-            {
-                "lang": GroupByResult({"python": 10, "rust": 20}),
-                "os": GroupByResult({"fedora": 34}),
-                "count": "300",
-            },
+            [
+                ("lang", GroupByResult([("python", 10), ("rust", 20)])),
+                ("os", GroupByResult([("fedora", 34)])),
+                ("count", "300"),
+            ],
             None,
             TypeError,
         ],
     ],
 )
 def test_groupbyresult_total_property(
-    initial_data: Dict[str, int], total_name: Union[str, None], expected: int
+    initial_data: Optional[list[tuple[str, Union[int, GroupByResult]]]],
+    total_name: Optional[str],
+    expected: Union[int, Type[Exception]],
 ):
     if isinstance(expected, int):
         assert expected == GroupByResult(initial_data, total_name=total_name).total
@@ -332,136 +334,145 @@ def test_groupbyresult_total_property(
     "initial_data,total_name,expected",
     [
         [None, None, 0.0],
-        [{}, None, 0.0],
-        [{"rust": 10}, None, 0.0],
-        [{"python": 10}, None, 100.0],
-        [{"python": 0, "rust": 0}, None, 0.0],
-        [{"python": 10, "rust": 40}, None, 20.0],
-        [{"python": 10, "rust": 20}, None, 33.3],
-        [{"Python": 10, "rust": 20}, None, 0.0],
-        [{"python": 10, "rust": 30, "total_polls": 40}, "total_polls", 25.0],
+        [[], None, 0.0],
+        [[("rust", 10)], None, 0.0],
+        [[("python", 10)], None, 100.0],
+        [[("python", 0), ("rust", 0)], None, 0.0],
+        [[("python", 10), ("rust", 40)], None, 20.0],
+        [[("python", 10), ("rust", 20)], None, 33.3],
+        [[("Python", 10), ("rust", 20)], None, 0.0],
+        [[("python", 10), ("rust", 30), ("total_polls", 40)], "total_polls", 25.0],
         # inconsistent total_name is passed
-        [{"python": 10, "rust": 30, "total_polls": 40}, "total", KeyError],
-        # side-effect: total is not correct, but still calculate
-        [{"python": 10, "rust": 30, "total_polls": 100}, "total_polls", 10.0],
+        [[("python", 10), ("rust", 30), ("total_polls", 40)], "total", KeyError],
+        # side-effect, total is not correct, but still calculate
+        [[("python", 10), ("rust", 30), ("total_polls", 100)], "total_polls", 10.0],
     ],
 )
 def test_groupbyresult_percent_property(
-    initial_data: Dict[str, int], total_name: Union[str, None], expected: Union[float, KeyError]
+    initial_data: Union[None, list[tuple[str, int]]],
+    total_name: Optional[str],
+    expected: Union[float, Type[Exception]],
 ):
     if isinstance(expected, float):
         assert expected == GroupByResult(initial_data, total_name=total_name).python_percent
     else:
         with pytest.raises(expected, match="Unknown key total"):
-            GroupByResult(initial_data, total_name=total_name).python_percent
+            GroupByResult(initial_data, total_name=total_name).python_percent  # noqa
 
 
 class GroupByResultLevelTest(unittest.TestCase):
     def setUp(self):
         self.levels_groupby_result = GroupByResult(
-            {
-                "build_1": GroupByResult(
-                    {
-                        "plan_1": GroupByResult(
-                            {
-                                "run_1": GroupByResult(
-                                    {
-                                        "passed": 1,
-                                        "failed": 2,
-                                        "error": 3,
-                                    }
+            [
+                (
+                    "build_1",
+                    GroupByResult(
+                        [
+                            (
+                                "plan_1",
+                                GroupByResult(
+                                    [
+                                        (
+                                            "run_1",
+                                            GroupByResult(
+                                                [("passed", 1), ("failed", 2), ("error", 3)]
+                                            ),
+                                        ),
+                                        (
+                                            "run_2",
+                                            GroupByResult(
+                                                [("passed", 1), ("failed", 2), ("error", 3)]
+                                            ),
+                                        ),
+                                        (
+                                            "run_3",
+                                            GroupByResult(
+                                                [("passed", 1), ("failed", 2), ("error", 3)]
+                                            ),
+                                        ),
+                                    ],
                                 ),
-                                "run_2": GroupByResult(
-                                    {
-                                        "passed": 1,
-                                        "failed": 2,
-                                        "error": 3,
-                                    }
+                            ),
+                            (
+                                "plan_2",
+                                GroupByResult(
+                                    [
+                                        (
+                                            "run_1",
+                                            GroupByResult(
+                                                [("passed", 1), ("failed", 2), ("error", 3)]
+                                            ),
+                                        ),
+                                        (
+                                            "run_2",
+                                            GroupByResult(
+                                                [("passed", 1), ("failed", 2), ("error", 3)]
+                                            ),
+                                        ),
+                                    ],
                                 ),
-                                "run_3": GroupByResult(
-                                    {
-                                        "passed": 1,
-                                        "failed": 2,
-                                        "error": 3,
-                                    }
-                                ),
-                            }
-                        ),
-                        "plan_2": GroupByResult(
-                            {
-                                "run_1": GroupByResult(
-                                    {
-                                        "passed": 1,
-                                        "failed": 2,
-                                        "error": 3,
-                                    }
-                                ),
-                                "run_2": GroupByResult(
-                                    {
-                                        "passed": 1,
-                                        "failed": 2,
-                                        "error": 3,
-                                    }
-                                ),
-                            }
-                        ),
-                    }
+                            ),
+                        ],
+                    ),
                 ),
-                "build_2": GroupByResult(
-                    {
-                        "plan_1": GroupByResult(
-                            {
-                                "run_1": GroupByResult(
-                                    {
-                                        "passed": 1,
-                                        "failed": 2,
-                                        "error": 3,
-                                    }
+                (
+                    "build_2",
+                    GroupByResult(
+                        [
+                            (
+                                "plan_1",
+                                GroupByResult(
+                                    [
+                                        (
+                                            "run_1",
+                                            GroupByResult(
+                                                [("passed", 1), ("failed", 2), ("error", 3)]
+                                            ),
+                                        ),
+                                        (
+                                            "run_4",
+                                            GroupByResult(
+                                                [("paused", 2), ("failed", 2), ("waived", 6)]
+                                            ),
+                                        ),
+                                        (
+                                            "run_5",
+                                            GroupByResult(
+                                                [("paused", 1), ("failed", 2), ("waived", 3)]
+                                            ),
+                                        ),
+                                    ],
                                 ),
-                                "run_4": GroupByResult(
-                                    {
-                                        "paused": 2,
-                                        "failed": 2,
-                                        "waived": 6,
-                                    }
+                            ),
+                            (
+                                "plan_2",
+                                GroupByResult(
+                                    [
+                                        (
+                                            "run_1",
+                                            GroupByResult(
+                                                [("passed", 1), ("failed", 2), ("error", 3)]
+                                            ),
+                                        ),
+                                        (
+                                            "run_4",
+                                            GroupByResult(
+                                                [("paused", 2), ("failed", 2), ("waived", 6)]
+                                            ),
+                                        ),
+                                        (
+                                            "run_5",
+                                            GroupByResult(
+                                                [("paused", 1), ("failed", 2), ("waived", 3)]
+                                            ),
+                                        ),
+                                    ],
                                 ),
-                                "run_5": GroupByResult(
-                                    {
-                                        "paused": 1,
-                                        "failed": 2,
-                                        "waived": 3,
-                                    }
-                                ),
-                            }
-                        ),
-                        "plan_2": GroupByResult(
-                            {
-                                "run_1": GroupByResult(
-                                    {
-                                        "passed": 1,
-                                        "failed": 2,
-                                        "error": 3,
-                                    }
-                                ),
-                                "run_4": GroupByResult(
-                                    {
-                                        "paused": 2,
-                                        "failed": 2,
-                                        "waived": 6,
-                                    }
-                                ),
-                                "run_5": GroupByResult(
-                                    {
-                                        "paused": 1,
-                                        "failed": 2,
-                                        "waived": 3,
-                                    }
-                                ),
-                            }
-                        ),
-                    }
+                            ),
+                        ],
+                    ),
                 ),
-            }
+            ],
         )
 
     def test_value_leaf_count(self):

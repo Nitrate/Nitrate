@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import pytest
-from django.db.models import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist
 
 import tcms.xmlrpc.utils as U
 from tcms.management.models import Classification, Product

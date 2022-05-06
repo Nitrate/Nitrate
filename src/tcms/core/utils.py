@@ -275,7 +275,7 @@ def format_timedelta(timedelta: datetime.timedelta):
     return timedelta_str if timedelta_str else "0m"
 
 
-def timedelta2int(timedelta_s: Union[str, None]) -> int:
+def timedelta2int(timedelta_s: Optional[str]) -> int:
     """Convert timedelta to seconds
 
     :param str timedelta_s: a timedelta string consisting of time parts with
