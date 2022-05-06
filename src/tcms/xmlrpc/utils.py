@@ -2,7 +2,7 @@
 
 import re
 import warnings
-from typing import Any, Dict
+from typing import Any
 
 from django.core.exceptions import FieldDoesNotExist
 from django.db.models import Count
@@ -183,7 +183,7 @@ def pre_process_estimated_time(value):
         raise ValueError("Invaild estimated_time format.")
 
 
-def deprecate_critetion_attachment(query: Dict[str, Any]):
+def deprecate_critetion_attachment(query: dict[str, Any]):
     """Deprecate filter criterion attachment
 
     If there is a filter criterion on the attachments relationship but it

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from functools import partial
-from typing import Callable, List, Optional, TypeVar
+from typing import Callable, Optional, TypeVar
 
 from django import forms
 from django.http import QueryDict
@@ -38,7 +38,7 @@ ChoiceT = TypeVar("ChoiceT")
 
 def get_choice(
     value: str, _type: Optional[Callable[[str], ChoiceT]] = None, deli: str = ","
-) -> List[ChoiceT]:
+) -> list[ChoiceT]:
     """
     Used to clean a form field where multiple choices are seperated using a
     delimiter such as comma. Removing the empty value.
@@ -73,16 +73,16 @@ class PlanForm(forms.Form):
     def clean_pl_active(self) -> Optional[bool]:
         return get_boolean_choice(self.cleaned_data["pl_active"])
 
-    def clean_pl_id(self) -> List[int]:
+    def clean_pl_id(self) -> list[int]:
         return get_choice(self.cleaned_data["pl_id"], _type=int)
 
-    def clean_pl_tags(self) -> List[str]:
+    def clean_pl_tags(self) -> list[str]:
         return get_choice(self.cleaned_data["pl_tags"])
 
-    def clean_pl_authors(self) -> List[str]:
+    def clean_pl_authors(self) -> list[str]:
         return get_choice(self.cleaned_data["pl_authors"])
 
-    def clean_pl_owners(self) -> List[str]:
+    def clean_pl_owners(self) -> list[str]:
         return get_choice(self.cleaned_data["pl_owners"])
 
     def populate(self, data: QueryDict):
@@ -181,19 +181,19 @@ class RunForm(forms.Form):
     def clean_r_running(self) -> Optional[bool]:
         return get_boolean_choice(self.cleaned_data["r_running"])
 
-    def clean_r_id(self) -> List[int]:
+    def clean_r_id(self) -> list[int]:
         return get_choice(self.cleaned_data["r_id"], _type=int)
 
-    def clean_r_tags(self) -> List[str]:
+    def clean_r_tags(self) -> list[str]:
         return get_choice(self.cleaned_data["r_tags"])
 
-    def clean_r_tester(self) -> List[str]:
+    def clean_r_tester(self) -> list[str]:
         return get_choice(self.cleaned_data["r_tester"])
 
-    def clean_r_real_tester(self) -> List[str]:
+    def clean_r_real_tester(self) -> list[str]:
         return get_choice(self.cleaned_data["r_real_tester"])
 
-    def clean_r_manager(self) -> List[str]:
+    def clean_r_manager(self) -> list[str]:
         return get_choice(self.cleaned_data["r_manager"])
 
     def populate(self, data: QueryDict):

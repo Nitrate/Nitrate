@@ -7,7 +7,7 @@ import urllib
 import xml.etree.ElementTree as et
 from http import HTTPStatus
 from textwrap import dedent
-from typing import Dict, List, Optional, Union
+from typing import Optional, Union
 from unittest.mock import Mock
 
 import pytest
@@ -1277,7 +1277,7 @@ def test_update_plan_email_settings(
 
 
 @pytest.mark.parametrize("query_args", [None, {"plan": [1]}, {"plan": [1, 2]}])
-def test_plan_printable_page(query_args: Optional[Dict[str, List[int]]], client, base_data):
+def test_plan_printable_page(query_args: Optional[dict[str, list[int]]], client, base_data):
     plan = base_data.create_plan(pk=1, name="plan 1")
     case_1 = base_data.create_case(pk=1, summary="case 1")
     plan.add_case(case_1)

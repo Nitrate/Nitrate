@@ -1,5 +1,5 @@
 import operator
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Optional, Union
 
 import pytest
 
@@ -38,8 +38,8 @@ from tests import factories as f
 def test_execute_sql(
     with_field_name: bool,
     sql: str,
-    params: Optional[Tuple[str]],
-    expected_result: Union[List[Dict[str, str]], Tuple[str]],
+    params: Optional[tuple[str]],
+    expected_result: Union[list[dict[str, str]], tuple[str]],
     expected_scalar: str,
 ):
     """Test SQLExecution"""
@@ -103,10 +103,10 @@ def test_execute_sql(
 @pytest.mark.django_db()
 def test_get_groupby_result(
     sql: str,
-    params: List[Union[int, str]],
+    params: list[Union[int, str]],
     key_name: Union[str, None],
     value_name: Optional[str],
-    expected_result: Tuple[int, int, int, int],
+    expected_result: tuple[int, int, int, int],
     django_user_model,
 ):
     p1 = Priority.objects.get(value="P1")

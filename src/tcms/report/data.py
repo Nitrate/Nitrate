@@ -3,7 +3,7 @@
 from collections import namedtuple
 from itertools import chain
 from operator import attrgetter, itemgetter
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from django.contrib.auth.models import User
 from django.db.models import Count
@@ -57,7 +57,7 @@ def overview_view_get_running_runs_count(product_id) -> GroupByResult:
 
 
 def subtotal_test_runs(
-    filter_: Optional[Dict[str, Any]] = None, by: Optional[str] = None
+    filter_: Optional[dict[str, Any]] = None, by: Optional[str] = None
 ) -> GroupByResult:
     group_by = by or "pk"
     if filter_:
@@ -73,7 +73,7 @@ def subtotal_test_runs(
 
 
 def subtotal_case_runs(
-    filter_: Optional[Dict[str, Any]] = None, by: Optional[str] = None
+    filter_: Optional[dict[str, Any]] = None, by: Optional[str] = None
 ) -> GroupByResult:
     group_by = by or "case_run_status"
     if filter_:
@@ -89,7 +89,7 @@ def subtotal_case_runs(
 
 
 def subtotal_case_run_status(
-    filter_: Optional[Dict[str, Any]] = None, by: Optional[str] = None
+    filter_: Optional[dict[str, Any]] = None, by: Optional[str] = None
 ) -> GroupByResult:
     group_by = by or "name"
     if filter_:
@@ -105,7 +105,7 @@ def subtotal_case_run_status(
 
 
 def subtotal_plans(
-    filter_: Optional[Dict[str, Any]] = None, by: Optional[str] = None
+    filter_: Optional[dict[str, Any]] = None, by: Optional[str] = None
 ) -> GroupByResult:
     group_by = by or "product"
     if filter_:
@@ -121,7 +121,7 @@ def subtotal_plans(
 
 
 def subtotal_cases(
-    filter_: Optional[Dict[str, Any]] = None, by: Optional[str] = None
+    filter_: Optional[dict[str, Any]] = None, by: Optional[str] = None
 ) -> GroupByResult:
     group_by = by or "plan"
     if filter_:

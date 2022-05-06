@@ -6,7 +6,7 @@ Advance search implementations
 import json
 import time
 from collections import namedtuple
-from typing import Any, List, Union
+from typing import Any, Union
 from urllib.parse import parse_qsl, urlencode, urlparse
 
 from django.db.models.query import QuerySet
@@ -264,7 +264,7 @@ def sum_orm_queries(
     raise ValueError(f"Unknown search target: {target}")
 
 
-def remove_from_request_path(request: Union[HttpRequest, str], names: List[str]) -> str:
+def remove_from_request_path(request: Union[HttpRequest, str], names: list[str]) -> str:
     """
     Remove a parameter from request.get_full_path() and return the modified
     path afterwards.

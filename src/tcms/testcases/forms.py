@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
-from typing import List, Optional
+from typing import Optional
 
 from django import forms
 from django.core.validators import MaxLengthValidator
@@ -499,7 +499,7 @@ class CaseRunIssueForm(BaseAddIssueForm):
                 code="invalid",
             )
 
-        case_runs: List[TestCaseRun] = self.cleaned_data["case_run"]
+        case_runs: list[TestCaseRun] = self.cleaned_data["case_run"]
 
         for case_run in case_runs:
             is_tracker_relative = case_run.run.get_issue_trackers().filter(pk=tracker.pk).exists()

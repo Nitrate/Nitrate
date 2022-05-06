@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from contextlib import AbstractContextManager
 from textwrap import dedent
-from typing import List, Optional, Type, Union
+from typing import Optional, Type, Union
 
 import pytest
 from _pytest.python_api import RaisesContext
@@ -318,7 +318,7 @@ class TestPlanTreeView(BasePlanCase):
     ],
 )
 @pytest.mark.django_db()
-def test_plan_latest_text(text: List[str], expected, tester):
+def test_plan_latest_text(text: list[str], expected, tester):
     plan = f.TestPlanFactory()
 
     for item in text:
@@ -339,7 +339,7 @@ def test_plan_latest_text(text: List[str], expected, tester):
     ],
 )
 @pytest.mark.django_db()
-def test_plan_text_exist(text: List[str], expected, tester):
+def test_plan_text_exist(text: list[str], expected, tester):
     plan = f.TestPlanFactory()
 
     for item in text:
@@ -357,7 +357,7 @@ def test_plan_text_exist(text: List[str], expected, tester):
     ],
 )
 @pytest.mark.django_db()
-def test_plan_text_checksum(text: List[str], expected, tester):
+def test_plan_text_checksum(text: list[str], expected, tester):
     plan = f.TestPlanFactory()
 
     for item in text:
@@ -381,7 +381,7 @@ def test_plan_text_checksum(text: List[str], expected, tester):
     ],
 )
 @pytest.mark.django_db()
-def test_plan_get_text_with_version(text_version: Optional[int], text: List[str], expected, tester):
+def test_plan_get_text_with_version(text_version: Optional[int], text: list[str], expected, tester):
     plan = f.TestPlanFactory()
 
     for item in text:
@@ -587,7 +587,7 @@ def test_plan_add_case(
     ],
 )
 def test_plan_get_case_sortkey(
-    sort_keys: List[int],
+    sort_keys: list[int],
     expected: Optional[int],
     base_data,
 ):
@@ -651,7 +651,7 @@ def test_plan_add_env_group(group_name, tester, base_data):
     else:
         env_group = TCMSEnvGroup.objects.create(name=group_name, manager=tester)
         plan.add_env_group(env_group)
-        rels: List[TCMSEnvPlanMap] = list(TCMSEnvPlanMap.objects.all())
+        rels: list[TCMSEnvPlanMap] = list(TCMSEnvPlanMap.objects.all())
         assert 1 == len(rels)
         assert env_group == rels[0].group
 

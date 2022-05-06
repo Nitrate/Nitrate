@@ -4,7 +4,7 @@ import itertools
 import operator
 import xmlrpc.client
 from http import HTTPStatus
-from typing import Any, Callable, ContextManager, Dict, List, Union
+from typing import Any, Callable, ContextManager, Union
 
 import pytest
 from django import test
@@ -195,8 +195,8 @@ def test_remove_cases(run_ids, case_ids, tester, base_data):
 @pytest.mark.parametrize("run_ids", ["", 1, [1, 2]])
 @pytest.mark.parametrize("tags", ["", "tag1,tag3", ["tag1", "tag2"]])
 def test_add_tag(
-    run_ids: Union[int, List[int]],
-    tags: Union[str, List[str]],
+    run_ids: Union[int, list[int]],
+    tags: Union[str, list[str]],
     tester,
     base_data,
 ):
@@ -223,8 +223,8 @@ def test_add_tag(
 @pytest.mark.parametrize("run_ids", ["", 1, [1, 2]])
 @pytest.mark.parametrize("tags", ["", "tag1,tag3", ["tag1", "tag2"]])
 def test_remove_tag(
-    run_ids: Union[int, List[int]],
-    tags: Union[str, List[str]],
+    run_ids: Union[int, list[int]],
+    tags: Union[str, list[str]],
     tester,
     base_data,
 ):
@@ -253,8 +253,8 @@ def test_remove_tag(
 @pytest.mark.parametrize("env_value_ids", ["", 1, "2,3", [1, 2]])
 def test_add_env_value(
     target_func: Callable,
-    run_ids: Union[str, int, List[int]],
-    env_value_ids: Union[str, int, List[int]],
+    run_ids: Union[str, int, list[int]],
+    env_value_ids: Union[str, int, list[int]],
     tester,
     base_data,
 ):
@@ -298,8 +298,8 @@ def test_add_env_value(
 @pytest.mark.parametrize("env_value_ids", ["", 1, "2,3", [1, 2]])
 def test_remove_env_value(
     target_func: Callable,
-    run_ids: Union[str, int, List[int]],
-    env_value_ids: Union[str, int, List[int]],
+    run_ids: Union[str, int, list[int]],
+    env_value_ids: Union[str, int, list[int]],
     tester,
     base_data,
 ):
@@ -342,7 +342,7 @@ def test_remove_env_value(
     ],
 )
 def test_filter_and_get_count(
-    criteria: Dict[str, Any], expected_run_ids: List[int], tester, base_data
+    criteria: dict[str, Any], expected_run_ids: list[int], tester, base_data
 ):
     plan = base_data.create_plan(pk=1, name="plan 1")
     new_version = Version.objects.create(value="4.10", product=base_data.product)
@@ -579,9 +579,9 @@ def test_get_plan(run_id, expected, tester, base_data):
     ],
 )
 def test_update(
-    run_ids: Union[int, List[int]],
-    values: Dict[str, Any],
-    expected: Union[Dict[str, Any], ContextManager],
+    run_ids: Union[int, list[int]],
+    values: dict[str, Any],
+    expected: Union[dict[str, Any], ContextManager],
     tester,
     base_data,
 ):
@@ -608,7 +608,7 @@ def test_update(
             testrun_api.update(request, run_ids, values)
         return
 
-    updated_runs: List[Dict[str, Any]] = testrun_api.update(request, run_ids, values)
+    updated_runs: list[dict[str, Any]] = testrun_api.update(request, run_ids, values)
 
     if values.get("status") == 1:
         assert (
@@ -632,13 +632,13 @@ def test_update(
         [{"product": 1, "product_version": 1000}, pytest.raises(xmlrpc.client.Fault)],
     ],
 )
-def test_create(extra_optional_fields, expected: Dict[str, Any], tester, base_data):
+def test_create(extra_optional_fields, expected: dict[str, Any], tester, base_data):
     plan = base_data.create_plan(pk=1, name="plan 1")
     base_data.create_case(pk=1, summary="case 1")
     base_data.create_case(pk=2, summary="case 2")
 
     summary = "new test run"
-    values: Dict[str, Any] = {
+    values: dict[str, Any] = {
         "plan": plan.pk,
         "build": base_data.dev_build.pk,
         "manager": tester.pk,
@@ -656,7 +656,7 @@ def test_create(extra_optional_fields, expected: Dict[str, Any], tester, base_da
             testrun_api.create(request, values)
         return
 
-    new_run: Dict[str, Any] = testrun_api.create(request, values)
+    new_run: dict[str, Any] = testrun_api.create(request, values)
 
     assert plan.pk == new_run["plan_id"]
     assert base_data.dev_build.pk == new_run["build_id"]

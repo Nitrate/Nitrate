@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from textwrap import dedent
-from typing import List, Optional, Set, Union
+from typing import Optional, Union
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -100,8 +100,8 @@ class TestPlan(TCMSActionModel):
         return s.serialize_queryset()
 
     @classmethod
-    def list(cls, query=None):
-        """docstring for list_plans"""
+    def search(cls, query=None):
+        """Search test plans"""
         from django.db.models import Q
 
         new_query = {}
@@ -483,7 +483,7 @@ class TestPlan(TCMSActionModel):
 
         self.add_case(tc, sortkey=sortkey)
 
-    def get_descendant_ids(self, direct: bool = False) -> List[int]:
+    def get_descendant_ids(self, direct: bool = False) -> list[int]:
         if direct:
             sql = dedent(
                 """
@@ -516,7 +516,7 @@ class TestPlan(TCMSActionModel):
         descendant_ids = self.get_descendant_ids()
         return TestPlan.objects.filter(pk__in=descendant_ids)
 
-    def get_ancestor_ids(self) -> List[int]:
+    def get_ancestor_ids(self) -> list[int]:
         sql_ancestors = dedent(
             """
             WITH RECURSIVE sub_tree AS (
@@ -540,8 +540,8 @@ class TestPlan(TCMSActionModel):
         ancestor_ids = self.get_ancestor_ids()
         return TestPlan.objects.filter(pk__in=ancestor_ids)
 
-    def get_notification_recipients(self) -> List[str]:
-        recipients: Set[str] = set()
+    def get_notification_recipients(self) -> list[str]:
+        recipients: set[str] = set()
         emailing = self.email_settings
         if emailing.auto_to_plan_owner and self.owner:
             recipients.add(self.owner.email)

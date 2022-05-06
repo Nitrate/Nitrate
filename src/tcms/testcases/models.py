@@ -2,7 +2,7 @@
 
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
@@ -235,7 +235,7 @@ class TestCase(TCMSActionModel):
         return tcs
 
     @classmethod
-    def list(cls, query, plan=None):
+    def search(cls, query, plan=None):
         """List the cases with request"""
         from django.db.models import Q
 
@@ -805,7 +805,7 @@ class TestCase(TCMSActionModel):
 
         return dest_case
 
-    def get_notification_recipients(self) -> List[str]:
+    def get_notification_recipients(self) -> list[str]:
         recipients = set()
         emailing = self.emailing
         if emailing.auto_to_case_author:
@@ -825,17 +825,17 @@ class TestCase(TCMSActionModel):
 
     @classmethod
     def subtotal_by_status(
-        cls, plans: Optional[Union[List[int], QuerySet]] = None
-    ) -> Dict[str, Any]:
+        cls, plans: Optional[Union[list[int], QuerySet]] = None
+    ) -> dict[str, Any]:
         cases = TestCase.objects.all()
         if plans is not None:
             cases = cases.filter(plan__in=plans)
         stats = cases.values("case_status").annotate(count=Count("pk"))
 
         statuss = {item.pk: item.name for item in TestCaseStatus.objects.order_by("pk")}
-        raw: Dict[str, int] = {name: 0 for name in statuss.values()}
+        raw: dict[str, int] = {name: 0 for name in statuss.values()}
 
-        item: Dict[str, int]
+        item: dict[str, int]
         for item in stats:
             raw[statuss[item["case_status"]]] = item["count"]
 
@@ -992,7 +992,7 @@ class TestCaseEmailSettings(models.Model):
         for email_addr in emailaddr_list:
             Contact.create(email=email_addr, content_object=self)
 
-    def get_cc_list(self) -> List[str]:
+    def get_cc_list(self) -> list[str]:
         """Return the whole CC list"""
 
         return sorted(c.email for c in self.cc_list.all())

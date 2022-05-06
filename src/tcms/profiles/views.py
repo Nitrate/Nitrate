@@ -70,7 +70,7 @@ def recent(request, username):
     plans = TestPlan.apply_subtotal(plans, runs_count=True)
 
     runs = (
-        TestRun.list({"people": request.user, "is_active": True, "status": "running"})
+        TestRun.search({"people": request.user, "is_active": True, "status": "running"})
         .only("summary", "start_date")
         .order_by("-run_id")
     )

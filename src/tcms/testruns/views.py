@@ -319,7 +319,7 @@ def search_runs(request):
 
     if search_form.is_valid():
         runs = (
-            TestRun.list(search_form.cleaned_data)  # nosec
+            TestRun.search(search_form.cleaned_data)  # nosec
             .select_related("manager", "default_tester", "build", "plan", "build__product")
             .only(
                 "run_id",

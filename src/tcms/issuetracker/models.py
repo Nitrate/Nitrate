@@ -6,7 +6,7 @@ import logging
 import os
 import re
 from datetime import datetime
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxLengthValidator, RegexValidator
@@ -686,7 +686,7 @@ class Issue(TCMSActionModel):
             raise ValidationError({"issue_key": f"Issue key {self.issue_key} is in wrong format."})
 
     @staticmethod
-    def count_by_case_run(case_run_ids: Optional[List[int]] = None):
+    def count_by_case_run(case_run_ids: Optional[list[int]] = None):
         """Subtotal issues and optionally by specified case runs
 
         :param case_run_ids: list of test case run IDs to just return subtotal

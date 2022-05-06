@@ -585,8 +585,8 @@ class TestGetLatestTextVersion(test.TestCase):
         self.assertEqual(self.text.case_text_version, self.case_1.latest_text_version())
 
 
-class TestListCases(BasePlanCase):
-    """Test TestCase.list"""
+class TestSearchCases(BasePlanCase):
+    """Test TestCase.search"""
 
     @classmethod
     def setUpTestData(cls):
@@ -635,15 +635,15 @@ class TestListCases(BasePlanCase):
         ]
 
         for item in criteria:
-            cases = TestCase.list(item)
+            cases = TestCase.search(item)
             self.assertEqual([self.case_1], list(cases))
 
     def test_list_a_set_of_cases(self):
-        cases = TestCase.list({"case_id_set": [self.case_2.pk, self.case_5.pk]})
+        cases = TestCase.search({"case_id_set": [self.case_2.pk, self.case_5.pk]})
         self.assertEqual([self.case_2, self.case_5], list(cases))
 
     def test_list_by_plan(self):
-        cases = TestCase.list({"product": self.product.pk}, plan=self.plan).order_by("pk")
+        cases = TestCase.search({"product": self.product.pk}, plan=self.plan).order_by("pk")
         self.assertEqual([self.case_1], list(cases))
 
     def test_list_by_search_keyword(self):
@@ -653,11 +653,11 @@ class TestListCases(BasePlanCase):
         ]
 
         for item in criteria:
-            cases = TestCase.list(item)
+            cases = TestCase.search(item)
             self.assertEqual([self.case_1], list(cases))
 
     def test_list_by_multiple_criteria(self):
-        cases = TestCase.list(
+        cases = TestCase.search(
             {
                 "category": TestCaseCategory.objects.get(name="functional"),
                 "issue_key": ["2000"],
@@ -668,7 +668,7 @@ class TestListCases(BasePlanCase):
     def test_get_empty_result(self):
         result = Product.objects.aggregate(max_pk=Max("pk"))
         unknown_pk = result["max_pk"] + 1
-        self.assertListEqual([], list(TestCase.list({"product": unknown_pk})))
+        self.assertListEqual([], list(TestCase.search({"product": unknown_pk})))
 
 
 class TestUpdateCases(BasePlanCase):

@@ -2,7 +2,6 @@
 
 import json
 from http import HTTPStatus
-from typing import List
 
 import pytest
 from django import test
@@ -182,7 +181,7 @@ class TestIndexView(test.TestCase):
         ["user1@example.com,someone_mail", True, None],
     ],
 )
-def test_multiple_email_field(input_str: str, required: bool, expected: List[str]):
+def test_multiple_email_field(input_str: str, required: bool, expected: list[str]):
     field = MultipleEmailField(required=required)
     if expected is None:
         with pytest.raises(ValidationError):

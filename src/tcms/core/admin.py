@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from typing import Dict
 
 from django.contrib import admin
 from kobo.django.xmlrpc.models import XmlRpcLog
@@ -10,7 +9,7 @@ class NitrateXmlRpcLogAdmin(admin.ModelAdmin):
     list_per_page = 50
     list_filter = ("dt_inserted",)
 
-    user_cache: Dict[int, str] = {}
+    user_cache: dict[int, str] = {}
 
     def __init__(self, *args, **kwargs):
         NitrateXmlRpcLogAdmin.user_cache.clear()
