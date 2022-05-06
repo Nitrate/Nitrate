@@ -155,6 +155,10 @@ For more information, please refer to the description of image
 Run Nitrate
 -----------
 
+A quick way to run Nitrate from the latest container image:
+
+    podman-compose -f container-compose.yml up
+
 There are a series of instructions for running Nitrate. Please refer to
 `Deployment`_.
 
