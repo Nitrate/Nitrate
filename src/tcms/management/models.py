@@ -250,7 +250,7 @@ class TestBuild(TCMSActionModel):
         return s.serialize_queryset()
 
     @classmethod
-    def list(cls, query):
+    def search(cls, query):
         q = cls.objects
 
         if query.get("build_id"):
@@ -274,7 +274,7 @@ class TestBuild(TCMSActionModel):
     def list_active(cls, query={}):
         if isinstance(query, dict):
             query["is_active"] = True
-        return cls.list(query)
+        return cls.search(query)
 
     def __str__(self):
         return self.name

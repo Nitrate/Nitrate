@@ -85,7 +85,7 @@ class ObjectsInfo(object):
             "product_ids": self.product_ids,
             "is_active": self.request.GET.get("is_active"),
         }
-        return TestBuild.list(query)
+        return TestBuild.search(query)
 
     def categories(self):
         return TestCaseCategory.objects.filter(product__in=self.product_ids)
