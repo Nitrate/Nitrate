@@ -3,7 +3,7 @@ import datetime
 import functools
 import hashlib
 import operator
-from typing import Any, AnyStr, Dict, Iterable, List, Optional, Union
+from typing import Any, AnyStr, Iterable, Optional, Union
 
 from django.apps import apps
 from django.db.models import QuerySet
@@ -14,7 +14,7 @@ SECONDS_PER_HOUR: int = 60 * 60
 SECONDS_PER_MINUTE: int = 60
 
 
-def string_to_list(s: Union[str, List[str], None], sep: Optional[str] = None) -> List[str]:
+def string_to_list(s: Union[str, list[str], None], sep: Optional[str] = None) -> list[str]:
     """Convert the string to list"""
     if not s:
         return []
@@ -64,7 +64,7 @@ def request_host_link(request: HttpRequest, domain_name: Optional[str] = None) -
 
 def clean_request(
     request: HttpRequest, keys: Optional[Iterable[str]] = None
-) -> Dict[str, Union[str, List[str]]]:
+) -> dict[str, Union[str, list[str]]]:
     """
     Clean the request strings
     """
@@ -153,7 +153,7 @@ class DataTableResult:
         self,
         request_data: QueryDict,
         queryset: QuerySet,
-        column_names: List[str],
+        column_names: list[str],
         default_order_key: str = "pk",
     ):
         self.queryset = queryset
@@ -197,7 +197,7 @@ class DataTableResult:
         display_end = display_start + display_length
         self.queryset = self.queryset[display_start:display_end]
 
-    def get_response_data(self) -> Dict[str, Any]:
+    def get_response_data(self) -> dict[str, Any]:
         total_records = total_display_records = self.queryset.count()
 
         self._sort_result()

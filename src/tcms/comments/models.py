@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from typing import List
 
 from django.core.exceptions import ObjectDoesNotExist
 from django_comments.models import Comment
@@ -65,7 +64,7 @@ def post_comment(comment_data, request_user, remote_addr=None):
     return target, comment
 
 
-def add_comment(request_user, content_type, object_pks, comment, remote_addr=None) -> List[Comment]:
+def add_comment(request_user, content_type, object_pks, comment, remote_addr=None) -> list[Comment]:
     """Add comment to given target objects
 
     This function is useful particularly for not add a comment from WebUI by

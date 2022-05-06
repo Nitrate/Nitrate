@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -88,7 +88,7 @@ class TestRun(TCMSActionModel):
         return s.serialize_queryset()
 
     @classmethod
-    def list(cls, query: Dict) -> QuerySet:
+    def search(cls, query: dict) -> QuerySet:
         conditions = []
 
         mapping = {
@@ -157,7 +157,7 @@ class TestRun(TCMSActionModel):
     def get_absolute_url(self):
         return reverse("run-get", args=[self.pk])
 
-    def get_notification_recipients(self) -> List[str]:
+    def get_notification_recipients(self) -> list[str]:
         """
         Get the all related mails from the run
         """

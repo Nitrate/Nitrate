@@ -5,7 +5,7 @@ import itertools
 import json
 import logging
 from operator import attrgetter, itemgetter
-from typing import List, Optional
+from typing import Optional
 
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
@@ -238,7 +238,7 @@ def new(request, template_name="case/new.html"):
 
 
 def get_testcaseplan_sortkey_pk_for_testcases(
-    plan: Optional[TestPlan], tc_ids: List[int]
+    plan: Optional[TestPlan], tc_ids: list[int]
 ) -> dict[int, dict[str, int]]:
     """Get each TestCase' sortkey and related TestCasePlan's pk"""
     qs: QuerySet = TestCasePlan.objects.filter(case__in=tc_ids)
@@ -250,7 +250,7 @@ def get_testcaseplan_sortkey_pk_for_testcases(
     }
 
 
-def calculate_for_testcases(plan: Optional[TestPlan], cases: List[TestCase]) -> List[TestCase]:
+def calculate_for_testcases(plan: Optional[TestPlan], cases: list[TestCase]) -> list[TestCase]:
     """Calculate extra data for TestCases
 
     Attach TestCasePlan.sortkey and TestCasePlan.pk.
@@ -321,7 +321,7 @@ def query_testcases(request_data, plan, search_form):
     # FIXME: search_form is not defined before being used.
     action = request_data.get("a")
     if action in TESTCASE_OPERATION_ACTIONS and search_form.is_valid():
-        tcs = TestCase.list(search_form.cleaned_data, plan)
+        tcs = TestCase.search(search_form.cleaned_data, plan)
     elif action == "initial":
         d_status = get_case_status(request_data.get("template_type"))
         tcs = TestCase.objects.filter(case_status__in=d_status)
@@ -509,7 +509,7 @@ def search_cases(request):
 
     if search_form.is_valid():
         cases = (
-            TestCase.list(search_form.cleaned_data)
+            TestCase.search(search_form.cleaned_data)
             .select_related("author", "default_tester", "case_status", "priority", "category")
             .only(
                 "pk",

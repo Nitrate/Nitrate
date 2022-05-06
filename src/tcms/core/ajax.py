@@ -10,7 +10,7 @@ import logging
 import operator
 from collections.abc import Iterable
 from functools import reduce
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Optional, Union
 
 from django import forms
 from django.contrib.auth.mixins import PermissionRequiredMixin
@@ -59,9 +59,9 @@ SORT_KEY_RANGE = [SORT_KEY_MIN, SORT_KEY_MAX]
 
 
 def strip_parameters(
-    request_data: Union[QueryDict, Dict[str, Any]],
+    request_data: Union[QueryDict, dict[str, Any]],
     skip_parameters: Iterable,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Helper method which will remove the dict items listed in skip_parameters
     @return - dict
@@ -172,7 +172,7 @@ def info(request):
     )
 
 
-def _get_tagging_objects(request: HttpRequest, template_name: str) -> Tuple[str, QuerySet]:
+def _get_tagging_objects(request: HttpRequest, template_name: str) -> tuple[str, QuerySet]:
     data = request.GET or request.POST
     if "plan" in data:
         obj_pks = data.getlist("plan")
@@ -186,7 +186,7 @@ def _get_tagging_objects(request: HttpRequest, template_name: str) -> Tuple[str,
         raise ValueError("Cannot find parameter plan, case or run from the request querystring.")
 
 
-def _take_action_on_tags(action: str, objs: QuerySet, tags: List[str]) -> None:
+def _take_action_on_tags(action: str, objs: QuerySet, tags: list[str]) -> None:
     """Add or remove tags from specific objects
 
     .. note::
@@ -278,7 +278,7 @@ def manage_tags(request: HttpRequest, template_name="management/get_tag.html"):
     return _generate_tags_response(request, objs, template_name)
 
 
-LogActionParams = Dict[str, Any]
+LogActionParams = dict[str, Any]
 # Construct data used to prepare log_action calls for a test case run.
 LogActionInfo = tuple[TCMSActionModel, list[LogActionParams]]
 
@@ -311,7 +311,7 @@ class ModelPatchBaseView(PermissionRequiredMixin, View):
         """
 
     @staticmethod
-    def _record_log_actions(log_actions_info: List[LogActionInfo]) -> None:
+    def _record_log_actions(log_actions_info: list[LogActionInfo]) -> None:
         model: TCMSActionModel
         for model, log_actions_params in log_actions_info:
             for params in log_actions_params:
@@ -329,7 +329,7 @@ class ModelPatchBaseView(PermissionRequiredMixin, View):
                     )
 
     def _simple_update(
-        self, models: Union[QuerySet, List[TCMSActionModel]], new_value: Any
+        self, models: Union[QuerySet, list[TCMSActionModel]], new_value: Any
     ) -> None:
         """A simple update method for most cases to update property of a set of cases
 
@@ -522,7 +522,7 @@ class PatchTestCaseRunsView(ModelPatchBaseView):
         update_time = datetime.datetime.now()
 
         log_actions_info = []
-        changed: List[TestCaseRun] = []
+        changed: list[TestCaseRun] = []
         tested_by_changed = False
 
         case_run: TestCaseRun

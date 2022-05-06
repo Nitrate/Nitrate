@@ -2,7 +2,7 @@
 
 import logging
 import smtplib
-from typing import Dict, List, Optional
+from typing import Optional
 
 from django.conf import settings
 from django.core.mail import EmailMessage
@@ -17,10 +17,10 @@ def mail_notify(
     instance,
     template: str,
     subject: str,
-    context: Dict[str, str],
-    cc: Optional[List[str]] = None,
+    context: dict[str, str],
+    cc: Optional[list[str]] = None,
 ):
-    recipients: List[str] = instance.get_notification_recipients()
+    recipients: list[str] = instance.get_notification_recipients()
     if not recipients:
         logger.info("No recipient is found. Skip sending mail to notify.")
         return

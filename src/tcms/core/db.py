@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from collections.abc import Iterator
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Callable, Iterable, Optional, Union
 
 from tcms.core.tcms_router import connection
 
@@ -48,7 +48,7 @@ class SQLExecution:
     def __init__(
         self,
         sql: str,
-        params: Optional[Union[List[Any], Tuple[Any]]] = None,
+        params: Optional[Union[list[Any], tuple[Any]]] = None,
         with_field_name: bool = True,
     ):
         """Initialize and execute SQL query"""
@@ -134,7 +134,7 @@ class GroupByResult:
         total_name: Optional[str] = None,
     ):
         self._total_name = total_name
-        self._data: Dict[Any, Any] = {} if data is None else dict(data)
+        self._data: dict[Any, Any] = {} if data is None else dict(data)
         self._total_result = self._get_total()
 
         self._meta: dict[str, int] = {}
@@ -284,7 +284,7 @@ class GroupByResult:
 # we should probably remove them
 def get_groupby_result(
     sql: str,
-    params: List[Union[int, str]],
+    params: list[Union[int, str]],
     key_name: Optional[str] = None,
     key_conv: Optional[Callable[[Any], Any]] = None,
     value_name: Optional[str] = None,

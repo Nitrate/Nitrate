@@ -2,7 +2,6 @@
 
 import logging
 import warnings
-from typing import Dict
 
 from tcms.core.task import Task
 
@@ -12,7 +11,7 @@ logger = logging.getLogger(__name__)
 @Task
 def bugzilla_external_track(
     tracker_api_url: str,
-    tracker_credential: Dict[str, str],
+    tracker_credential: dict[str, str],
     issue_key: str,
     case_id: int,
 ):

@@ -4,7 +4,7 @@ from collections.abc import Iterable
 from http import HTTPStatus
 from operator import itemgetter
 from textwrap import dedent
-from typing import Any, ClassVar, Dict, List, Optional, Union
+from typing import Any, ClassVar, Optional, Union
 from unittest.mock import patch
 
 import pytest
@@ -52,7 +52,7 @@ from tests.conftest import BaseDataContext
     ],
 )
 def test_strip_parameters(
-    data: Union[QueryDict, Dict[str, Any]], skip_params: Iterable, expected: Dict[str, Any]
+    data: Union[QueryDict, dict[str, Any]], skip_params: Iterable, expected: dict[str, Any]
 ):
     assert expected == strip_parameters(data, skip_params)
 
@@ -379,10 +379,10 @@ class TestUpdateCaseRunsSortkey(BaseCaseRun):
 
     def test_update_sort_key(self):
         new_sort_key = 2
-        update_targets: List[TestCaseRun] = [self.case_run_2, self.case_run_4]
+        update_targets: list[TestCaseRun] = [self.case_run_2, self.case_run_4]
 
         case_run: TestCaseRun
-        update_targets_pks: List[int] = [case_run.pk for case_run in update_targets]
+        update_targets_pks: list[int] = [case_run.pk for case_run in update_targets]
 
         resp = self.client.patch(
             self.url,
@@ -408,7 +408,7 @@ class TestUpdateCaseRunsSortkey(BaseCaseRun):
             )
 
         # Other case runs' sortkey should not be changed.
-        sort_keys: List[int] = TestCaseRun.objects.exclude(pk__in=update_targets_pks).values_list(
+        sort_keys: list[int] = TestCaseRun.objects.exclude(pk__in=update_targets_pks).values_list(
             "sortkey", flat=True
         )
         for sort_key in sort_keys:
@@ -1008,7 +1008,7 @@ def test_get_users_info(criteria, expected_username, base_data, client):
     ],
 )
 @pytest.mark.django_db
-def test_get_tags_info(criteria: Dict[str, str], expected_tags: List[str], client):
+def test_get_tags_info(criteria: dict[str, str], expected_tags: list[str], client):
     for tag in ("python", "rust", "ruby", "perl"):
         TestTag.objects.create(name=tag)
 

@@ -2,7 +2,6 @@
 
 import logging
 from operator import methodcaller
-from typing import List
 
 from django.core.exceptions import ObjectDoesNotExist
 from kobo.django.xmlrpc.decorators import user_passes_test
@@ -133,7 +132,7 @@ def add_tag(request, run_ids, tags):
         TestPlan.add_tag('1, 2', 'foo, bar')
     """
     trs = TestRun.objects.filter(pk__in=pre_process_ids(value=run_ids))
-    tags: List[str] = TestTag.string_to_list(tags)
+    tags: list[str] = TestTag.string_to_list(tags)
 
     for tag in tags:
         t, _ = TestTag.objects.get_or_create(name=tag)
@@ -419,7 +418,7 @@ def get_env_values(request, run_id):
 
     :param int run_id: run ID.
     :return: a list of mappings representing found :class:`TCMSEnvValue`.
-    :rtype: List[dict]
+    :rtype: list[dict]
 
     Example::
 

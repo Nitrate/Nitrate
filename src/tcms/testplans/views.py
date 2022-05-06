@@ -6,7 +6,7 @@ import itertools
 import json
 import urllib
 from operator import add, itemgetter
-from typing import List, Optional, Set
+from typing import Optional
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
@@ -174,7 +174,7 @@ class SimplePlansFilterView(TemplateView):
                 self.SUB_MODULE_NAME = "my_plans"
 
             plans = (
-                TestPlan.list(search_form.cleaned_data)
+                TestPlan.search(search_form.cleaned_data)
                 .select_related("author", "type", "product")
                 .order_by("-create_date")
             )
@@ -702,7 +702,7 @@ class LinkCasesSearchView(View):
             quick_form = QuickSearchCaseForm()
 
         if form.is_valid():
-            cases = TestCase.list(form.cleaned_data)
+            cases = TestCase.search(form.cleaned_data)
             cases = (
                 cases.select_related("author", "default_tester", "case_status", "priority")
                 .only(
@@ -922,8 +922,8 @@ def treeview_add_child_plans(request: HttpRequest, plan_id: int):
     if plan is None:
         return JsonResponseNotFound({"message": f"Plan {plan_id} does not exist."})
 
-    child_plan_ids: List[str] = request.POST.getlist("children")
-    child_plans: List[TestPlan] = []
+    child_plan_ids: list[str] = request.POST.getlist("children")
+    child_plans: list[TestPlan] = []
 
     ancestor_ids = plan.get_ancestor_ids()
     descendant_ids = plan.get_descendant_ids()
@@ -967,7 +967,7 @@ def treeview_remove_child_plans(request, plan_id: int):
     if plan is None:
         return JsonResponseNotFound({"message": f"Plan {plan_id} does not exist."})
 
-    child_plan_ids: Set[int] = set(map(int, request.POST.getlist("children")))
+    child_plan_ids: set[int] = set(map(int, request.POST.getlist("children")))
     direct_descendants = set(plan.get_descendant_ids(True))
     ids_to_remove = child_plan_ids & direct_descendants
 

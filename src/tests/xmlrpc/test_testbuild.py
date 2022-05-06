@@ -2,7 +2,7 @@
 
 import unittest
 import xmlrpc.client
-from typing import Any, Callable, Dict
+from typing import Any, Callable
 from unittest.mock import Mock
 
 import pytest
@@ -179,7 +179,7 @@ def test_get(test_api: Callable, build_id: int, expected, tester, base_data):
     request = make_http_request(tester)
 
     if isinstance(expected, int):
-        result: Dict[str, Any] = test_api(request, build_id)
+        result: dict[str, Any] = test_api(request, build_id)
         b: TestBuild = TestBuild.objects.get(pk=build_id)
         assert b.pk == result["build_id"]
         assert b.name == result["name"]
@@ -271,7 +271,7 @@ def test_check_build(test_api: Callable, name, product, expected, base_data):
     request = make_http_request(base_data.tester)
 
     if isinstance(expected, str):
-        result: Dict[str, Any] = test_api(request, name, product)
+        result: dict[str, Any] = test_api(request, name, product)
 
         b: TestBuild = TestBuild.objects.get(name=name, product__name=product)
         assert b.pk == result["build_id"]
@@ -297,7 +297,7 @@ def test_check_build(test_api: Callable, name, product, expected, base_data):
     ],
 )
 @pytest.mark.django_db()
-def test_update(values: Dict[str, Any], django_user_model):
+def test_update(values: dict[str, Any], django_user_model):
     user = django_user_model.objects.create(username="tester", email="tester@localhost")
     user_should_have_perm(user, "management.change_testbuild")
 
