@@ -316,7 +316,7 @@ class TestCase(TCMSActionModel):
 
     @classmethod
     def list_confirmed(cls):
-        return cls.list({"case_status__name": "CONFIRMED"})
+        return cls.search({"case_status__name": "CONFIRMED"})
 
     @staticmethod
     def mail_scene(
