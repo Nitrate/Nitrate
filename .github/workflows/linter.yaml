@@ -119,7 +119,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        django-version: [django310, django320]
+        django-version: [django320]
     steps:
       - run: |
           sudo apt update
