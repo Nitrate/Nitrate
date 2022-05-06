@@ -30,6 +30,9 @@ if DB_ENGINE == "mysql":
 elif DB_ENGINE == "pgsql":
     DATABASES["default"]["TEST"] = {"CHARSET": "utf8"}
 
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.MD5PasswordHasher",
+]
 
 SECRET_KEY = "key-for-test"  # nosec
 
