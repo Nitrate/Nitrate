@@ -35,7 +35,6 @@ jobs:
           --method make_srpm \
           --type git \
           --clone-url https://github.com/Nitrate/python-nitrate-tcms.git \
-          -r fedora-34-x86_64 \
           -r fedora-35-x86_64 \
           cqi/python-nitrate-tcms
 
