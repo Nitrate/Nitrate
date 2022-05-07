@@ -3,7 +3,7 @@ import datetime
 import functools
 import hashlib
 import operator
-from typing import Any, AnyStr, Iterable, Optional, Union
+from typing import Any, AnyStr, Final, Iterable, Optional, Union
 
 from django.apps import apps
 from django.db.models import QuerySet
@@ -290,53 +290,31 @@ def timedelta2int(timedelta_s: Optional[str]) -> int:
     """
     if not timedelta_s:
         return 0
-    valid_chars = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "d", "h", "m", "s"}
-    days = hours = minutes = seconds = ""
-    tmp_part = ""
+    UNITS: Final[str] = "dhms"
+    found_units = ""
+    digits = ""
+    delta: dict[str, Optional[int]] = {"d": None, "h": None, "m": None, "s": None}
     for c in timedelta_s:
-        if c in valid_chars:
-            if c == "d":
-                if hours or minutes or seconds:
-                    raise ValueError("Days presents after hours, minutes or seconds.")
-                if not tmp_part:
-                    raise ValueError("Missing value for days.")
-                days = tmp_part
-                tmp_part = ""
-            elif c == "h":
-                if minutes or seconds:
-                    raise ValueError("Hours presents after minutes or seconds.")
-                if not tmp_part:
-                    raise ValueError("Missing value for hours.")
-                hours = tmp_part
-                tmp_part = ""
-            elif c == "m":
-                if seconds:
-                    raise ValueError("Minutes presents after seconds.")
-                if not tmp_part:
-                    raise ValueError("Missing value for minutes.")
-                minutes = tmp_part
-                tmp_part = ""
-            elif c == "s":
-                if not tmp_part:
-                    raise ValueError("Missing value for seconds.")
-                seconds = tmp_part
-                tmp_part = ""
-            else:
-                tmp_part += c
+        if c == "d" or c == "h" or c == "m" or c == "s":
+            if (found_units := found_units + c) not in UNITS:
+                raise ValueError(f"{c} presents in wrong order.")
+            if not digits:
+                raise ValueError(f"Missing value for {c}.")
+            delta[c] = int(digits)
+            digits = ""
+        elif c >= "0" and c <= "9":
+            digits += c
         else:
-            if c.isspace():
-                raise ValueError("timedelta cannot contain space character.")
-            else:
-                raise ValueError(f"timedelta contains invalid character: {c}")
-    if not days and not hours and not minutes and not seconds:
-        raise ValueError("No unit is specified in timedelta. Valid choices: d, h, m or s.")
+            raise ValueError(f"timedelta contains invalid character: '{c}'")
+    if all((val is None) for val in delta.values()):
+        raise ValueError("No unit is specified. Valid choices: d, h, m or s.")
 
-    def _int(s: str) -> int:
-        return int(s) if s else 0
+    def _int(val) -> int:
+        return 0 if val is None else int(val)
 
     return (
-        _int(days) * SECONDS_PER_DAY
-        + _int(hours) * SECONDS_PER_HOUR
-        + _int(minutes) * SECONDS_PER_MINUTE
-        + _int(seconds)
+        _int(delta["d"]) * SECONDS_PER_DAY
+        + _int(delta["h"]) * SECONDS_PER_HOUR
+        + _int(delta["m"]) * SECONDS_PER_MINUTE
+        + _int(delta["s"])
     )

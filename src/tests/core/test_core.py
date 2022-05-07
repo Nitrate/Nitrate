@@ -137,30 +137,33 @@ def test_clean_request(query_args, keys, expected):
         ["2d12h", 216000],
         ["2d12h6m", 216360],
         ["2d012h6m", 216360],
+        ["0d0h0m", 0],
+        ["00d00h00m00s", 0],
         # Exception input timedeltas
         ["", 0],
         [None, 0],
-        ["5.5m", ValueError],
-        ["6m2d012h", ValueError],
-        ["6s12h", ValueError],
-        ["6m12d", ValueError],
-        ["6s12m", ValueError],
-        ["1d1.5h", ValueError],
-        ["30", ValueError],
-        ["d012h6m30s", ValueError],
-        ["2dh6m30s", ValueError],
-        ["2d8hm30s", ValueError],
-        ["2d8h10ms", ValueError],
-        ["2d8g10m", ValueError],
-        ["2d8h m30s", ValueError],
-        ["-20h30m", ValueError],
+        ["5.5m", pytest.raises(ValueError, match="contains invalid character: '.'")],
+        ["1d1.5h", pytest.raises(ValueError, match="contains invalid character: '.'")],
+        ["-20h30m", pytest.raises(ValueError, match="contains invalid character: '-'")],
+        ["2d8g10m", pytest.raises(ValueError, match="contains invalid character: 'g'")],
+        ["2d8h m30s", pytest.raises(ValueError, match="contains invalid character: ' '")],
+        ["6m2d012h", pytest.raises(ValueError, match="d presents in wrong order")],
+        ["6s12h", pytest.raises(ValueError, match="h presents in wrong order")],
+        ["6m12d", pytest.raises(ValueError, match="d presents in wrong order")],
+        ["6s12m", pytest.raises(ValueError, match="m presents in wrong order")],
+        ["30", pytest.raises(ValueError, match="No unit is specified")],
+        ["d012h6m30s", pytest.raises(ValueError, match="Missing value for d")],
+        ["2dh6m30s", pytest.raises(ValueError, match="Missing value for h")],
+        ["2d8hm30s", pytest.raises(ValueError, match="Missing value for m")],
+        ["2d8h10ms", pytest.raises(ValueError, match="Missing value for s")],
+        ["2d8h30s", pytest.raises(ValueError, match="s presents in wrong order")],
     ],
 )
-def test_timedelta2int(timedelta, expected: Union[int, Type[Exception]]):
+def test_timedelta2int(timedelta, expected):
     if isinstance(expected, int):
         assert expected == timedelta2int(timedelta)
     else:
-        with pytest.raises(expected):
+        with expected:
             timedelta2int(timedelta)
 
 
