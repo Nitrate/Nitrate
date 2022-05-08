@@ -293,7 +293,7 @@ def timedelta2int(timedelta_s: Optional[str]) -> int:
     UNITS: Final[str] = "dhms"
     found_units = ""
     digits = ""
-    delta: dict[str, Optional[int]] = {"d": None, "h": None, "m": None, "s": None}
+    delta = {"d": 0, "h": 0, "m": 0, "s": 0}
     for c in timedelta_s:
         if c == "d" or c == "h" or c == "m" or c == "s":
             if (found_units := found_units + c) not in UNITS:
@@ -306,15 +306,12 @@ def timedelta2int(timedelta_s: Optional[str]) -> int:
             digits += c
         else:
             raise ValueError(f"timedelta contains invalid character: '{c}'")
-    if all((val is None) for val in delta.values()):
+    if not found_units:
         raise ValueError("No unit is specified. Valid choices: d, h, m or s.")
 
-    def _int(val) -> int:
-        return 0 if val is None else int(val)
-
     return (
-        _int(delta["d"]) * SECONDS_PER_DAY
-        + _int(delta["h"]) * SECONDS_PER_HOUR
-        + _int(delta["m"]) * SECONDS_PER_MINUTE
-        + _int(delta["s"])
+        delta["d"] * SECONDS_PER_DAY
+        + delta["h"] * SECONDS_PER_HOUR
+        + delta["m"] * SECONDS_PER_MINUTE
+        + delta["s"]
     )
