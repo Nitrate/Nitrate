@@ -84,7 +84,7 @@ rm -rf %{egginfo_name}.egg-info
 
 %check
 DJANGO_SETTINGS_MODULE=tcms.settings.test PYTHONPATH=src/ \
-%{pytest} src/tests/
+%{pytest} tests/
 
 %build
 %py3_build
