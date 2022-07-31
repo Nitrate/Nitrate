@@ -70,8 +70,9 @@ def clean_request(
     """
     request_contents = request.GET.copy()
     if not keys:
-        keys = request_contents.keys()
-    rt = {}
+        keys = list(request_contents.keys())
+    rt: dict[str, Any] = {}
+    # XXX: iterate by items()
     for k in keys:
         k = str(k)
         if request_contents.get(k):
@@ -81,8 +82,9 @@ def clean_request(
             v = request.GET[k]
             # Convert the value to be list if it's __in filter.
             if k.endswith("__in") and isinstance(v, str):
-                v = string_to_list(v)
-            rt[k] = v
+                rt[k] = string_to_list(v)
+            else:
+                rt[k] = v
     return rt
 
 

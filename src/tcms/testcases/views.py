@@ -469,10 +469,10 @@ def all(request, template_name="case/all.html"):
     # FIXME: query_url is always equivlant to None&asc=True whatever what
     # criterias specified in filter form, or just with default filter
     # conditions during loading TestPlan page.
-    query_url = remove_from_request_path(request, "order_by")
+    query_url = remove_from_request_path(request, ["order_by"])
     asc = bool(request.POST.get("asc", None))
     if asc:
-        query_url = remove_from_request_path(query_url, "asc")
+        query_url = remove_from_request_path(query_url, ["asc"])
     else:
         query_url = "%s&asc=True" % query_url
 

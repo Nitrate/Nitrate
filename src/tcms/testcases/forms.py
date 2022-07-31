@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
-from typing import Optional
+from typing import Optional, cast
 
 from django import forms
 from django.core.validators import MaxLengthValidator
@@ -598,9 +598,8 @@ class CaseTagForm(forms.Form):
     def populate(self, cases: Optional[QuerySet] = None):
         if cases is not None:
             # note: backwards relationship filter. TestCaseTag -> TestTag
-            self.fields["tags"].queryset = (
-                TestTag.objects.filter(cases__in=cases).order_by("name").distinct()
-            )
+            tags_f = cast(forms.ModelMultipleChoiceField, self.fields["tags"])
+            tags_f.queryset = TestTag.objects.filter(cases__in=cases).order_by("name").distinct()
 
 
 class CasePlansForm(forms.Form):

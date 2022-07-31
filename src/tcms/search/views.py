@@ -269,10 +269,13 @@ def remove_from_request_path(request: Union[HttpRequest, str], names: list[str])
     Remove a parameter from request.get_full_path() and return the modified
     path afterwards.
     """
-    url_info = urlparse(request.get_full_path() if isinstance(request, HttpRequest) else request)
-    return "?" + urlencode(
-        {name: value for name, value in parse_qsl(url_info.query) if name not in names}
-    )
+    url: str
+    if isinstance(request, str):
+        url = request
+    else:
+        url = request.get_full_path()
+    args = parse_qsl(urlparse(url).query)
+    return "?" + urlencode([(name, value) for name, value in args if name not in names])
 
 
 def make_name_prefix_meaningful(s: str) -> str:
