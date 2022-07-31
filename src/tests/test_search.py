@@ -2,10 +2,12 @@
 
 from itertools import chain
 
+import pytest
 from bs4 import BeautifulSoup
 from django.urls import reverse
 
 from tcms.management.models import Priority
+from tcms.search.views import remove_from_request_path
 from tests import BaseCaseRun
 from tests import factories as f
 
@@ -273,3 +275,21 @@ class TestAdvancedSearch(BaseCaseRun):
             "<li>Case Priority: Select a valid choice. 100 is not one of"
             " the available choices.</li>",
         )
+
+
+@pytest.mark.parametrize(
+    "url,excluded_names,expected",
+    [
+        ["https://localhost/", [], "?"],
+        ["https://localhost/?name=abc&order=desc", ["order"], "?name=abc"],
+        ["/endpoint?name=abc&order=desc", ["order", "key1"], "?name=abc"],
+        # A corner case, no URL query part will be handled.
+        ["name=abc&product=1&key1=d", ["key1"], "?"],
+    ],
+)
+def test_remove_from_request_path(url: str, excluded_names: list[str], expected: str, rf):
+    result = remove_from_request_path(url, excluded_names)
+    assert expected == result
+
+    request = rf.get(url)
+    assert expected == remove_from_request_path(request, excluded_names)

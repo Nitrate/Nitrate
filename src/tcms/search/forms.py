@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from functools import partial
-from typing import Callable, Optional, TypeVar
+from typing import Callable, Optional, TypeVar, cast
 
 from django import forms
 from django.http import QueryDict
@@ -89,15 +89,18 @@ class PlanForm(forms.Form):
         prod_pks = data.getlist("pl_product")
         prod_pks = [k for k in prod_pks if k]
         if prod_pks:
-            self.fields["pl_product"].queryset = Product.objects.filter(pk__in=prod_pks)
+            pl_product_f = cast(forms.ModelMultipleChoiceField, self.fields["pl_product"])
+            pl_product_f.queryset = Product.objects.filter(pk__in=prod_pks)
         comp_pks = data.getlist("pl_component")
         comp_pks = [k for k in comp_pks if k]
         if comp_pks:
-            self.fields["pl_component"].queryset = Component.objects.filter(pk__in=comp_pks)
+            pl_component_f = cast(forms.ModelMultipleChoiceField, self.fields["pl_component"])
+            pl_component_f.queryset = Component.objects.filter(pk__in=comp_pks)
         ver_pks = data.getlist("pl_version")
         ver_pks = [k for k in ver_pks if k]
         if ver_pks:
-            self.fields["pl_version"].queryset = Version.objects.filter(pk__in=ver_pks)
+            pl_version_f = cast(forms.ModelMultipleChoiceField, self.fields["pl_version"])
+            pl_version_f.queryset = Version.objects.filter(pk__in=ver_pks)
 
 
 class CaseForm(forms.Form):
@@ -142,23 +145,28 @@ class CaseForm(forms.Form):
 
     def populate(self, data: QueryDict):
         status_choice = list(TestCaseStatus.objects.order_by("pk").values_list("pk", "name"))
-        self.fields["cs_status"].choices = status_choice
+        cs_status_f = cast(forms.MultipleChoiceField, self.fields["cs_status"])
+        cs_status_f.choices = status_choice
 
         priority_choice = list(Priority.objects.order_by("pk").values_list("pk", "value"))
-        self.fields["cs_priority"].choices = priority_choice
+        cs_priority_f = cast(forms.MultipleChoiceField, self.fields["cs_priority"])
+        cs_priority_f.choices = priority_choice
 
         prod_pks = data.getlist("cs_product")
         prod_pks = [k for k in prod_pks if k]
         if prod_pks:
-            self.fields["cs_product"].queryset = Product.objects.filter(pk__in=prod_pks)
+            cs_product_f = cast(forms.ModelMultipleChoiceField, self.fields["cs_product"])
+            cs_product_f.queryset = Product.objects.filter(pk__in=prod_pks)
         comp_pks = data.getlist("cs_component")
         comp_pks = [k for k in comp_pks if k]
         if comp_pks:
-            self.fields["cs_component"].queryset = Component.objects.filter(pk__in=comp_pks)
+            cs_component_f = cast(forms.ModelMultipleChoiceField, self.fields["cs_component"])
+            cs_component_f.queryset = Component.objects.filter(pk__in=comp_pks)
         cat_pks = data.getlist("cs_category")
         cat_pks = [k for k in cat_pks if k]
         if cat_pks:
-            self.fields["cs_category"].queryset = TestCaseCategory.objects.filter(pk__in=cat_pks)
+            cs_category_f = cast(forms.ModelMultipleChoiceField, self.fields["cs_category"])
+            cs_category_f.queryset = TestCaseCategory.objects.filter(pk__in=cat_pks)
 
 
 class RunForm(forms.Form):
@@ -200,14 +208,15 @@ class RunForm(forms.Form):
         prod_pks = data.getlist("r_product")
         prod_pks = [k for k in prod_pks if k]
         if prod_pks:
-            self.fields["r_product"].queryset = Product.objects.filter(pk__in=prod_pks).only("name")
+            r_product_f = cast(forms.ModelMultipleChoiceField, self.fields["r_product"])
+            r_product_f.queryset = Product.objects.filter(pk__in=prod_pks).only("name")
         build_pks = data.getlist("r_build")
         build_pks = [k for k in build_pks if k]
         if build_pks:
-            self.fields["r_build"].queryset = TestBuild.objects.filter(pk__in=build_pks).only(
-                "name"
-            )
+            r_build_f = cast(forms.ModelMultipleChoiceField, self.fields["r_build"])
+            r_build_f.queryset = TestBuild.objects.filter(pk__in=build_pks).only("name")
         ver_pks = data.getlist("r_version")
         ver_pks = [k for k in ver_pks if k]
         if ver_pks:
-            self.fields["r_version"].queryset = Version.objects.filter(pk__in=ver_pks).only("value")
+            r_version_f = cast(forms.ModelMultipleChoiceField, self.fields["r_version"])
+            r_version_f.queryset = Version.objects.filter(pk__in=ver_pks).only("value")

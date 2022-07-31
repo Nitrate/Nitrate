@@ -631,7 +631,7 @@ class TestingReportBase(TemplateView):
 
         queries = fmt_queries(queries)
         del queries["report type"]
-        request_path = remove_from_request_path(self.request, "report_type")
+        request_path = remove_from_request_path(self.request, ["report_type"])
 
         data = {
             "errors": errors,
@@ -642,7 +642,7 @@ class TestingReportBase(TemplateView):
         }
 
         if request_path:
-            data["path_without_build"] = remove_from_request_path(request_path, "r_build")
+            data["path_without_build"] = remove_from_request_path(request_path, ["r_build"])
 
         return data
 
