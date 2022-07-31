@@ -25,9 +25,6 @@ Nitrate - Test Case Management System
    :target: https://github.com/Nitrate/Nitrate/
 .. image:: https://coveralls.io/repos/github/Nitrate/Nitrate/badge.svg?branch=develop
    :target: https://coveralls.io/github/Nitrate/Nitrate?branch=develop
-.. image:: https://badges.gitter.im/Nitrate/Nitrate.svg
-   :alt: Gitter
-   :target: https://gitter.im/Nitrate/Nitrate?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
 .. image:: https://copr.fedorainfracloud.org/coprs/cqi/python-nitrate-tcms/package/python-nitrate-tcms/status_image/last_build.png
    :alt: Package in Fedora Copr
    :target: https://copr.fedorainfracloud.org/coprs/cqi/python-nitrate-tcms/
@@ -207,7 +204,6 @@ There are various ways to get in touch. Choose one you like.
 
 * Mailing List: `nitrate-devel at lists.fedorahosted.org`_
 * IRC: nitrate-tcms on `irc.libera.chat`_
-* Gitter: https://gitter.im/Nitrate/Nitrate
 
 .. _nitrate-devel at lists.fedorahosted.org: mailto:nitrate-devel@lists.fedorahosted.org
 .. _irc.libera.chat: https://web.libera.chat/
