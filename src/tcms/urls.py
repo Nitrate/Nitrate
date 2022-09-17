@@ -39,6 +39,10 @@ urlpatterns = [
     path("jsi18n/", JavaScriptCatalog.as_view(), name="javascript-catalog"),
 ]
 
+# Python Social Core / Django Social Auth
+if "SOCIAL" in settings.ENABLED_AUTH_BACKENDS:
+    urlpatterns += [path("", include("social_django.urls", namespace="social"))]
+
 # Debug zone
 
 if settings.DEBUG:
