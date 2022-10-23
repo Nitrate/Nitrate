@@ -630,7 +630,8 @@ class TestingReportBase(TemplateView):
                 errors = form.errors
 
         queries = fmt_queries(queries)
-        del queries["report type"]
+        if "report_type" in queries:
+            queries["report_type"]
         request_path = remove_from_request_path(self.request, ["report_type"])
 
         data = {
