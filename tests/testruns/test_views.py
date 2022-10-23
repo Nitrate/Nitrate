@@ -1249,15 +1249,48 @@ class TestUpdateCaseRunText(BaseCaseRun):
             breakdown="breakdown_1",
         )
 
-    def test_update_selected_case_runs(self):
+        cls.case_run_2.case.add_text(
+            action="action", effect="effect", setup="setup", breakdown="breakdown"
+        )
+        cls.case_run_2.case.add_text(
+            action="action_2",
+            effect="effect_2",
+            setup="setup_2",
+            breakdown="breakdown_2",
+        )
+
+        cls.case_run_3.case.add_text(
+            action="action", effect="effect", setup="setup", breakdown="breakdown"
+        )
+        cls.case_run_3.case_text_version = cls.case_run_3.case.latest_text().case_text_version
+        cls.case_run_3.save()
+
+    def test_update_single_case_run(self):
         response = self.client.post(self.update_url, {"case_run": [self.case_run_1.pk]})
 
-        self.assertContains(response, "1 case run(s) succeed to update")
+        self.assertContains(response, "1 case run is updated")
 
         self.assertEqual(
             self.case_run_1.case.latest_text_version(),
             self.case_run_1.latest_text().case_text_version,
         )
+
+    def test_update_multiple_case_runs(self):
+        case_runs: list[int] = [self.case_run_1.pk, self.case_run_2.pk]
+        response = self.client.post(self.update_url, {"case_run": case_runs})
+
+        for pk in case_runs:
+            case_run: TestCaseRun = TestCaseRun.objects.get(pk=pk)
+            self.assertEqual(
+                case_run.case.latest_text_version(),
+                case_run.latest_text().case_text_version,
+            )
+
+        self.assertContains(response, "2 case runs are updated")
+
+    def test_no_need_to_update(self):
+        response = self.client.post(self.update_url, {"case_run": [self.case_run_3.pk]})
+        self.assertContains(response, "No case run needs to be updated.")
 
 
 class TestEditRun(BaseCaseRun):

@@ -1284,24 +1284,21 @@ def update_case_run_text(request, run_id):
 
     tcrs = tcrs.filter(case_run_status__name="IDLE")
 
-    count = 0
-    updated_tcrs = ""
+    updated_tcrs = []
     for tcr in tcrs:
         lctv = tcr.latest_text().case_text_version
         if tcr.case_text_version != lctv:
-            count += 1
-            updated_tcrs += "<li>{}: {} -> {}</li>".format(
-                tcr.case.summary, tcr.case_text_version, lctv
-            )
+            updated_tcrs.append(f"{tcr.case.summary}: {tcr.case_text_version} -> {lctv}")
             tcr.case_text_version = lctv
             tcr.save()
 
-    return prompt.info(
-        request,
-        f"<p>{count} case run(s) succeed to update, following is the list:</p>"
-        f"<ul>{updated_tcrs}</ul>",
-        reverse("run-get", args=[run_id]),
-    )
+    if updated_tcrs:
+        count = len(updated_tcrs)
+        updated_list = "<br>".join(updated_tcrs)
+        msg = f"{count} case run{'s are' if count > 1 else ' is'} updated:<br>{updated_list}"
+    else:
+        msg = "No case run needs to be updated."
+    return prompt.info(request, msg, reverse("run-get", args=[run_id]))
 
 
 @require_GET
