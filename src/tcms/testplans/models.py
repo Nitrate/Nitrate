@@ -13,6 +13,7 @@ from django.db.models.signals import post_delete, post_save, pre_delete, pre_sav
 from django.dispatch import receiver
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
+from django.utils import timezone
 from uuslug import slugify
 
 from tcms.core.models import TCMSActionModel
@@ -162,10 +163,16 @@ class TestPlan(TCMSActionModel):
         self,
         author: User,
         plan_text: str,
-        create_date=datetime.now(),
+        created_at: Optional[datetime] = None,
         plan_text_version=None,
         text_checksum=None,
     ):
+        """Add text to this plan.
+
+        :param created_at: the time when this text is added. If omitted,
+            ``datetime.now`` is called to get the time.
+        :type created_at: datetime or None
+        """
         if plan_text is None:
             return None
 
@@ -182,13 +189,15 @@ class TestPlan(TCMSActionModel):
             if old_checksum == new_checksum:
                 return self.latest_text()
 
-        return self.text.create(
-            plan_text_version=plan_text_version,
-            author=author,
-            create_date=create_date,
-            plan_text=plan_text,
-            checksum=text_checksum or checksum(plan_text),
-        )
+        text_data = {
+            "plan_text_version": plan_text_version,
+            "author": author,
+            "plan_text": plan_text,
+            "checksum": text_checksum or checksum(plan_text),
+        }
+        if created_at is not None:
+            text_data["create_date"] = created_at
+        return self.text.create(**text_data)
 
     def add_case(self, case: TestCase, sortkey: Union[int, None] = 1):
         """Add a case"""
@@ -339,7 +348,7 @@ class TestPlan(TCMSActionModel):
                 tp_dest.add_text(
                     plan_text_version=tptxt_src.plan_text_version,
                     author=tptxt_src.author,
-                    create_date=tptxt_src.create_date,
+                    created_at=tptxt_src.create_date,
                     plan_text=tptxt_src.plan_text,
                 )
         else:
@@ -560,7 +569,7 @@ class TestPlanText(TCMSActionModel):
     plan = models.ForeignKey(TestPlan, related_name="text", on_delete=models.CASCADE)
     plan_text_version = models.IntegerField()
     author = models.ForeignKey("auth.User", db_column="who", on_delete=models.CASCADE)
-    create_date = models.DateTimeField(auto_now_add=True, db_column="creation_ts")
+    create_date = models.DateTimeField(default=timezone.now, db_column="creation_ts")
     plan_text = models.TextField(blank=True)
     checksum = models.CharField(max_length=32)
 
