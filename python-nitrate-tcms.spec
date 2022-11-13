@@ -5,7 +5,7 @@
 %global mainpkg python3-%{pypi_name}
 
 Name:           python-%{pypi_name}
-Version:        4.12
+Version:        4.13.dev0
 Release:        1%{?dist}
 Summary:        Test Case Management System
 
