@@ -55,3 +55,18 @@ jobs:
         CONTAINER=docker RELEASE_VERSION=${RELEASE_VERSION} \
         QUAY_USER=${{ secrets.quay_username }} QUAY_PASSWORD=${{ secrets.quay_token }} \
         make publish-images
+
+  build-and-push-images:
+    name: Build and push images
+    needs: pypi
+    runs-on: ubuntu-latest
+    steps:
+      - run: sudo apt-get install -y make python3 python3-pip
+      - uses: actions/checkout@v3
+        with:
+          repository: https://github.com/Nitrate/containers
+      - run: |
+          echo "${{ secrets.quay_token }}" | \
+            docker login -u "${{ secrets.quay_username }}" --password-stdin quay.io
+          git_ref="${{ github.ref }}"
+          make all-images push-all engine=docker version=${git_ref##refs/tags/v}

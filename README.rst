@@ -135,19 +135,21 @@ RPM packages are provided from a `Copr repository`_::
 Container Images
 ~~~~~~~~~~~~~~~~
 
-Nitrate provides two container images:
+Nitrate provides three pre-built container images that can run in the
+cloud or a local container environment.
 
-* `quay.io/nitrate/nitrate`_
-* `quay.io/nitrate/nitrate-worker`_
+Generally, you should require ``quay.io/nitrate/web`` and
+``quay.io/nitrate/worker``. ``quay.io/nitrate/base`` is the base image
+used to build web and worker image, which should not be used directly
+in most cases unless you would like to build a custom image base on
+it.
 
-The ``nitrate-worker`` image is optional, that depends no whether there is
-requirement to run asynchronous tasks by Celery.
+The worker image is optional if there is no requirement to run
+asynchronous tasks by Celery.
 
-For more information, please refer to the description of image
-``quay.io/nitrate/nitrate``.
+For more information, please refer to `Nitrate/containers`_
 
-.. _quay.io/nitrate/nitrate: https://quay.io/repository/nitrate/nitrate
-.. _quay.io/nitrate/nitrate-worker: https://quay.io/repository/nitrate/nitrate-worker
+.. _Nitrate/containers: https://github.com/Nitrate/containers
 
 Run Nitrate
 -----------
