@@ -23,7 +23,7 @@ jobs:
       - run: sudo apt-get install -y make python3 python3-pip
       - uses: actions/checkout@v3
         with:
-          repository: https://github.com/Nitrate/containers
+          repository: Nitrate/containers
       - run: |
           echo "${{ secrets.quay_token }}" | \
             docker login -u "${{ secrets.quay_username }}" --password-stdin quay.io
