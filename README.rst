@@ -90,47 +90,24 @@ Get Nitrate
 -----------
 
 Nitrate ships with optional subpackages in addition to the main nitrate-tcms
-package. They are available from either PyPI or the YUM repository. The
-subpackages include:
+package. They are available from PyPI. The subpackages include:
 
 * ``mysql``: needed when Nitrate works with MySQL or MariaDB database.
-
 * ``pgsql``: needed when Nitrate works with PostgreSQL database.
-
 * ``bugzilla``: needed when the ``BugzillaBackend`` authentication backend is
   enabled, or the issue tracker is configured to work with a Bugzilla
   instance.
-
 * ``krbauth``: needed when the ``KerberosBackend`` authentication backend is
   enabled.
-
-* ``socialauth``: needed when the social-based authentication backend is
-  enabled.
-
+* ``socialauth``: needed when the social-based authentication backend
+  is enabled.
 * ``async``: needed when to run asynchronous tasks as Celery tasks.
 
-PyPI
-~~~~
-
-::
+Example of installation from PyPI::
 
   python3 -m pip install nitrate-tcms
-
-  # Example: if Kerberos-based authentication is required
-  python3 -m pip install nitrate-tcms[krbauth]
-
-RPM
-~~~
-
-RPM packages are provided from a `Copr repository`_::
-
-  sudo dnf copr enable cqi/python-nitrate-tcms
-  sudo dnf install python3-nitrate-tcms
-
-  # Example: if Celery is required and run with PostgreSQL
-  sudo dnf install python3-nitrate-tcms+async python3-nitrate-tcms+pgsql
-
-.. _Copr repository: https://copr.fedorainfracloud.org/coprs/cqi/python-nitrate-tcms/
+  # To enable Kerberos-based authentication and asynchronous task in Celery
+  python3 -m pip install nitrate-tcms[krbauth,async]
 
 Container Images
 ~~~~~~~~~~~~~~~~
