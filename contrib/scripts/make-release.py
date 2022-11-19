@@ -2,7 +2,6 @@
 
 import re
 import argparse
-import subprocess
 from pathlib import Path
 
 from datetime import datetime
@@ -74,15 +73,5 @@ Path(f'docs/source/releases/{new_version}.rst').write_text(
         change_logs=generate_changelog(args),
         release_date=datetime.now().strftime('%b %d, %Y')
     ),
-    "utf-8",
-)
-
-readme_md = Path('container/README.md')
-content = readme_md.read_text("utf-8")
-readme_md.unlink()
-readme_md.write_text(
-    re.sub(r'quay.io/nitrate/nitrate:\d+\.\d+(\.\d+)?',
-           f'quay.io/nitrate/nitrate:{new_version}',
-           content),
     "utf-8",
 )
