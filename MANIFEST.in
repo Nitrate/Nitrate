@@ -7,7 +7,6 @@ include container-compose.yml
 include tox.ini
 
 graft .github
-graft container
 graft contrib
 graft src/locale
 graft src/static
