@@ -10,107 +10,26 @@ on:
       - develop
 
 jobs:
-  flake8:
-    name: Run flake8 checks
+  linters:
+    name: Run linters
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
-          python-version: 3.8
-      - name: Install tox
-        run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install tox
-      - run: tox -e flake8
-
-  docs:
-    name: Test documentation build
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-        with:
-          python-version: 3.9
-      - name: Install tox
-        run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install tox
-      - run: tox -e docs
-
-  doc8:
-    name: Run doc8 checks
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-        with:
-          python-version: 3.9
-      - name: Install doc8
-        run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install tox
-      - run: tox -e doc8
-
-  isort:
-    name: Run isort checks
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
-      with:
-        python-version: 3.9
-    - name: Install tox
-      run: |
-        python3 -m pip install --upgrade pip
-        python3 -m pip install tox
-    - run: tox -e isort
-
-  black:
-    name: black
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
-      with:
-        python-version: 3.9
-    - name: Install tox
-      run: |
-        python3 -m pip install --upgrade pip
-        python3 -m pip install tox
-    - run: tox -e black
-
-  eslint:
-    name: Lint JavaScript code
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
+          python-version: '3.10'
       - run: |
-          docker run --rm -v $PWD:/code:Z registry.fedoraproject.org/fedora:35 /bin/bash -c "
-            set -ex
-            dnf \
-                --disablerepo=fedora-modular --disablerepo=updates-modular --disablerepo=fedora-cisco-openh264 \
-                install -y nodejs npm python3-tox
-            cd /code
-            npm install eslint@7.1.0
-            npm install eslint-plugin-jsdoc@30.3.0
-            export PATH=./node_modules/.bin:$PATH
-            tox -e jslint
-          "
+          sudo apt-get update
+          sudo apt-get install -y npm
+          npm install eslint@7.1.0
+          npm install eslint-plugin-jsdoc@30.3.0
+          export PATH="$(pwd)/node_modules/.bin:$PATH"
 
-  templatelint:
-    name: Lint templates
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-      - run: bash ./contrib/scripts/templatelint.sh src/templates
+          python3 -m venv venv
+          envpy=./venv/bin/python3
+          "$envpy" -m pip install --upgrade pip
+          "$envpy" -m pip install tox
+          "$envpy" -m tox -e bandit,black,flake8,docs,doc8,isort,templatelint,jslint
 
   mypy:
     name: Run mypy-${{ matrix.django-version }} checks
