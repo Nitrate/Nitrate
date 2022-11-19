@@ -6,53 +6,8 @@ on:
       - develop
 
 jobs:
-  copr-build:
-    if: github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/')
-    name: Build the RPM
-    runs-on: ubuntu-latest
-    steps:
-    - run: sudo apt-get install git
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: '0'
-    - run: echo "${{ secrets.COPR_CONF }}" > copr_conf
-    - run: |
-        IFS='-' read version commits last_commit <<< $(git describe)
-        echo "NITRATE_VERSION=$(cat VERSION.txt)" >> $GITHUB_ENV
-        echo "NITRATE_COMMITS=${commits}" >> $GITHUB_ENV
-        echo "NITRATE_LAST_COMMIT=${last_commit}" >> $GITHUB_ENV
-    - name: Build the package
-      run: |
-        docker run --name package-build -v $(pwd):/code:Z registry.fedoraproject.org/fedora:35 /bin/bash -c "
-          set -ex
-          dnf install -y git make rpmdevtools copr-cli rpm-build python3
-          cd /code
-          rpmdev-bumpspec \
-            -n '${NITRATE_VERSION}-${NITRATE_COMMITS}.${NITRATE_LAST_COMMIT}%{?dist}' \
-            -c 'Rebuilt for latest' \
-            -u 'autobuild <autobuild@localhost>' \
-            -D \
-            python-nitrate-tcms.spec
-          make tarball srpm
-          copr-cli --conf ./copr_conf build \
-            -r fedora-35-x86_64 \
-            cqi/python-nitrate-tcms-testing dist/python-nitrate-tcms-*.src.rpm
-        "
-
-  build-image:
-    name: Build the image
-    needs: copr-build
-    runs-on: ubuntu-latest
-    steps:
-    - run: sudo apt-get install make
-    - uses: actions/checkout@v2
-    - run: CONTAINER=docker make image worker-image
-    - name: Publish images
-      run: |
-        QUAY_USER=${{ secrets.quay_username }} QUAY_PASSWORD=${{ secrets.quay_token }} \
-        CONTAINER=docker make publish-images
-
   build-push-develop-images:
+    if: github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/')
     name: Build and push develop images
     runs-on: ubuntu-latest
     steps:
