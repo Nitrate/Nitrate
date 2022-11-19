@@ -1,5 +1,5 @@
 include AUTHORS CHANGELOG.rst README.rst LICENSE VERSION.txt
-include python-nitrate-tcms.spec Makefile requirements.txt
+include Makefile requirements.txt
 include src/manage.py
 
 include .coveragerc .eslintrc.js .dockerignore .gitignore
