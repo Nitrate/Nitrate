@@ -86,10 +86,3 @@ readme_md.write_text(
            content),
     "utf-8",
 )
-
-subprocess.check_call([
-    'rpmdev-bumpspec',
-    '-n', new_version,
-    '-c', f'Built for version {new_version}',
-    'python-nitrate-tcms.spec'
-])
