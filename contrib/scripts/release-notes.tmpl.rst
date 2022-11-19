@@ -41,21 +41,6 @@ From PyPI
 
    python3 -m pip install nitrate-tcms
 
-RPM Packages
-------------
-
-Packages are available via a `Fedora Copr`_.
-
-.. code-block:: shell
-
-   sudo dnf copr enable cqi/python-nitrate-tcms
-   sudo dnf install python-nitrate-tcms
-
-   # Install extra subpackages accordingly, e.g.
-   sudo dnf install python-nitrate-tcms+pgsql python-nitrate-tcms+async
-
-.. _Fedora Copr: https://copr.fedorainfracloud.org/coprs/cqi/python-nitrate-tcms/
-
 Container Images
 ----------------
 
