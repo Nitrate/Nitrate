@@ -1,0 +1,125 @@
+.. _4.13:
+
+====
+4.13
+====
+
+*Nov 20, 2022*
+
+I’m pleased to announce a new version 4.13 is available now.
+
+Get Nitrate
+===========
+
+From PyPI
+---------
+
+.. code-block:: shell
+
+   python3 -m pip install nitrate-tcms
+
+No RPM Packages
+---------------
+
+Since version, no RPM package is built. Nitrate is only packaged into
+container images. Please refer to next section.
+
+Container Images
+----------------
+
+``quay.io/nitrate/nitrate`` and ``quay.io/nitrate/nitrate-worker`` are
+deprecated, please migrate to new image:
+
+* ``quay.io/nitrate/web:4.13``: the main image including Nitrate Web
+  application.
+
+* ``quay.io/nitrate/worker:4.13``: an optional worker image if the
+  asynchronous tasks scheduled and run by Celery are required.
+
+Refer to :ref:`deployment` for detailed information.
+
+For more information about containers, please refer to `Nitrate/containers`_
+
+.. _Nitrate/containers: https://github.com/Nitrate/containers/
+
+Bugfixes
+========
+
+* Add missing csrf token for choosing cases to runs (#1037)
+* NaN is shown in the input when change a case run's sort key (#1013)
+* KeyError at /report/testing/ (#1094)
+* TestPlan.add_text can't set creation date correctly (#1001)
+* Reword message for updating case runs (#1036)
+
+Database Migrations
+===================
+
+This release includes database migrations. Schema changes:
+
+* There are a few due to the upgrade of django-contrib-comments to
+  version 2.2.0.
+* Use ``BigAutoField`` for the models primary key.
+
+Distribution
+============
+
+* Fedora 35 is the base image of Nitrate container images (#1058)
+* Update IRC (PR #1060)
+* Fedora 34 package is removed (PR #1076)
+* Run Nitrate within virtual environment inside container (#1051)
+* Provide consistent requirements for creating virtual environment (#1052)
+
+Dependencies
+============
+
+* Upgrade extras dependencies (PR #1059)
+
+Infrastructure Improvements
+===========================
+
+* Successfully build the documentation in RTD by upgrading the config
+  format to version 2 (#1028, #1029, #1030)
+* Fedora 33 is removed from the CI infrastructure (#1058)
+* Add lgtm to GH CI (#1062)
+* Remove Django 2.2 from testenv (#1072)
+* Remove Django 3.1 from testenv (#1077)
+* mypy is added to testenv and GH CI (#1004)
+* Use md5 password hasher for tests (PR #1082)
+* Allow running tests in parallel (PR #1084)
+* Allow specifying specific Python files to lint checks (PR #1084)
+* Remove f34 from dev-release CI task (PR #1085)
+* Drop RPM package build completely (#976)
+* Disable lgtm.com (#1107)
+* Remove branch pattern release-*.* from CI (#1105)
+* Repository passed to action/checkout is in wrong format (#1109)
+* Merge linters properly in CI (#1104)
+* Provide consistent requirements for creating virtual environment (#1052)
+
+Codebase Improvements
+=====================
+
+* Remove jQuery from constructForm (#1022)
+* Refactor and remove jQuery from csrf.html (#1031)
+* View function testplans.views.delete is not used, remove it. (#968)
+* Use Array.isArray in Nitrate.Utils.formSerialize (#1017)
+* Call document.createElement to create DOM elements (#1038)
+* Rewrite DetailExpansion in class (#972)
+* Add bandit to testenv (#1061)
+* JS: remove submitComment (#1047)
+* JS: remove unused argument (#1049)
+* JS: rename JS filenames (#1016)
+* Remove testcases js from plan get.html
+* JS: fix incorrect handle of window.prompt result
+* Remove testplans and testcases js from assign_case.html
+* Remove testcases js from plan get.html
+* JS: fix incorrect handle of window.prompt result
+* Remove testplans and testcases js from assign_case.html
+* Recover completed_case_run_percent
+* Simplify timedelta2int (PR #1087)
+* Add missing migrations for default BigAutoField (PR #1089)
+* Pin package versions for mypy check (PR #1092)
+* Fix mypy issues (PR #1092)
+* Upgrade celery version (PR #1092)
+* Social Auth Provider requires URLS (#1095)
+* Add pyproject.toml (PR #1114)
+
