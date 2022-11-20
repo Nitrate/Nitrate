@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+
+[tool.black]
+line-length = 100
+target-version = ['py310']
+check = 1
+diff = 1
+
+[tool.isort]
+line_length = 100
+extend_skip = ["migrations"]
+profile = "black"
+
+[tool.mypy]
+plugins = ["mypy_django_plugin.main"]
+ignore_missing_imports = 1
+exclude = ["settings", "migrations"]
+
+[tool.django-stubs]
+django_settings_module = "tcms.settings.devel"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "tcms.settings.test"
+python_files = "test_*.py"
+addopts = "--cov=src/tcms/ --cov-report=term --cov-report=html"
+# This magic value causes py.test does not collect arbitrary classes, like
+# Nitrate's TestCase, TestPlan, and TestRun, that are wrongly treated as tests.
+# This value lets py.test only collect classes that is derived from either
+# django.test.TestCase or unittest.TestCase
+# So, if anyone writes a test class with a name including this string, it is
+# incorrect.
+# Refer to http://doc.pytest.org/en/latest/customize.html#confval-python_classes
+python_classes = "*xxxxxxxxx*"
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+skip_covered = true
+omit = [
+    "*/migrations/*.py",
+    "src/tcms/celery.py",
+    "src/tcms/__init__.py",
+    "src/tcms/settings/*.py",
+    "src/tcms/wsgi.py",
+    "*/urls.py",
+    "*/urls/*.py"
+]
