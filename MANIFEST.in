@@ -1,8 +1,8 @@
 include AUTHORS CHANGELOG.rst README.rst LICENSE VERSION.txt
-include Makefile requirements.txt
+include Makefile
 include src/manage.py
 
-include .coveragerc .eslintrc.js .dockerignore .gitignore
+include .eslintrc.js .dockerignore .gitignore
 include container-compose.yml
 include tox.ini
 
@@ -17,5 +17,3 @@ include docs/Makefile docs/requirements.txt docs/make.bat
 graft docs/source
 
 global-exclude *.pyc
-
-recursive-exclude src/**/.mypy_cache/ *
