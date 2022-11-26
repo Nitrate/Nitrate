@@ -10,8 +10,9 @@ Nitrate - Test Case Management System
 .. image:: https://img.shields.io/pypi/djversions/nitrate-tcms?label=django
    :alt: Django Versions
    :target: https://pypi.python.org/pypi/nitrate-tcms
-.. image:: https://quay.io/repository/nitrate/nitrate/status
-   :target: https://quay.io/repository/nitrate/nitrate/
+.. image:: https://quay.io/repository/nitrate/web/status
+   :alt: Web Image
+   :target: https://quay.io/repository/nitrate/web/
 .. image::  https://readthedocs.org/projects/nitrate/badge/?version=latest
    :target: http://nitrate.readthedocs.io/en/latest/
 .. image:: https://img.shields.io/pypi/l/nitrate-tcms
@@ -25,9 +26,6 @@ Nitrate - Test Case Management System
    :target: https://github.com/Nitrate/Nitrate/
 .. image:: https://coveralls.io/repos/github/Nitrate/Nitrate/badge.svg?branch=develop
    :target: https://coveralls.io/github/Nitrate/Nitrate?branch=develop
-.. image:: https://copr.fedorainfracloud.org/coprs/cqi/python-nitrate-tcms/package/python-nitrate-tcms/status_image/last_build.png
-   :alt: Package in Fedora Copr
-   :target: https://copr.fedorainfracloud.org/coprs/cqi/python-nitrate-tcms/
 
 Nitrate is a new test plan, test run and test case management system,
 which is written in `Python`_ and `Django`_ (the Python web framework).
