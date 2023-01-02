@@ -28,7 +28,7 @@ jobs:
           python3 -m venv venv
           envpy=./venv/bin/python3
           "$envpy" -m pip install --upgrade pip
-          "$envpy" -m pip install tox
+          "$envpy" -m pip install 'tox<4.0'
           "$envpy" -m tox -e bandit,black,flake8,docs,doc8,isort,templatelint,jslint
 
   mypy:
@@ -48,5 +48,5 @@ jobs:
       - name: Install tox
         run: |
           python3 -m pip install --upgrade pip
-          python3 -m pip install tox
+          python3 -m pip install 'tox<4.0'
       - run: tox -e mypy-${{ matrix.django-version }}
