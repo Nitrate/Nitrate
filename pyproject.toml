@@ -23,7 +23,7 @@ django_settings_module = "tcms.settings.devel"
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "tcms.settings.test"
 python_files = "test_*.py"
-addopts = "--cov=src/tcms/ --cov-report=term --cov-report=html"
+addopts = "--cov=src/tcms/ --cov-report=term --cov-report=html --cov-report=xml"
 # This magic value causes py.test does not collect arbitrary classes, like
 # Nitrate's TestCase, TestPlan, and TestRun, that are wrongly treated as tests.
 # This value lets py.test only collect classes that is derived from either
