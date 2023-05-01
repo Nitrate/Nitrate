@@ -48,10 +48,10 @@ jobs:
           sudo apt-get install gcc python3-dev libkrb5-dev libmariadb-dev libcrypt-dev
 
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -69,25 +69,20 @@ jobs:
         run: |
           tox -e py$tox_pyver-${{ matrix.django-version }}-${{ matrix.db }}
 
-      - name: Report coverage
-        run: coveralls --service=github
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COVERALLS_FLAG_NAME: testenv-py${{ matrix.python-version }}-${{ matrix.django-version }}-${{ matrix.db }}
-          COVERALLS_PARALLEL: true
+      - name: Parallel coverage report
+        uses: coverallsapp/github-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          flag-name: testenv-py${{ matrix.python-version }}-${{ matrix.django-version }}-${{ matrix.db }}
+          parallel: true
 
   coveralls:
     name: Finish Coveralls
     needs: unittests
     runs-on: ubuntu-latest
     steps:
-      - name: Set up Python
-        uses: actions/setup-python@v2
+      - name: Finish coverage report
+        uses: coverallsapp/github-action@v2
         with:
-          python-version: 3.8
-      - name: Finished
-        run: |
-          python -m pip install --upgrade coveralls
-          coveralls --finish --service=github
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          parallel-finished: true
