@@ -10,9 +10,6 @@ Nitrate - Test Case Management System
 .. image:: https://img.shields.io/pypi/djversions/nitrate-tcms?label=django
    :alt: Django Versions
    :target: https://pypi.python.org/pypi/nitrate-tcms
-.. image:: https://quay.io/repository/nitrate/web/status
-   :alt: Web Image
-   :target: https://quay.io/repository/nitrate/web/
 .. image::  https://readthedocs.org/projects/nitrate/badge/?version=latest
    :target: http://nitrate.readthedocs.io/en/latest/
 .. image:: https://img.shields.io/pypi/l/nitrate-tcms
@@ -21,9 +18,9 @@ Nitrate - Test Case Management System
 .. image:: https://img.shields.io/github/issues-raw/Nitrate/Nitrate
    :alt: GitHub issues
    :target: https://github.com/Nitrate/Nitrate/issues/
-.. image:: https://img.shields.io/github/workflow/status/Nitrate/Nitrate/Unit%20Tests
-   :alt: GitHub Workflow Status
-   :target: https://github.com/Nitrate/Nitrate/
+.. image:: https://github.com/Nitrate/Nitrate/actions/workflows/unittests.yaml/badge.svg?branch=develop&event=push
+   :alt: GitHub Workflow Unittests Status
+   :target: https://github.com/Nitrate/Nitrate/actions/workflows/unittests.yaml?query=event%3Apush+branch%3Adevelop
 .. image:: https://coveralls.io/repos/github/Nitrate/Nitrate/badge.svg?branch=develop
    :target: https://coveralls.io/github/Nitrate/Nitrate?branch=develop
 
