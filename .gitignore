@@ -2,7 +2,6 @@
 *.swp
 *egg*/
 *~
-.coverage
 .gitignore
 .idea
 .tags
@@ -34,3 +33,7 @@ Vagrantfile
 .DS_Store
 node_modules/
 **/.mypy_cache/
+
+# coverage report
+.coverage
+coverage.xml
