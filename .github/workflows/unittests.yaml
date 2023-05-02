@@ -17,7 +17,7 @@ jobs:
       max-parallel: 7
       matrix:
         python-version: [3.9, '3.10', '3.11']
-        django-version: [django320]
+        django-version: [django320, django420]
         db: [sqlite]
         include:
           - python-version: '3.11'
@@ -28,6 +28,15 @@ jobs:
             db: mariadb
           - python-version: '3.11'
             django-version: django320
+            db: postgres
+          - python-version: '3.11'
+            django-version: django420
+            db: mysql
+          - python-version: '3.11'
+            django-version: django420
+            db: mariadb
+          - python-version: '3.11'
+            django-version: django420
             db: postgres
 
     steps:
