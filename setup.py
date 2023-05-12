@@ -25,9 +25,9 @@ setup(
         "django-tinymce==3.5.0",
         "django-uuslug==2.0.0",
         "html2text==2020.1.16",
+        "kobo==0.25.0",
         "odfpy==1.4.1",
         "xmltodict==0.13.0",
-        "kobo==0.25.0",
     ],
     extras_require={
         'mysql': ['mysqlclient==2.1.1'],
