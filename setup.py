@@ -1,20 +1,16 @@
 from setuptools import setup, find_packages
 
-def get_version() -> str:
-    with open("VERSION.txt", "r", encoding="utf-8") as f:
+
+def read_file(filename: str) -> str:
+    with open(filename, "r", encoding="utf-8") as f:
         return f.read().strip()
-
-
-def get_long_description() -> str:
-    with open("README.rst", "r", encoding="utf-8") as f:
-        return f.read()
 
 
 setup(
     name="nitrate-tcms",
-    version=get_version(),
+    version=read_file("VERSION.txt"),
     description="A full-featured Test Case Management System",
-    long_description=get_long_description(),
+    long_description=read_file("README.rst"),
     author="Nitrate Team",
     maintainer="Chenxiong Qi",
     maintainer_email="qcxhome@gmail.com",
