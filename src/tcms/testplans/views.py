@@ -839,7 +839,7 @@ class PlanComponentsActionView(View):
 
         return HttpResponse(html())
 
-    def get_default_component_list(self, request, plan: TestPlan):
+    def get_default_component_list(self, request, plan):
         return render(request, self.template_name, context={"test_plan": plan})
 
 
