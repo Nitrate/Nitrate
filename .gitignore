@@ -8,6 +8,7 @@
 .vagrant/
 .tox/
 .env/
+.venv/
 .pytest_cache/
 TAGS
 build/
@@ -26,6 +27,7 @@ tcms/toys.py
 cover-report/
 htmlcov/
 .cache/
+.dccache
 ./install/
 uploads/
 Vagrantfile

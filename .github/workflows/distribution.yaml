@@ -8,9 +8,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - run: python setup.py sdist
-    - name: Publish distribution 📦 to PyPI
-      uses: pypa/gh-action-pypi-publish@master
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    - name: make sdist
+      run: |
+        python3 -m venv venv
+        ./venv/bin/pip install build
+        ./venv/bin/python3 -m build --sdist
+    - name: Publish sdist package to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
       with:
         user: __token__
         password: ${{ secrets.pypi_token }}
