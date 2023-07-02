@@ -16,7 +16,7 @@ jobs:
         python3 -m venv venv
         ./venv/bin/pip install build
         ./venv/bin/python3 -m build --sdist
-    - name: Publish distribution 📦 to PyPI
+    - name: Publish sdist package to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         user: __token__
