@@ -13,7 +13,7 @@ graft src/static
 graft src/templates
 graft tests
 
-include docs/Makefile docs/requirements.txt docs/make.bat
+include docs/Makefile docs/make.bat
 graft docs/source
 
 global-exclude *.pyc
