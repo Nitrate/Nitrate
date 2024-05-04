@@ -328,9 +328,7 @@ class ModelPatchBaseView(PermissionRequiredMixin, View):
                         params["who"],
                     )
 
-    def _simple_update(
-        self, models: Union[QuerySet, list[TCMSActionModel]], new_value: Any
-    ) -> None:
+    def _simple_update(self, models, new_value: Any) -> None:
         """A simple update method for most cases to update property of a set of cases
 
         In the most of the cases, the property update requires two steps, one is to update the
@@ -355,19 +353,13 @@ class ModelPatchBaseView(PermissionRequiredMixin, View):
             if original_value == str(new_value):
                 continue
 
-            log_actions_info.append(
-                (
-                    model,
-                    [
-                        {
-                            "who": self.request.user,
-                            "field": self.target_field,
-                            "original_value": original_value,
-                            "new_value": str(new_value),
-                        }
-                    ],
-                )
-            )
+            params = {
+                "who": self.request.user,
+                "field": self.target_field,
+                "original_value": original_value,
+                "new_value": str(new_value),
+            }
+            log_actions_info.append((model, [params]))
 
             setattr(model, self.target_field, new_value)
             changed.append(model)
@@ -451,7 +443,7 @@ class PatchTestCaseRunAssigneeForm(PatchTestCaseRunBaseForm):
         f.queryset = TestCaseRun.objects.select_related("case", "assignee").only(
             "case", "assignee__username"
         )
-        f: forms.ModelChoiceField = self.fields["new_value"]
+        f = self.fields["new_value"]
         new_assignee_pk = self.data.get("new_value")
         f.error_messages["invalid_choice"] = f"No user with id {new_assignee_pk} exists."
 
@@ -488,7 +480,7 @@ class PatchTestCaseRunStatusForm(PatchTestCaseRunBaseForm):
         f.queryset = TestCaseRun.objects.select_related("case_run_status", "tested_by").only(
             "close_date", "tested_by__username", "case_run_status__name"
         )
-        f: forms.ModelChoiceField = self.fields["new_value"]
+        f = self.fields["new_value"]
         new_status = self.data.get("new_value")
         f.error_messages[
             "invalid_choice"
@@ -517,15 +509,14 @@ class PatchTestCaseRunsView(ModelPatchBaseView):
         if not f.is_valid():
             return JsonResponseBadRequest({"message": form_error_messages_to_list(f)})
 
-        request_user: User = self.request.user
+        request_user = self.request.user
         new_status = f.cleaned_data["new_value"]
         update_time = datetime.datetime.now()
 
         log_actions_info = []
-        changed: list[TestCaseRun] = []
+        changed = []
         tested_by_changed = False
 
-        case_run: TestCaseRun
         for case_run in f.cleaned_data["case_run"]:
             if case_run.case_run_status == new_status:
                 continue
@@ -618,7 +609,7 @@ class PatchTestCaseDefaultTesterForm(PatchTestCaseBaseForm):
         f.queryset = TestCase.objects.select_related("default_tester").only(
             "default_tester__username"
         )
-        f: forms.ModelChoiceField = self.fields["new_value"]
+        f = self.fields["new_value"]
         f.error_messages["invalid_choice"] = (
             f"{self.data['new_value']} cannot be set as a default tester, "
             f"since this user does not exist."
@@ -654,7 +645,7 @@ class PatchTestCaseReviewerForm(PatchTestCaseBaseForm):
         super().__init__(*args, **kwargs)
         f = self.fields["case"]
         f.queryset = TestCase.objects.select_related("reviewer").only("reviewer__username")
-        f: forms.ModelChoiceField = self.fields["new_value"]
+        f = self.fields["new_value"]
         f.error_messages["invalid_choice"] = f"Reviewer {self.data['new_value']} is not found"
 
 
@@ -680,7 +671,7 @@ class PatchTestCaseSortKeyForm(PatchTestCaseBaseForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["case"].queryset = TestCase.objects.only("pk")
-        f: forms.ModelChoiceField = self.fields["plan"]
+        f = self.fields["plan"]
         f.error_messages["invalid_choice"] = f"No plan with id {self.data['plan']} exists."
 
 

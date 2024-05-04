@@ -18,6 +18,7 @@ from tcms.xmlrpc.serializer import datetime_to_str
 from tcms.xmlrpc.utils import pre_process_ids
 from tests import factories as f
 from tests import user_should_have_perm
+from tests.conftest import BaseDataContext
 from tests.xmlrpc.utils import XmlrpcAPIBaseTest, make_http_request
 
 
@@ -441,7 +442,7 @@ def test_get_tags(run_id: int, expected, tester, base_data):
         [2, [1, 2]],
     ],
 )
-def test_get_test_case_runs(run_id, expected, tester, base_data):
+def test_get_test_case_runs(run_id, expected, tester, base_data: BaseDataContext):
     plan = base_data.create_plan(pk=1, name="plan 1")
     case_1 = base_data.create_case(pk=1, summary="case 1")
     case_2 = base_data.create_case(pk=2, summary="case 2")
@@ -450,7 +451,7 @@ def test_get_test_case_runs(run_id, expected, tester, base_data):
     plan.add_case(case_2)
 
     base_data.create_test_run(pk=1, plan=plan)
-    run_2: TestRun = base_data.create_test_run(pk=2, plan=plan)
+    run_2 = base_data.create_test_run(pk=2, plan=plan)
     TestCaseRun.objects.create(
         pk=1,
         run=run_2,

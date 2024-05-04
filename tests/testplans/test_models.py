@@ -198,7 +198,7 @@ class TestGetPlanNotificationRecipients(test.TestCase):
             es.auto_to_case_default_tester = bool(auto_to_case_default_tester)
             es.save()
 
-            plan: TestPlan = TestPlan.objects.get(pk=self.plan.pk)
+            plan = TestPlan.objects.get(pk=self.plan.pk)
 
             # Since this test contains the case of plan.owner is None,
             # recover the plan's owner here.
@@ -255,7 +255,7 @@ class TestPlanTreeView(BasePlanCase):
 
     def test_get_ancestor_ids(self):
         expected = [self.plan.pk, self.plan_2.pk, self.plan_3.pk]
-        plan: TestPlan = TestPlan.objects.get(pk=self.plan_4.pk)
+        plan = TestPlan.objects.get(pk=self.plan_4.pk)
         self.assertListEqual(expected, sorted(plan.get_ancestor_ids()))
 
     def test_get_ancestors(self):
@@ -275,7 +275,7 @@ class TestPlanTreeView(BasePlanCase):
 
     def test_get_descendant_ids(self):
         expected = [self.plan_4.pk, self.plan_5.pk, self.plan_6.pk, self.plan_7.pk]
-        plan: TestPlan = TestPlan.objects.get(pk=self.plan_3.pk)
+        plan = TestPlan.objects.get(pk=self.plan_3.pk)
         self.assertListEqual(expected, sorted(plan.get_descendant_ids()))
 
     def test_get_descendants(self):
@@ -308,7 +308,7 @@ class TestPlanTreeView(BasePlanCase):
         ]
 
         for parent_plan, expected in test_data:
-            plan: TestPlan = TestPlan.objects.get(pk=parent_plan)
+            plan = TestPlan.objects.get(pk=parent_plan)
             self.assertListEqual(expected, sorted(plan.get_descendant_ids(True)))
 
 
@@ -678,7 +678,7 @@ def test_plan_add_env_group(group_name, tester, base_data):
     else:
         env_group = TCMSEnvGroup.objects.create(name=group_name, manager=tester)
         plan.add_env_group(env_group)
-        rels: list[TCMSEnvPlanMap] = list(TCMSEnvPlanMap.objects.all())
+        rels = list(TCMSEnvPlanMap.objects.all())
         assert 1 == len(rels)
         assert env_group == rels[0].group
 

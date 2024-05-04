@@ -153,7 +153,7 @@ class TestIndexView(test.TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.password = "password"
-        cls.user: User = User.objects.create(username="tester", email="tester@localhost")
+        cls.user = User.objects.create(username="tester", email="tester@localhost")
         cls.user.set_password(cls.password)
         cls.user.save()
 

@@ -111,8 +111,6 @@ class TestChangeCaseRunAssignee(BaseCaseRun):
         mail.outbox = []
         update_targets = [self.case_run_1, self.case_run_3]
 
-        case_run: TestCaseRun
-
         resp = self.client.patch(
             self.url,
             data={
@@ -196,7 +194,7 @@ class TestSendMailNotifyOnTestCaseReviewerIsChanged(BasePlanCase):
         case = TestCase.objects.get(pk=self.case_2.pk)
         self.assertEqual(self.reviewer.username, case.reviewer.username)
 
-        out_mail: EmailMessage = mail.outbox[0]
+        out_mail = mail.outbox[0]
 
         self.assertEqual("You have been the reviewer of cases", out_mail.subject)
         self.assertListEqual([self.reviewer.email], out_mail.recipients())
@@ -248,7 +246,6 @@ class TestChangeCaseRunStatus(BaseCaseRun):
 
         self.assertEqual(200, resp.status_code)
 
-        case_run: TestCaseRun
         for case_run in [self.case_run_1, self.case_run_3]:
             self.assertEqual(
                 self.running_status, TestCaseRun.objects.get(pk=case_run.pk).case_run_status
@@ -379,10 +376,9 @@ class TestUpdateCaseRunsSortkey(BaseCaseRun):
 
     def test_update_sort_key(self):
         new_sort_key = 2
-        update_targets: list[TestCaseRun] = [self.case_run_2, self.case_run_4]
+        update_targets = [self.case_run_2, self.case_run_4]
 
-        case_run: TestCaseRun
-        update_targets_pks: list[int] = [case_run.pk for case_run in update_targets]
+        update_targets_pks = [case_run.pk for case_run in update_targets]
 
         resp = self.client.patch(
             self.url,
@@ -408,7 +404,7 @@ class TestUpdateCaseRunsSortkey(BaseCaseRun):
             )
 
         # Other case runs' sortkey should not be changed.
-        sort_keys: list[int] = TestCaseRun.objects.exclude(pk__in=update_targets_pks).values_list(
+        sort_keys = TestCaseRun.objects.exclude(pk__in=update_targets_pks).values_list(
             "sortkey", flat=True
         )
         for sort_key in sort_keys:
@@ -451,7 +447,6 @@ class TestUpdateCasesDefaultTester(AuthMixin, HelperAssertions, test.TestCase):
 
         self.assertJsonResponse(resp, {})
 
-        case: TestCase
         for case in [self.case_1, self.case_2]:
             self.assertEqual(self.user_1, TestCase.objects.get(pk=case.pk).default_tester)
             self.assertTrue(
@@ -487,7 +482,6 @@ class TestUpdateCasesDefaultTester(AuthMixin, HelperAssertions, test.TestCase):
             status_code=HTTPStatus.BAD_REQUEST,
         )
 
-        case: TestCase
         for case in [self.case_1, self.case_2]:
             self.assertEqual(case.default_tester, TestCase.objects.get(pk=case.pk).default_tester)
 
@@ -518,7 +512,6 @@ class TestChangeTestCasePriority(BasePlanCase):
         self.assertEqual(p4, TestCase.objects.get(pk=self.case_1.pk).priority)
         self.assertEqual(p4, TestCase.objects.get(pk=self.case_3.pk).priority)
 
-        case: TestCase
         for case in [self.case_1, self.case_3]:
             self.assertTrue(
                 TCMSLogModel.objects.filter(
@@ -565,7 +558,6 @@ class TestChangeTestCaseReviewer(BasePlanCase):
         resp = self.client.patch(self.url, data=data, content_type="application/json")
         self.assert200(resp)
 
-        case: TestCase
         for case in [self.case_1, self.case_3]:
             self.assertEqual(self.reviewer, TestCase.objects.get(pk=case.pk).reviewer)
             self.assertTrue(
@@ -612,7 +604,6 @@ class TestChangeTestCaseStatus(BasePlanCase):
         resp = self.client.patch(self.url, data=data, content_type="application/json")
         self.assertJsonResponse(resp, {})
 
-        case: TestCase
         for case in [self.case_1, self.case_3]:
             self.assertEqual(
                 self.case_status_proposed, TestCase.objects.get(pk=case.pk).case_status

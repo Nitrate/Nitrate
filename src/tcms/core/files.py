@@ -64,7 +64,7 @@ class UploadFileView(PermissionRequiredMixin, generic.View):
         if not upload_file:
             return HttpResponseRedirect(redirect_url)
 
-        upload_file: UploadedFile = request.FILES["upload_file"]
+        upload_file = request.FILES["upload_file"]
 
         if upload_file.size > settings.MAX_UPLOAD_SIZE:
             return prompt.alert(

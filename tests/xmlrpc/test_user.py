@@ -172,7 +172,7 @@ class TestUserUpdate(XmlrpcAPIBaseTest):
     def test_update_myself(self):
         request = make_http_request(user=self.user)
         data = XUser.update(request, self.user_new_attrs, request.user.pk)
-        user: User = User.objects.get(pk=request.user.pk)
+        user = User.objects.get(pk=request.user.pk)
         self.assertEqual(data["first_name"], user.first_name)
         self.assertEqual(data["last_name"], user.last_name)
         self.assertEqual(data["email"], user.email)
@@ -180,7 +180,7 @@ class TestUserUpdate(XmlrpcAPIBaseTest):
     def test_update_myself_without_passing_my_id(self):
         request = make_http_request(user=self.user)
         data = XUser.update(request, self.user_new_attrs)
-        user: User = User.objects.get(pk=request.user.pk)
+        user = User.objects.get(pk=request.user.pk)
         self.assertEqual(data["first_name"], user.first_name)
         self.assertEqual(data["last_name"], user.last_name)
         self.assertEqual(data["email"], user.email)
@@ -193,7 +193,7 @@ class TestUserUpdate(XmlrpcAPIBaseTest):
     def test_update_other_with_proper_permission(self):
         request = make_http_request(user=self.user_with_perm)
         data = XUser.update(request, self.user_new_attrs, self.user.pk)
-        user: User = User.objects.get(pk=self.user.pk)
+        user = User.objects.get(pk=self.user.pk)
         self.assertEqual(data["first_name"], user.first_name)
         self.assertEqual(data["last_name"], user.last_name)
         self.assertEqual(data["email"], user.email)

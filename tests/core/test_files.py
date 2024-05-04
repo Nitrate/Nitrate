@@ -44,7 +44,7 @@ class TestUploadFile(BasePlanCase):
         klass_name = self.__class__.__name__
         self.working_dir = tempfile.mkdtemp(prefix=klass_name)
 
-        file_content: bytes = b"abc" * 100
+        file_content = b"abc" * 100
 
         fd, self.upload_filename = tempfile.mkstemp(
             suffix=f"{klass_name}-upload-file.txt", dir=self.working_dir

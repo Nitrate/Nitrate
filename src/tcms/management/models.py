@@ -251,8 +251,7 @@ class TestBuild(TCMSActionModel):
         return s.serialize_queryset()
 
     @classmethod
-    def search(cls, query):
-        val: Any
+    def search(cls, query: dict[str, Any]):
         criteria: dict[str, Any] = {}
 
         if val := query.get("build_id"):
@@ -536,7 +535,7 @@ class TCMSEnvValue(TCMSActionModel):
 
 
 # FIXME: plugins_support is no longer available, this is dead code.
-if register_model:
+if register_model:  # type: ignore
     register_model(Classification)
     register_model(Product)
     register_model(Priority)

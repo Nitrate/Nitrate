@@ -5,7 +5,6 @@ A serializer to import/export between model objects and file formats.
 
 import csv
 
-from django.template import Template
 from django.template.loader import get_template
 
 # TODO: rewrite export module to export TestCaseRuns, TestPlans and other
@@ -84,5 +83,5 @@ class TCR2File:
         .. versionchanged:: 4.2
            Element ``bugs`` is renamed to ``issues``.
         """
-        xml_template: Template = get_template("run/export-to.xml")
+        xml_template = get_template("run/export-to.xml")
         output.write(xml_template.render({"case_runs": self.tcrs}))

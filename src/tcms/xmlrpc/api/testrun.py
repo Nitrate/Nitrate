@@ -132,11 +132,10 @@ def add_tag(request, run_ids, tags):
         TestPlan.add_tag('1, 2', 'foo, bar')
     """
     trs = TestRun.objects.filter(pk__in=pre_process_ids(value=run_ids))
-    tags: list[str] = TestTag.string_to_list(tags)
+    tags = TestTag.string_to_list(tags)
 
     for tag in tags:
         t, _ = TestTag.objects.get_or_create(name=tag)
-        tr: TestRun
         for tr in trs.iterator():
             tr.add_tag(tag=t)
 
@@ -533,7 +532,6 @@ def remove_tag(request, run_ids, tags):
     trs = TestRun.objects.filter(run_id__in=pre_process_ids(value=run_ids))
     tgs = TestTag.objects.filter(name__in=TestTag.string_to_list(tags))
 
-    tr: TestRun
     for tr in trs.iterator():
         for tg in tgs.iterator():
             tr.remove_tag(tag=tg)

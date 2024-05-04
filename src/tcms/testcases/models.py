@@ -2,7 +2,7 @@
 
 import logging
 from datetime import datetime
-from typing import Any, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
@@ -235,7 +235,7 @@ class TestCase(TCMSActionModel):
         return tcs
 
     @classmethod
-    def search(cls, query, plan=None):
+    def search(cls, query: Dict[str, Any], plan: Optional[int] = None) -> QuerySet["TestCase"]:
         """List the cases with request"""
         from django.db.models import Q
 
@@ -1052,7 +1052,7 @@ def _listen():
 if settings.LISTENING_MODEL_SIGNAL:
     _listen()
 
-if register_model:
+if register_model:  # type: ignore
     register_model(TestCase)
     register_model(TestCaseText)
     register_model(TestCasePlan)
