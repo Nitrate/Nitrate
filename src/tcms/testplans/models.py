@@ -80,7 +80,7 @@ class TestPlan(TCMSActionModel):
     )
     env_group = models.ManyToManyField(
         "management.TCMSEnvGroup", related_name="plans", through="TCMSEnvPlanMap"
-    )
+    )  # type: ignore
     tag = models.ManyToManyField("management.TestTag", through="testplans.TestPlanTag")
 
     class Meta:
@@ -634,7 +634,7 @@ def set_email_settings_to_new_plan(sender, **kwargs):
         TestPlanEmailSettings.objects.create(plan=kwargs["instance"])
 
 
-if register_model:
+if register_model:  # type: ignore
     register_model(TestPlan)
     register_model(TestPlanText)
     register_model(TestPlanType)

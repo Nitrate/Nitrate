@@ -1276,11 +1276,11 @@ class TestUpdateCaseRunText(BaseCaseRun):
         )
 
     def test_update_multiple_case_runs(self):
-        case_runs: list[int] = [self.case_run_1.pk, self.case_run_2.pk]
+        case_runs = [self.case_run_1.pk, self.case_run_2.pk]
         response = self.client.post(self.update_url, {"case_run": case_runs})
 
         for pk in case_runs:
-            case_run: TestCaseRun = TestCaseRun.objects.get(pk=pk)
+            case_run = TestCaseRun.objects.get(pk=pk)
             self.assertEqual(
                 case_run.case.latest_text_version(),
                 case_run.latest_text().case_text_version,
@@ -1338,8 +1338,8 @@ class TestEditRun(BaseCaseRun):
         self.assertRedirects(response, reverse("run-get", args=[run.pk]))
 
     def test_auto_update_run_status_when_all_case_runs_complete(self):
-        case_run: QuerySet = self.test_run.case_run
-        case_run.update(case_run_status=TestCaseRunStatus.objects.get(name="PASSED"))
+        status_passed = TestCaseRunStatus.objects.get(name="PASSED")
+        self.test_run.case_run.update(case_run_status=status_passed)
 
         post_data = {
             "summary": "New run summary",
@@ -1360,7 +1360,7 @@ class TestEditRun(BaseCaseRun):
         assert test_run.stop_date is not None
 
     def test_auto_update_run_status_when_partial_case_runs_complete(self):
-        case_runs: QuerySet[TestCaseRun] = self.test_run.case_run.all()
+        case_runs = self.test_run.case_run.all()
         case_runs[0].case_run_status = TestCaseRunStatus.objects.get(name="PASSED")
         case_runs[1].case_run_status = TestCaseRunStatus.objects.get(name="ERROR")
         case_runs[2].case_run_status = TestCaseRunStatus.objects.get(name="IDLE")

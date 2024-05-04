@@ -229,7 +229,7 @@ class TestRun(TCMSActionModel):
     def add_env_value(self, env_value: TCMSEnvValue):
         return TCMSEnvRunValueMap.objects.get_or_create(run=self, value=env_value)
 
-    def remove_tag(self, tag):
+    def remove_tag(self, tag: TestTag) -> None:
         cursor = connection.writer_cursor
         cursor.execute(
             "DELETE from test_run_tags WHERE run_id = %s AND tag_id = %s",
@@ -617,7 +617,7 @@ def _run_listen():
 if settings.LISTENING_MODEL_SIGNAL:
     _run_listen()
 
-if register_model:
+if register_model:  # type: ignore
     register_model(TestRun)
     register_model(TestCaseRun)
     register_model(TestRunTag)

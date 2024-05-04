@@ -15,7 +15,7 @@ TESTER_PASSWORD = "password"
 
 @pytest.fixture
 def tester(django_user_model):
-    user: User = django_user_model.objects.create(username="tester", email="tester@example.com")
+    user = django_user_model.objects.create(username="tester", email="tester@example.com")
     user.set_password(TESTER_PASSWORD)
     user.save()
     return user

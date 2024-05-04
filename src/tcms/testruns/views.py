@@ -610,7 +610,7 @@ class RunStatisticsView(TemplateView):
     def get_context_data(self, **kwargs):
         data = super().get_context_data()
         run_id = self.kwargs["run_id"]
-        run: TestRun = get_object_or_404(TestRun.objects.only("pk"), pk=run_id)
+        run = get_object_or_404(TestRun.objects.only("pk"), pk=run_id)
         data.update(
             {
                 "test_run": run,
@@ -628,7 +628,7 @@ def get(request, run_id, template_name="run/get.html"):
     SUB_MODULE_NAME = "runs"
 
     # Get the test run
-    tr: TestRun = get_object_or_404(TestRun.objects.select_related(), pk=run_id)
+    tr = get_object_or_404(TestRun.objects.select_related(), pk=run_id)
 
     # Get the test case runs belong to the run
     # 2. get test run's all case runs
@@ -695,7 +695,7 @@ def edit(request, run_id, template_name="run/edit.html"):
     SUB_MODULE_NAME = "runs"
 
     try:
-        tr: TestRun = TestRun.objects.select_related().get(run_id=run_id)
+        tr = TestRun.objects.select_related().get(run_id=run_id)
     except ObjectDoesNotExist:
         raise Http404
 
@@ -821,7 +821,6 @@ class TestRunReportView(TemplateView, TestCaseRunDataMixin):
         automated_count = 0
         manual_automated_count = 0
 
-        case_run: TestCaseRun
         for case_run in case_runs:
             case_run.display_issues = issues_by_case_run.get(case_run.pk, ())
             user_comments = comments.get(case_run.pk, [])

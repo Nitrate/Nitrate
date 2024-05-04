@@ -5,6 +5,7 @@ import json
 import re
 from functools import partial
 from http import HTTPStatus
+from typing import ClassVar
 from urllib.parse import parse_qs, urlparse
 
 from django import test
@@ -229,6 +230,9 @@ class NitrateTestCase(test.TestCase):
 
 class BasePlanCase(AuthMixin, HelperAssertions, NitrateTestCase):
     """Base test case by providing essential Plan and Case objects used in tests"""
+
+    case_1: ClassVar
+    case_3: ClassVar
 
     @classmethod
     def setUpTestData(cls):

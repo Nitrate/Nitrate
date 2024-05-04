@@ -7,7 +7,7 @@ import urllib
 import xml.etree.ElementTree as et
 from http import HTTPStatus
 from textwrap import dedent
-from typing import Optional, Union
+from typing import List, Optional, Tuple, Union
 from unittest.mock import Mock
 
 import pytest
@@ -1136,14 +1136,11 @@ class TestTreeViewChangeParent(BasePlanCase):
         )
 
     def test_change_parent(self):
-        targets = (
+        targets = [
             (self.plan_5, str(self.plan_5.parent.pk)),
             (self.plan_9, "None"),
-        )
-        new_parent: TestPlan = self.plan_3
-
-        target_plan: TestPlan
-        expected_original_value: str
+        ]
+        new_parent = self.plan_3
 
         for target_plan, expected_original_value in targets:
             resp = self.client.patch(

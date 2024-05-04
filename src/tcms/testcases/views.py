@@ -763,7 +763,7 @@ class TestCaseCaseRunDetailPanelView(
         this_cls = TestCaseCaseRunDetailPanelView
         data = super(this_cls, self).get_context_data(**kwargs)
 
-        case: TestCase = get_object_or_404(TestCase.objects.only("pk"), pk=self.case_id)
+        case = get_object_or_404(TestCase.objects.only("pk"), pk=self.case_id)
         case_run = get_object_or_404(TestCaseRun, pk=self.case_run_id, case=case)
 
         # Data of TestCase
@@ -1250,7 +1250,6 @@ def clone(request, template_name="case/clone.html"):
             src_plan = plan_from_request_or_none(request)
             dest_case = None
 
-            src_cases: TestCase
             for src_case in src_cases:
                 author = None if keep_orig_author else request.user
                 default_tester = None if keep_orig_default_tester else request.user

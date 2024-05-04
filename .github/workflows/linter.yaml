@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        django-version: [django320]
+        django-version: [django420]
     steps:
       - run: |
           sudo apt update
@@ -44,9 +44,9 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
-          python-version: 3.9
+          python-version: 3.11
       - name: Install tox
         run: |
           python3 -m pip install --upgrade pip
-          python3 -m pip install 'tox<4.0'
+          python3 -m pip install tox
       - run: tox -e mypy-${{ matrix.django-version }}
