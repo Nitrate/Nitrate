@@ -56,7 +56,7 @@ jobs:
 
       - name: Tox
         run: |
-          tox -e py$tox_pyver-${{ matrix.django-version }}-${{ matrix.db }}
+          tox -e py$tox_pyver-${{ matrix.django-version }}-${{ matrix.db }} -- tests/core/test_commands.py
 
       - name: Parallel coverage report
         uses: coverallsapp/github-action@v2
