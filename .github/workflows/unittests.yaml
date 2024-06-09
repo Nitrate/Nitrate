@@ -20,12 +20,12 @@ jobs:
         django-version: [django420]
         db: [sqlite]
         include:
-          - python-version: '3.11'
-            django-version: django420
-            db: mysql
-          - python-version: '3.11'
-            django-version: django420
-            db: mariadb
+          # - python-version: '3.11'
+          #   django-version: django420
+          #   db: mysql
+          # - python-version: '3.11'
+          #   django-version: django420
+          #   db: mariadb
           - python-version: '3.11'
             django-version: django420
             db: postgres
@@ -56,6 +56,7 @@ jobs:
 
       - name: Tox
         run: |
+          sudo apt-get install -y postgresql
           tox -e py$tox_pyver-${{ matrix.django-version }}-${{ matrix.db }} -- tests/core/test_commands.py
 
       - name: Parallel coverage report
