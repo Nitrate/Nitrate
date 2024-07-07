@@ -16,7 +16,6 @@ keywords = ["test", "case", "plan", "run"]
 requires-python = ">=3.9"
 classifiers = [
     "Framework :: Django",
-    "Framework :: Django :: 3.2",
     "Framework :: Django :: 4.2",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
@@ -30,7 +29,7 @@ classifiers = [
 ]
 dependencies = [
     "beautifulsoup4==4.11.1",
-    "django>=3.2,<4",
+    "django>=4.2,<4.3",
     "django-contrib-comments==2.2.0",
     "django-tinymce==3.5.0",
     "django-uuslug==2.0.0",
