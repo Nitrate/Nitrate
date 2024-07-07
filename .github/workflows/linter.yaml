@@ -14,7 +14,7 @@ jobs:
     name: Run linters
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
@@ -41,7 +41,7 @@ jobs:
       - run: |
           sudo apt update
           sudo apt-get install gcc python3-dev libkrb5-dev libmariadb-dev libcrypt-dev
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: 3.11
