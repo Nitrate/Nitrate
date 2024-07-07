@@ -389,16 +389,15 @@ class TestStartCloneRunFromRunsSearchPage(CloneRunBaseTest):
         response = self.client.get(self.clone_url, {"run": [item.pk for item in runs]})
 
         runs_li = [
-            "<li>"
+            "<div>"
             '<label for="id_run_{}">'
-            '<input checked id="id_run_{}" name="run" value="{}" '
-            'type="checkbox">'
+            '<input checked id="id_run_{}" name="run" value="{}" type="checkbox">'
             "{}"
             "</label>"
-            "</li>".format(i, i, item.pk, item.summary)
+            "</div>".format(i, i, item.pk, item.summary)
             for i, item in enumerate(runs)
         ]
-        runs_ul = '<ul id="id_run">{}</ul>'.format("".join(runs_li))
+        runs_ul = '<div id="id_run">{}</div>'.format("".join(runs_li))
 
         self.assertContains(response, runs_ul, html=True)
 
