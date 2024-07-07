@@ -36,7 +36,7 @@ dependencies = [
     "html2text==2020.1.16",
     "odfpy==1.4.1",
     "xmltodict==0.13.0",
-    "kobo==0.25.0",
+    "kobo==0.37.0",
 ]
 dynamic = ["version"]
 
