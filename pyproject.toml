@@ -57,7 +57,6 @@ devtools = [
     "build",
 ]
 tests = [
-    "beautifulsoup4==4.11.1",
     "coverage[toml]",
     "factory_boy",
     "flake8",
