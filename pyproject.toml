@@ -33,7 +33,7 @@ dependencies = [
     "django-contrib-comments==2.2.0",
     "django-tinymce==3.5.0",
     "django-uuslug==2.0.0",
-    "html2text==2020.1.16",
+    "html2text==2024.2.26",
     "odfpy==1.4.1",
     "xmltodict==0.13.0",
     "kobo==0.37.0",
