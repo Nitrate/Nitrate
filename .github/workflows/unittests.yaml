@@ -29,7 +29,7 @@ jobs:
           --health-timeout=2s
           --health-retries=3
       postgres:
-        image: postgres:12.4
+        image: postgres:12.19
         ports:
           - 54321:5432
         env:
