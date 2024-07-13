@@ -11,12 +11,12 @@ jobs:
     name: Build and push develop images
     runs-on: ubuntu-24.04
     steps:
-      - run: sudo apt-get install -y make python3-build python3-venv
+      - run: sudo apt-get install -y make python3-build python3-venv podman
       - uses: actions/checkout@v4
         with:
           repository: Nitrate/containers
-      - run: make all-images engine=docker
-      - run: |
+      - name: Build all images and push them to registry
+        run: |
           echo "${{ secrets.quay_token }}" | \
             docker login -u "${{ secrets.quay_username }}" --password-stdin quay.io
-          make push-all engine=docker
+          make all-images push-all
