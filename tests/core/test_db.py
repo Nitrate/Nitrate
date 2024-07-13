@@ -13,14 +13,14 @@ from tests import factories as f
     [
         [
             True,
-            "SELECT summary FROM test_cases",
+            "SELECT summary FROM test_cases ORDER BY summary",
             None,
             [{"summary": "case 1"}, {"summary": "case 2"}],
             "case 1",
         ],
         [
             False,
-            "SELECT summary, script FROM test_cases",
+            "SELECT summary, script FROM test_cases ORDER BY summary",
             None,
             [("case 1", "echo hello"), ("case 2", "find /tmp")],
             "case 1",

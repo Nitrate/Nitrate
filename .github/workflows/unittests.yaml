@@ -12,7 +12,48 @@ on:
 jobs:
   unittests:
     name: "py${{ matrix.python-version }}-${{ matrix.django-version }}-${{ matrix.db }}"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+
+    services:
+      mariadb:
+        image: mariadb:10.4.14
+        ports:
+          - 33061:3306
+        env:
+          MYSQL_DATABASE: nitrate
+          MYSQL_ROOT_PASSWORD: pass
+        options: >-
+          --name=testdb-mariadb
+          --health-cmd="mysqladmin ping -uroot -ppass"
+          --health-interval=5s
+          --health-timeout=2s
+          --health-retries=3
+      postgres:
+        image: postgres:12.4
+        ports:
+          - 54321:5432
+        env:
+          POSTGRES_PASSWORD: pass
+        options: >-
+          --name=testdb-pgsql
+          --health-cmd="echo pass | psql -U postgres -W --command 'SELECT 1'"
+          --health-interval=5s
+          --health-timeout=2s
+          --health-retries=3
+      mysql:
+        image: mysql:8.0.22
+        ports:
+          - 33062:3306
+        env:
+          MYSQL_DATABASE: nitrate
+          MYSQL_ROOT_PASSWORD: pass
+        options: >-
+          --name=testdb-mysql
+          --health-cmd="mysqladmin ping -uroot -ppass"
+          --health-interval=5s
+          --health-timeout=2s
+          --health-retries=3
+
     strategy:
       max-parallel: 7
       matrix:
@@ -47,7 +88,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install tox "tox-docker>=2.0.0" coveralls
+          python -m pip install tox coveralls
 
       - run: |
           echo "tox_pyver=${pyver}" | sed "s/\.//" >> $GITHUB_ENV
