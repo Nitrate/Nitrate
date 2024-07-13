@@ -25,14 +25,15 @@ jobs:
   build-and-push-images:
     name: Build and push images
     needs: pypi
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - run: sudo apt-get install -y make python3 python3-pip
+      - run: sudo apt-get install -y make python3 python3-pip podman
       - uses: actions/checkout@v4
         with:
           repository: Nitrate/containers
-      - run: |
+      - name: Build all images and push them to registry
+        run: |
           echo "${{ secrets.quay_token }}" | \
             docker login -u "${{ secrets.quay_username }}" --password-stdin quay.io
           git_ref="${{ github.ref }}"
-          make all-images push-all engine=docker version=${git_ref##refs/tags/v}
+          make all-images push-all version=${git_ref##refs/tags/v}
