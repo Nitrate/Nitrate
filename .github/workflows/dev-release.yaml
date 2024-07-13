@@ -11,7 +11,7 @@ jobs:
     name: Build and push develop images
     runs-on: ubuntu-latest
     steps:
-      - run: sudo apt-get install -y make
+      - run: sudo apt-get install -y make python3-build
       - uses: actions/checkout@v4
         with:
           repository: Nitrate/containers
