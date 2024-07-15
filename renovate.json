@@ -4,7 +4,7 @@
     "config:best-practices"
   ],
   "docker-compose": {
-    "fileMatch": ["^container-compose\\.yaml$"]
+    "fileMatch": ["^container-compose\\.ya?ml$"]
   },
   "packageRules": [
     {
