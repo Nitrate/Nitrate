@@ -41,7 +41,7 @@ jobs:
           --health-timeout=2s
           --health-retries=3
       mysql:
-        image: mysql:8.0.22@sha256:0fd2898dc1c946b34dceaccc3b80d38b1049285c1dab70df7480de62265d6213
+        image: mysql:9.0.0@sha256:72a37ddc9f839cfd84f1f6815fb31ba26f37f4c200b90e49607797480e3be446
         ports:
           - 33062:3306
         env:
