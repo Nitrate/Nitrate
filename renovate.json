@@ -2,5 +2,22 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:best-practices"
+  ],
+  "docker-compose": {
+    "fileMatch": ["^container-compose\\.yaml$"]
+  },
+  "packageRules": [
+    {
+      "matchPackageNames": ["mariadb"],
+      "allowedVersions": "<11.5.0"
+    },
+    {
+      "matchPackageNames": ["mysql"],
+      "allowedVersions": "<8.5.0"
+    },
+    {
+      "matchPackageNames": ["postgres"],
+      "allowedVersions": "<16.4.0"
+    }
   ]
 }
