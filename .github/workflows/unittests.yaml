@@ -16,7 +16,7 @@ jobs:
 
     services:
       mariadb:
-        image: mariadb:10.11.8
+        image: mariadb:10.11.8@sha256:75f6e61397758489d1dccf95db33b6b49ebfc7ec1253d40060fdf8ceb7f938a3
         ports:
           - 33061:3306
         env:
@@ -29,7 +29,7 @@ jobs:
           --health-timeout=2s
           --health-retries=3
       postgres:
-        image: postgres:16.3
+        image: postgres:16.3@sha256:0aafd2ae7e6c391f39fb6b7621632d79f54068faebc726caf469e87bd1d301c0
         ports:
           - 54321:5432
         env:
@@ -41,7 +41,7 @@ jobs:
           --health-timeout=2s
           --health-retries=3
       mysql:
-        image: mysql:8.0.22
+        image: mysql:8.0.22@sha256:0fd2898dc1c946b34dceaccc3b80d38b1049285c1dab70df7480de62265d6213
         ports:
           - 33062:3306
         env:
@@ -78,10 +78,10 @@ jobs:
           sudo apt-get install gcc python3-dev libkrb5-dev libmariadb-dev libcrypt-dev
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -100,7 +100,7 @@ jobs:
           tox -e py$tox_pyver-${{ matrix.django-version }}-${{ matrix.db }}
 
       - name: Parallel coverage report
-        uses: coverallsapp/github-action@v2
+        uses: coverallsapp/github-action@3dfc5567390f6fa9267c0ee9c251e4c8c3f18949 # v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           flag-name: testenv-py${{ matrix.python-version }}-${{ matrix.django-version }}-${{ matrix.db }}
@@ -112,7 +112,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Finish coverage report
-        uses: coverallsapp/github-action@v2
+        uses: coverallsapp/github-action@3dfc5567390f6fa9267c0ee9c251e4c8c3f18949 # v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           parallel-finished: true
