@@ -38,17 +38,30 @@ db_envs:		# Print environment variables for a specific database engine set by DB
 format-code:		# Format Python code with black.
 	@black --line-length $(shell grep "^max_line_length" tox.ini | cut -d' '  -f3) src/tcms tests
 
-detach_testdb_container ?= false
-gh_wf_unittests = .github/workflows/unittests.yaml
-gh_wf_services = .jobs.unittests.services
+ifeq ($(strip $(detach)),yes)
+detach_opt=-d
+else
+detach_opt=
+endif
+
+db_engine ?=
+common_health_options = --health-interval=5s --health-timeout=2s --health-retries=3
+
+mariadb_image = mariadb:10.11.8@sha256:75f6e61397758489d1dccf95db33b6b49ebfc7ec1253d40060fdf8ceb7f938a3
+mysql_image = mysql:8.0.22@sha256:0fd2898dc1c946b34dceaccc3b80d38b1049285c1dab70df7480de62265d6213
+postgres_image = postgres:16.3@sha256:0aafd2ae7e6c391f39fb6b7621632d79f54068faebc726caf469e87bd1d301c0
 
 # MariaDB setup for testenv
 
 .PHONY: start-testdb-mariadb
 start-testdb-mariadb:
-	podman run --rm -p 33061:3306 -e MYSQL_ROOT_PASSWORD=pass \
-		$(shell yq '$(gh_wf_services).mariadb.options' $(gh_wf_unittests)) \
-		$(shell yq '$(gh_wf_services).mariadb.image' $(gh_wf_unittests))
+	podman run --rm $(detach_opt) \
+		--name=testdb-mariadb \
+		-p 33061:3306 \
+		-e MYSQL_ROOT_PASSWORD=pass \
+		--health-cmd="mysqladmin ping -uroot -ppass" \
+		$(common_health_options) \
+		$(mariadb_image)
 
 .PHONY: stop-testdb-mariadb
 stop-testdb-mariadb:
@@ -58,9 +71,13 @@ stop-testdb-mariadb:
 
 .PHONY: start-testdb-mysql
 start-testdb-mysql:
-	podman run --rm -p 33062:3306 -e MYSQL_ROOT_PASSWORD=pass \
-		$(shell yq '$(gh_wf_services).mysql.options' $(gh_wf_unittests)) \
-		$(shell yq '$(gh_wf_services).mysql.image' $(gh_wf_unittests))
+	podman run --rm $(detach_opt) \
+		--name=testdb-mysql \
+		-p 33062:3306 \
+		-e MYSQL_ROOT_PASSWORD=pass \
+		--health-cmd="mysqladmin ping -uroot -ppass" \
+		$(common_health_options) \
+		$(mysql_image)
 
 .PHONY: stop-testdb-mysql
 stop-testdb-mysql:
@@ -68,13 +85,33 @@ stop-testdb-mysql:
 
 # PostgreSQL setup for testenv
 
-.PHONY: start-testdb-pgsql
-start-testdb-pgsql:
-	podman run --name testdb-pgsql --rm -p 54321:5432 \
+.PHONY: start-testdb-postgres
+start-testdb-postgres:
+	podman run --rm $(detach_opt) \
+		--name=testdb-postgres \
+		-p 54321:5432 \
 		-e POSTGRES_PASSWORD=pass \
-		$(shell yq '$(gh_wf_services).postgres.options' $(gh_wf_unittests)) \
-		$(shell yq '$(gh_wf_services).postgres.image' $(gh_wf_unittests))
+		--health-cmd="PGPASSWORD=pass psql -h 127.0.0.1 -U postgres -c 'SELECT 1'" \
+		$(common_health_options) \
+		$(postgres_image)
 
-.PHONY: stop-testdb-pgsql
-stop-testdb-pgsql:
-	podman stop testdb-pgsql || :
+.PHONY: stop-testdb-postgres
+stop-testdb-postgres:
+	podman stop testdb-postgres || :
+
+.PHONY: check-testdb-health
+check-testdb-health:
+	@for i in $$(seq 1 5); do \
+	  health_status=$$(podman inspect testdb-$(db_engine) | jq -r '.[].State.Health.Status'); \
+	  [ "x$$health_status" = "xhealthy" ] && break; \
+	  if [ $$i -eq 5 ]; then \
+		echo "testdb $(db_engine) container is not healthy. Seems failed to start." >&2; \
+		echo "container inspect:" >&2; \
+		podman inspect testdb-$(db_engine) | jq '.[].State' >&2; \
+		exit 1; \
+	  else \
+		echo "Sleep 2s then have another health check" >&2; \
+		sleep 2s; \
+	  fi; \
+	  done; \
+	  echo "Test database $(db_engine) is healthy."
