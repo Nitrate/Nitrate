@@ -3,9 +3,21 @@
   "extends": [
     "config:best-practices"
   ],
+
   "docker-compose": {
     "fileMatch": ["^container-compose\\.ya?ml$"]
   },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": ["^Makefile$"],
+      "matchStrings": [
+        "(mariadb|mysql|postgres)_image = (?<depName>mariadb|mysql|postgres?):(?<currentValue>[.0-9]+?)@sha256:[0-9a-f]{64}\\n"
+      ],
+      "datasourceTemplate": "docker"
+    }
+  ],
+
   "packageRules": [
     {
       "matchPackageNames": ["mariadb"],
