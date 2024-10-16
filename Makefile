@@ -47,7 +47,7 @@ endif
 db_engine ?=
 common_health_options = --health-interval=5s --health-timeout=2s --health-retries=3
 
-mariadb_image = mariadb:10.11.8@sha256:75f6e61397758489d1dccf95db33b6b49ebfc7ec1253d40060fdf8ceb7f938a3
+mariadb_image = mariadb:11.4.3@sha256:75f6e61397758489d1dccf95db33b6b49ebfc7ec1253d40060fdf8ceb7f938a3
 mysql_image = mysql:8.0.22@sha256:0fd2898dc1c946b34dceaccc3b80d38b1049285c1dab70df7480de62265d6213
 postgres_image = postgres:16.3@sha256:0aafd2ae7e6c391f39fb6b7621632d79f54068faebc726caf469e87bd1d301c0
 
