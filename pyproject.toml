@@ -36,7 +36,7 @@ dependencies = [
     "django-uuslug==2.0.0",
     "html2text==2024.2.26",
     "odfpy==1.4.1",
-    "xmltodict==0.13.0",
+    "xmltodict==0.14.2",
     "kobo==0.37.0",
 ]
 dynamic = ["version"]
