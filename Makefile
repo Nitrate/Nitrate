@@ -1,4 +1,17 @@
 
+.PHONY: requirements
+requirements:		# Compile both requirements.txt and requirements-test.txt
+	$(MAKE) requirements.txt
+	$(MAKE) requirements-test.txt
+
+.PHONY: requirements.txt
+requirements.txt:		# Compile requirements.txt with hashes
+	pip-compile --generate-hashes pyproject.toml -o requirements.txt
+
+.PHONY: requirements-test.txt
+requirements-test.txt:		# Compile requirements-test.txt with hashes
+	pip-compile --generate-hashes --extra tests pyproject.toml -o requirements-test.txt
+
 .PHONY: sdist
 sdist:		# Build source distribution package.
 	@python3 -m build --sdist
