@@ -134,3 +134,9 @@ omit = [
     "*/urls.py",
     "*/urls/*.py"
 ]
+
+[tool.bandit]
+exclude_dirs = ["/tests/"]
+skips = ["B105", "B411"]
+# B105: hardcoded_password_string - Empty strings in default Django settings
+# B411: import_xmlrpclib - Using Fault for exceptions, not parsing untrusted XML
