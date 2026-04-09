@@ -58,14 +58,14 @@ devtools = [
     "build",
 ]
 tests = [
-    "coverage[toml]",
-    "factory_boy",
-    "flake8",
-    "pytest",
-    "pytest-cov",
-    "pytest-django",
-    "sqlparse",
-    "tox",
+    "coverage[toml]==7.13.5",
+    "factory_boy==3.3.3",
+    "flake8==7.3.0",
+    "pytest==9.0.3",
+    "pytest-cov==7.1.0",
+    "pytest-django==4.12.0",
+    "sqlparse==0.5.5",
+    "tox==4.52.0",
 ]
 
 [project.urls]
