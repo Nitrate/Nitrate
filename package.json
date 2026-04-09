@@ -1,0 +1,10 @@
+{
+  "name": "nitrate-tcms",
+  "version": "1.0.0",
+  "description": "A full-featured Test Case Management System",
+  "private": true,
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "eslint-plugin-jsdoc": "^50.0.0"
+  }
+}
