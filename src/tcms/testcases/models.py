@@ -327,7 +327,6 @@ class TestCase(TCMSActionModel):
         object_pk=None,
     ) -> Optional[dict[str, Any]]:
         tcs = objects.select_related("reviewer").only("summary", "reviewer__email").order_by("pk")
-        tc: TestCase
         scence_templates = {
             "reviewer": {
                 "template_name": "mail/change_case_reviewer.txt",
