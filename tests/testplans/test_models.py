@@ -5,7 +5,6 @@ from textwrap import dedent
 from typing import Final, Optional, Type, Union
 
 import pytest
-from _pytest.python_api import RaisesContext
 from django import test
 from django.contrib.auth.models import User
 from django.core import mail
@@ -808,11 +807,14 @@ def test_plan_clone(
         case_2.add_component(Component.objects.create(name="docs", product=base_data.product))
 
     expected_error: AbstractContextManager
+    error_raised = False
 
     if not copy_texts and not text_author:
         expected_error = pytest.raises(ValueError, match="Missing default text author")
+        error_raised = True
     elif copy_cases and not component_initial_owner:
         expected_error = pytest.raises(ValueError, match="Missing default component initial owner")
+        error_raised = True
     else:
         expected_error = no_raised_error()
 
@@ -835,7 +837,7 @@ def test_plan_clone(
             copy_cases=copy_cases,
         )
 
-    if isinstance(expected_error, RaisesContext):
+    if error_raised:
         return
 
     assert "Copy of plan 1" == cloned_plan.name
