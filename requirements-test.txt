@@ -180,9 +180,8 @@ iniconfig==2.3.0 \
     --hash=sha256:c76315c77db068650d49c5b56314774a7804df16fee4402c1f19d6d15d8c4730 \
     --hash=sha256:f631c04d2c48c52b84d0d0549c99ff3859c98df65b3101406327ecc7d53fbf12
     # via pytest
-kobo==0.37.0 \
-    --hash=sha256:05ee956fb40aff3eaa2abf2cdec931245f5d6fb6ba8ea6c19f6e26c7ea602fb9 \
-    --hash=sha256:3a76e9748a1d218aa91e7ae6ffaed43dcd25984cb09a9c1db19a1f7648665141
+kobo==0.41.0 \
+    --hash=sha256:f4261eab274e0ed4753e98a3397c4706d1065fecb9da3939a26c2e6cc7313713
     # via nitrate-tcms (pyproject.toml)
 odfpy==1.4.1 \
     --hash=sha256:db766a6e59c5103212f3cc92ec8dd50a0f3a02790233ed0b52148b70d3c438ec

@@ -39,9 +39,8 @@ django-uuslug==2.0.0 \
 html2text==2025.4.15 \
     --hash=sha256:1d841a0f9555fd5f2b1c924ff932d99b40a0f8a6b12f6dd625e2a47f415b00ea
     # via nitrate-tcms (pyproject.toml)
-kobo==0.37.0 \
-    --hash=sha256:05ee956fb40aff3eaa2abf2cdec931245f5d6fb6ba8ea6c19f6e26c7ea602fb9 \
-    --hash=sha256:3a76e9748a1d218aa91e7ae6ffaed43dcd25984cb09a9c1db19a1f7648665141
+kobo==0.41.0 \
+    --hash=sha256:f4261eab274e0ed4753e98a3397c4706d1065fecb9da3939a26c2e6cc7313713
     # via nitrate-tcms (pyproject.toml)
 odfpy==1.4.1 \
     --hash=sha256:db766a6e59c5103212f3cc92ec8dd50a0f3a02790233ed0b52148b70d3c438ec
