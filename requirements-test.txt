@@ -173,8 +173,8 @@ filelock==3.25.2 \
     #   python-discovery
     #   tox
     #   virtualenv
-html2text==2024.2.26 \
-    --hash=sha256:05f8e367d15aaabc96415376776cdd11afd5127a77fce6e36afc60c563ca2c32
+html2text==2025.4.15 \
+    --hash=sha256:1d841a0f9555fd5f2b1c924ff932d99b40a0f8a6b12f6dd625e2a47f415b00ea
     # via nitrate-tcms (pyproject.toml)
 iniconfig==2.3.0 \
     --hash=sha256:c76315c77db068650d49c5b56314774a7804df16fee4402c1f19d6d15d8c4730 \
