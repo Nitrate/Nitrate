@@ -7,7 +7,7 @@ import urllib
 import xml.etree.ElementTree as et
 from http import HTTPStatus
 from textwrap import dedent
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Union
 from unittest.mock import Mock
 
 import pytest
