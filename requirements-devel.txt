@@ -595,9 +595,9 @@ tomli-w==1.2.0 \
     --hash=sha256:188306098d013b691fcadc011abd66727d3c414c571bb01b1a174ba8c983cf90 \
     --hash=sha256:2dd14fac5a47c27be9cd4c976af5a12d87fb1f0b4512f81d69cce3b35ae25021
     # via tox
-tox==4.52.0 \
-    --hash=sha256:6054abf5c8b61d58776fbec991f9bf0d34bb883862beb93d2fe55601ef3977c9 \
-    --hash=sha256:624d8ea4a8c6d5e8d168eedf0e318d736fb22e83ca83137d001ac65ffdec46fd
+tox==4.52.1 \
+    --hash=sha256:297e71ea0ae4ef3acc45cb5fdf080b74537e6ecb5eea7d4646fa7322ca10473e \
+    --hash=sha256:3c4eef0a64f319df0b67dacdb7edcfeda87c8cc722581af5d98dd54f3ffdd8ef
     # via nitrate-tcms (pyproject.toml)
 types-pyyaml==6.0.12.20260408 \
     --hash=sha256:92a73f2b8d7f39ef392a38131f76b970f8c66e4c42b3125ae872b7c93b556307 \
