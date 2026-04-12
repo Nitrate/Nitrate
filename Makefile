@@ -1,16 +1,21 @@
 
 .PHONY: requirements
-requirements:		# Compile both requirements.txt and requirements-test.txt
-	$(MAKE) requirements.txt
-	$(MAKE) requirements-test.txt
+requirements:
+	$(MAKE) requirements-devel.txt
+	$(MAKE) requirements-all.txt
+	$(MAKE) requirements-basic.txt
 
-.PHONY: requirements.txt
-requirements.txt:		# Compile requirements.txt with hashes
-	pip-compile --generate-hashes pyproject.toml -o requirements.txt
+.PHONY: requirements-devel.txt
+requirements-devel.txt:
+	pip-compile --generate-hashes --extra=devtools --extra=docs --extra=tests pyproject.toml -o requirements-devel.txt
 
-.PHONY: requirements-test.txt
-requirements-test.txt:		# Compile requirements-test.txt with hashes
-	pip-compile --generate-hashes --extra tests pyproject.toml -o requirements-test.txt
+.PHONY: requirements-all.txt
+requirements-all.txt:
+	pip-compile --generate-hashes --extra=async --extra=bugzilla --extra=krbauth --extra=mysql --extra=pgsql --extra=socialauth pyproject.toml -o requirements-all.txt
+
+.PHONY: requirements-basic.txt
+requirements-basic.txt:
+	pip-compile --generate-hashes pyproject.toml -o requirements-basic.txt
 
 .PHONY: sdist
 sdist:		# Build source distribution package.
@@ -43,7 +48,7 @@ runserver:		# Run local Django development server.
 .PHONY: db_envs
 db_envs:		# Print environment variables for a specific database engine set by DB.
 	@for env in $(DB_ENVS); do \
-    	echo "export $$env"; \
+		echo "export $$env"; \
     done
 
 
