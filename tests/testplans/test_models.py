@@ -319,11 +319,11 @@ class TestPlanTreeView(BasePlanCase):
     ],
 )
 @pytest.mark.django_db()
-def test_plan_latest_text(text: list[str], expected, tester):
-    plan = f.TestPlanFactory()
+def test_plan_latest_text(text: list[str], expected, base_data):
+    plan = base_data.create_plan()
 
     for item in text:
-        plan.add_text(tester, item)
+        plan.add_text(base_data.tester, item)
 
     if expected is None:
         assert expected == plan.latest_text()
@@ -340,11 +340,11 @@ def test_plan_latest_text(text: list[str], expected, tester):
     ],
 )
 @pytest.mark.django_db()
-def test_plan_text_exist(text: list[str], expected, tester):
-    plan = f.TestPlanFactory()
+def test_plan_text_exist(text: list[str], expected, base_data):
+    plan = base_data.create_plan()
 
     for item in text:
-        plan.add_text(tester, item)
+        plan.add_text(base_data.tester, item)
 
     assert expected == plan.text_exist()
 
@@ -358,11 +358,11 @@ def test_plan_text_exist(text: list[str], expected, tester):
     ],
 )
 @pytest.mark.django_db()
-def test_plan_text_checksum(text: list[str], expected, tester):
-    plan = f.TestPlanFactory()
+def test_plan_text_checksum(text: list[str], expected, base_data):
+    plan = base_data.create_plan()
 
     for item in text:
-        plan.add_text(tester, item)
+        plan.add_text(base_data.tester, item)
 
     assert expected == plan.text_checksum()
 
@@ -382,11 +382,11 @@ def test_plan_text_checksum(text: list[str], expected, tester):
     ],
 )
 @pytest.mark.django_db()
-def test_plan_get_text_with_version(text_version: Optional[int], text: list[str], expected, tester):
-    plan = f.TestPlanFactory()
+def test_plan_get_text_with_version(text_version: Optional[int], text: list[str], expected, base_data):
+    plan = base_data.create_plan()
 
     for item in text:
-        plan.add_text(tester, item)
+        plan.add_text(base_data.tester, item)
 
     the_text = plan.get_text_with_version(text_version)
 
