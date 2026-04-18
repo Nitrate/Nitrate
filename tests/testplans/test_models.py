@@ -382,7 +382,9 @@ def test_plan_text_checksum(text: list[str], expected, base_data):
     ],
 )
 @pytest.mark.django_db()
-def test_plan_get_text_with_version(text_version: Optional[int], text: list[str], expected, base_data):
+def test_plan_get_text_with_version(
+    text_version: Optional[int], text: list[str], expected, base_data
+):
     plan = base_data.create_plan()
 
     for item in text:
