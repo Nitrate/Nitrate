@@ -119,10 +119,10 @@ stop-testdb-postgres:
 
 .PHONY: check-testdb-health
 check-testdb-health:
-	@for i in $$(seq 1 5); do \
+	@retries=10; for i in $$(seq 1 $$retries); do \
 	  health_status=$$(podman inspect testdb-$(db_engine) | jq -r '.[].State.Health.Status'); \
 	  [ "x$$health_status" = "xhealthy" ] && break; \
-	  if [ $$i -eq 5 ]; then \
+	  if [ $$i -gt $$retries ]; then \
 		echo "testdb $(db_engine) container is not healthy. Seems failed to start." >&2; \
 		echo "container inspect:" >&2; \
 		podman inspect testdb-$(db_engine) | jq '.[].State' >&2; \
