@@ -1,4 +1,6 @@
-# AGENTS.md ## Project Overview
+# AGENTS.md
+
+## Project Overview
 
 Nitrate is a full-featured Test Case Management System written in Python and Django. It manages test plans, test cases, and test runs with features including:
 
@@ -8,8 +10,6 @@ Nitrate is a full-featured Test Case Management System written in Python and Dja
 - XMLRPC APIs
 - Extensible issue tracker integration
 - Celery-based asynchronous task support
-
-**Version:** 4.13
 
 **Tech Stack:** Python 3.10–3.13, Django 4.2, MySQL/MariaDB/PostgreSQL
 
