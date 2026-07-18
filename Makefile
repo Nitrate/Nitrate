@@ -1,4 +1,22 @@
 
+.PHONY: requirements
+requirements:
+	$(MAKE) requirements-devel.txt
+	$(MAKE) requirements-all.txt
+	$(MAKE) requirements-basic.txt
+
+.PHONY: requirements-devel.txt
+requirements-devel.txt:
+	pip-compile --generate-hashes --extra=devtools --extra=docs --extra=tests pyproject.toml -o requirements-devel.txt
+
+.PHONY: requirements-all.txt
+requirements-all.txt:
+	pip-compile --generate-hashes --extra=async --extra=bugzilla --extra=krbauth --extra=mysql --extra=pgsql --extra=socialauth pyproject.toml -o requirements-all.txt
+
+.PHONY: requirements-basic.txt
+requirements-basic.txt:
+	pip-compile --generate-hashes pyproject.toml -o requirements-basic.txt
+
 .PHONY: sdist
 sdist:		# Build source distribution package.
 	@python3 -m build --sdist
@@ -30,7 +48,7 @@ runserver:		# Run local Django development server.
 .PHONY: db_envs
 db_envs:		# Print environment variables for a specific database engine set by DB.
 	@for env in $(DB_ENVS); do \
-    	echo "export $$env"; \
+		echo "export $$env"; \
     done
 
 
@@ -101,10 +119,10 @@ stop-testdb-postgres:
 
 .PHONY: check-testdb-health
 check-testdb-health:
-	@for i in $$(seq 1 5); do \
+	@retries=10; for i in $$(seq 1 $$retries); do \
 	  health_status=$$(podman inspect testdb-$(db_engine) | jq -r '.[].State.Health.Status'); \
 	  [ "x$$health_status" = "xhealthy" ] && break; \
-	  if [ $$i -eq 5 ]; then \
+	  if [ $$i -gt $$retries ]; then \
 		echo "testdb $(db_engine) container is not healthy. Seems failed to start." >&2; \
 		echo "container inspect:" >&2; \
 		podman inspect testdb-$(db_engine) | jq '.[].State' >&2; \

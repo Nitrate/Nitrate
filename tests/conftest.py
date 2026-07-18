@@ -28,7 +28,6 @@ def logged_in_tester(tester, client):
 
 
 @pytest.fixture
-@pytest.mark.django_db
 def base_data(tester):
     return BaseDataContext(tester)
 

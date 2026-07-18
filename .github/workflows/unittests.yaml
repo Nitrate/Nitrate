@@ -17,7 +17,7 @@ jobs:
     strategy:
       max-parallel: 7
       matrix:
-        python-version: [3.9, '3.10', '3.11', '3.12']
+        python-version: ['3.10', '3.11', '3.12', '3.13']
         django-version: [django420]
         db: [sqlite]
         include:
@@ -49,6 +49,7 @@ jobs:
         env:
           TEST_DB_ENGINE: ${{ matrix.db }}
           PYTHON_VERSION: ${{ matrix.python-version }}
+          DJANGO_VERSION: ${{ matrix.django-version }}
         run: |
           set -eu
           set -o pipefail
@@ -66,7 +67,7 @@ jobs:
           }
 
           [ "x$TEST_DB_ENGINE" = "xsqlite" ] || start_test_db
-          tox -e py${PYTHON_VERSION/./}-${PYTHON_VERSION}-${TEST_DB_ENGINE}
+          tox -e py${PYTHON_VERSION/./}-${DJANGO_VERSION}-${TEST_DB_ENGINE}
 
       - name: Parallel coverage report
         uses: coverallsapp/github-action@3dfc5567390f6fa9267c0ee9c251e4c8c3f18949 # v2

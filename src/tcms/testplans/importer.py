@@ -132,7 +132,7 @@ def clean_xml_file(xml_content):
     xml_content = xml_content.replace("\n", "")
     xml_content = xml_content.replace("&testopia_", "&")
 
-    xml_data = xmltodict.parse(xml_content)
+    xml_data = xmltodict.parse(xml_content, disable_entities=False)
     root_element = xml_data.get("testopia", None)
     if root_element is None:
         raise ValueError("Invalid XML document.")

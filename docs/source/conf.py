@@ -15,7 +15,7 @@
 import django
 import sys
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -44,7 +44,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 project = 'Nitrate'
-copyright = f'2013 - {datetime.utcnow().year}, Red Hat, Inc.'
+copyright = f'2013 - {datetime.now(timezone.utc).year}, Red Hat, Inc.'
 
 exclude_patterns = []
 pygments_style = 'sphinx'
@@ -59,4 +59,6 @@ html_theme_options = {
     'logo_only': True,
 }
 
-intersphinx_mapping = {'http://docs.python.org/': None}
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+}

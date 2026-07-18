@@ -642,7 +642,7 @@ class TestSearchRuns(BaseCaseRun):
 
     def assert_found_runs_in_first_page(self, found_runs: Union[QuerySet, List], response):
         bs = BeautifulSoup(response.content.decode("utf-8"), "html.parser")
-        run_ids = list(map(int, (tr.td.input.get("value") for tr in bs.table.tbody.find_all("tr"))))
+        run_ids = list(int(tr.td.input["value"]) for tr in bs.table.tbody.find_all("tr"))  # type: ignore
         expected_run_ids = [run.pk for run in found_runs]
         self.assertListEqual(expected_run_ids, run_ids)
 

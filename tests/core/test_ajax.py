@@ -12,7 +12,6 @@ from bs4 import BeautifulSoup
 from django import test
 from django.contrib.auth.models import User
 from django.core import mail, serializers
-from django.core.mail import EmailMessage
 from django.db.models import Max
 from django.http import QueryDict
 from django.urls import reverse

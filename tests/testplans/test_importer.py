@@ -203,7 +203,7 @@ class TestProcessCase(test.TestCase):
 
     def _create_xml_dict(self, case_data, tags_format: str):
         xml_case = self._format_xml_case_string(case_data, tags_format)
-        return xmltodict.parse(xml_case)
+        return xmltodict.parse(xml_case, disable_entities=False)
 
     def test_process_case(self):
         xmldict = self._create_xml_dict(sample_case_data, "list")

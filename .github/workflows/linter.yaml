@@ -17,18 +17,15 @@ jobs:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
       - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
       - run: |
           sudo apt-get update
           sudo apt-get install -y npm
-          npm install eslint@7.1.0
-          npm install eslint-plugin-jsdoc@30.3.0
-          export PATH="$(pwd)/node_modules/.bin:$PATH"
 
           python3 -m venv venv
           envpy=./venv/bin/python3
           "$envpy" -m pip install --upgrade pip
-          "$envpy" -m pip install 'tox<4.0'
+          "$envpy" -m pip install 'tox==4.52.1'
           "$envpy" -m tox -e bandit,black,flake8,docs,doc8,isort,templatelint,jslint
 
   mypy:

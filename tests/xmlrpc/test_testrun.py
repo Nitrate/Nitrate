@@ -12,7 +12,7 @@ from django.contrib.auth.models import User
 
 from tcms.core.utils import string_to_list
 from tcms.management.models import TCMSEnvProperty, TCMSEnvValue, TestTag, Version
-from tcms.testruns.models import TCMSEnvRunValueMap, TestCaseRun, TestRun, TestRunTag
+from tcms.testruns.models import TCMSEnvRunValueMap, TestCaseRun, TestRunTag
 from tcms.xmlrpc.api import testrun as testrun_api
 from tcms.xmlrpc.serializer import datetime_to_str
 from tcms.xmlrpc.utils import pre_process_ids
