@@ -441,9 +441,9 @@ six==1.17.0 \
     # via
     #   kobo
     #   python-dateutil
-social-auth-app-django==5.6.0 \
-    --hash=sha256:43ca88cc5cd9161710896165ced58b3155e8aafaaff847e859879194770f138d \
-    --hash=sha256:c695501fcbf6fe87f68f5a79e379abe853662f5129e7ec6cb758a75d5b28c888
+social-auth-app-django==5.4.3 \
+    --hash=sha256:d1f4286d5ca1e512c9b2f686e7ecb2a0128148f1a33d853b69dc07b58508362e \
+    --hash=sha256:db70b972faeb10ee1ec83d0dc7dbd0558d5f5830417bba317b712b10ff58d031
     # via nitrate-tcms (pyproject.toml)
 social-auth-core==4.8.5 \
     --hash=sha256:2591c2ce71127ad410e7ca9581bd88658031fdf7b209e05be5920d0bcc1c005a \
