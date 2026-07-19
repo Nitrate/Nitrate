@@ -22,9 +22,9 @@ sdist:		# Build source distribution package.
 	@python3 -m build --sdist
 
 ifeq ($(strip $(DB)),)
-DB_ENVS=
+DB_ENVS=NITRATE_DB_ENGINE=sqlite
 else ifeq ($(strip $(DB)), sqlite)
-DB_ENVS=
+DB_ENVS=NITRATE_DB_ENGINE=sqlite
 else ifeq ($(strip $(DB)), mysql)
 DB_ENVS=NITRATE_DB_ENGINE=mysql NITRATE_DB_NAME=nitrate
 else ifeq ($(strip $(DB)), pgsql)
