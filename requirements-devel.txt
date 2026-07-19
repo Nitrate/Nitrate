@@ -4,8 +4,6 @@
 #
 #    pip-compile --extra=devtools --extra=docs --extra=tests --generate-hashes --output-file=requirements-devel.txt pyproject.toml
 #
---index-url https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple
-
 alabaster==1.0.0 \
     --hash=sha256:c00dca57bca26fa62a6d7d0a9fcce65f3e026e9bfe33e9c538fd3fbb2144fd9e \
     --hash=sha256:fc6786402dc3fcb2de3cabd5fe455a2db534b371124f1f21de8731783dec828b

@@ -4,8 +4,6 @@
 #
 #    pip-compile --extra=async --extra=bugzilla --extra=krbauth --extra=mysql --extra=pgsql --extra=socialauth --generate-hashes --output-file=requirements-all.txt pyproject.toml
 #
---index-url https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple
-
 amqp==5.3.1 \
     --hash=sha256:43b3319e1b4e7d1251833a93d672b4af1e40f3d632d479b98661a95f117880a2 \
     --hash=sha256:cddc00c725449522023bad949f70fff7b48f0b1ade74d170a6f10ab044739432
