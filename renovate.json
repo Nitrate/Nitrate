@@ -5,12 +5,16 @@
   ],
 
   "docker-compose": {
-    "fileMatch": ["^container-compose\\.ya?ml$"]
+    "managerFilePatterns": [
+      "/^container-compose\\.ya?ml$/"
+    ]
   },
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": ["^Makefile$"],
+      "managerFilePatterns": [
+        "/^Makefile$/"
+      ],
       "matchStrings": [
         "(mariadb|mysql|postgres)_image = (?<depName>mariadb|mysql|postgres?):(?<currentValue>[.0-9]+?)@sha256:[0-9a-f]{64}\\n"
       ],
