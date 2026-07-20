@@ -14,6 +14,9 @@ jobs:
     name: Run linters
     runs-on: ubuntu-24.04
     steps:
+      - run: |
+          sudo apt update
+          sudo apt-get install gcc python3-dev libkrb5-dev libmariadb-dev libcrypt-dev
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - name: Install uv and set the Python version
         uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
