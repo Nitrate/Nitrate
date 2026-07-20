@@ -1,44 +1,4 @@
 
-REQUIREMENTS_BASIC_TXT		?= requirements-basic.txt
-REQUIREMENTS_ALL_TXT		?= requirements-all.txt
-REQUIREMENTS_TESTS_TXT		?= requirements-tests.txt
-REQUIREMENTS_DEVTOOLS_TXT	?= requirements-devtools.txt
-REQUIREMENTS_DOCS_TXT		?= requirements-docs.txt
-
-ifdef UPGRADE
-PIP_COMPILE = pip-compile --upgrade
-else
-PIP_COMPILE = pip-compile
-endif
-
-.PHONY: requirements
-requirements:
-	$(MAKE) $(REQUIREMENTS_BASIC_TXT)
-	$(MAKE) $(REQUIREMENTS_ALL_TXT)
-	$(MAKE) $(REQUIREMENTS_TESTS_TXT)
-	$(MAKE) $(REQUIREMENTS_DOCS_TXT)
-	$(MAKE) $(REQUIREMENTS_DEVTOOLS_TXT)
-
-.PHONY: $(REQUIREMENTS_BASIC_TXT)
-$(REQUIREMENTS_BASIC_TXT):
-	$(PIP_COMPILE) --generate-hashes pyproject.toml -o $(REQUIREMENTS_BASIC_TXT)
-
-.PHONY: $(REQUIREMENTS_ALL_TXT)
-$(REQUIREMENTS_ALL_TXT):
-	$(PIP_COMPILE) --generate-hashes --extra=async --extra=bugzilla --extra=krbauth --extra=mysql --extra=pgsql --extra=socialauth pyproject.toml -o $(REQUIREMENTS_ALL_TXT)
-
-.PHONY: $(REQUIREMENTS_TESTS_TXT)
-$(REQUIREMENTS_TESTS_TXT):
-	$(PIP_COMPILE) --generate-hashes --extra=tests pyproject.toml -o $(REQUIREMENTS_TESTS_TXT)
-
-.PHONY: $(REQUIREMENTS_DEVTOOLS_TXT)
-$(REQUIREMENTS_DEVTOOLS_TXT):
-	$(PIP_COMPILE) --generate-hashes --extra=devtools pyproject.toml -o $(REQUIREMENTS_DEVTOOLS_TXT)
-
-.PHONY: $(REQUIREMENTS_DOCS_TXT)
-$(REQUIREMENTS_DOCS_TXT):
-	$(PIP_COMPILE) --generate-hashes --extra=docs pyproject.toml -o $(REQUIREMENTS_DOCS_TXT)
-
 .PHONY: sdist
 sdist:		# Build source distribution package.
 	@python3 -m build --sdist
