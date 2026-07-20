@@ -26,9 +26,9 @@ DATABASES = {
 }
 
 if DB_ENGINE == "mysql":
-    DATABASES["default"]["TEST"] = {"CHARSET": "utf8mb4"}
+    DATABASES["default"]["TEST"] = {"CHARSET": "utf8mb4"}  # type: ignore
 elif DB_ENGINE == "pgsql":
-    DATABASES["default"]["TEST"] = {"CHARSET": "utf8"}
+    DATABASES["default"]["TEST"] = {"CHARSET": "utf8"}  # type: ignore
 
 PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.MD5PasswordHasher",
