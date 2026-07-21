@@ -62,9 +62,9 @@ contrib/               # Contributed scripts and configurations
 ### Setup
 
 ```bash
-python3 -m venv .venv
+uv venv
 source .venv/bin/activate
-pip install -e ".[async,bugzilla,krbauth,mysql,pgsql,tests,devtools,docs]"
+uv pip install -e ".[async,bugzilla,krbauth,mysql,pgsql,tests,devtools,docs]"
 ```
 
 ### Running the development server
@@ -91,14 +91,11 @@ tox -e doc8            # Documentation linting
 
 ### Dependency Management
 
-```bash
-make requirements              # Regenerate all requirements files
-make requirements-devel.txt    # Regenerate devel requirements
-make requirements-all.txt      # Regenerate all optional deps requirements
-make requirements-basic.txt    # Regenerate base requirements
-```
+Dependencies are managed with `uv`.
 
-Requirements are managed with `pip-compile` from `pyproject.toml`.
+To upgrade a dependency, edit `pyproject.toml`.
+
+Lock dependencies, run `uv lock`.
 
 ### Building
 

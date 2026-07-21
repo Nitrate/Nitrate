@@ -49,10 +49,16 @@ bugzilla = ["python-bugzilla==3.3.0"]
 socialauth = ["social-auth-app-django==5.4.3"]
 async = ["celery==5.6.3"]
 docs = ["Sphinx >= 1.1.2", "sphinx_rtd_theme"]
+mypy-check = [
+    # mypy check. Versions of these two packages have to be adjusted according
+    # to the version of Django in order to work together well.
+    "django-stubs==4.2.7",
+    "mypy>=1.7,<1.8",
+]
 devtools = [
     "django-debug-toolbar",
-    "django-stubs",
     "tox==4.52.1",
+    "tox-uv==1.35.2",
     # Build tool to build sdist: python3 -m build
     "build",
 ]
@@ -103,7 +109,7 @@ ignore_missing_imports = 1
 exclude = ["settings", "migrations"]
 
 [tool.django-stubs]
-django_settings_module = "tcms.settings.devel"
+django_settings_module = "tcms.settings.test"
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "tcms.settings.test"
@@ -117,6 +123,13 @@ addopts = "--cov=src/tcms/ --cov-report=term --cov-report=html --cov-report=xml"
 # incorrect.
 # Refer to http://doc.pytest.org/en/latest/customize.html#confval-python_classes
 python_classes = "*xxxxxxxxx*"
+
+# Reference: pytest-django document: managing_python_path.html#automatic-looking-for-django-projects
+# Installation is skipped in tox testenv. pytest-django has to be able to discover the settings module.
+# By following the document mentioned above, disable automatic discovery and set Python path explicitly.
+# Note that src-layout is used and manage.py locates under src/ directory.
+django_find_project = false
+pythonpath = ". src"
 
 [tool.coverage.run]
 branch = true

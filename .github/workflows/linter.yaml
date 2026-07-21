@@ -12,25 +12,26 @@ on:
 jobs:
   linters:
     name: Run linters
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
+      - run: |
+          sudo apt update
+          sudo apt-get install gcc python3-dev libkrb5-dev libmariadb-dev libcrypt-dev
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
-        with:
-          python-version: '3.11'
+      - name: Install uv and set the Python version
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
       - run: |
           sudo apt-get update
           sudo apt-get install -y npm
 
-          python3 -m venv venv
-          envpy=./venv/bin/python3
-          "$envpy" -m pip install --upgrade pip
-          "$envpy" -m pip install 'tox==4.52.1'
-          "$envpy" -m tox -e bandit,black,flake8,docs,doc8,isort,templatelint,jslint
+          uv venv --python 3.13
+          source .venv/bin/activate
+          uv sync --extra devtools
+          tox -e bandit,black,flake8,docs,doc8,isort,templatelint,jslint
 
   mypy:
     name: Run mypy-${{ matrix.django-version }} checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         django-version: [django420]
@@ -39,11 +40,11 @@ jobs:
           sudo apt update
           sudo apt-get install gcc python3-dev libkrb5-dev libmariadb-dev libcrypt-dev
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
-        with:
-          python-version: 3.11
-      - name: Install tox
+      - name: Install uv and set the Python version
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+      - name: Run mypy
         run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install tox
-      - run: tox -e mypy-${{ matrix.django-version }}
+          uv venv --python 3.13
+          source .venv/bin/activate
+          uv sync --extra devtools
+          tox -e mypy-${{ matrix.django-version }}

@@ -148,14 +148,14 @@ TEMPLATES = [
 ]
 
 
-MIDDLEWARE = (
+MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
-)
+]
 
 ROOT_URLCONF = "tcms.urls"
 
@@ -164,7 +164,7 @@ WSGI_APPLICATION = "tcms.wsgi.application"
 
 CSRF_USE_SESSIONS = True
 
-INSTALLED_APPS = (
+INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.admindocs",
     "django.contrib.auth",
@@ -191,7 +191,7 @@ INSTALLED_APPS = (
     # core app must be here in order to use permissions created during creating
     # modules for above apps.
     "tcms.core.apps.AppConfig",
-)
+]
 
 SESSION_SERIALIZER = "django.contrib.sessions.serializers.JSONSerializer"
 
@@ -338,7 +338,7 @@ LOCALE_PATHS = (os.path.join(TCMS_ROOT_PATH, "locale"),)
 
 # Site-specific messages
 
-EMAILS_FOR_DEBUG = []
+EMAILS_FOR_DEBUG: list[str] = []
 
 # Values: DISABLED, THREADING, CELERY
 ASYNC_TASK = "DISABLED"
