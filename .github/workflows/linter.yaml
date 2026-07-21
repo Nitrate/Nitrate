@@ -17,7 +17,7 @@ jobs:
       - run: |
           sudo apt update
           sudo apt-get install gcc python3-dev libkrb5-dev libmariadb-dev libcrypt-dev
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Install uv and set the Python version
         uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
       - run: |
@@ -39,7 +39,7 @@ jobs:
       - run: |
           sudo apt update
           sudo apt-get install gcc python3-dev libkrb5-dev libmariadb-dev libcrypt-dev
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Install uv and set the Python version
         uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
       - name: Run mypy
