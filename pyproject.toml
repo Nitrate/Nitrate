@@ -58,7 +58,7 @@ mypy-check = [
 devtools = [
     "django-debug-toolbar",
     "tox==4.52.1",
-    "tox-uv==1.35.2",
+    "tox-uv==1.36.0",
     # Build tool to build sdist: python3 -m build
     "build",
 ]
