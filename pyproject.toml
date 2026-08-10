@@ -65,7 +65,7 @@ devtools = [
 tests = [
     "coverage[toml]==7.15.2",
     "factory_boy==3.3.3",
-    "pytest==9.0.3",
+    "pytest==9.1.1",
     "pytest-cov==7.1.0",
     "pytest-django==4.12.0",
     "sqlparse==0.5.5",
