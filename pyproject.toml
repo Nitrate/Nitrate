@@ -63,7 +63,7 @@ devtools = [
     "build",
 ]
 tests = [
-    "coverage[toml]==7.15.2",
+    "coverage[toml]==7.15.4",
     "factory_boy==3.3.3",
     "pytest==9.1.1",
     "pytest-cov==7.1.0",
