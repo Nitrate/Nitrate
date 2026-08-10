@@ -68,7 +68,7 @@ jobs:
           tox -e py${PYTHON_VERSION/./}-${DJANGO_VERSION}-${TEST_DB_ENGINE}
 
       - name: Parallel coverage report
-        uses: coverallsapp/github-action@5cbfd81b66ca5d10c19b062c04de0199c215fb6e # v2
+        uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           flag-name: testenv-py${{ matrix.python-version }}-${{ matrix.django-version }}-${{ matrix.db }}
@@ -80,7 +80,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Finish coverage report
-        uses: coverallsapp/github-action@5cbfd81b66ca5d10c19b062c04de0199c215fb6e # v2
+        uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           parallel-finished: true
