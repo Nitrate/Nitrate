@@ -88,35 +88,6 @@ class Product(TCMSActionModel):
         self.version.get_or_create(value="unspecified")
         self.build.get_or_create(name="unspecified")
 
-    def get_version_choices(self, allow_blank):
-        # Generate a list of (id, string) pairs suitable
-        # for a ChoiceField's "choices":
-        return get_as_choices(self.version.all(), allow_blank)
-
-    def get_build_choices(self, allow_blank, only_active):
-        # Generate a list of (id, string) pairs suitable
-        # for a ChoiceField's "choices"
-        #
-        # @only_active: restrict to only show builds flagged as "active"
-        q = self.build
-        if only_active:
-            q = q.filter(is_active=True)
-        return get_as_choices(q.all(), allow_blank)
-
-    def get_environment_choices(self, allow_blank):
-        # Generate a list of (id, string) pairs suitable
-        # for a ChoiceField's "choices":
-        return get_as_choices(self.environments.all(), allow_blank)
-
-    @classmethod
-    def get_choices(cls, allow_blank):
-        # Generate a list of (id, string) pairs suitable
-        # for a ChoiceField's "choices":
-        return get_as_choices(cls.objects.order_by("name").all(), allow_blank)
-
-    def as_choice(self):
-        return (self.id, self.name)
-
 
 class Priority(TCMSActionModel):
     id = models.AutoField(primary_key=True)
