@@ -660,11 +660,14 @@ wheels = [
 
 [[package]]
 name = "django-tinymce"
-version = "3.5.0"
+version = "4.1.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/da/b6/fa97e3ace31f9af8b050705610991744a53bf329804b2c6fd1180e75ab83/django-tinymce-3.5.0.tar.gz", hash = "sha256:ebe7e39e080415a0d4ca339f0f159754a7cc1dc7cd5276f32f9d3db3220134f8", size = 960577, upload-time = "2022-08-27T08:32:47.704Z" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/b3/36/56faa2cb1bde28c66ffe38d67ddbacab9c416baecbb7dd911bfabc5fa409/django_tinymce-4.1.0.tar.gz", hash = "sha256:02e3b70e940fd299f0fbef4315aee5c185664e1eb8cd396b176963954e4357c9", size = 1087250, upload-time = "2024-06-21T07:07:03.915Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/39/46/6b795c0f5e32be47bf0ef8d34fadc03b2fe2dd3d9c94afd8ceb238d3b07b/django_tinymce-3.5.0-py3-none-any.whl", hash = "sha256:f9d3758670ad55912cbabdd41a14e0b6cfda47868f9c6d92a4480ca320356d53", size = 1125265, upload-time = "2022-08-27T08:31:52.867Z" },
+    { url = "https://files.pythonhosted.org/packages/91/a6/467464d08495360689380906db8e67427c381545ce8af9ce633e0128b004/django_tinymce-4.1.0-py3-none-any.whl", hash = "sha256:9804836e6d2b08de3b03a27c100f8c2e9633549913eff8b323678a10cd48b94e", size = 1317923, upload-time = "2024-06-21T07:07:40.454Z" },
 ]
 
 [[package]]
@@ -1048,7 +1051,7 @@ requires-dist = [
     { name = "django-contrib-comments", specifier = "==2.2.0" },
     { name = "django-debug-toolbar", marker = "extra == 'devtools'" },
     { name = "django-stubs", marker = "extra == 'mypy-check'", specifier = "==4.2.7" },
-    { name = "django-tinymce", specifier = "==3.5.0" },
+    { name = "django-tinymce", specifier = "==4.1.0" },
     { name = "django-uuslug", specifier = "==2.0.0" },
     { name = "factory-boy", marker = "extra == 'tests'", specifier = "==3.3.3" },
     { name = "html2text", specifier = "==2025.4.15" },
