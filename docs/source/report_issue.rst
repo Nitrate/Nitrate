@@ -26,7 +26,7 @@ problem deeply and make a proper solution finally.
 
 Before you file an issue, a good practice is to search issues to see whether
 any others have same or similar problems. Avoid duplicated issues will always
-benifit users and developers. If there is, join the discussion, give your use
+benefit users and developers. If there is, join the discussion, give your use
 cases or reproduce steps.
 
 We categorize issues into
