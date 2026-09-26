@@ -1066,7 +1066,7 @@ requires-dist = [
     { name = "sphinx", marker = "extra == 'docs'", specifier = ">=1.1.2" },
     { name = "sphinx-rtd-theme", marker = "extra == 'docs'" },
     { name = "sqlparse", marker = "extra == 'tests'", specifier = "==0.5.5" },
-    { name = "tox", marker = "extra == 'devtools'", specifier = "==4.60.0" },
+    { name = "tox", marker = "extra == 'devtools'", specifier = "==4.64.3" },
     { name = "tox-uv", marker = "extra == 'devtools'", specifier = "==1.36.0" },
     { name = "xmltodict", specifier = "==1.0.4" },
 ]
@@ -1657,7 +1657,7 @@ wheels = [
 
 [[package]]
 name = "tox"
-version = "4.60.0"
+version = "4.64.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cachetools" },
@@ -1673,9 +1673,9 @@ dependencies = [
     { name = "typing-extensions", marker = "python_full_version < '3.13'" },
     { name = "virtualenv" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9f/1f/3acba68301b0081cec87b1769ba4c3a4a0a30f20879a05420673c7e4671d/tox-4.60.0.tar.gz", hash = "sha256:6f93bb580d35e00fc69cfec1116eecbe21155f747753ca5019374f7c69b2eac9", size = 301598, upload-time = "2026-08-13T23:14:26.944Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a2/c4/999ef00c422f6aa3c0932ec07a6465fe50d7a4e2bc7778c18b2927f83595/tox-4.64.3.tar.gz", hash = "sha256:da24946605de8d5af261a309d092435f69ad0651c7d3e50c7bd92b97c39a77a9", size = 316391, upload-time = "2026-09-26T01:36:29.302Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fa/e6/3a1042add765c0e1e67f76a3b0f2036bfe6b0229ace83c6ff9638a5e391b/tox-4.60.0-py3-none-any.whl", hash = "sha256:175abbc4cdef615d66874c0843be4f44c353c14aab6d89939bb22246f84122bd", size = 226332, upload-time = "2026-08-13T23:14:25.324Z" },
+    { url = "https://files.pythonhosted.org/packages/f7/4b/0d959692ebf9d2ba9acf6cacf5525d3023ac609f37a249aacb8d327338c7/tox-4.64.3-py3-none-any.whl", hash = "sha256:f6e680a6eacc0201e9ff10959257bdb88036d03db1d8fb6b480c83da2137d68b", size = 232515, upload-time = "2026-09-26T01:36:27.825Z" },
 ]
 
 [[package]]
