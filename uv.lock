@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.10"
 resolution-markers = [
     "python_full_version >= '3.12'",
@@ -1066,7 +1066,7 @@ requires-dist = [
     { name = "sphinx", marker = "extra == 'docs'", specifier = ">=1.1.2" },
     { name = "sphinx-rtd-theme", marker = "extra == 'docs'" },
     { name = "sqlparse", marker = "extra == 'tests'", specifier = "==0.5.5" },
-    { name = "tox", marker = "extra == 'devtools'", specifier = "==4.60.0" },
+    { name = "tox", marker = "extra == 'devtools'", specifier = "==4.64.7" },
     { name = "tox-uv", marker = "extra == 'devtools'", specifier = "==1.36.0" },
     { name = "xmltodict", specifier = "==1.0.4" },
 ]
@@ -1657,7 +1657,7 @@ wheels = [
 
 [[package]]
 name = "tox"
-version = "4.60.0"
+version = "4.64.7"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cachetools" },
@@ -1673,9 +1673,9 @@ dependencies = [
     { name = "typing-extensions", marker = "python_full_version < '3.13'" },
     { name = "virtualenv" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9f/1f/3acba68301b0081cec87b1769ba4c3a4a0a30f20879a05420673c7e4671d/tox-4.60.0.tar.gz", hash = "sha256:6f93bb580d35e00fc69cfec1116eecbe21155f747753ca5019374f7c69b2eac9", size = 301598, upload-time = "2026-08-13T23:14:26.944Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7c/bd/d7467b015457cf8bd912154c3b0247b30739751498577606b574d389aefd/tox-4.64.7.tar.gz", hash = "sha256:b8033a00945a02493adebdc337e4e45136e21a7083c00b2ae27c998370b72af3", size = 321984, upload-time = "2026-10-01T23:14:16.834Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fa/e6/3a1042add765c0e1e67f76a3b0f2036bfe6b0229ace83c6ff9638a5e391b/tox-4.60.0-py3-none-any.whl", hash = "sha256:175abbc4cdef615d66874c0843be4f44c353c14aab6d89939bb22246f84122bd", size = 226332, upload-time = "2026-08-13T23:14:25.324Z" },
+    { url = "https://files.pythonhosted.org/packages/57/fc/6f88af41caa95e696d87d7dd777ad1e6d96013e23275ef840e5aff0af483/tox-4.64.7-py3-none-any.whl", hash = "sha256:4e7a906f26b72fa9bf11577d02bde492c6d0ad8e690921a801893354d05d35fe", size = 234079, upload-time = "2026-10-01T23:14:15.21Z" },
 ]
 
 [[package]]
