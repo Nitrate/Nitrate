@@ -5,7 +5,7 @@ version: "3"
 
 services:
   db:
-    image: "mariadb:10.11.8@sha256:75f6e61397758489d1dccf95db33b6b49ebfc7ec1253d40060fdf8ceb7f938a3"
+    image: "mariadb:10.11.20@sha256:aed943ea1f5904cc600bc1459fb25fe09b1a4cf76b6c1ef9a65af57a8b9f1738"
     volumes:
     - "nitrate_db_data:/var/lib/mysql"
     restart: always
