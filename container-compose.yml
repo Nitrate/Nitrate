@@ -15,7 +15,7 @@ services:
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 
   messagebus:
-    image: rabbitmq:4.3.2-alpine@sha256:835cbc6fabceedef7a3b0ce3195a17adccb753a3ba645bdd61c5557b6e4bf580
+    image: rabbitmq:4.4.1-alpine@sha256:a6b49ed79df2bc842eb3df93bdf5250d1abed236350b3e4560932e805253946c
     restart: always
     environment:
       RABBITMQ_DEFAULT_VHOST: myvhost
